@@ -1,10 +1,10 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import ExperimentRoom from "./pages/participant-pov/ExperimentRoom/ExperimentRoom";
-import MainPage from "./pages/researcher-pov/MainPage/MainPage";
-import PostProcessing from "./pages/researcher-pov/PostProcessing/PostProcessing";
-import WatchingRoom from "./pages/researcher-pov/WatchingRoom/WatchingRoom";
-import SessionOverview from "./pages/researcher-pov/SessionOverview/SessionOverview";
+import MainPage from "./pages/MainPage/MainPage";
+import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import ExperimentRoom from "./pages/ExperimentRoom/ExperimentRoom";
+import SessionOverview from "./pages/SessionOverview/SessionOverview";
+import PostProcessing from "./pages/PostProcessing/PostProcessing";
 
 function App() {
   return (
