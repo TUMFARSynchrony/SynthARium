@@ -6,7 +6,7 @@ function WatchingRoom() {
     <div>
       <h1>Watching Room</h1>
       <Link to="/">
-        <span>Main Page</span>
+        <span>Session Overview</span>
       </Link>
     </div>
   );

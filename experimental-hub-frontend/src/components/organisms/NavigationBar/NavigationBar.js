@@ -5,13 +5,7 @@ function NavigationBar() {
   return (
     <div className="headerContainer">
       <NavLink className="pageNavigation" to="/">
-        Home
-      </NavLink>
-      <NavLink className="pageNavigation" to="/sessionOverview">
         Session Overview
-      </NavLink>
-      <NavLink className="pageNavigation" to="/watchingRoom">
-        Watching Room
       </NavLink>
       <NavLink className="pageNavigation" to="/postProcessingRoom">
         Post-Processing Room
