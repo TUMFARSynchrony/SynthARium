@@ -1,7 +1,10 @@
 import { useState } from "react";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
-import { getSessionJson } from "../../mockServer/sessionJson";
+import {
+  getEmptySessionJson,
+  getSessionJson,
+} from "../../mockServer/sessionJson";
 import "./SessionOverview.css";
 import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
@@ -34,23 +37,29 @@ function SessionOverview() {
             name={"CREATE NEW SESSION"}
             onClick={() => toggleFormPopup()}
           />
-          {sessionCards.map((session) => {
-            return (
-              <SessionCard
-                title={session.title}
-                date={session.date}
-                time={session.time}
-                onClick={() => handleClick(session)}
-                selected={session.title === selectedSession.title}
-              />
-            );
-          })}
+          {sessionCards.length !== 0 ? (
+            sessionCards.map((session) => {
+              return (
+                <SessionCard
+                  title={session.title}
+                  date={session.date}
+                  time={session.time}
+                  onClick={() => handleClick(session)}
+                  selected={session.title === selectedSession.title}
+                />
+              );
+            })
+          ) : (
+            <div>No active sessions found.</div>
+          )}
         </div>
         <div className="sessionOverviewCardPreview">
-          <SessionPreview
-            sessionInformation={selectedSession}
-            onClick={toggleFormPopup}
-          />
+          {sessionCards.length > 0 && (
+            <SessionPreview
+              sessionInformation={selectedSession}
+              onClick={toggleFormPopup}
+            />
+          )}
         </div>
       </div>
       {showFormPopup ? <SessionForm closePopup={toggleFormPopup} /> : null}

@@ -50,3 +50,7 @@ export function getSessionJson() {
     },
   ];
 }
+
+export function getEmptySessionJson() {
+  return [];
+}
