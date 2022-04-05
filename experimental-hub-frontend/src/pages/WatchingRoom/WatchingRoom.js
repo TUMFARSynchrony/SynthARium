@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom";
+import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import "./WatchingRoom.css";
 
 function WatchingRoom() {
   return (
     <div>
       <h1>Watching Room</h1>
-      <Link to="/">
-        <span>Session Overview</span>
-      </Link>
+      <LinkButton name="Session Overview" to="/" />
     </div>
   );
 }

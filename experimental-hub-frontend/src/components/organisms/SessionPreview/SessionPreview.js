@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
 import Button from "../../atoms/Button/Button";
+import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
-function SessionPreview({ sessionInformation }) {
+function SessionPreview({ sessionInformation, onClick }) {
   return (
     <div className="sessionPreviewContainer">
       <div className="sessionPreviewHeader">
@@ -21,9 +21,9 @@ function SessionPreview({ sessionInformation }) {
       </div>
       <p className="sessionPreviewInformation">{"Some meta information"}</p>
       <div className="sessionPreviewButtons">
-        <Button name={"COPY"} to="/" />
-        <Button name={"EDIT"} to="/" />
-        <Button name={"START"} to="/watchingRoom" />
+        <Button name={"COPY"} onClick={onClick} />
+        <Button name={"EDIT"} onClick={onClick} />
+        <LinkButton name={"START"} to="/watchingRoom" />
       </div>
     </div>
   );

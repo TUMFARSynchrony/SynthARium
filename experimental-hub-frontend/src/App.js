@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ExperimentRoom from "./pages/ExperimentRoom/ExperimentRoom";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
+import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             element={<PostProcessing />}
           />
           <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
+          <Route exact path="/watchingRoom" element={<WatchingRoom />} />
         </Routes>
       </Router>
     </div>
