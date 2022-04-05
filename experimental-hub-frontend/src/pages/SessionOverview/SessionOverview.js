@@ -5,6 +5,7 @@ import { getSessionJson } from "../../mockServer/sessionJson";
 import "./SessionOverview.css";
 import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
+import Button from "../../components/atoms/Button/Button";
 
 function SessionOverview() {
   var sessionCards = getSessionJson();
@@ -23,6 +24,7 @@ function SessionOverview() {
       <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
       <div className="sessionOverviewContainer">
         <div className="sessionOverviewCards">
+          <Button name={"CREATE NEW SESSION"} to="/" />
           {sessionCards.map((session) => {
             return (
               <SessionCard
@@ -35,7 +37,6 @@ function SessionOverview() {
             );
           })}
         </div>
-
         <div className="sessionOverviewCardPreview">
           <SessionPreview sessionInformation={selectedSession} />
         </div>
