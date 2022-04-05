@@ -1,9 +1,19 @@
+import { useState } from "react";
 import "./SessionCard.css";
 
-function SessionCard({ title, date, time }) {
+function SessionCard({ title, date, time, onClick, selected }) {
   // TODO: which meta information to show here additionally?
+  const [selectedCardClass, setSelectedCardClass] = useState(
+    "sessionCardContainer"
+  );
+
   return (
-    <div className="sessionCardContainer">
+    <div
+      className={
+        !selected ? "sessionCardContainer" : "sessionCardContainer active"
+      }
+      onClick={onClick}
+    >
       <div className="sessionCardHeader">
         <h3 className="sessionCardHeaderTitle">{title}</h3>
         <h3 className="sessionCardHeaderDate">

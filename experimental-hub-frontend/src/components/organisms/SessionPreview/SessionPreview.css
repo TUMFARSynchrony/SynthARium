@@ -1,0 +1,32 @@
+.sessionPreviewContainer {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-top: 3px solid hsl(212, 86%, 64%);
+    border-radius: 0.5em;
+    padding: 2em;
+    margin: 2em;
+    /* width: 100%;
+    height: 100%; */
+}
+
+.sessionPreviewHeader {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.sessionPreviewTitles {
+    margin: 0;
+}
+
+.sessionPreviewInformation {
+    line-height: 2;
+    color: hsl(229, 6%, 66%);
+    text-align: center;
+    margin: 2em;
+}
+
+.sessionPreviewButtons {
+    display: flex;
+    justify-content: right;
+}
