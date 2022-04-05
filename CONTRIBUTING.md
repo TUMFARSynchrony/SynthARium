@@ -16,3 +16,13 @@ The following conventions should be followed when working on experimental-hub.
 - Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
 - Limit the first line to 72 characters or less
 - Provide a more detailed description in the next line, if the first line is not descriptive enough
+
+### Folder Structure _(WIP)_
+`backend/`: Everything belonging to the backend
+`frontend/`: Everything belonging to the frontend
+
+### Python
+_TODO_
+
+### React
+_TODO_
