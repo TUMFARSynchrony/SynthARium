@@ -18,7 +18,7 @@ The following conventions should be followed when working on experimental-hub.
 - Provide a more detailed description in the next line, if the first line is not descriptive enough
 
 ### Folder Structure _(WIP)_
-`backend/`: Everything belonging to the backend
+`backend/`: Everything belonging to the backend  
 `frontend/`: Everything belonging to the frontend
 
 ### Python
