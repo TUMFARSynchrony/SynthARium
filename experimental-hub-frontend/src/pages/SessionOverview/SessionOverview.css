@@ -1,0 +1,14 @@
+.sessionOverviewContainer {
+    display: flex;
+}
+
+.sessionOverviewCards {
+    margin-left: 2em;
+    border-right: 6px solid hsl(212, 86%, 64%);
+}
+
+.sessionOverviewHeadline {
+    padding-top: 1em;
+    padding-bottom: 2em;
+    margin: 0;
+}
