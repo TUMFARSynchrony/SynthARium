@@ -2,7 +2,7 @@ import Button from "../../atoms/Button/Button";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
-function SessionPreview({ sessionInformation, onClick }) {
+function SessionPreview({ sessionInformation }) {
   return (
     <div className="sessionPreviewContainer">
       <div className="sessionPreviewHeader">
@@ -21,8 +21,8 @@ function SessionPreview({ sessionInformation, onClick }) {
       </div>
       <p className="sessionPreviewInformation">{"Some meta information"}</p>
       <div className="sessionPreviewButtons">
-        <Button name={"COPY"} onClick={onClick} />
-        <Button name={"EDIT"} onClick={onClick} />
+        <LinkButton name={"COPY"} to="/sessionForm" />
+        <LinkButton name={"EDIT"} to="/sessionForm" />
         <LinkButton name={"START"} to="/watchingRoom" />
       </div>
     </div>

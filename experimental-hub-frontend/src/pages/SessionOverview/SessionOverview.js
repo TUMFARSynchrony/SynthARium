@@ -8,20 +8,16 @@ import {
 import "./SessionOverview.css";
 import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
-import Button from "../../components/atoms/Button/Button";
-import SessionForm from "../../components/organisms/SessionForm/SessionForm";
+import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 
 function SessionOverview() {
+  //TODO: Dropdown for past Sessions
   var sessionCards = getSessionJson();
 
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [selectedSession, setSelectedSession] = useState(
     sessionCards.length !== 0 ? sessionCards[0] : null
   );
-
-  const toggleFormPopup = () => {
-    setShowFormPopup(!showFormPopup);
-  };
 
   const handleClick = (session) => {
     setSelectedSession(session);
@@ -33,10 +29,7 @@ function SessionOverview() {
       <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
       <div className="sessionOverviewContainer">
         <div className="sessionOverviewCards">
-          <Button
-            name={"CREATE NEW SESSION"}
-            onClick={() => toggleFormPopup()}
-          />
+          <LinkButton name="CREATE NEW SESSION" to="/sessionForm" />
           {sessionCards.length !== 0 ? (
             sessionCards.map((session) => {
               return (
@@ -55,14 +48,10 @@ function SessionOverview() {
         </div>
         <div className="sessionOverviewCardPreview">
           {sessionCards.length > 0 && (
-            <SessionPreview
-              sessionInformation={selectedSession}
-              onClick={toggleFormPopup}
-            />
+            <SessionPreview sessionInformation={selectedSession} />
           )}
         </div>
       </div>
-      {showFormPopup ? <SessionForm closePopup={toggleFormPopup} /> : null}
     </div>
   );
 }
