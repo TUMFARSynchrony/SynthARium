@@ -36,9 +36,15 @@ function SessionForm() {
       <div className="sessionFormCard">
         <div className="sessionPlanningForm">
           <Heading heading={"Session Data"} />
-          <InputTextField title="Title"></InputTextField>
+          <InputTextField
+            title="Title"
+            placeholder={"Your title"}
+          ></InputTextField>
           <InputDateField title="Date"></InputDateField>
-          <InputTextField title="Time Limit"></InputTextField>
+          <InputTextField
+            title="Time Limit"
+            placeholder={"Your time limit in ms"}
+          ></InputTextField>
           <Checkbox title="Record Session" />
           <hr className="separatorLine"></hr>
           <Heading heading={"Participants"} />

@@ -13,13 +13,17 @@ function ParticipantData({ onDeleteParticipant, onChange, index, name, link }) {
       <InputTextField
         title="Name"
         value={name}
+        placeholder={"Name of participant"}
         onChange={(newName) => handleChange(newName, link)}
       />
       <InputTextField
         title="Link"
         value={link}
+        placeholder={"Invite link"}
+        readonly={true}
         onChange={(newLink) => handleChange(name, newLink)}
       />
+
       <Button
         name=""
         design={"negative"}
