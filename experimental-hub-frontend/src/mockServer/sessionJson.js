@@ -1,15 +1,16 @@
 export function getSessionJson() {
+  //TODO: Show all sessions or only future ones?
   return [
     {
-      sessionID: "filter_testing_10012021_1200",
+      sessionID: "filter_testing_10012021_1200", //TODO: How will the session ID look like?
       timeLimit: 180,
       recordSession: true,
       title: "Filter Testing",
       date: "10.01.2021",
       time: "12:00 CET",
-      users: [
+      participant: [
         {
-          userID: "maria_pospelova_24042000",
+          userID: "maria_pospelova_24042000", //TODO: How will the user ID look like?
           xPosition: 1336,
           yPosition: 1020,
           muted: true,

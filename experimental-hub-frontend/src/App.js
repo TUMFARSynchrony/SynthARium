@@ -4,6 +4,7 @@ import ExperimentRoom from "./pages/ExperimentRoom/ExperimentRoom";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import SessionForm from "./pages/SessionForm/SessionForm";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           />
           <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
           <Route exact path="/watchingRoom" element={<WatchingRoom />} />
+          <Route exact path="/sessionForm" element={<SessionForm />} />
         </Routes>
       </Router>
     </div>
