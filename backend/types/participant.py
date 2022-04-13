@@ -2,8 +2,8 @@
 
 from typing import Any, TypedDict
 
-from types.size import Size
-from types.position import Position
+from types.size import SizeDict
+from types.position import PositionDict
 
 
 class __ParticipantDictOptionalKeys(TypedDict, total=False):
@@ -17,5 +17,5 @@ class ParticipantDict(__ParticipantDictOptionalKeys):
     lastName: str
     muted: bool
     filters: list[Any]
-    position: Position
-    size: Size
+    position: PositionDict
+    size: SizeDict

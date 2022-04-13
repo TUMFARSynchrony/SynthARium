@@ -15,7 +15,7 @@ class Hub():
         """TODO document"""
         pass
 
-    def stop():
+    def stop(self):
         """TODO document"""
         pass
 
