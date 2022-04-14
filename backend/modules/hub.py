@@ -1,5 +1,6 @@
 """TODO document"""
 
+from modules.server import Server
 from modules.experiment import Experiment
 from modules.experimenter import Experimenter
 from modules.session_manager import SessionManager
@@ -10,6 +11,7 @@ class Hub():
     experimenters: list[Experimenter]
     experiments: list[Experiment]
     session_manager: SessionManager
+    server: Server
 
     def __init__(self):
         """TODO document"""
