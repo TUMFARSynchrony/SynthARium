@@ -2,8 +2,8 @@
 
 from typing import Any, TypedDict
 
-from types.size import SizeDict
-from types.position import PositionDict
+from _types.size import SizeDict
+from _types.position import PositionDict
 
 
 class __ParticipantDictOptionalKeys(TypedDict, total=False):

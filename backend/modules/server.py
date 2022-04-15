@@ -1,13 +1,10 @@
 """TODO document"""
 
-from modules.hub import Hub
-
 
 class Server():
     """TODO document"""
-    hub: Hub
 
-    def __init__(self, hub: Hub):
+    def __init__(self, on_offer):
         """TODO document"""
         pass
 

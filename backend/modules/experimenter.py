@@ -1,14 +1,16 @@
 """TODO document"""
 
-from modules.experiment import Experiment
-from modules.user import User
-from modules.hub import Hub
+from __future__ import annotations
+
+import modules.experiment as _experiment
+import modules.hub as _hub
+import modules.user as _user
 
 
-class Experimenter(User):
+class Experimenter(_user.User):
     """TODO document"""
-    experiment: Experiment
-    hub: Hub
+    experiment: _experiment.Experiment
+    hub: _hub.Hub
 
     def handle_message(self, message):
         """TODO document"""

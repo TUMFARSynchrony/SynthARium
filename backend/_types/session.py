@@ -2,8 +2,8 @@
 
 from typing import Any, TypedDict
 
-from types.participant import ParticipantDict
-from types.note import NoteDict
+from _types.participant import ParticipantDict
+from _types.note import NoteDict
 
 
 class __SessionDictOptionalKeys(TypedDict, total=False):

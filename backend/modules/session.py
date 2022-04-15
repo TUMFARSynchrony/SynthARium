@@ -1,16 +1,18 @@
 """TODO document"""
 
-from modules.session_manager import SessionManager
+from __future__ import annotations
 
-from types.session import SessionDict
-from types.participant import ParticipantDict
-from types.note import NoteDict
+import modules.session_manager as _sm
+
+from _types.session import SessionDict
+from _types.participant import ParticipantDict
+from _types.note import NoteDict
 
 
 class Session():
     """TODO document"""
     # Class data
-    session_manager: SessionManager
+    session_manager: _sm.SessionManager
 
     # Session data
     id: str

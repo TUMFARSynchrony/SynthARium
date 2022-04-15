@@ -1,21 +1,21 @@
 """TODO document"""
 
-from modules.server import Server
-from modules.experiment import Experiment
-from modules.experimenter import Experimenter
-from modules.session_manager import SessionManager
+import modules.server as _server
+import modules.experiment as _experiment
+import modules.experimenter as _experimenter
+import modules.session_manager as _sm
 
 
 class Hub():
     """TODO document"""
-    experimenters: list[Experimenter]
-    experiments: list[Experiment]
-    session_manager: SessionManager
-    server: Server
+    experimenters: list[_experimenter.Experimenter]
+    experiments: list[_experiment.Experiment]
+    session_manager: _sm.SessionManager
+    server: _server.Server
 
-    def __init__(self):
+    def __init__(self, host: str, port: int):
         """TODO document"""
-        pass
+        print("init hub")
 
     def stop(self):
         """TODO document"""

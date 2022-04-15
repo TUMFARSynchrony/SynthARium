@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from modules.connection import Connection
+import modules.connection as _connection
 
 
 class User():
     """TODO document"""
     id: str
-    connection: Connection
+    connection: _connection.Connection
 
     def __init__(self):
         """TODO document"""

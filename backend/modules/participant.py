@@ -1,12 +1,14 @@
 """TODO document"""
 
-from modules.experiment import Experiment
-from modules.user import User
+from __future__ import annotations
+
+import modules.experiment as _experiment
+import modules.user as _user
 
 
-class Participant(User):
+class Participant(_user.User):
     """TODO document"""
-    experiment: Experiment
+    experiment: _experiment.Experiment
 
     def __init__(self):
         """TODO document"""

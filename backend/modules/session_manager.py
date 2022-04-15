@@ -1,6 +1,8 @@
 """TODO document"""
 
-from modules.session import Session
+from __future__ import annotations
+
+import modules.session as _session
 
 
 class SessionManager():
@@ -18,10 +20,10 @@ class SessionManager():
         """TODO document"""
         pass
 
-    def update_session(self, session: Session):
+    def update_session(self, session: _session.Session):
         """TODO document"""
         pass
 
-    def create_session(self, session: Session):
+    def create_session(self, session: _session.Session):
         """TODO document"""
         pass
