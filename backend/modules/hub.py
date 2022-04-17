@@ -16,10 +16,23 @@ class Hub():
     def __init__(self, host: str, port: int):
         """TODO document"""
         print("init hub")
+        self.experimenters = []
+        self.experiments = []
+        self.session_manager = _sm.SessionManager()
+        self.server = _server.Server(self.handle_offer, host, port)
 
-    def stop(self):
+    async def start(self):
         """TODO document"""
-        pass
+        await self.server.start()
+
+    async def stop(self):
+        """TODO document"""
+        print("Hub stopping")
+        await self.server.stop()
+        for experimenter in self.experimenters:
+            experimenter.disconnect()
+        for experiment in self.experiments:
+            experiment.stop()
 
     def handle_offer(self, offer):
         """TODO document"""
