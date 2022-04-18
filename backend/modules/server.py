@@ -1,7 +1,7 @@
 """TODO document"""
 
 import json
-from typing import Callable, Literal
+from typing import Any, Callable, Coroutine, Literal
 from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
@@ -14,7 +14,7 @@ class Server():
     """TODO document"""
     _HANDLER = Callable[
         [RTCSessionDescription, Literal["participant", "experimenter"]],
-        RTCSessionDescription | ErrorDict]
+        Coroutine[Any, Any, RTCSessionDescription | ErrorDict]]
 
     _hub_handle_offer: _HANDLER
     _app: web.Application
@@ -113,7 +113,7 @@ class Server():
             return web.Response(content_type="application/json",
                                 text=json.dumps(error_message))
 
-        response = self._hub_handle_offer(offer, params["user_type"])
+        response = await self._hub_handle_offer(offer, params["user_type"])
 
         # Create answer according to response
         if type(response) == RTCSessionDescription:

@@ -40,18 +40,22 @@ class Hub():
         for experiment in self.experiments:
             experiment.stop()
 
-    def handle_offer(self, offer: RTCSessionDescription,
-                     user_type: Literal["participant", "experimenter"]) -> RTCSessionDescription | ErrorDict:
+    async def handle_offer(self, offer: RTCSessionDescription,
+                           user_type: Literal["participant", "experimenter"]):
         """TODO document"""
         if user_type not in ["participant", "experimenter"]:
             err = "Invalid user type"
             return ErrorDict(code=400, type="EXAMPLE_TYPE_2", description=err)
 
         if user_type == "participant":
-            user = _participant.Participant()
+            answer, participant = await _participant.participant_factory(offer)
+            # TODO handle participant
+
         elif user_type == "experimenter":
-            user = _experimenter.Experimenter()
-        answer = user.initiate_connection(offer)
+            answer, experimenter = await _experimenter.experimenter_factory(
+                offer)
+            self.experimenters.append(experimenter)
+
         return answer
 
     def start_experiment(self, session):
