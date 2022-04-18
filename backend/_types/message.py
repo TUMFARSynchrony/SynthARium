@@ -13,7 +13,9 @@ class MessageDict(TypedDict):
 
 # TODO define valid types
 MESSAGE_TYPES = Literal[
-    "EXAMPLE_TYPE",
-    "EXAMPLE_TYPE_2"
+    "TO_BE_DEFINED",  # Placeholder
+    "SUCCESS",
+    "ERROR",
+    "SESSION_DESCRIPTION",
 ]
 """TODO Document"""
