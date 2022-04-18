@@ -13,8 +13,8 @@ class __ParticipantDictOptionalKeys(TypedDict, total=False):
 
 class ParticipantDict(__ParticipantDictOptionalKeys):
     """TODO Document"""
-    firstName: str
-    lastName: str
+    first_name: str
+    last_name: str
     muted: bool
     filters: list[Any]
     position: PositionDict

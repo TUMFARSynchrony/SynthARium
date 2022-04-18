@@ -9,8 +9,8 @@ from _types.note import NoteDict
 class __SessionDictOptionalKeys(TypedDict, total=False):
     """TODO Document"""
     id: str
-    startTime: int
-    endTime: int
+    start_time: int
+    end_time: int
     log: Any
 
 
@@ -19,7 +19,7 @@ class SessionDict(__SessionDictOptionalKeys):
     title: str
     description: str
     date: int
-    timeLimit: int
+    time_limit: int
     record: bool
     participants: list[ParticipantDict]
     notes: list[NoteDict]
