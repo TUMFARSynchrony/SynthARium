@@ -22,7 +22,7 @@ class Hub():
         print("init hub")
         self.experimenters = []
         self.experiments = []
-        self.session_manager = _sm.SessionManager()
+        self.session_manager = _sm.SessionManager("sessions")
         self.server = _server.Server(self.handle_offer, host, port)
 
     async def start(self):
