@@ -2,7 +2,7 @@ import InputField from "../../atoms/InputField/InputField";
 import Label from "../../atoms/Label/Label";
 import "./InputDateField.css";
 
-function InputDateField({ title, placeholder, readonly }) {
+function InputDateField({ title, placeholder, readonly, onChange }) {
   return (
     <div className="inputDateFieldContainer">
       <Label title={title} />
@@ -10,6 +10,7 @@ function InputDateField({ title, placeholder, readonly }) {
         inputType={"date"}
         placeholder={placeholder}
         readonly={readonly}
+        onChange={onChange}
       />
     </div>
   );

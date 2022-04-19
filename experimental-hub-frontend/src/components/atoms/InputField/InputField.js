@@ -9,6 +9,7 @@ function InputField({ inputType, value, placeholder, readonly, onChange }) {
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       readOnly={readonly}
+      defaultChecked={false}
     ></input>
   );
 }
