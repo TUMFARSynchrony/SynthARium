@@ -1,18 +1,15 @@
 """TODO Document"""
 
 from typing import Any, TypedDict
+from typing_extensions import NotRequired
 
 from _types.size import SizeDict
 from _types.position import PositionDict
 
 
-class __ParticipantDictOptionalKeys(TypedDict, total=False):
+class ParticipantDict(TypedDict):
     """TODO Document"""
-    id: str
-
-
-class ParticipantDict(__ParticipantDictOptionalKeys):
-    """TODO Document"""
+    id: NotRequired[str]
     first_name: str
     last_name: str
     muted: bool
