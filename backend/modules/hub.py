@@ -1,9 +1,7 @@
 """TODO document"""
 
-from typing import Literal
+from typing import Literal, Optional
 from aiortc import RTCSessionDescription
-
-from _types.error import ErrorDict
 
 import modules.server as _server
 import modules.experiment as _experiment
@@ -40,13 +38,14 @@ class Hub():
         for experiment in self.experiments:
             experiment.stop()
 
-    async def handle_offer(self, offer: RTCSessionDescription,
-                           user_type: Literal["participant", "experimenter"]):
+    async def handle_offer(
+            self,
+            offer: RTCSessionDescription,
+            user_type: Literal["participant", "experimenter"],
+            participant_id: Optional[str],
+            session_id: Optional[str]
+    ):
         """TODO document"""
-        if user_type not in ["participant", "experimenter"]:
-            err = "Invalid user type"
-            return ErrorDict(code=400, type="EXAMPLE_TYPE_2", description=err)
-
         if user_type == "participant":
             answer, participant = await _participant.participant_factory(offer)
             # TODO handle participant

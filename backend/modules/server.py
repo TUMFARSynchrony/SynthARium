@@ -1,7 +1,7 @@
 """TODO document"""
 
 import json
-from typing import Any, Callable, Coroutine, Literal
+from typing import Any, Callable, Coroutine, Literal, Optional
 from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
@@ -9,12 +9,15 @@ from aiortc import RTCSessionDescription
 from _types.message import MessageDict
 from _types.error import ErrorDict
 
+from modules.exceptions import ErrorDictException
+
 
 class Server():
     """TODO document"""
     _HANDLER = Callable[
-        [RTCSessionDescription, Literal["participant", "experimenter"]],
-        Coroutine[Any, Any, RTCSessionDescription | ErrorDict]]
+        [RTCSessionDescription, Literal["participant", "experimenter"],
+         Optional[str], Optional[str]],
+        Coroutine[Any, Any, RTCSessionDescription]]
 
     _hub_handle_offer: _HANDLER
     _app: web.Application
@@ -67,7 +70,7 @@ class Server():
             error = ErrorDict(
                 code=400, type="EXAMPLE_TYPE",  # TODO adjust type
                 description="Content type must be 'application/json'")
-            raise _OfferParserException(error)
+            raise ErrorDictException(error)
 
         # Parse request
         try:
@@ -76,18 +79,29 @@ class Server():
             error = ErrorDict(code=400,
                               type="EXAMPLE_TYPE",  # TODO adjust type
                               description="Failed to parse request")
-            raise _OfferParserException(error)
+            raise ErrorDictException(error)
 
         # Check if all required keys exist in params
         required_keys = ["sdp", "type", "user_type"]
+        if params["user_type"] == "participant":
+            required_keys.extend(["session_id", "participant_id"])
+
         missing_keys = list(
             filter(lambda key: key not in params, required_keys))
+
         if len(missing_keys) > 0:
             error_description = f"Missing request parameters: {missing_keys}"
             error = ErrorDict(code=400,
                               type="EXAMPLE_TYPE",  # TODO adjust type
                               description=error_description)
-            raise _OfferParserException(error)
+            raise ErrorDictException(error)
+
+        # Check if user_type is valid
+        if params["user_type"] not in ["participant", "experimenter"]:
+            error = ErrorDict(code=400, type="EXAMPLE_TYPE_2",
+                              description="Invalid user type")
+            raise ErrorDictException(error)
+
         # Successfully parsed parameters
         return params
 
@@ -96,7 +110,7 @@ class Server():
         print(f"[SERVER] Handle offer from {request.host}")
         try:
             params = await self._parse_offer_request(request)
-        except _OfferParserException as error:
+        except ErrorDictException as error:
             error_message = MessageDict(type="ERROR", data=error.args[0])
             return web.Response(content_type="application/json",
                                 text=json.dumps(error_message))
@@ -113,20 +127,13 @@ class Server():
             return web.Response(content_type="application/json",
                                 text=json.dumps(error_message))
 
-        response = await self._hub_handle_offer(offer, params["user_type"])
+        response = await self._hub_handle_offer(
+            offer, params["user_type"], params.get("participant_id"),
+            params.get("session_id")
+        )
 
-        # Create answer according to response
-        if type(response) == RTCSessionDescription:
-            answer = MessageDict(type="SESSION_DESCRIPTION", data=response)
-        elif type(response) == ErrorDict:
-            answer = MessageDict(type="ERROR", data=response)
-        else:
-            print("ERROR: unrecognized response type from hub_handle_offer")
-            error = ErrorDict(
-                code=500, type="EXAMPLE_TYPE",  # TODO adjust type
-                description="Internal server error: failed to handle offer")
-            answer = MessageDict(type="ERROR", data=error)
-
+        # Create response
+        answer = MessageDict(type="SESSION_DESCRIPTION", data=response)
         return web.Response(content_type="application/json",
                             text=json.dumps(answer))
 
@@ -141,10 +148,3 @@ class Server():
     def get_javascript(self):
         """TODO document"""
         pass
-
-
-class _OfferParserException(Exception):
-    """Custom exception for Server._parse_offer_request().
-    Should contain an ErrorDict that can be send as a response.
-    """
-    pass
