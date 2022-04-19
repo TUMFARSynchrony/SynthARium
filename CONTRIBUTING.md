@@ -8,7 +8,7 @@ Branch names are in lowercase. If the change regards the frontend or backend sta
 
 When the work on the branch is done, create a pull request to merge the branch into `main`. After merging, branches are deleted.
 
-## Convetions
+## Conventions
 The following conventions should be followed when working on experimental-hub.
 
 ### Git Commit Messages
@@ -21,8 +21,9 @@ The following conventions should be followed when working on experimental-hub.
 `backend/`: Everything belonging to the backend  
 `frontend/`: Everything belonging to the frontend
 
-### Python
-_TODO_
+### Python Style Guide
+- The PEP 8 style guide is used: [PEP 8 - Style Guid for Python Code](https://peps.python.org/pep-0008/)
+- You can use the [autopep8](https://code.visualstudio.com/docs/python/editing#_general-formatting-settings) formatter of the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python) for Visual Studio Code.
 
 ### React
 _TODO_
