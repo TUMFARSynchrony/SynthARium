@@ -72,7 +72,7 @@ class SessionManager():
         """TODO document"""
         id = ""
         while len(id) == 0 or id in existing_ids:
-            id = str(uuid.uuid4())
+            id = uuid.uuid4().hex[:10]
         return id
 
     def _read_files_from_drive(self):
