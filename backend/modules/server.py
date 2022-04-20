@@ -127,10 +127,15 @@ class Server():
             return web.Response(content_type="application/json",
                                 text=json.dumps(error_message))
 
-        response = await self._hub_handle_offer(
-            offer, params["user_type"], params.get("participant_id"),
-            params.get("session_id")
-        )
+        try:
+            response = await self._hub_handle_offer(
+                offer, params["user_type"], params.get("participant_id"),
+                params.get("session_id")
+            )
+        except ErrorDictException as error:
+            error_message = MessageDict(type="ERROR", data=error.args[0])
+            return web.Response(content_type="application/json",
+                                text=json.dumps(error_message))
 
         # Create response
         answer = MessageDict(type="SESSION_DESCRIPTION", data=response)

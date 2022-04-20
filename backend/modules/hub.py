@@ -8,12 +8,14 @@ import modules.experiment as _experiment
 import modules.experimenter as _experimenter
 import modules.participant as _participant
 import modules.session_manager as _sm
+from modules.exceptions import ErrorDictException
+from _types.error import ErrorDict
 
 
 class Hub():
     """TODO document"""
     experimenters: list[_experimenter.Experimenter]
-    experiments: list[_experiment.Experiment]
+    experiments: dict[str, _experiment.Experiment]
     session_manager: _sm.SessionManager
     server: _server.Server
 
@@ -21,7 +23,7 @@ class Hub():
         """TODO document"""
         print("init hub")
         self.experimenters = []
-        self.experiments = []
+        self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
         self.server = _server.Server(self.handle_offer, host, port)
 
@@ -35,7 +37,7 @@ class Hub():
         await self.server.stop()
         for experimenter in self.experimenters:
             experimenter.disconnect()
-        for experiment in self.experiments:
+        for experiment in self.experiments.values():
             experiment.stop()
 
     async def handle_offer(
@@ -47,13 +49,62 @@ class Hub():
     ):
         """TODO document"""
         if user_type == "participant":
-            answer, participant = await _participant.participant_factory(offer)
-            # TODO handle participant
+            answer = await self._handle_offer_participant(
+                offer, participant_id, session_id)
 
         elif user_type == "experimenter":
             answer, experimenter = await _experimenter.experimenter_factory(
                 offer)
             self.experimenters.append(experimenter)
+
+        else:
+            error = ErrorDict(code=400,
+                              type="EXAMPLE_TYPE",  # TODO adjust type
+                              description="Invalid user_type")
+            raise ErrorDictException(error)
+
+        return answer
+
+    async def _handle_offer_participant(
+            self,
+            offer: RTCSessionDescription,
+            participant_id: Optional[str],
+            session_id: Optional[str]
+    ):
+        """TODO document"""
+        if participant_id == None:
+            print("[HUB] WARNING: Missing participant_id in offer handler")
+            error = ErrorDict(code=400,
+                              type="EXAMPLE_TYPE",  # TODO adjust type
+                              description="Missing participant_id")
+            raise ErrorDictException(error)
+
+        if session_id == None:
+            print("[HUB] WARNING: Missing session_id in offer handler")
+            error = ErrorDict(code=400,
+                              type="EXAMPLE_TYPE",  # TODO adjust type
+                              description="Missing session_id")
+            raise ErrorDictException(error)
+
+        if session_id not in self.experiments.keys():
+            print(f"[HUB]: WARNING: session {session_id} not found.",
+                  f"Participant {participant_id} failed to join")
+            error = ErrorDict(code=400,
+                              type="EXAMPLE_TYPE",  # TODO adjust type
+                              description="Session not found")
+            raise ErrorDictException(error)
+
+        experiment = self.experiments[session_id]
+        if not experiment.knows_participant_id(participant_id):
+            print(f"[HUB]: WARNING: participant {participant_id} not found in",
+                  f"session: {session_id}.")
+            error = ErrorDict(
+                code=400, type="EXAMPLE_TYPE",  # TODO adjust type
+                description="Participant not found in the given session")
+            raise ErrorDictException(error)
+
+        answer, participant = await _participant.participant_factory(offer)
+        experiment.add_participant(participant)
 
         return answer
 

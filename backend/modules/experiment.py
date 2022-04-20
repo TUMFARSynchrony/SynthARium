@@ -24,3 +24,13 @@ class Experiment():
     def send(self, to, data):
         """TODO document"""
         pass
+
+    def knows_participant_id(self, participant_id: str) -> bool:
+        """TODO document"""
+        # known_ids = map(lambda p: p.id, self.session.participants)
+        # return participant_id in known_ids
+        return True
+
+    def add_participant(self, participant: _participant.Participant):
+        """TODO document"""
+        pass
