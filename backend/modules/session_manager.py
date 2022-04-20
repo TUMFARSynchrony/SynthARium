@@ -1,4 +1,5 @@
-"""TODO document"""
+"""This module provides the SessionManager class, which Manages session data.
+"""
 
 from __future__ import annotations
 import json
@@ -10,28 +11,76 @@ from _types.session import SessionDict
 
 
 class SessionManager():
-    """TODO document"""
+    """Manages session data.
+
+    Implements loading and storing sessions from and to the drive.  If a
+    session is updated, the SessionManager will update the data on the
+    drive to ensure persistency.
+
+    Methods
+    -------
+    get_session_list() : list of _types.session.SessionDict
+        Get all sessions.
+    get_session(id) : _types.session.SessionDict
+        Get the session with the given id.
+    update_session(session) : None
+        Update session data to save changes on the drive.
+    create_session(session) : None
+        Instantiate a new session with the given session data.
+    """
 
     _sessions: dict[str, SessionDict]
     _session_dir: str
 
     def __init__(self, session_dir: str):
-        """TODO document"""
+        """Instantiate new SessionManager, which manages session data.
+
+        Load existing sessions from `session_dir` when initiating.
+
+        Parameters
+        ----------
+        session_dir : str
+            Directory of session data JSONs relative to the backend folder.
+        """
         print("[SessionManager]: Initiating SessionManager")
         self._sessions = {}
         self._session_dir = session_dir
         self._read_files_from_drive()
 
     def get_session_list(self):
-        """TODO document"""
+        """Get all sessions.
+
+        Returns
+        -------
+        list of _types.session.SessionDict
+            List containing all sessions managed by this SessionManager.
+        """
         return list(self._sessions.values())
 
     def get_session(self, id: str):
-        """TODO document"""
+        """Get the session with the given id.
+
+        Parameters
+        ----------
+        id : str
+            Session id of the requested session.
+
+        Returns
+        -------
+        _types.session.SessionDict or None
+            None if `id` does not correlate to a known session, otherwise
+            session data.
+        """
         return self._sessions.get(id)
 
     def update_session(self, session: SessionDict):
-        """TODO document"""
+        """Update session data to save changes on the drive.
+
+        Parameters
+        ----------
+        session : _types.session.SessionDict
+            Session data.  Must contain an id known to this SessionManager.
+        """
         # TODO further error handling in this function
         if "id" not in session:
             print("[SessionManager]: ERROR: Cannot update session without id")
@@ -45,7 +94,16 @@ class SessionManager():
         self._write(self._sessions[session["id"]])
 
     def create_session(self, session: SessionDict):
-        """TODO document"""
+        """Instantiate a new session with the given session data.
+
+        Generate session id and participant ids inplace.  Then save the session
+        in this manager and on the drive for persistence.
+
+        Parameters
+        ----------
+        session : _types.session.SessionDict
+            Basic session data without ids
+        """
         if "id" in session:
             print("[SessionManager]: ERROR: Cannot create new session with",
                   "existing id - in create_session()")
@@ -64,19 +122,35 @@ class SessionManager():
         self._write(session)
 
     def _generate_unique_session_id(self):
-        """TODO document"""
+        """Generate an unique session id."""
         existing_ids = list(self._sessions.keys())
         return self._generate_unique_id(existing_ids)
 
     def _generate_unique_id(self, existing_ids: list[str]):
-        """TODO document"""
+        """Generate an unique id without collision with `existing_ids`.
+
+        Parameters
+        ----------
+        existing_ids : list of str
+            Existing ids which may not include the new, generated id.
+
+        Returns
+        -------
+        str
+            Unique id generated.
+
+        See Also
+        --------
+        SessionManager._generate_unique_session_id : Generate an unique session
+            id.
+        """
         id = ""
         while len(id) == 0 or id in existing_ids:
             id = uuid.uuid4().hex[:10]
         return id
 
     def _read_files_from_drive(self):
-        """TODO document"""
+        """Read sessions saved on the drive, save in `self._sessions`."""
         filenames = self._get_filenames()
         print(f"[SessionManager]: Found {len(filenames)} files: {filenames}")
 
@@ -98,7 +172,7 @@ class SessionManager():
             self._sessions[session["id"]] = session
 
     def _get_filenames(self):
-        """TODO document"""
+        """Get all filenames of files in `self._session_dir`."""
         filenames: list[str] = []
         for filename in listdir(self._session_dir):
             if isfile(join(self._session_dir, filename)):
@@ -106,14 +180,27 @@ class SessionManager():
         return filenames
 
     def _read(self, filename: str):
-        """TODO document"""
+        """Read a json file.
+
+        Parameters
+        ----------
+        filename : str
+            name of the required file inside `self._session_dir`.
+        """
         path = join(self._session_dir, filename)
         with open(path, "r") as file:
             data = json.load(file)
             return data
 
     def _write(self, session: SessionDict):
-        """TODO document"""
+        """Write a json file.
+
+        Parameters
+        ----------
+        session : _types.session.SessionDict
+            session data that should be written to the self._session_dir
+            directory.
+        """
         if "id" not in session:
             print("[SessionManager]: ERROR: Cannot save session without ID")
             return
