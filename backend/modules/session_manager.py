@@ -27,6 +27,8 @@ class SessionManager():
         Update session data to save changes on the drive.
     create_session(session) : None
         Instantiate a new session with the given session data.
+    delete_session(id) : bool
+        Delete the session with `id`.
     """
 
     _sessions: dict[str, SessionDict]
@@ -120,6 +122,26 @@ class SessionManager():
 
         self._sessions[session_id] = session
         self._write(session)
+
+    def delete_session(self, id: str):
+        """Delete the session with `id`.
+
+        Parameters
+        ----------
+        id : str
+            Session id of the session data that will be deleted.
+
+        Returns
+        -------
+        bool
+            True, if the session was found and successfully deleted, otherwise
+            False.
+        """
+        if id not in self._sessions:
+            print("[SessionManager]: WARNING: Cannot delete session with id",
+                  f"{id}, no session with this id was found.")
+            return False
+        return self._sessions.pop(id, None) != None
 
     def _generate_unique_session_id(self):
         """Generate an unique session id."""
