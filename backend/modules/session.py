@@ -22,16 +22,27 @@ class Session():
         self._data = session
         self._on_update = on_update
 
-    def update(self, session: SessionDict):
+    def update(self, session: SessionDict | Session):
         """TODO document"""
         # TODO data checks
-        self._data = session
+        if type(session) is Session:
+            self._data = session.asdict
+        elif type(session) is SessionDict:
+            self._data = session
+        else:
+            raise ValueError("Incorrect type for session argument. Expected: "
+                             f"SessionDict or Session, got: {type(session)}")
         self._on_update(self)
 
     @property
     def asdict(self) -> SessionDict:
         """TODO Document"""
         return self._data
+
+    @property
+    def id(self) -> str | None:
+        """TODO Document"""
+        return self._data.get("id")
 
     @property
     def title(self) -> str:
