@@ -105,19 +105,22 @@ class Server():
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
-            return web.Response(content_type="application/json",
-                                text=error.error_message_str)
+            return web.Response(
+                content_type="application/json", status=error.code,
+                reason=error.description, text=error.error_message_str)
 
         # Try to parse request
         try:
             offer = RTCSessionDescription(
                 sdp=params["sdp"], type=params["type"])
         except ValueError:
+            error_description = "Failed to parse offer."
             error = ErrorDict(code=400, type="INVALID_REQUEST",
-                              description="Failed to parse offer.")
+                              description=error_description)
             error_message = MessageDict(type="ERROR", data=error)
-            return web.Response(content_type="application/json",
-                                text=json.dumps(error_message))
+            return web.Response(
+                content_type="application/json", status=400,
+                reason=error_description, text=json.dumps(error_message))
 
         try:
             response = await self._hub_handle_offer(
@@ -125,8 +128,9 @@ class Server():
                 params.get("session_id")
             )
         except ErrorDictException as error:
-            return web.Response(content_type="application/json",
-                                text=error.error_message_str)
+            return web.Response(
+                content_type="application/json", status=error.code,
+                reason=error.description, text=error.error_message_str)
 
         # Create response
         answer = MessageDict(type="SESSION_DESCRIPTION", data=response)
