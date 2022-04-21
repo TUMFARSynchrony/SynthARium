@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import Callable, Optional, Any
+import json
 
 from modules.util import generate_unique_id
 
@@ -33,6 +34,14 @@ class Session():
             raise ValueError("Incorrect type for session argument. Expected: "
                              f"SessionDict or Session, got: {type(session)}")
         self._on_update(self)
+
+    def __str__(self) -> str:
+        """Get indented json string for this Session"""
+        return json.dumps(self.asdict, indent=4)
+
+    def __repr__(self) -> str:
+        """Get representation of this Session obj.  Format: `Session(<id>)`."""
+        return f"Session({self.id})"
 
     @property
     def asdict(self) -> SessionDict:
