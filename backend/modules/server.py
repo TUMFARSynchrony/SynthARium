@@ -67,19 +67,17 @@ class Server():
     async def _parse_offer_request(self, request: web.Request) -> dict:
         """TODO document"""
         if request.content_type != "application/json":
-            error = ErrorDict(
+            raise ErrorDictException(
                 code=400, type="EXAMPLE_TYPE",  # TODO adjust type
                 description="Content type must be 'application/json'")
-            raise ErrorDictException(error)
 
         # Parse request
         try:
             params: dict = await request.json()
         except json.JSONDecodeError:
-            error = ErrorDict(code=400,
-                              type="EXAMPLE_TYPE",  # TODO adjust type
-                              description="Failed to parse request")
-            raise ErrorDictException(error)
+            raise ErrorDictException(
+                code=400, type="EXAMPLE_TYPE",  # TODO adjust type
+                description="Failed to parse request")
 
         # Check if all required keys exist in params
         required_keys = ["sdp", "type", "user_type"]
@@ -91,16 +89,15 @@ class Server():
 
         if len(missing_keys) > 0:
             error_description = f"Missing request parameters: {missing_keys}"
-            error = ErrorDict(code=400,
-                              type="EXAMPLE_TYPE",  # TODO adjust type
-                              description=error_description)
-            raise ErrorDictException(error)
+            raise ErrorDictException(code=400,
+                                     type="EXAMPLE_TYPE",  # TODO adjust type
+                                     description=error_description)
 
         # Check if user_type is valid
         if params["user_type"] not in ["participant", "experimenter"]:
-            error = ErrorDict(code=400, type="EXAMPLE_TYPE_2",
-                              description="Invalid user type")
-            raise ErrorDictException(error)
+            raise ErrorDictException(code=400,
+                                     type="EXAMPLE_TYPE_2",  # TODO adjust type
+                                     description="Invalid user type")
 
         # Successfully parsed parameters
         return params
@@ -111,9 +108,8 @@ class Server():
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
-            error_message = MessageDict(type="ERROR", data=error.args[0])
             return web.Response(content_type="application/json",
-                                text=json.dumps(error_message))
+                                text=error.error_message_str)
 
         # Try to parse request
         try:
@@ -133,9 +129,8 @@ class Server():
                 params.get("session_id")
             )
         except ErrorDictException as error:
-            error_message = MessageDict(type="ERROR", data=error.args[0])
             return web.Response(content_type="application/json",
-                                text=json.dumps(error_message))
+                                text=error.error_message_str)
 
         # Create response
         answer = MessageDict(type="SESSION_DESCRIPTION", data=response)
