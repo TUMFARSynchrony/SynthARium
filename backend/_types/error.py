@@ -14,7 +14,9 @@ class ErrorDict(TypedDict):
 
 # TODO define valid types
 ERROR_TYPES = Literal[
-    "EXAMPLE_TYPE",
-    "EXAMPLE_TYPE_2"
+    "TO_BE_DEFINED",  # Placeholder
+    "INVALID_REQUEST",
+    "UNKNOWN_SESSION",
+    "UNKNOWN_PARTICIPANT"
 ]
 """TODO Document"""

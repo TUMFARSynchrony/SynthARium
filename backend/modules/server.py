@@ -68,16 +68,15 @@ class Server():
         """TODO document"""
         if request.content_type != "application/json":
             raise ErrorDictException(
-                code=400, type="EXAMPLE_TYPE",  # TODO adjust type
-                description="Content type must be 'application/json'")
+                code=415, type="INVALID_REQUEST",
+                description="Content type must be 'application/json'.")
 
         # Parse request
         try:
             params: dict = await request.json()
         except json.JSONDecodeError:
-            raise ErrorDictException(
-                code=400, type="EXAMPLE_TYPE",  # TODO adjust type
-                description="Failed to parse request")
+            raise ErrorDictException(code=400, type="INVALID_REQUEST",
+                                     description="Failed to parse request.")
 
         # Check if all required keys exist in params
         required_keys = ["sdp", "type", "user_type"]
@@ -88,16 +87,14 @@ class Server():
             filter(lambda key: key not in params, required_keys))
 
         if len(missing_keys) > 0:
-            error_description = f"Missing request parameters: {missing_keys}"
-            raise ErrorDictException(code=400,
-                                     type="EXAMPLE_TYPE",  # TODO adjust type
-                                     description=error_description)
+            raise ErrorDictException(
+                code=400, type="INVALID_REQUEST",
+                description=f"Missing request parameters: {missing_keys}.")
 
         # Check if user_type is valid
         if params["user_type"] not in ["participant", "experimenter"]:
-            raise ErrorDictException(code=400,
-                                     type="EXAMPLE_TYPE_2",  # TODO adjust type
-                                     description="Invalid user type")
+            raise ErrorDictException(code=400, type="INVALID_REQUEST",
+                                     description="Invalid user type.")
 
         # Successfully parsed parameters
         return params
@@ -116,9 +113,8 @@ class Server():
             offer = RTCSessionDescription(
                 sdp=params["sdp"], type=params["type"])
         except ValueError:
-            error = ErrorDict(code=400,
-                              type="EXAMPLE_TYPE",  # TODO adjust type
-                              description="Failed to parse offer")
+            error = ErrorDict(code=400, type="INVALID_REQUEST",
+                              description="Failed to parse offer.")
             error_message = MessageDict(type="ERROR", data=error)
             return web.Response(content_type="application/json",
                                 text=json.dumps(error_message))

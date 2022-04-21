@@ -58,9 +58,8 @@ class Hub():
             self.experimenters.append(experimenter)
 
         else:
-            raise ErrorDictException(code=400,
-                                     type="EXAMPLE_TYPE",  # TODO adjust type
-                                     description="Invalid user_type")
+            raise ErrorDictException(code=400, type="INVALID_REQUEST",
+                                     description="Invalid user_type.")
         return answer
 
     async def _handle_offer_participant(
@@ -72,30 +71,27 @@ class Hub():
         """TODO document"""
         if participant_id == None:
             print("[HUB] WARNING: Missing participant_id in offer handler")
-            raise ErrorDictException(code=400,
-                                     type="EXAMPLE_TYPE",  # TODO adjust type
-                                     description="Missing participant_id")
+            raise ErrorDictException(code=400, type="INVALID_REQUEST",
+                                     description="Missing participant_id.")
 
         if session_id == None:
             print("[HUB] WARNING: Missing session_id in offer handler")
-            raise ErrorDictException(code=400,
-                                     type="EXAMPLE_TYPE",  # TODO adjust type
-                                     description="Missing session_id")
+            raise ErrorDictException(code=400, type="INVALID_REQUEST",
+                                     description="Missing session_id.")
 
         if session_id not in self.experiments.keys():
             print(f"[HUB]: WARNING: session {session_id} not found.",
                   f"Participant {participant_id} failed to join")
-            raise ErrorDictException(code=400,
-                                     type="EXAMPLE_TYPE",  # TODO adjust type
-                                     description="Session not found")
+            raise ErrorDictException(code=400, type="UNKNOWN_SESSION",
+                                     description="Session not found.")
 
         experiment = self.experiments[session_id]
         if not experiment.knows_participant_id(participant_id):
             print(f"[HUB]: WARNING: participant {participant_id} not found in",
                   f"session: {session_id}.")
             raise ErrorDictException(
-                code=400, type="EXAMPLE_TYPE",  # TODO adjust type
-                description="Participant not found in the given session")
+                code=400, type="UNKNOWN_PARTICIPANT",
+                description="Participant not found in the given session.")
 
         answer, participant = await _participant.participant_factory(offer)
         experiment.add_participant(participant)
