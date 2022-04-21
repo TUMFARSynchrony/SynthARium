@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 import json
-import uuid
 from os import listdir
 from os.path import isfile, join
 
 from _types.session import SessionDict
+from modules.util import generate_unique_id
 
 
 class SessionManager():
@@ -116,7 +116,7 @@ class SessionManager():
 
         participant_ids = []
         for participant in session["participants"]:
-            id = self._generate_unique_id(participant_ids)
+            id = generate_unique_id(participant_ids)
             participant_ids.append(id)
             participant["id"] = id
 
@@ -146,30 +146,7 @@ class SessionManager():
     def _generate_unique_session_id(self):
         """Generate an unique session id."""
         existing_ids = list(self._sessions.keys())
-        return self._generate_unique_id(existing_ids)
-
-    def _generate_unique_id(self, existing_ids: list[str]):
-        """Generate an unique id without collision with `existing_ids`.
-
-        Parameters
-        ----------
-        existing_ids : list of str
-            Existing ids which may not include the new, generated id.
-
-        Returns
-        -------
-        str
-            Unique id generated.
-
-        See Also
-        --------
-        SessionManager._generate_unique_session_id : Generate an unique session
-            id.
-        """
-        id = ""
-        while len(id) == 0 or id in existing_ids:
-            id = uuid.uuid4().hex[:10]
-        return id
+        return generate_unique_id(existing_ids)
 
     def _read_files_from_drive(self):
         """Read sessions saved on the drive, save in `self._sessions`."""
