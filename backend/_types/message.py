@@ -18,5 +18,6 @@ MESSAGE_TYPES = Literal[
     "SUCCESS",
     "ERROR",
     "SESSION_DESCRIPTION",
+    "SESSION_LIST",
 ]
 """TODO Document"""

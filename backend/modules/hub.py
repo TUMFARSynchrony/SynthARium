@@ -2,6 +2,7 @@
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
+from modules.util import generate_unique_id
 
 import modules.server as _server
 import modules.experiment as _experiment
@@ -55,7 +56,8 @@ class Hub:
             )
 
         elif user_type == "experimenter":
-            answer, experimenter = await _experimenter.experimenter_factory(offer)
+            id = generate_unique_id([e.id for e in self.experimenters])
+            answer, experimenter = await _experimenter.experimenter_factory(offer, id)
             self.experimenters.append(experimenter)
 
         else:

@@ -58,6 +58,17 @@ class SessionManager:
         """
         return list(self._sessions.values())
 
+    def get_session_dict_list(self):
+        """Get all sessions as dictionary.
+
+        Returns
+        -------
+        list of _types.session.SessionDict
+            List containing all sessions managed by this SessionManager as dictionary.
+        """
+        response = [s.asdict for s in list(self._sessions.values())]
+        return response
+
     def get_session(self, id: str):
         """Get the session with the given id.
 
