@@ -6,8 +6,9 @@ import modules.participant as _participant
 import modules.session as _session
 
 
-class Experiment():
+class Experiment:
     """TODO document"""
+
     state: ExperimentState
     session: _session.Session
     experimenters: list[_experimenter.Experimenter]

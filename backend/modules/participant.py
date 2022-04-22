@@ -10,6 +10,7 @@ import modules.user as _user
 
 class Participant(_user.User):
     """TODO document"""
+
     experiment: _experiment.Experiment
 
     def __init__(self):
@@ -28,7 +29,6 @@ class Participant(_user.User):
 async def participant_factory(offer: RTCSessionDescription):
     """TODO document"""
     participant = Participant()
-    answer, connection = await connection_factory(
-        offer, participant.handle_message)
+    answer, connection = await connection_factory(offer, participant.handle_message)
     participant.set_connection(connection)
     return (answer, participant)

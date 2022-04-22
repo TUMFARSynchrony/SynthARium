@@ -11,14 +11,13 @@ from _types.participant import ParticipantDict
 from _types.note import NoteDict
 
 
-class Session():
+class Session:
     """TODO document"""
 
     _data: SessionDict
     _on_update: Callable[[Session], None]
 
-    def __init__(self, session: SessionDict,
-                 on_update: Callable[[Session], None]):
+    def __init__(self, session: SessionDict, on_update: Callable[[Session], None]):
         """TODO document"""
         self._data = session
         self._on_update = on_update
@@ -31,8 +30,10 @@ class Session():
         elif type(session) is SessionDict:
             self._data = session
         else:
-            raise ValueError("Incorrect type for session argument. Expected: "
-                             f"SessionDict or Session, got: {type(session)}")
+            raise ValueError(
+                "Incorrect type for session argument. Expected: SessionDict or Session,"
+                f"got: {type(session)}"
+            )
         self._on_update(self)
 
     def __str__(self) -> str:
@@ -116,22 +117,22 @@ class Session():
     def add_participant(self, participant: ParticipantDict):
         """TODO Document"""
         # TODO data check for participant
-        participant_ids = [
-            p.get("id", "") for p in self._data.get("participants")]
+        participant_ids = [p.get("id", "") for p in self._data.get("participants")]
         id = generate_unique_id(participant_ids)
         participant["id"] = id
         self._data["participants"].append(participant)
 
     def remove_participant(self, participant_id: str):
         """TODO Document"""
-        participant_ids = [
-            p.get("id", "") for p in self._data.get("participants")]
+        participant_ids = [p.get("id", "") for p in self._data.get("participants")]
 
         try:
             index = participant_ids.index(participant_id)
         except ValueError:
-            print(f"[SESSION]: participant with id {participant_id} was not",
-                  "found in participants")
+            print(
+                f"[SESSION]: participant with id {participant_id} was not found in",
+                "participants",
+            )
             return
 
         self._data["participants"].pop(index)

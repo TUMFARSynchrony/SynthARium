@@ -11,6 +11,7 @@ import modules.user as _user
 
 class Experimenter(_user.User):
     """TODO document"""
+
     experiment: _experiment.Experiment
     hub: _hub.Hub
 
@@ -22,7 +23,6 @@ class Experimenter(_user.User):
 async def experimenter_factory(offer: RTCSessionDescription):
     """TODO document"""
     experimenter = Experimenter()
-    answer, connection = await connection_factory(
-        offer, experimenter.handle_message)
+    answer, connection = await connection_factory(offer, experimenter.handle_message)
     experimenter.set_connection(connection)
     return (answer, experimenter)

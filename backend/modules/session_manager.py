@@ -11,7 +11,7 @@ from modules.session import Session
 from modules.util import generate_unique_id
 
 
-class SessionManager():
+class SessionManager:
     """Manages session data.
 
     Implements loading and storing sessions from and to the drive.  If a
@@ -91,8 +91,10 @@ class SessionManager():
             New session object.
         """
         if "id" in session_dict:
-            print("[SessionManager]: ERROR: Cannot create new session with",
-                  "existing id - in create_session()")
+            print(
+                "[SessionManager]: ERROR: Cannot create new session with existing id -",
+                "in create_session()",
+            )
             return
 
         session_id = self._generate_unique_session_id()
@@ -124,8 +126,10 @@ class SessionManager():
             False.
         """
         if id not in self._sessions:
-            print("[SessionManager]: WARNING: Cannot delete session with id",
-                  f"{id}, no session with this id was found.")
+            print(
+                f"[SessionManager]: WARNING: Cannot delete session with id {id}, no ",
+                "session with this id was found.",
+            )
             return False
         return self._sessions.pop(id, None) != None
 
@@ -147,8 +151,7 @@ class SessionManager():
             return
 
         if session.id not in self._sessions.keys():
-            print("[SessionManager]: ERROR: Cannot update unknown session",
-                  session.id)
+            print("[SessionManager]: ERROR: Cannot update unknown session", session.id)
             return
 
         self._write(session.asdict)
@@ -169,13 +172,13 @@ class SessionManager():
 
             if "id" not in session_dict:
                 # TODO handle
-                print("[SessionManager]: ERROR Session ID missing in",
-                      file)
+                print("[SessionManager]: ERROR Session ID missing in", file)
                 continue
 
             if session_dict["id"] in self._sessions.keys():
-                print("[SessionManager]: ERROR Session ID duplicate:",
-                      session_dict["id"])
+                print(
+                    "[SessionManager]: ERROR Session ID duplicate:", session_dict["id"]
+                )
                 continue
 
             session_obj = Session(session_dict, self._handle_session_update)
@@ -217,5 +220,5 @@ class SessionManager():
 
         filename = session_dict["id"] + ".json"
         path = join(self._session_dir, filename)
-        with open(path, 'w') as file:
+        with open(path, "w") as file:
             json.dump(session_dict, file, indent=4)

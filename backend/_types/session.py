@@ -9,6 +9,7 @@ from _types.note import NoteDict
 
 class SessionDict(TypedDict):
     """TODO Document"""
+
     id: NotRequired[str]
     title: str
     description: str

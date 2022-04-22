@@ -8,6 +8,7 @@ import modules.connection as _connection
 
 class User(ABC):
     """TODO document"""
+
     id: str
     connection: _connection.Connection
 

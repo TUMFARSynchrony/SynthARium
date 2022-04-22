@@ -9,6 +9,7 @@ from _types.position import PositionDict
 
 class ParticipantDict(TypedDict):
     """TODO Document"""
+
     id: NotRequired[str]
     first_name: str
     last_name: str

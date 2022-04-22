@@ -23,11 +23,7 @@ class ErrorDictException(Exception):
     description: str
 
     def __init__(
-        self,
-        code: int,
-        type: ERROR_TYPES,
-        description: str,
-        *args: object
+        self, code: int, type: ERROR_TYPES, description: str, *args: object
     ) -> None:
         """Construct a new ErrorDictException.
 
@@ -64,11 +60,7 @@ class ErrorDictException(Exception):
         __iter__ : Get the error dictionary using e.g.
                    `dict(ErrorDictException)`
         """
-        return ErrorDict(
-            code=self.code,
-            type=self.type,
-            description=self.description
-        )
+        return ErrorDict(code=self.code, type=self.type, description=self.description)
 
     @property
     def error_message(self) -> MessageDict:
@@ -122,6 +114,6 @@ class ErrorDictException(Exception):
         ----
             This is intended to be used for dict(ErrorDictException).
         """
-        yield 'code', self.code
-        yield 'type', self.type
-        yield 'description', self.description
+        yield "code", self.code
+        yield "type", self.type
+        yield "description", self.description

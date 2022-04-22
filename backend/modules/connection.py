@@ -5,20 +5,22 @@ from aiortc import (
     RTCPeerConnection,
     RTCDataChannel,
     RTCSessionDescription,
-    MediaStreamTrack
+    MediaStreamTrack,
 )
 
 from _types.message import MessageDict
 
 
-class Connection():
+class Connection:
     """TODO document"""
+
     _pc: RTCPeerConnection
     _dc: RTCDataChannel
     _message_handler: Callable[[MessageDict], None]
 
-    def __init__(self, pc: RTCPeerConnection,
-                 message_handler: Callable[[MessageDict], None]):
+    def __init__(
+        self, pc: RTCPeerConnection, message_handler: Callable[[MessageDict], None]
+    ):
         """TODO document"""
         self._pc = pc
         self._message_handler = message_handler
@@ -53,7 +55,7 @@ class Connection():
 
 async def connection_factory(
     offer: RTCSessionDescription,
-    message_handler: Callable[[MessageDict], None]
+    message_handler: Callable[[MessageDict], None],
 ) -> Tuple[RTCSessionDescription, Connection]:
     """TODO document"""
     pc = RTCPeerConnection()
