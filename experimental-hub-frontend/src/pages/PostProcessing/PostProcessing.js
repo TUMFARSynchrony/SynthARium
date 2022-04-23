@@ -5,6 +5,7 @@ function PostProcessing() {
   return (
     <div>
       <NavigationBar />
+      <h1>Post-Processing Room</h1>
     </div>
   );
 }

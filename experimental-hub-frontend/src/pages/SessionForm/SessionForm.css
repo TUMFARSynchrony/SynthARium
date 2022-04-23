@@ -4,6 +4,16 @@
     align-items: center;
 }
 
+.sessionFormCard {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding: 1em;
+    border-radius: 1em;
+    box-shadow: 1px 3px 6px 1px rgba(0,0,0,0.2);
+    background-color: white;
+    min-width: 500px;
+}
+
 .sessionPlanningForm {
     display: flex;
     flex-direction: column;
@@ -29,12 +39,11 @@
     justify-content: space-around;
 }
 
-.sessionFormCard {
-    margin-top: 1em;
-    margin-bottom: 1em;
-    padding: 1em;
-    border-radius: 1em;
-    box-shadow: 1px 3px 6px 1px rgba(0,0,0,0.2);
-    background-color: white;
-    min-width: 465px;
+.timeInput {
+    display: flex;
+    justify-content: left;
+}
+
+.sessionFormCanvas {
+    border: '1px solid black';
 }

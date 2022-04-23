@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import "./WatchingRoom.css";
 
