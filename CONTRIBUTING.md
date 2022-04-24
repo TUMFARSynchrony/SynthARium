@@ -1,12 +1,18 @@
 # Contributing
 
-To contribute create a new branch in which changes are made. Branches should be named using the following convetion:
+## Workflow
 
-`[<frontend/backend>-]<initals>-<topic>`
+To contribute follow the following steps:
 
-Branch names are in lowercase. If the change regards the frontend or backend start the name with `frontend` or `backend` respectively. If it's a general change this part is omitted. The topic can be multiple words which should be sperated by hyphens (`-`). 
-
-When the work on the branch is done, create a pull request to merge the branch into `main`. After merging, branches are deleted.
+1. Create a new branch in which changes are made. Branches should be named using the following convetion: `[<frontend/backend>-]<initals>-<topic>`.  
+Branch names are in lowercase. If the change regards the frontend or backend start the name with `frontend` or `backend` respectively. If it's a general change this part is omitted. The topic can be multiple words which should be sperated by hyphens (`-`).
+2. Make sure your code works with the latest version of `main`, then create a pull request. Optionally you can assign specific people to review.
+3. Make a comment on our Discord that a pull request is waiting for a faster response.
+4. Person reviewing replies on Discord that they will take the request and 1) try running the code 2) review the code (errors, style, comments, etc.)
+5. If
+    - **Major changes** are needed then repeat the process after addressing changes which were requested by the reviewer.
+    - **Minor changes** are needed then the reviewer can approve the request and let the code contributor know that they are free to merge after addressing the minor changes.
+6. Delete branch(es) after merging into `main`
 
 ## Conventions
 The following conventions should be followed when working on experimental-hub.
