@@ -1,14 +1,11 @@
 import { useState } from "react";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
-import {
-  getEmptySessionJson,
-  getSessionJson,
-} from "../../mockServer/sessionJson";
 import "./SessionOverview.css";
 import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
+import { getSessionJson } from "../../utils/mockServer";
 
 function SessionOverview() {
   //TODO: Dropdown for past Sessions
