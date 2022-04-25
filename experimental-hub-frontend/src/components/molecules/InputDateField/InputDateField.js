@@ -7,7 +7,7 @@ function InputDateField({ title, placeholder, readonly, onChange }) {
     <div className="inputDateFieldContainer">
       <Label title={title} />
       <InputField
-        inputType={"date"}
+        inputType={"datetime-local"}
         placeholder={placeholder}
         readonly={readonly}
         onChange={onChange}

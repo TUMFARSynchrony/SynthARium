@@ -1,15 +1,9 @@
-import "./DragAndDrop.css";
-import { Stage, Layer } from "react-konva";
+import { Stage, Layer, Text } from "react-konva";
 import { useState } from "react";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
+import { CANVAS_SIZE } from "../../../utils/constants";
 
-function DragAndDrop({
-  width,
-  height,
-  rectangles,
-  participantGroup,
-  setParticipantGroup,
-}) {
+function DragAndDrop({ rectangles, participantGroup, setParticipantGroup }) {
   const [selectedShape, setSelectShape] = useState(null);
 
   const checkDeselect = (e) => {
@@ -22,34 +16,37 @@ function DragAndDrop({
   return (
     <>
       <Stage
-        width={width}
-        height={height}
+        width={CANVAS_SIZE.width}
+        height={CANVAS_SIZE.height}
         onMouseDown={checkDeselect}
-        className="stageCanvas"
-        style={{
-          backgroundColor: "lightgrey",
-          borderRadius: "15px",
-          overflow: "hidden",
-        }}
       >
         <Layer>
-          {rectangles.map((rect, index) => {
-            return (
-              <Rectangle
-                shapeProps={rect}
-                groupProps={participantGroup[index]}
-                isSelected={index === selectedShape}
-                onSelect={() => {
-                  setSelectShape(index);
-                }}
-                onChange={(newAttrs) => {
-                  const groups = participantGroup.slice();
-                  groups[index] = newAttrs;
-                  setParticipantGroup(groups);
-                }}
-              />
-            );
-          })}
+          {rectangles.length > 0 ? (
+            rectangles.map((rect, index) => {
+              return (
+                <Rectangle
+                  shapeProps={rect}
+                  groupProps={participantGroup[index]}
+                  isSelected={index === selectedShape}
+                  onSelect={() => {
+                    setSelectShape(index);
+                  }}
+                  onChange={(newAttrs) => {
+                    const groups = participantGroup.slice();
+                    groups[index] = newAttrs;
+                    setParticipantGroup(groups);
+                  }}
+                />
+              );
+            })
+          ) : (
+            <Text
+              text="There are no participants in this session yet."
+              x={CANVAS_SIZE.height / 2}
+              y={CANVAS_SIZE.height / 2}
+              fontSize={20}
+            />
+          )}
         </Layer>
       </Stage>
     </>
