@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Group, Rect, Text, Transformer } from "react-konva";
+import { CANVAS_SIZE } from "../../../utils/constants";
+import { getTotalBox } from "../../../utils/utils";
 
 const Rectangle = ({
   shapeProps,
@@ -18,14 +20,6 @@ const Rectangle = ({
     }
   }, [isSelected]);
 
-  const onDragEnd = (e) => {
-    onChange({
-      ...groupProps,
-      x: e.target.x(),
-      y: e.target.y(),
-    });
-  };
-
   const onTransformEnd = () => {
     const old = shapeRef.current;
     const scaleX = old.scaleX();
@@ -42,16 +36,45 @@ const Rectangle = ({
     });
   };
 
+  const onDragMove = (e) => {
+    let newX = e.target.x();
+    let newY = e.target.y();
+
+    // console.log("newX", newX);
+    // console.log("newY", newY);
+
+    // const isOut =
+    //   newX < 0 ||
+    //   newY < 0 ||
+    //   newX + groupProps.width > CANVAS_SIZE.width ||
+    //   newY + groupProps.height > CANVAS_SIZE.height;
+
+    // if (isOut) {
+    //   newX = groupProps.x;
+    //   newY = groupProps.y;
+    // }
+
+    onChange({
+      ...groupProps,
+      x: newX,
+      y: newY,
+    });
+  };
+
+  let first_name = shapeProps.first_name ? shapeProps.first_name : "";
+  let last_name = shapeProps.last_name ? shapeProps.last_name : "";
+
   console.log("groupProps", groupProps);
-  console.log("shapeProps", shapeProps);
+
   return (
     <>
       <Group
         draggable
         {...groupProps}
         onClick={onSelect}
-        onDragEnd={(e) => onDragEnd(e)}
+        // onDragEnd={(e) => onDragEnd(e)}
         onTransformEnd={() => onTransformEnd()}
+        onDragMove={(e) => onDragMove(e)}
         ref={shapeRef}
       >
         <Rect
@@ -60,10 +83,11 @@ const Rectangle = ({
           height={groupProps.height}
         />
         <Text
-          text={shapeProps.text}
-          align="center"
+          text={first_name.concat(" ", last_name)}
           x={shapeProps.x}
           y={shapeProps.y}
+          fontSize={15}
+          fill="white"
         />
       </Group>
       {isSelected && (
@@ -72,6 +96,16 @@ const Rectangle = ({
           rotateEnabled={false}
           boundBoxFunc={(oldBox, newBox) => {
             if (newBox.width < 5 || newBox.height < 5) {
+              return oldBox;
+            }
+
+            const isOut =
+              oldBox.x < 0 ||
+              oldBox.y < 0 ||
+              oldBox.x + oldBox.width > CANVAS_SIZE.width ||
+              oldBox.y + oldBox.height > CANVAS_SIZE.height;
+
+            if (isOut) {
               return oldBox;
             }
             return newBox;

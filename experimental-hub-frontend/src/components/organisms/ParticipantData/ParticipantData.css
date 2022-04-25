@@ -1,4 +1,11 @@
 .participantDataContainer {
     display: flex;
     align-items: flex-end;
+    justify-content: left;
 }
+
+.participantMuteCheckbox {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+

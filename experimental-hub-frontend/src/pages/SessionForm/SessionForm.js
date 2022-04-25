@@ -6,10 +6,14 @@ import Button from "../../components/atoms/Button/Button";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import Heading from "../../components/atoms/Heading/Heading";
-import { CANVAS_SIZE, INITIAL_SESSION_DATA } from "../../utils/constants";
+import {
+  INITIAL_PARTICIPANT_DATA,
+  INITIAL_SESSION_DATA,
+} from "../../utils/constants";
 
 import "./SessionForm.css";
 import { useState } from "react";
+import { getRandomColor } from "../../utils/utils";
 
 function SessionForm() {
   const [participantList, setParticipantList] = useState([]);
@@ -17,17 +21,10 @@ function SessionForm() {
   const [participantShapes, setParticipantShapes] = useState([]);
   const [participantGroup, setParticipantGroup] = useState([]);
 
-  const [canvasSize, setCanvasSize] = useState(CANVAS_SIZE);
-
   const onDeleteParticipant = (index) => {
     setParticipantList(filterListByIndex(participantList, index));
     setParticipantShapes(filterListByIndex(participantShapes, index));
     setParticipantGroup(filterListByIndex(participantGroup, index));
-
-    setCanvasSize({
-      ...canvasSize,
-      height: canvasSize.height - 150,
-    });
   };
 
   const filterListByIndex = (list, index) => {
@@ -39,7 +36,7 @@ function SessionForm() {
   };
 
   const onAddParticipant = () => {
-    const newParticipantList = [...participantList, { name: "", link: "" }];
+    const newParticipantList = [...participantList, INITIAL_PARTICIPANT_DATA];
     setParticipantList(newParticipantList);
 
     const newParticipantShapes = [
@@ -62,11 +59,6 @@ function SessionForm() {
       },
     ];
     setParticipantGroup(newPartcipantGroup);
-
-    setCanvasSize({
-      ...canvasSize,
-      height: canvasSize.height + 150,
-    });
   };
 
   const handleParticipantChange = (index, participant) => {
@@ -77,7 +69,8 @@ function SessionForm() {
     let newParticipantShapes = [...participantShapes];
     newParticipantShapes[index] = {
       ...participantShapes[index],
-      text: participant.name,
+      first_name: participant.first_name,
+      last_name: participant.last_name,
     };
     setParticipantShapes(newParticipantShapes);
   };
@@ -91,20 +84,20 @@ function SessionForm() {
     }));
   };
 
-  const getRandomColor = () => {
-    let letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+  const handleCheckboxChange = (objKey, newCheckboxValue) => {
+    let newObject = {};
+    newObject[objKey] = newCheckboxValue;
+    setSessionData((sessionData) => ({
+      ...sessionData,
+      ...newObject,
+    }));
   };
 
-  console.log("SessionData", sessionData);
+  console.log("participants", participantList);
   return (
     <div className="sessionFormContainer">
-      <div className="sessionFormCard">
-        <div className="sessionPlanningForm">
+      <div className="sessionFormData">
+        <div className="sessionForm">
           <Heading heading={"Session Data"} />
           <InputTextField
             title="Title"
@@ -120,88 +113,56 @@ function SessionForm() {
               handleSessionDataChange("description", newDescription)
             }
           ></InputTextField>
-          <InputTextField
-            title="Time Limit"
-            value={sessionData.time_limit}
-            placeholder={"Your time limit in ms"}
-            onChange={(newTimeLimit) =>
-              handleSessionDataChange("time_limit", newTimeLimit)
-            }
-          ></InputTextField>
           <div className="timeInput">
+            <InputTextField
+              title="Time Limit"
+              value={sessionData.time_limit}
+              placeholder={"Your time limit in ms"}
+              onChange={(newTimeLimit) =>
+                handleSessionDataChange("time_limit", newTimeLimit)
+              }
+            ></InputTextField>
             <InputDateField
               title="Date"
               value={sessionData.date}
-              onChange={(newDate) => handleSessionDataChange("date", newDate)}
+              onChange={(newDate) =>
+                handleSessionDataChange(
+                  "date",
+                  newDate ? new Date(newDate).getTime() : 0
+                )
+              }
             ></InputDateField>
-            <InputTextField
-              title="Start Time"
-              inputType={"time"}
-              value={sessionData.start_time}
-              onChange={(newStartTime) =>
-                handleSessionDataChange("start_time", newStartTime)
-              }
-            ></InputTextField>
-            <InputTextField
-              title="End Time"
-              inputType={"time"}
-              value={sessionData.end_time}
-              onChange={(newEndTime) =>
-                handleSessionDataChange("end_time", newEndTime)
-              }
-            ></InputTextField>
           </div>
           <Checkbox
             title="Record Session"
-            value={sessionData.record_session}
-            onChange={(newRecord) =>
-              handleSessionDataChange("record", newRecord)
-            }
+            value={sessionData.record}
+            defaultChecked={sessionData.record}
+            onChange={() => handleCheckboxChange("record", !sessionData.record)}
           />
           <hr className="separatorLine"></hr>
           <Heading heading={"Participants"} />
-          <div className="participantCheckboxes">
-            <Checkbox
-              title="Mute Audio"
-              value={sessionData.mute_audio}
-              onChange={(newMuteAudio) =>
-                handleSessionDataChange("mute_audio", newMuteAudio)
-              }
-            />
-            <Checkbox
-              title="Mute Video"
-              value={sessionData.mute_video}
-              onChange={(newMuteVideo) =>
-                handleSessionDataChange("mute_video", newMuteVideo)
-              }
-            />
-          </div>
+          <div className="participantCheckboxes"></div>
           <div className="sessionFormParticipants">
-            {participantList.map((participant, index) => {
-              return (
-                <ParticipantData
-                  onDeleteParticipant={() => onDeleteParticipant(index)}
-                  key={index}
-                  index={index}
-                  onChange={handleParticipantChange}
-                  name={participant.name}
-                  link={participant.link}
-                />
-              );
-            })}
+            <div className="scrollableParticipants">
+              {participantList.map((participant, index) => {
+                return (
+                  <ParticipantData
+                    onDeleteParticipant={() => onDeleteParticipant(index)}
+                    key={index}
+                    index={index}
+                    onChange={handleParticipantChange}
+                    first_name={participant.first_name}
+                    last_name={participant.last_name}
+                    link={participant.link}
+                    mute={participant.mute}
+                  />
+                );
+              })}
+            </div>
             <Button
               name="Add new participant"
               design={"positive"}
               onClick={() => onAddParticipant()}
-            />
-          </div>
-          <div className="sessionFormCanvas">
-            <DragAndDrop
-              width={canvasSize.width}
-              height={canvasSize.height}
-              rectangles={participantShapes}
-              participantGroup={participantGroup}
-              setParticipantGroup={setParticipantGroup}
             />
           </div>
           <hr className="separatorLine"></hr>
@@ -211,6 +172,13 @@ function SessionForm() {
           <LinkButton name="Save" to="/" />
           <LinkButton name="Start" to="/watchingRoom" />
         </div>
+      </div>
+      <div className="sessionFormCanvas">
+        <DragAndDrop
+          rectangles={participantShapes}
+          participantGroup={participantGroup}
+          setParticipantGroup={setParticipantGroup}
+        />
       </div>
     </div>
   );
