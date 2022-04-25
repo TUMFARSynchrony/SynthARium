@@ -1,6 +1,13 @@
 import "./InputField.css";
 
-function InputField({ inputType, value, placeholder, readonly, onChange }) {
+function InputField({
+  inputType,
+  value,
+  placeholder,
+  readonly,
+  onChange,
+  defaultChecked,
+}) {
   return (
     <input
       type={inputType}
@@ -9,7 +16,7 @@ function InputField({ inputType, value, placeholder, readonly, onChange }) {
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       readOnly={readonly}
-      defaultChecked={false}
+      defaultChecked={defaultChecked}
     ></input>
   );
 }
