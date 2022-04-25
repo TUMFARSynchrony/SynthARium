@@ -1,4 +1,7 @@
-"""TODO Document"""
+"""Provide the `MessageDict` TypedDict and valid `MESSAGE_TYPES`.
+
+Use for type hints and static type checking without any overhead during runtime.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +9,24 @@ from typing import Any, Literal, TypedDict
 
 
 class MessageDict(TypedDict):
-    """TODO Document"""
+    """TypedDict for api messages.  All messages send should be a MessageDict.
+
+    The `MessageDict` is used to send and receive messages and identify the contents of
+    a message via `type`.  The content of a message can be anything, e.g. a ErrorDict,
+    Session Data, ...
+
+    Attributes
+    ----------
+    type : _types.message.MESSAGE_TYPES
+        Unique message type identifying the contents.
+    data : Any
+        Content of the message.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message
+    """
 
     type: MESSAGE_TYPES
     data: Any
@@ -20,4 +40,10 @@ MESSAGE_TYPES = Literal[
     "SESSION_DESCRIPTION",
     "SESSION_LIST",
 ]
-"""TODO Document"""
+"""Possible message types for _types.message.MessageDict.
+
+See Also
+--------
+Data Types Wiki :
+    https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message
+"""

@@ -1,4 +1,7 @@
-"""TODO Document"""
+"""Provide the `SuccessDict` TypedDict.
+
+Use for type hints and static type checking without any overhead during runtime.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +9,20 @@ from typing import TypedDict, Literal
 
 
 class SuccessDict(TypedDict):
-    """TODO Document"""
+    """Response TypedDict to successfull api calls.
+
+    Attributes
+    ----------
+    type : _types.success.SUCCESS_TYPES
+        Unique success type, defining what accion was successfully executed.
+    description : str
+        Description of what action (api call) was successfully executed.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#success
+    """
 
     type: SUCCESS_TYPES
     description: str
@@ -14,7 +30,12 @@ class SuccessDict(TypedDict):
 
 # TODO define valid types
 SUCCESS_TYPES = Literal[
-    "EXAMPLE_TYPE",
-    "EXAMPLE_TYPE_2",
+    "TO_BE_DEFINED",
 ]
-"""TODO Document"""
+"""Possible success types for _types.success.SuccessDict.
+
+See Also
+--------
+Data Types Wiki :
+    https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message
+"""
