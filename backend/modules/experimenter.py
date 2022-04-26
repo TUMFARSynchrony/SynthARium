@@ -3,10 +3,10 @@
 from __future__ import annotations
 from aiortc import RTCSessionDescription
 
-from _types.message import MessageDict
-from _types.session import SessionDict
-from _types.success import SuccessDict
-from _types.note import NoteDict
+from custom_types.message import MessageDict
+from custom_types.session import SessionDict
+from custom_types.success import SuccessDict
+from custom_types.note import NoteDict
 
 from modules.util import check_valid_typed_dict
 from modules.connection import connection_factory

@@ -13,7 +13,7 @@ class SuccessDict(TypedDict):
 
     Attributes
     ----------
-    type : _types.success.SUCCESS_TYPES
+    type : custom_types.success.SUCCESS_TYPES
         Unique success type, defining what accion was successfully executed.
     description : str
         Description of what action (api call) was successfully executed.
@@ -37,7 +37,7 @@ SUCCESS_TYPES = Literal[
     "STOP_EXPERIMENT",
     "ADD_NOTE",
 ]
-"""Possible success types for _types.success.SuccessDict.
+"""Possible success types for custom_types.success.SuccessDict.
 
 See Also
 --------

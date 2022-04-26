@@ -2,8 +2,8 @@
 
 import json
 
-from _types.error import ErrorDict, ERROR_TYPES
-from _types.message import MessageDict
+from custom_types.error import ErrorDict, ERROR_TYPES
+from custom_types.message import MessageDict
 
 
 class ErrorDictException(Exception):
@@ -31,7 +31,7 @@ class ErrorDictException(Exception):
         ----------
         code : int
             HTTP response status code.
-        type : _types.error.ERROR_TYPES
+        type : custom_types.error.ERROR_TYPES
             unique error type.
         description : str
             error description.
@@ -52,7 +52,7 @@ class ErrorDictException(Exception):
 
         Returns
         -------
-        _types.error.ErrorDict
+        custom_types.error.ErrorDict
             ErrorDict dictionary containing the exception information.
 
         See Also
@@ -71,7 +71,7 @@ class ErrorDictException(Exception):
 
         Returns
         -------
-        _types.message.MessageDict
+        custom_types.message.MessageDict
             MessageDict dictionary with type = `ERROR` and data = the ErrorDict
             detailing the exception.
 

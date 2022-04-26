@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class ExperimentState(Enum):
-    """State a experiment is in.
+    """State an experiment is in.
 
     Initially, the state is `WAITING`. Connecting participants will be in the "waiting
     room" when joining in this state.

@@ -7,7 +7,7 @@ from typing import TypedDict
 
 
 class NoteDict(TypedDict):
-    """TypedDict for notes in _types.session.SessionDict.
+    """TypedDict for notes in custom_types.session.SessionDict.
 
     Attributes
     ----------
@@ -23,7 +23,6 @@ class NoteDict(TypedDict):
     Data Types Wiki :
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#note
     """
-
 
     time: int
     speakers: list[str]

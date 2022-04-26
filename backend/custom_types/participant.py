@@ -6,8 +6,8 @@ Use for type hints and static type checking without any overhead during runtime.
 from typing import Any, TypedDict
 from typing_extensions import NotRequired
 
-from _types.size import SizeDict
-from _types.position import PositionDict
+from custom_types.size import SizeDict
+from custom_types.position import PositionDict
 
 
 class ParticipantDict(TypedDict):
@@ -30,9 +30,9 @@ class ParticipantDict(TypedDict):
         TODO define
     filters : list of TODO define type
         Active filters for this participant.
-    position : _types.position.PositionDict
+    position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
-    size : _types.size.SizeDict
+    size : custom_types.size.SizeDict
         Size of the participant's stream on the canvas.
 
 

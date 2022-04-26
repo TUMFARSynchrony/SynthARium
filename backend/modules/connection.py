@@ -8,7 +8,7 @@ from aiortc import (
     MediaStreamTrack,
 )
 
-from _types.message import MessageDict
+from custom_types.message import MessageDict
 
 
 class Connection:

@@ -6,8 +6,8 @@ Use for type hints and static type checking without any overhead during runtime.
 from typing import Any, TypedDict
 from typing_extensions import NotRequired
 
-from _types.participant import ParticipantDict
-from _types.note import NoteDict
+from custom_types.participant import ParticipantDict
+from custom_types.note import NoteDict
 
 
 class SessionDict(TypedDict):
@@ -30,7 +30,7 @@ class SessionDict(TypedDict):
         Experiment time limit in milliseconds since January 1, 1970, 00:00:00 (UTC).
     record : bool
         Whether the experiment is to be recorded.
-    participants : list of _types.participant.ParticipantDict
+    participants : list of custom_types.participant.ParticipantDict
         List of invited participants.
     start_time : int, optional
         Time the experiment started in milliseconds since January 1, 1970, 00:00:00
@@ -38,7 +38,7 @@ class SessionDict(TypedDict):
     end_time : int, optional
         Time the experiment ended in milliseconds since January 1, 1970, 00:00:00 (UTC).
         Read only for client.
-    notes : list of _types.note.NoteDict
+    notes : list of custom_types.note.NoteDict
         List of `NoteDict`s the experimenter added during the experiment.  Read only for
         client.
     log : Any, optional

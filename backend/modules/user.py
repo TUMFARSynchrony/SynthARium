@@ -4,8 +4,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import Callable, Any
 
-from _types.message import MessageDict
-from _types.error import ErrorDict
+from custom_types.message import MessageDict
+from custom_types.error import ErrorDict
 from modules.exceptions import ErrorDictException
 import modules.connection as _connection
 

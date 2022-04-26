@@ -18,7 +18,7 @@ class ErrorDict(TypedDict):
     ----------
     code : int
         HTTP response status code.
-    type : _types.error.ERROR_TYPES
+    type : custom_types.error.ERROR_TYPES
         Unique error type.
     description : str
         Error description.  Intended to be displayed to the enduser.
@@ -42,7 +42,7 @@ ERROR_TYPES = Literal[
     "UNKNOWN_SESSION",
     "UNKNOWN_PARTICIPANT",
 ]
-"""Possible error types for _types.error.ErrorDict.
+"""Possible error types for custom_types.error.ErrorDict.
 
 See Also
 --------

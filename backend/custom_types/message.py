@@ -17,7 +17,7 @@ class MessageDict(TypedDict):
 
     Attributes
     ----------
-    type : _types.message.MESSAGE_TYPES
+    type : custom_types.message.MESSAGE_TYPES
         Unique message type identifying the contents.
     data : Any
         Content of the message.
@@ -40,7 +40,7 @@ MESSAGE_TYPES = Literal[
     "SESSION_DESCRIPTION",
     "SESSION_LIST",
 ]
-"""Possible message types for _types.message.MessageDict.
+"""Possible message types for custom_types.message.MessageDict.
 
 See Also
 --------

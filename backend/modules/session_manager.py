@@ -6,7 +6,7 @@ import json
 from os import listdir
 from os.path import isfile, join
 
-from _types.session import SessionDict
+from custom_types.session import SessionDict
 from modules.session import Session
 from modules.util import generate_unique_id
 
@@ -63,7 +63,7 @@ class SessionManager:
 
         Returns
         -------
-        list of _types.session.SessionDict
+        list of custom_types.session.SessionDict
             List containing all sessions managed by this SessionManager as dictionary.
         """
         response = [s.asdict for s in list(self._sessions.values())]
@@ -93,7 +93,7 @@ class SessionManager:
 
         Parameters
         ----------
-        session_dict : _types.session.SessionDict
+        session_dict : custom_types.session.SessionDict
             Basic session data without ids
 
         Returns
@@ -221,7 +221,7 @@ class SessionManager:
 
         Parameters
         ----------
-        session_dict : _types.session.SessionDict
+        session_dict : custom_types.session.SessionDict
             session data that should be written to the self._session_dir
             directory.
         """

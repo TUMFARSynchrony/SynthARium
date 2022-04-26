@@ -2,7 +2,7 @@
 import time
 from typing import Any, Optional
 
-from _types.experiment_state import ExperimentState
+from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 import modules.experimenter as _experimenter
 import modules.participant as _participant

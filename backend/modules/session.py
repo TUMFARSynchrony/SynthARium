@@ -6,9 +6,9 @@ import json
 
 from modules.util import generate_unique_id
 
-from _types.session import SessionDict
-from _types.participant import ParticipantDict
-from _types.note import NoteDict
+from custom_types.session import SessionDict
+from custom_types.participant import ParticipantDict
+from custom_types.note import NoteDict
 
 
 class Session:

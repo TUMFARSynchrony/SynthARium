@@ -7,8 +7,8 @@ from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
 
-from _types.message import MessageDict
-from _types.error import ErrorDict
+from custom_types.message import MessageDict
+from custom_types.error import ErrorDict
 
 from modules.exceptions import ErrorDictException
 
