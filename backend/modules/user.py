@@ -5,6 +5,8 @@ from abc import ABC
 from typing import Callable, Any
 
 from _types.message import MessageDict
+from _types.error import ErrorDict
+from modules.exceptions import ErrorDictException
 import modules.connection as _connection
 
 
@@ -13,7 +15,7 @@ class User(ABC):
 
     id: str
     _connection: _connection.Connection
-    _handlers: dict[str, list[Callable[[Any], None]]]
+    _handlers: dict[str, list[Callable[[Any], MessageDict | None]]]
 
     def __init__(self, id: str):
         """TODO document"""
@@ -40,7 +42,9 @@ class User(ABC):
         """TODO document"""
         pass
 
-    def add_message_handler(self, endpoint: str, handler: Callable[[Any], None]):
+    def add_message_handler(
+        self, endpoint: str, handler: Callable[[Any], MessageDict | None]
+    ):
         """TODO document"""
         if endpoint in self._handlers.keys():
             self._handlers[endpoint].append(handler)
@@ -63,4 +67,17 @@ class User(ABC):
             f"[USER]: Received {endpoint}. Calling {len(handler_functions)} handlers."
         )
         for handler in handler_functions:
-            handler(message["data"])
+            try:
+                response = handler(message["data"])
+            except ErrorDictException as err:
+                response = err.error_message
+            except Exception:
+                err = ErrorDict(
+                    type="INTERNAL_SERVER_ERROR",
+                    code=500,
+                    description="Internal server error.",
+                )
+                response = MessageDict(type="ERROR", data={})  # TODO data
+
+            if response is not None:
+                self.send(response)

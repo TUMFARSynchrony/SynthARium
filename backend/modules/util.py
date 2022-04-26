@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import Any, Type, TypedDict
 import uuid
 
 
@@ -26,7 +26,7 @@ def generate_unique_id(existing_ids: list[str]):
     return id
 
 
-def check_valid_typed_dict(data: Any, type: TypedDict) -> bool:
+def check_valid_typed_dict(data: Any, type: Type[TypedDict]) -> bool:
     """Check if `data` is a valid dict according to `type`.
 
     Checks if all required and only required or optional keys from `type` exist in

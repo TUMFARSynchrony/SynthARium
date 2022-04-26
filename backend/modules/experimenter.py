@@ -5,8 +5,12 @@ from aiortc import RTCSessionDescription
 
 from _types.message import MessageDict
 from _types.session import SessionDict
+from _types.success import SuccessDict
+from _types.note import NoteDict
 
+from modules.util import check_valid_typed_dict
 from modules.connection import connection_factory
+from modules.exceptions import ErrorDictException
 import modules.experiment as _experiment
 import modules.hub as _hub
 import modules.user as _user
@@ -23,12 +27,15 @@ class Experimenter(_user.User):
         super().__init__(id)
         self.add_message_handler("GET_SESSION_LIST", self._handle_get_session_list)
         self.add_message_handler("SAVE_SESSION", self._handle_save_session)
+        self.add_message_handler("DELETE_SESSION", self._handle_delete_session)
+        self.add_message_handler("START_EXPERIMENT", self._handle_start_experiment)
+        self.add_message_handler("STOP_EXPERIMENT", self._handle_stop_experiment)
+        self.add_message_handler("ADD_NOTE", self._handle_add_note)
 
     def _handle_get_session_list(self, _):
         """TODO document"""
         sessions = self._hub.session_manager.get_session_dict_list()
-        response = MessageDict(type="SESSION_LIST", data=sessions)
-        self.send(response)
+        return MessageDict(type="SESSION_LIST", data=sessions)
 
     def _handle_save_session(self, data):
         """TODO document"""
@@ -43,9 +50,76 @@ class Experimenter(_user.User):
             # Create new session
             sm.create_session(data)
 
-        # TODO what data should be send?
-        response = MessageDict(type="SUCCESS", data={})
-        self.send(response)
+        success = SuccessDict(
+            type="SAVE_SESSION", description="Successfully saved session."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_delete_session(self, data):
+        """TODO document"""
+        if "session_id" not in data:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Missing session_id in request.",
+            )
+
+        session_id = data["session_id"]
+        self._hub.session_manager.delete_session(session_id)
+
+        success = SuccessDict(
+            type="STOP_EXPERIMENT", description="Successfully deleted session."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_start_experiment(self, data):
+        """TODO document"""
+        if not self._experiment:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_REQUEST",
+                description=(
+                    "Cannot start experiment. Experimenter is not connected to an "
+                    + "experiment."
+                ),
+            )
+
+        self._experiment.start()
+
+        success = SuccessDict(
+            type="STOP_EXPERIMENT", description="Successfully stopped experiment."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_stop_experiment(self, data):
+        """TODO document"""
+        if not self._experiment:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_REQUEST",
+                description=(
+                    "Cannot start experiment. Experimenter is not connected to an "
+                    + "experiment."
+                ),
+            )
+
+        self._experiment.stop()
+
+        success = SuccessDict(
+            type="SAVE_SESSION", description="Successfully saved session."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_add_note(self, data):
+        """TODO document"""
+        if not check_valid_typed_dict(data, NoteDict):
+            raise ErrorDictException(
+                code=400, type="INVALID_REQUEST", description="Expected note object."
+            )
+        self._experiment.session.add_note(data)
+
+        success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
+        return MessageDict(type="SUCCESS", data=success)
 
 
 async def experimenter_factory(offer: RTCSessionDescription, id: str):

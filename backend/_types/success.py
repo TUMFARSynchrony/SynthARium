@@ -31,6 +31,11 @@ class SuccessDict(TypedDict):
 # TODO define valid types
 SUCCESS_TYPES = Literal[
     "TO_BE_DEFINED",
+    "SAVE_SESSION",
+    "DELETE_SESSION",
+    "START_EXPERIMENT",
+    "STOP_EXPERIMENT",
+    "ADD_NOTE",
 ]
 """Possible success types for _types.success.SuccessDict.
 
