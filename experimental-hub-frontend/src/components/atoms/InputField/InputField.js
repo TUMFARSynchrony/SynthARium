@@ -6,7 +6,7 @@ function InputField({
   placeholder,
   readonly,
   onChange,
-  defaultChecked,
+  checked,
 }) {
   return (
     <input
@@ -16,7 +16,7 @@ function InputField({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       readOnly={readonly}
-      defaultChecked={defaultChecked}
+      checked={checked}
     ></input>
   );
 }

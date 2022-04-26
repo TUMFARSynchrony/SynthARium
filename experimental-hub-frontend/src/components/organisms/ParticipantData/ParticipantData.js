@@ -12,12 +12,12 @@ function ParticipantData({
   first_name,
   last_name,
   link,
-  mute,
+  muted,
 }) {
   const [showAdditionalInput, setShowAdditionalInput] = useState(false);
 
-  const handleChange = (first_name, last_name, link, mute) => {
-    onChange(index, { first_name, last_name, link, mute });
+  const handleChange = (first_name, last_name, link, muted) => {
+    onChange(index, { first_name, last_name, link, muted });
   };
 
   const onAddAdditionalInformation = () => {
@@ -30,18 +30,16 @@ function ParticipantData({
         title="First Name"
         value={first_name}
         placeholder={"Name of participant"}
-        required={true}
         onChange={(newFirstName) =>
-          handleChange(newFirstName, last_name, link, mute)
+          handleChange(newFirstName, last_name, link, muted)
         }
       />
       <InputTextField
         title="Last Name"
         value={last_name}
         placeholder={"Name of participant"}
-        required={true}
         onChange={(newLastName) =>
-          handleChange(first_name, newLastName, link, mute)
+          handleChange(first_name, newLastName, link, muted)
         }
       />
       <Button
@@ -57,18 +55,16 @@ function ParticipantData({
                 title="First Name"
                 value={first_name}
                 placeholder={"Name of participant"}
-                required={true}
                 onChange={(newFirstName) =>
-                  handleChange(newFirstName, last_name, link, mute)
+                  handleChange(newFirstName, last_name, link, muted)
                 }
               />
               <InputTextField
                 title="Last Name"
                 value={last_name}
                 placeholder={"Name of participant"}
-                required={true}
                 onChange={(newLastName) =>
-                  handleChange(first_name, newLastName, link, mute)
+                  handleChange(first_name, newLastName, link, muted)
                 }
               />
               <InputTextField
@@ -76,17 +72,17 @@ function ParticipantData({
                 value={link}
                 placeholder={"Created by backend"}
                 readonly={true}
-                required={true}
                 onChange={(newLink) =>
-                  handleChange(first_name, last_name, newLink, mute)
+                  handleChange(first_name, last_name, newLink, muted)
                 }
               />
               <div className="participantMuteCheckbox">
                 <Checkbox
                   title="Mute"
-                  value={mute}
+                  value={muted}
+                  checked={muted}
                   onChange={() =>
-                    handleChange(first_name, last_name, link, !mute)
+                    handleChange(first_name, last_name, link, !muted)
                   }
                 />
               </div>

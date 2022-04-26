@@ -2,7 +2,7 @@ import InputField from "../../atoms/InputField/InputField";
 import Label from "../../atoms/Label/Label";
 import "./Checkbox.css";
 
-function Checkbox({ title, value, onChange, defaultChecked }) {
+function Checkbox({ title, value, onChange, checked }) {
   return (
     <div className="checkboxContainer">
       <Label title={title} />
@@ -10,7 +10,7 @@ function Checkbox({ title, value, onChange, defaultChecked }) {
         inputType={"checkbox"}
         value={value}
         onChange={onChange}
-        defaultChecked={defaultChecked}
+        checked={checked}
       />
     </div>
   );

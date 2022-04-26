@@ -84,16 +84,9 @@ function SessionForm() {
     }));
   };
 
-  const handleCheckboxChange = (objKey, newCheckboxValue) => {
-    let newObject = {};
-    newObject[objKey] = newCheckboxValue;
-    setSessionData((sessionData) => ({
-      ...sessionData,
-      ...newObject,
-    }));
-  };
-
   console.log("participants", participantList);
+  console.log("sessionData", sessionData);
+
   return (
     <div className="sessionFormContainer">
       <div className="sessionFormData">
@@ -136,8 +129,10 @@ function SessionForm() {
           <Checkbox
             title="Record Session"
             value={sessionData.record}
-            defaultChecked={sessionData.record}
-            onChange={() => handleCheckboxChange("record", !sessionData.record)}
+            checked={sessionData.record}
+            onChange={() =>
+              handleSessionDataChange("record", !sessionData.record)
+            }
           />
           <hr className="separatorLine"></hr>
           <Heading heading={"Participants"} />
@@ -154,7 +149,7 @@ function SessionForm() {
                     first_name={participant.first_name}
                     last_name={participant.last_name}
                     link={participant.link}
-                    mute={participant.mute}
+                    muted={participant.muted}
                   />
                 );
               })}

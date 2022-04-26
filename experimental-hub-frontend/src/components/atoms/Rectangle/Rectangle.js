@@ -63,7 +63,7 @@ const Rectangle = ({
   let first_name = shapeProps.first_name ? shapeProps.first_name : "";
   let last_name = shapeProps.last_name ? shapeProps.last_name : "";
 
-  console.log("groupProps", groupProps);
+  // console.log("groupProps", groupProps);
 
   return (
     <>
