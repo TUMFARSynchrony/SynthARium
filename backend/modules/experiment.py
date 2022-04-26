@@ -35,7 +35,7 @@ class Experiment:
         """Start the experiment.
 
         If state is `WAITING`, save the current time in `session.start_time` and set
-        state to `RUNNING`.  If state is not `WAITING`, a ErrorDictException is raised.
+        state to `RUNNING`.  If state is not `WAITING`, an ErrorDictException is raised.
 
         Raises
         ------
@@ -117,7 +117,7 @@ class Experiment:
                 user.send(data)
 
     def knows_participant_id(self, participant_id: str) -> bool:
-        """Check if `participant_id` is a id for a participant in this experiment."""
+        """Check if `participant_id` is an ID for a participant in this experiment."""
         known_ids = map(lambda p: p.get("id", ""), self.session.participants)
         return participant_id is not "" and participant_id in known_ids
 

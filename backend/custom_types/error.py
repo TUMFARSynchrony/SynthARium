@@ -11,8 +11,8 @@ from typing import TypedDict, Literal
 class ErrorDict(TypedDict):
     """TypedDict for error api response.
 
-    When a API call fails, an ErrorDict is send as response, informing the client of the
-    error.
+    When an API call fails, an ErrorDict is send as response, informing the client of
+    the error.
 
     Attributes
     ----------

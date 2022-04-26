@@ -14,7 +14,7 @@ class ParticipantDict(TypedDict):
     """TypedDict for api messages.  All messages send should be a MessageDict.
 
     The `MessageDict` is used to send and receive messages and identify the contents of
-    a message via `type`.  The content of a message can be anything, e.g. a ErrorDict,
+    a message via `type`.  The content of a message can be anything, e.g. an ErrorDict,
     Session Data, ...
 
     Attributes

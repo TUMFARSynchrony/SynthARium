@@ -7,7 +7,7 @@ from custom_types.message import MessageDict
 
 
 class ErrorDictException(Exception):
-    """Exception used to pass a ErrorDict.
+    """Exception used to pass an ErrorDict.
 
     Custom exception for an ErrorDict that can be send as a response to
     an api request.
@@ -48,7 +48,7 @@ class ErrorDictException(Exception):
 
     @property
     def error_dict(self) -> ErrorDict:
-        """Get a ErrorDict dictionary detailing the exception.
+        """Get an ErrorDict dictionary detailing the exception.
 
         Returns
         -------

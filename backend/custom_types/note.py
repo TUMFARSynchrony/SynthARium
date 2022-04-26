@@ -16,7 +16,7 @@ class NoteDict(TypedDict):
     speakers : list of str
         List of Participant IDs for participants speaking when the note was saved.
     content : str
-        Text content of the note, written by a experimenter.
+        Text content of the note, written by an experimenter.
 
     See Also
     --------
