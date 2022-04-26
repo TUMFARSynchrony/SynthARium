@@ -2,8 +2,14 @@ import { Stage, Layer, Text } from "react-konva";
 import { useState } from "react";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
 import { CANVAS_SIZE } from "../../../utils/constants";
+import { filterListByIndex } from "../../../utils/utils";
 
-function DragAndDrop({ rectangles, participantGroup, setParticipantGroup }) {
+function DragAndDrop({
+  participantShapes,
+  participantGroups,
+  setParticipantGroups,
+  setParticipantShapes,
+}) {
   const [selectedShape, setSelectShape] = useState(null);
 
   const checkDeselect = (e) => {
@@ -21,20 +27,21 @@ function DragAndDrop({ rectangles, participantGroup, setParticipantGroup }) {
         onMouseDown={checkDeselect}
       >
         <Layer>
-          {rectangles.length > 0 ? (
-            rectangles.map((rect, index) => {
+          {participantShapes.length > 0 ? (
+            participantShapes.map((rect, index) => {
               return (
                 <Rectangle
+                  key={index}
                   shapeProps={rect}
-                  groupProps={participantGroup[index]}
+                  groupProps={participantGroups[index]}
                   isSelected={index === selectedShape}
                   onSelect={() => {
                     setSelectShape(index);
                   }}
                   onChange={(newAttrs) => {
-                    const groups = participantGroup.slice();
+                    const groups = participantGroups.slice();
                     groups[index] = newAttrs;
-                    setParticipantGroup(groups);
+                    setParticipantGroups(groups);
                   }}
                 />
               );

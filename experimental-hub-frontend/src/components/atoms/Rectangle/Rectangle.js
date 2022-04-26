@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
 import { Group, Rect, Text, Transformer } from "react-konva";
 import { CANVAS_SIZE } from "../../../utils/constants";
+import { getTotalBox } from "../../../utils/utils";
 
 const Rectangle = ({
   shapeProps,
+  groupProps,
   isSelected,
   onSelect,
   onChange,
-  groupProps,
 }) => {
   const shapeRef = useRef();
   const trRef = useRef();
@@ -36,34 +37,41 @@ const Rectangle = ({
   };
 
   const onDragMove = (e) => {
-    let newX = e.target.x();
-    let newY = e.target.y();
+    onSelect(e);
+    let newAbsPos = {};
 
-    // console.log("newX", newX);
-    // console.log("newY", newY);
+    const boxes = trRef.current.nodes().map((node) => node.getClientRect());
+    const box = getTotalBox(boxes);
+    trRef.current.nodes().forEach((shape) => {
+      const absPos = shape.getAbsolutePosition();
+      const offsetX = box.x - absPos.x;
+      const offsetY = box.y - absPos.y;
 
-    // const isOut =
-    //   newX < 0 ||
-    //   newY < 0 ||
-    //   newX + groupProps.width > CANVAS_SIZE.width ||
-    //   newY + groupProps.height > CANVAS_SIZE.height;
-
-    // if (isOut) {
-    //   newX = groupProps.x;
-    //   newY = groupProps.y;
-    // }
+      newAbsPos = { ...absPos };
+      if (box.x < 0) {
+        newAbsPos.x = -offsetX;
+      }
+      if (box.y < 0) {
+        newAbsPos.y = -offsetY;
+      }
+      if (box.x + box.width > CANVAS_SIZE.width) {
+        newAbsPos.x = CANVAS_SIZE.width - box.width - offsetX;
+      }
+      if (box.y + box.height > CANVAS_SIZE.height) {
+        newAbsPos.y = CANVAS_SIZE.height - box.height - offsetY;
+      }
+    });
+    shapeRef.current.x(newAbsPos.x);
+    shapeRef.current.y(newAbsPos.y);
 
     onChange({
       ...groupProps,
-      x: newX,
-      y: newY,
+      ...newAbsPos,
     });
   };
 
   let first_name = shapeProps.first_name ? shapeProps.first_name : "";
   let last_name = shapeProps.last_name ? shapeProps.last_name : "";
-
-  // console.log("groupProps", groupProps);
 
   return (
     <>
@@ -71,7 +79,6 @@ const Rectangle = ({
         draggable
         {...groupProps}
         onClick={onSelect}
-        // onDragEnd={(e) => onDragEnd(e)}
         onTransformEnd={() => onTransformEnd()}
         onDragMove={(e) => onDragMove(e)}
         ref={shapeRef}
@@ -99,10 +106,10 @@ const Rectangle = ({
             }
 
             const isOut =
-              oldBox.x < 0 ||
-              oldBox.y < 0 ||
-              oldBox.x + oldBox.width > CANVAS_SIZE.width ||
-              oldBox.y + oldBox.height > CANVAS_SIZE.height;
+              newBox.x < 0 ||
+              newBox.y < 0 ||
+              newBox.x + newBox.width > CANVAS_SIZE.width ||
+              newBox.y + newBox.height > CANVAS_SIZE.height;
 
             if (isOut) {
               return oldBox;

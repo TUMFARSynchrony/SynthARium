@@ -13,26 +13,18 @@ import {
 
 import "./SessionForm.css";
 import { useState } from "react";
-import { getRandomColor } from "../../utils/utils";
+import { filterListByIndex, getRandomColor } from "../../utils/utils";
 
 function SessionForm() {
   const [participantList, setParticipantList] = useState([]);
   const [sessionData, setSessionData] = useState(INITIAL_SESSION_DATA);
   const [participantShapes, setParticipantShapes] = useState([]);
-  const [participantGroup, setParticipantGroup] = useState([]);
+  const [participantGroups, setParticipantGroups] = useState([]);
 
   const onDeleteParticipant = (index) => {
     setParticipantList(filterListByIndex(participantList, index));
     setParticipantShapes(filterListByIndex(participantShapes, index));
-    setParticipantGroup(filterListByIndex(participantGroup, index));
-  };
-
-  const filterListByIndex = (list, index) => {
-    let filteredList = list.filter((obj, i) => {
-      return i !== index;
-    });
-
-    return filteredList;
+    setParticipantGroups(filterListByIndex(participantGroups, index));
   };
 
   const onAddParticipant = () => {
@@ -50,7 +42,7 @@ function SessionForm() {
     setParticipantShapes(newParticipantShapes);
 
     const newPartcipantGroup = [
-      ...participantGroup,
+      ...participantGroups,
       {
         x: 10,
         y: 10,
@@ -58,7 +50,7 @@ function SessionForm() {
         height: 100,
       },
     ];
-    setParticipantGroup(newPartcipantGroup);
+    setParticipantGroups(newPartcipantGroup);
   };
 
   const handleParticipantChange = (index, participant) => {
@@ -83,9 +75,6 @@ function SessionForm() {
       ...newObject,
     }));
   };
-
-  console.log("participants", participantList);
-  console.log("sessionData", sessionData);
 
   return (
     <div className="sessionFormContainer">
@@ -170,9 +159,10 @@ function SessionForm() {
       </div>
       <div className="sessionFormCanvas">
         <DragAndDrop
-          rectangles={participantShapes}
-          participantGroup={participantGroup}
-          setParticipantGroup={setParticipantGroup}
+          participantShapes={participantShapes}
+          participantGroups={participantGroups}
+          setParticipantGroups={setParticipantGroups}
+          setParticipantShapes={setParticipantShapes}
         />
       </div>
     </div>
