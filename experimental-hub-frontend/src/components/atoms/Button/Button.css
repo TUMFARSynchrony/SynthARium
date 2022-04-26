@@ -20,7 +20,6 @@
     font-size: 1em;
     text-transform: none;
     display: block;
-
     padding: 0.8em 1em;
 }
 
@@ -29,21 +28,33 @@
     font-size: 1em;
     text-transform: none;
     display: block;
-
     padding: 0.6em 0.8em;
+}
+
+.secondary {
+    box-shadow: none;
+    border: #2196F3;
+    color: #2196F3;
+    font-size: 1em;
+    text-transform: none;
+    display: block;
+    padding: 0.6em 0.8em;
+    background-color: white;
 }
 
 .button:hover {
     background: #2980b9;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
 
 .positive:hover {
     background: #165b25;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
 
 .negative:hover {
     background: #aa3131;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.secondary:hover {
+    background: #2196F3;
+    color: white;
 }

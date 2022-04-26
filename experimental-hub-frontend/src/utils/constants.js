@@ -13,9 +13,9 @@ export const INITIAL_SESSION_DATA = {
 };
 
 export const CANVAS_SIZE = {
-  width: 1138.33,
-  height: 640,
-  scale: 1.2,
+  width: 1241.82, // 1366
+  height: 698.18, //768
+  scale: 1.1,
 };
 
 export const INITIAL_PARTICIPANT_DATA = {
@@ -23,7 +23,7 @@ export const INITIAL_PARTICIPANT_DATA = {
   first_name: "",
   last_name: "",
   link: "",
-  muted: false,
+  muted: true,
   filters: [],
   position: {
     x: 0,

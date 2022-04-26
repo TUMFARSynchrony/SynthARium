@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Group, Rect, Text, Transformer } from "react-konva";
 import { CANVAS_SIZE } from "../../../utils/constants";
-import { getTotalBox } from "../../../utils/utils";
 
 const Rectangle = ({
   shapeProps,
