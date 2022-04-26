@@ -42,9 +42,7 @@ class User(ABC):
         """TODO document"""
         pass
 
-    def add_message_handler(
-        self, endpoint: str, handler: Callable[[Any], MessageDict | None]
-    ):
+    def on(self, endpoint: str, handler: Callable[[Any], MessageDict | None]):
         """TODO document"""
         if endpoint in self._handlers.keys():
             self._handlers[endpoint].append(handler)

@@ -25,12 +25,12 @@ class Experimenter(_user.User):
     def __init__(self, id: str):
         """TODO document"""
         super().__init__(id)
-        self.add_message_handler("GET_SESSION_LIST", self._handle_get_session_list)
-        self.add_message_handler("SAVE_SESSION", self._handle_save_session)
-        self.add_message_handler("DELETE_SESSION", self._handle_delete_session)
-        self.add_message_handler("START_EXPERIMENT", self._handle_start_experiment)
-        self.add_message_handler("STOP_EXPERIMENT", self._handle_stop_experiment)
-        self.add_message_handler("ADD_NOTE", self._handle_add_note)
+        self.on("GET_SESSION_LIST", self._handle_get_session_list)
+        self.on("SAVE_SESSION", self._handle_save_session)
+        self.on("DELETE_SESSION", self._handle_delete_session)
+        self.on("START_EXPERIMENT", self._handle_start_experiment)
+        self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
+        self.on("ADD_NOTE", self._handle_add_note)
 
     def _handle_get_session_list(self, _):
         """TODO document"""
