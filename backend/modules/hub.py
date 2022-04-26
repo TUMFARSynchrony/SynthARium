@@ -10,7 +10,6 @@ import modules.experimenter as _experimenter
 import modules.participant as _participant
 import modules.session_manager as _sm
 from modules.exceptions import ErrorDictException
-from _types.error import ErrorDict
 
 
 class Hub:
@@ -27,7 +26,7 @@ class Hub:
         self.experimenters = []
         self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = _server.Server(self.handle_offer, host, port)
+        self.server = _server.Server(self.handle_offer, host, port, True)
 
     async def start(self):
         """TODO document"""

@@ -1,5 +1,6 @@
 """TODO document"""
 
+import aiohttp_cors
 import json
 from typing import Any, Callable, Coroutine, Literal, Optional
 from aiohttp import web
@@ -31,7 +32,9 @@ class Server:
     _host: str
     _port: int
 
-    def __init__(self, hub_handle_offer: _HANDLER, host: str, port: int):
+    def __init__(
+        self, hub_handle_offer: _HANDLER, host: str, port: int, use_cors=False
+    ):
         """TODO document"""
         self._hub_handle_offer = hub_handle_offer
         self._host = host
@@ -39,8 +42,30 @@ class Server:
 
         self._app = web.Application()
         self._app.on_shutdown.append(self._shutdown)
-        self._app.router.add_get("/", self.get_hello_world)
-        self._app.router.add_get("/offer", self.handle_offer)
+        routes = []
+        routes.append(self._app.router.add_get("/", self.get_hello_world))
+        routes.append(self._app.router.add_get("/offer", self.handle_offer))
+
+        if not use_cors:
+            return
+
+        # Using cors is only intended for development, when the client is not hosted by
+        # this server but a separate development server.
+        print("[SERVER] WARNING: Using CORS. Only use for development!")
+
+        cors = aiohttp_cors.setup(self._app)  # type: ignore
+        for route in routes:
+            cors.add(
+                route,
+                {
+                    "*": aiohttp_cors.ResourceOptions(
+                        allow_credentials=True,
+                        expose_headers=("X-Custom-Server-Header",),
+                        allow_methods=["GET"],
+                        allow_headers=("X-Requested-With", "Content-Type"),
+                    )
+                },
+            )
 
     async def start(self):
         """TODO document"""
