@@ -5,6 +5,9 @@
     border-radius: 0.5em;
     padding: 2em;
     margin: 2em;
+    display: flex;
+    flex-direction: column;
+    max-height: 300px;
 }
 
 .sessionPreviewHeader {
@@ -26,5 +29,6 @@
 
 .sessionPreviewButtons {
     display: flex;
-    justify-content: right;
+    justify-content: flex-end;
+    align-items: flex-end;
 }

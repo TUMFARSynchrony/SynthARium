@@ -1,12 +1,7 @@
-import { useState } from "react";
+import { integerToDateTime } from "../../../utils/utils";
 import "./SessionCard.css";
 
-function SessionCard({ title, date, time, onClick, selected }) {
-  // TODO: which meta information to show here additionally?
-  const [selectedCardClass, setSelectedCardClass] = useState(
-    "sessionCardContainer"
-  );
-
+function SessionCard({ title, date, description, onClick, selected }) {
   return (
     <div
       className={
@@ -16,11 +11,9 @@ function SessionCard({ title, date, time, onClick, selected }) {
     >
       <div className="sessionCardHeader">
         <h3 className="sessionCardHeaderTitle">{title}</h3>
-        <h3 className="sessionCardHeaderDate">
-          {date}, {time}
-        </h3>
+        <h3 className="sessionCardHeaderDate">{integerToDateTime(date)}</h3>
       </div>
-      <p className="sessionMetaInformation">{"Some meta information"}</p>
+      <p className="sessionMetaInformation">{description}</p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import Button from "../../atoms/Button/Button";
+import { integerToDateTime } from "../../../utils/utils";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
@@ -10,21 +10,22 @@ function SessionPreview({ sessionInformation }) {
           Title: {sessionInformation.title}
         </h3>
         <h3 className="sessionPreviewTitles">
-          Date: {sessionInformation.date}
+          Date: {integerToDateTime(sessionInformation.date)}
         </h3>
         <h3 className="sessionPreviewTitles">
-          Time: {sessionInformation.time}
-        </h3>
-        <h3 className="sessionPreviewTitles">
-          TimeLimit: {sessionInformation.timeLimit}
+          Time Limit: {sessionInformation.time_limit}
         </h3>
       </div>
-      <p className="sessionPreviewInformation">{"Some meta information"}</p>
-      <div className="sessionPreviewButtons">
-        <LinkButton name={"COPY"} to="/sessionForm" />
-        <LinkButton name={"EDIT"} to="/sessionForm" />
-        <LinkButton name={"START"} to="/watchingRoom" />
-      </div>
+      <p className="sessionPreviewInformation">
+        {sessionInformation.description}
+      </p>
+      <>
+        <div className="sessionPreviewButtons">
+          <LinkButton name={"COPY"} to="/sessionForm" />
+          <LinkButton name={"EDIT"} to="/sessionForm" />
+          <LinkButton name={"START"} to="/watchingRoom" />
+        </div>
+      </>
     </div>
   );
 }

@@ -15,6 +15,10 @@ export const filterListByIndex = (list, index) => {
   return filteredList;
 };
 
+export const integerToDateTime = (integerDate) => {
+  return new Date(integerDate).toLocaleString();
+};
+
 export const getTotalBox = (boxes) => {
   let minX = Infinity;
   let minY = Infinity;

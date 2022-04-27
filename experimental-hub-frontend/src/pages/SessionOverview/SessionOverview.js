@@ -8,10 +8,7 @@ import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { getSessionJson } from "../../utils/mockServer";
 
 function SessionOverview() {
-  //TODO: Dropdown for past Sessions
   var sessionCards = getSessionJson();
-
-  const [showFormPopup, setShowFormPopup] = useState(false);
   const [selectedSession, setSelectedSession] = useState(
     sessionCards.length !== 0 ? sessionCards[0] : null
   );
@@ -28,26 +25,27 @@ function SessionOverview() {
         <div className="sessionOverviewCards">
           <LinkButton name="CREATE NEW SESSION" to="/sessionForm" />
           {sessionCards.length !== 0 ? (
-            sessionCards.map((session) => {
+            sessionCards.map((session, index) => {
               return (
                 <SessionCard
                   title={session.title}
+                  key={index}
                   date={session.date}
-                  time={session.time}
+                  description={session.description}
                   onClick={() => handleClick(session)}
                   selected={session.title === selectedSession.title}
                 />
               );
             })
           ) : (
-            <div>No active sessions found.</div>
+            <>No active sessions found.</>
           )}
         </div>
-        <div className="sessionOverviewCardPreview">
+        <>
           {sessionCards.length > 0 && (
             <SessionPreview sessionInformation={selectedSession} />
           )}
-        </div>
+        </>
       </div>
     </div>
   );
