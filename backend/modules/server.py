@@ -1,4 +1,4 @@
-"""TODO document"""
+"""Provides the Server class, which serves the frontend and other endpoints."""
 
 import aiohttp_cors
 import json
@@ -14,7 +14,7 @@ from modules.exceptions import ErrorDictException
 
 
 class Server:
-    """TODO document"""
+    """Server providing the website and an endpoint to establish WebRTC connections."""
 
     _HANDLER = Callable[
         [
@@ -35,7 +35,19 @@ class Server:
     def __init__(
         self, hub_handle_offer: _HANDLER, host: str, port: int, use_cors=False
     ):
-        """TODO document"""
+        """Instantiate new Server instance.
+
+        Parameters
+        ----------
+        hub_handle_offer : function
+            Handler function for incoming WebRTC offers.
+        host : str
+            Host address for server.
+        port : int
+            Port for server.
+        use_cors : bool, default False
+            If true, cors will be enabled for *.  Should only be used for development.
+        """
         self._hub_handle_offer = hub_handle_offer
         self._host = host
         self._port = port
@@ -68,7 +80,7 @@ class Server:
             )
 
     async def start(self):
-        """TODO document"""
+        """Start the server."""
         print(f"[SERVER] Starting server on http://{self._host}:{self._port}")
         # Set up aiohttp - like run_app, but non-blocking
         # (Source: https://stackoverflow.com/a/53465910)
@@ -82,7 +94,7 @@ class Server:
         pass
 
     async def stop(self):
-        """TODO document"""
+        """Stop the server."""
         print("[SERVER] Server stopping")
         await self._app.shutdown()
         await self._app.cleanup()
@@ -96,7 +108,26 @@ class Server:
         )
 
     async def _parse_offer_request(self, request: web.Request) -> dict:
-        """TODO document"""
+        """Parse a request made to the `/offer` endpoint.
+
+        Checks the parameters in the request and check if the types are correct.
+
+        Parameters
+        ----------
+        request : aiohttp.web.Request
+            Incoming request to the `/offer` endpoint.
+
+        Returns
+        -------
+        dict
+            Parsed offer request.
+
+        Raises
+        ------
+        ErrorDictException
+            If any error occurres while parsing.  E.g. incorrect request parameters or
+            missing keys.
+        """
         if request.content_type != "application/json":
             raise ErrorDictException(
                 code=415,
@@ -136,8 +167,20 @@ class Server:
         return params
 
     async def handle_offer(self, request: web.Request) -> web.StreamResponse:
-        """TODO document"""
+        """Handle incoming requests to the `/offer` endpoint.
+
+        Parameters
+        ----------
+        request : aiohttp.web.Request
+            Incoming request to the `/offer` endpoint.
+
+        Returns
+        -------
+        aiohttp.web.StreamResponse
+            Response to request from client.
+        """
         print(f"[SERVER] Handle offer from {request.host}")
+        # Check and parse request.
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
@@ -148,7 +191,7 @@ class Server:
                 text=error.error_message_str,
             )
 
-        # Try to parse request
+        # Create session description based on request.
         try:
             offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
         except ValueError:
@@ -164,6 +207,7 @@ class Server:
                 text=json.dumps(error_message),
             )
 
+        # Pass request to handler function in hub.
         try:
             response = await self._hub_handle_offer(
                 offer,

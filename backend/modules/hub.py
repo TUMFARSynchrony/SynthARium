@@ -1,4 +1,4 @@
-"""TODO document"""
+"""This module provides the Hub class, which is the center of the experiment hub."""
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
@@ -15,7 +15,12 @@ import modules.session_manager as _sm
 
 
 class Hub:
-    """TODO document"""
+    """Central pice of the experiment hub backend.
+
+    Attributes
+    ----------
+    TODO: document.  Some might be private.
+    """
 
     experimenters: list[_experimenter.Experimenter]
     experiments: dict[str, _experiment.Experiment]
@@ -24,8 +29,14 @@ class Hub:
     config: Config
 
     def __init__(self, config: Config):
-        """TODO document"""
-        print("init hub")
+        """Instantiate new Hub instance.
+
+        Parameters
+        ----------
+        config : modules.config.Config
+            Configuration for the hub.
+        """
+        print("[HUB] Initializing Hub")
         self.experimenters = []
         self.experiments = {}
         self.config = config
@@ -35,12 +46,12 @@ class Hub:
         )
 
     async def start(self):
-        """TODO document"""
+        """Start the hub.  Starts the server."""
         await self.server.start()
 
     async def stop(self):
-        """TODO document"""
-        print("Hub stopping")
+        """Stop the hub, close all connection and stop the server."""
+        print("[HUB] stopping")
         await self.server.stop()
         for experimenter in self.experimenters:
             experimenter.disconnect()
@@ -54,7 +65,28 @@ class Hub:
         participant_id: Optional[str],
         session_id: Optional[str],
     ):
-        """TODO document"""
+        """Handle incoming offer from a client.
+
+        This function is intended to be passed down to the modules.server.Server, which
+        will call it after checking and parsing an incoming offer.
+
+        Parameters
+        ----------
+        offer : aiortc.RTCSessionDescription
+            WebRTC offer.
+        user_type : str, "participant" or "experimenter"
+            Type of user that wants to connect.
+        participant_id : str, optional
+            ID of participant.
+        session_id : str, optional
+            Session ID, defining what session a participant wants to connect to (if
+            user_type is "participant").
+
+        Raises
+        ------
+        ErrorDictException
+            If user_type is not "participant" or "experimenter".
+        """
         if user_type == "participant":
             answer = await self._handle_offer_participant(
                 offer, participant_id, session_id
@@ -77,7 +109,29 @@ class Hub:
         participant_id: Optional[str],
         session_id: Optional[str],
     ):
-        """TODO document"""
+        """Handle incoming offer for a participant.
+
+        Parameters
+        ----------
+        offer : aiortc.RTCSessionDescription
+            WebRTC offer.
+        participant_id : str, optional
+            ID of participant.  Will raise an ErrorDictException if missing.
+        session_id : str, optional
+            Session ID, defining what session a participant wants to connect to (if
+            user_type is "participant").  Will raise an ErrorDictException if missing.
+
+        Raises
+        ------
+        ErrorDictException
+            if session_id or participant_id are not defined.
+
+        Notes
+        -----
+        participant_id and session_id are only optional to allow this function to be
+        called in handle_offer without extra checks.  In case one of them is missing,
+        this function will raise the exception with a fitting error message.
+        """
         if participant_id is None:
             print("[HUB] WARNING: Missing participant_id in offer handler")
             raise ErrorDictException(

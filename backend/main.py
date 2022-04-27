@@ -8,7 +8,11 @@ _hub: Hub
 
 
 async def main():
-    """TODO document"""
+    """Entry point for experiment Hub.
+
+    Creates a modules.config.Config and modules.hub.Hub.  Then waits for ever.
+    Close with KeyboardInterrupt.
+    """
     global _hub
 
     try:
@@ -26,7 +30,7 @@ async def main():
 
 
 async def stop():
-    """TODO document"""
+    """Stop the experiment hub"""
     global _hub
     await _hub.stop()
     exit()
