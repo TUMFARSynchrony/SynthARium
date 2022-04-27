@@ -1,5 +1,6 @@
 """Backend entry point"""
 
+from modules.config import Config
 from modules.hub import Hub
 import asyncio
 
@@ -9,11 +10,18 @@ _hub: Hub
 async def main():
     """TODO document"""
     global _hub
-    _hub = Hub("127.0.0.1", 8080)
+
+    try:
+        config = Config()
+    except ValueError as err:
+        print("ERROR: Failed to load config:", err)
+        print("Aborting start. Please fix error above.")
+        return
+
+    _hub = Hub(config)
     await _hub.start()
 
     # Run forever
-
     await asyncio.Event().wait()
 
 
@@ -30,6 +38,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Detected Keyboard Interrupt. Exiting...")
         asyncio.run(stop())
-    finally:
-        print("Cleanup complete")
-        exit()

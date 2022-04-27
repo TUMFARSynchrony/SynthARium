@@ -2,14 +2,16 @@
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
+
+from modules.config import Config
 from modules.util import generate_unique_id
+from modules.exceptions import ErrorDictException
 
 import modules.server as _server
 import modules.experiment as _experiment
 import modules.experimenter as _experimenter
 import modules.participant as _participant
 import modules.session_manager as _sm
-from modules.exceptions import ErrorDictException
 
 
 class Hub:
@@ -19,14 +21,18 @@ class Hub:
     experiments: dict[str, _experiment.Experiment]
     session_manager: _sm.SessionManager
     server: _server.Server
+    config: Config
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, config: Config):
         """TODO document"""
         print("init hub")
         self.experimenters = []
         self.experiments = {}
+        self.config = config
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = _server.Server(self.handle_offer, host, port, True)
+        self.server = _server.Server(
+            self.handle_offer, config.host, config.port, config.environment == "dev"
+        )
 
     async def start(self):
         """TODO document"""
