@@ -35,3 +35,16 @@
     flex-direction: column;
 }
 
+.participantVideoSize {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.participantPosition > label {
+    font-weight: 600;
+}
+
+.additionalParticipantInfoCard > h2 {
+    margin-bottom: 0.5em;
+}

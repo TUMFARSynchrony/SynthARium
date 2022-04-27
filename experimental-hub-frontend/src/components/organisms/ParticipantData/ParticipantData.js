@@ -4,6 +4,8 @@ import "./ParticipantData.css";
 import { FaRegTrashAlt } from "react-icons/fa";
 import Checkbox from "../../molecules/Checkbox/Checkbox";
 import { useState } from "react";
+import Heading from "../../atoms/Heading/Heading";
+import Label from "../../atoms/Label/Label";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -13,6 +15,7 @@ function ParticipantData({
   last_name,
   link,
   muted,
+  parameters,
 }) {
   const [showAdditionalInput, setShowAdditionalInput] = useState(false);
 
@@ -51,6 +54,8 @@ function ParticipantData({
         <div className="additionalParticipantInfoContainer">
           <div className="additionalParticipantInfo">
             <div className="additionalParticipantInfoCard">
+              <Heading heading={"General information:"} />
+
               <InputTextField
                 title="First Name"
                 value={first_name}
@@ -85,6 +90,21 @@ function ParticipantData({
                     handleChange(first_name, last_name, link, !muted)
                   }
                 />
+              </div>
+              <Heading heading={"Current video position and size:"} />
+              <div className="participantVideoSize">
+                <div className="participantPosition">
+                  <Label title={"x: "} /> {parameters.x}
+                </div>
+                <div className="participantPosition">
+                  <Label title={"y: "} /> {parameters.y}
+                </div>
+                <div className="participantPosition">
+                  <Label title={"Width: "} /> {parameters.width}
+                </div>
+                <div className="participantPosition">
+                  <Label title={"Height: "} /> {parameters.height}
+                </div>
               </div>
               <Button
                 name="Finish"

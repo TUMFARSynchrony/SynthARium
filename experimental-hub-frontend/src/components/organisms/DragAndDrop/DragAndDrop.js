@@ -2,13 +2,11 @@ import { Stage, Layer, Text } from "react-konva";
 import { useState } from "react";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
 import { CANVAS_SIZE } from "../../../utils/constants";
-import { filterListByIndex } from "../../../utils/utils";
 
 function DragAndDrop({
   participantShapes,
   participantGroups,
   setParticipantGroups,
-  setParticipantShapes,
 }) {
   const [selectedShape, setSelectShape] = useState(null);
 

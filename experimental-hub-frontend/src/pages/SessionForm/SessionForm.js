@@ -55,7 +55,11 @@ function SessionForm() {
 
   const handleParticipantChange = (index, participant) => {
     let newParticipantList = [...participantList];
-    newParticipantList[index] = participant;
+    newParticipantList[index] = {
+      ...newParticipantList[index],
+      ...participant,
+    };
+
     setParticipantList(newParticipantList);
 
     let newParticipantShapes = [...participantShapes];
@@ -74,6 +78,23 @@ function SessionForm() {
       ...sessionData,
       ...newObject,
     }));
+  };
+
+  const onSaveSession = () => {
+    let newParticipantList = [];
+    newParticipantList = participantList.forEach((participant, index) => {
+      participant.position.x = participantGroups[index].x;
+      participant.position.y = participantGroups[index].y;
+      participant.size.width = participantGroups[index].width;
+      participant.size.height = participantGroups[index].height;
+    });
+    setParticipantList(newParticipantList);
+
+    let newSessionData = { ...sessionData };
+    newSessionData.participants = participantList;
+    setSessionData(newSessionData);
+
+    return sessionData;
   };
 
   return (
@@ -139,6 +160,7 @@ function SessionForm() {
                     last_name={participant.last_name}
                     link={participant.link}
                     muted={participant.muted}
+                    parameters={participantGroups[index]}
                   />
                 );
               })}
@@ -153,7 +175,7 @@ function SessionForm() {
         </div>
 
         <div className="sessionFormButtons">
-          <LinkButton name="Save" to="/" />
+          <LinkButton name="Save" to="/" onClick={() => onSaveSession()} />
           <LinkButton name="Start" to="/watchingRoom" />
         </div>
       </div>
@@ -162,7 +184,6 @@ function SessionForm() {
           participantShapes={participantShapes}
           participantGroups={participantGroups}
           setParticipantGroups={setParticipantGroups}
-          setParticipantShapes={setParticipantShapes}
         />
       </div>
     </div>
