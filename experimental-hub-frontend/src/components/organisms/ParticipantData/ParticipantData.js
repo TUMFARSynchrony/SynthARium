@@ -1,7 +1,7 @@
 import Button from "../../atoms/Button/Button";
 import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
-import { FaRegTrashAlt } from "react-icons/fa";
+import { FaRegTrashAlt, FaRegWindowClose } from "react-icons/fa";
 import Checkbox from "../../molecules/Checkbox/Checkbox";
 import { useState } from "react";
 import Heading from "../../atoms/Heading/Heading";
@@ -30,30 +30,38 @@ function ParticipantData({
   return (
     <div className="participantDataContainer">
       <InputTextField
-        title="First Name"
-        value={first_name}
-        placeholder={"Name of participant"}
-        onChange={(newFirstName) =>
-          handleChange(newFirstName, last_name, link, muted)
-        }
+        title="Participant Name"
+        placeholder={"Enter the information"}
+        value={[first_name, last_name]
+          .filter((str) => str.length > 0)
+          .join(" ")}
+        readonly={true}
       />
-      <InputTextField
-        title="Last Name"
-        value={last_name}
-        placeholder={"Name of participant"}
-        onChange={(newLastName) =>
-          handleChange(first_name, newLastName, link, muted)
-        }
-      />
-      <Button
-        name="Add additional information"
-        design={"secondary"}
-        onClick={() => onAddAdditionalInformation()}
-      />
+      <div className="participantButtons">
+        <Button
+          name="Enter participant information"
+          design={"secondary"}
+          onClick={() => onAddAdditionalInformation()}
+        />
+
+        <Button
+          name={""}
+          design={"negative"}
+          onClick={() => onDeleteParticipant()}
+          icon={<FaRegTrashAlt />}
+        />
+      </div>
+
       {showAdditionalInput && (
         <div className="additionalParticipantInfoContainer">
           <div className="additionalParticipantInfo">
             <div className="additionalParticipantInfoCard">
+              {/* <Button
+                name={""}
+                icon={<FaRegWindowClose />}
+                design={"close"}
+                onClick={() => onAddAdditionalInformation()}
+              /> */}
               <Heading heading={"General information:"} />
 
               <InputTextField
@@ -75,7 +83,7 @@ function ParticipantData({
               <InputTextField
                 title="Link"
                 value={link}
-                placeholder={"Created by backend"}
+                placeholder={"Save session to generate link."}
                 readonly={true}
                 onChange={(newLink) =>
                   handleChange(first_name, last_name, newLink, muted)
@@ -107,7 +115,7 @@ function ParticipantData({
                 </div>
               </div>
               <Button
-                name="Finish"
+                name="Save"
                 design={"secondary"}
                 onClick={() => onAddAdditionalInformation()}
               />
@@ -115,13 +123,6 @@ function ParticipantData({
           </div>
         </div>
       )}
-
-      <Button
-        name=""
-        design={"negative"}
-        onClick={() => onDeleteParticipant()}
-        icon={<FaRegTrashAlt />}
-      />
     </div>
   );
 }

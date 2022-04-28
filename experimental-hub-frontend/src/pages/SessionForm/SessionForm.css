@@ -5,11 +5,12 @@
 }
 
 .sessionFormData {
-    padding: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
     border-radius: 0.5em;
     box-shadow: 1px 3px 6px 1px rgba(0,0,0,0.2);
     background-color: white;
-    min-width: 700px;
+    min-width: fit-content;
     border-right: 6px solid hsl(212, 86%, 64%);
     margin-right: 1em;
     margin-left: 1em;
@@ -32,7 +33,7 @@
 
 .scrollableParticipants {
     max-height: 20em;
-    overflow-y: scroll;
+    overflow-y: auto;
     margin: 0.6em;
 }
 .sessionFormButtons{

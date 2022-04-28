@@ -48,3 +48,10 @@
 .additionalParticipantInfoCard > h2 {
     margin-bottom: 0.5em;
 }
+
+.participantButtons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0.5em;
+}

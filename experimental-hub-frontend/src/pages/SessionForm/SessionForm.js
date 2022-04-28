@@ -14,12 +14,15 @@ import {
 import "./SessionForm.css";
 import { useState } from "react";
 import { filterListByIndex, getRandomColor } from "../../utils/utils";
+import TextField from "../../components/molecules/TextField/TextField";
+import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 
 function SessionForm() {
   const [participantList, setParticipantList] = useState([]);
   const [sessionData, setSessionData] = useState(INITIAL_SESSION_DATA);
   const [participantShapes, setParticipantShapes] = useState([]);
   const [participantGroups, setParticipantGroups] = useState([]);
+  const [showSessionDataForm, setShowSessionDataForm] = useState(true);
 
   const onDeleteParticipant = (index) => {
     setParticipantList(filterListByIndex(participantList, index));
@@ -80,6 +83,10 @@ function SessionForm() {
     }));
   };
 
+  const onShowSessionFormModal = () => {
+    setShowSessionDataForm(!showSessionDataForm);
+  };
+
   const onSaveSession = () => {
     let newParticipantList = [];
     newParticipantList = participantList.forEach((participant, index) => {
@@ -99,87 +106,99 @@ function SessionForm() {
 
   return (
     <div className="sessionFormContainer">
-      <div className="sessionFormData">
-        <div className="sessionForm">
-          <Heading heading={"Session Data"} />
-          <InputTextField
-            title="Title"
-            placeholder={"Your title"}
-            value={sessionData.title}
-            onChange={(newTitle) => handleSessionDataChange("title", newTitle)}
-          ></InputTextField>
-          <InputTextField
-            title="Description"
-            value={sessionData.description}
-            placeholder={"Short description of the session"}
-            onChange={(newDescription) =>
-              handleSessionDataChange("description", newDescription)
-            }
-          ></InputTextField>
-          <div className="timeInput">
+      {showSessionDataForm && (
+        <div className="sessionFormData">
+          <div className="sessionForm">
+            <Heading heading={"Session Data"} />
             <InputTextField
-              title="Time Limit"
-              value={sessionData.time_limit}
-              placeholder={"Your time limit in ms"}
-              inputType={"number"}
-              onChange={(newTimeLimit) =>
-                handleSessionDataChange("time_limit", newTimeLimit)
+              title="Title"
+              placeholder={"Your title"}
+              value={sessionData.title}
+              onChange={(newTitle) =>
+                handleSessionDataChange("title", newTitle)
               }
             ></InputTextField>
-            <InputDateField
-              title="Date"
-              value={sessionData.date}
-              onChange={(newDate) =>
-                handleSessionDataChange(
-                  "date",
-                  newDate ? new Date(newDate).getTime() : 0
-                )
+            <TextField
+              title="Description"
+              value={sessionData.description}
+              placeholder={"Short description of the session"}
+              onChange={(newDescription) =>
+                handleSessionDataChange("description", newDescription)
               }
-            ></InputDateField>
-          </div>
-          <Checkbox
-            title="Record Session"
-            value={sessionData.record}
-            checked={sessionData.record}
-            onChange={() =>
-              handleSessionDataChange("record", !sessionData.record)
-            }
-          />
-          <hr className="separatorLine"></hr>
-          <Heading heading={"Participants"} />
-          <div className="participantCheckboxes"></div>
-          <div className="sessionFormParticipants">
-            <div className="scrollableParticipants">
-              {participantList.map((participant, index) => {
-                return (
-                  <ParticipantData
-                    onDeleteParticipant={() => onDeleteParticipant(index)}
-                    key={index}
-                    index={index}
-                    onChange={handleParticipantChange}
-                    first_name={participant.first_name}
-                    last_name={participant.last_name}
-                    link={participant.link}
-                    muted={participant.muted}
-                    parameters={participantGroups[index]}
-                  />
-                );
-              })}
+            ></TextField>
+            <div className="timeInput">
+              <InputTextField
+                title="Time Limit"
+                value={sessionData.time_limit}
+                placeholder={"Your time limit in ms"}
+                inputType={"number"}
+                onChange={(newTimeLimit) =>
+                  handleSessionDataChange("time_limit", newTimeLimit)
+                }
+              ></InputTextField>
+              <InputDateField
+                title="Date"
+                value={sessionData.date}
+                onChange={(newDate) =>
+                  handleSessionDataChange(
+                    "date",
+                    newDate ? new Date(newDate).getTime() : 0
+                  )
+                }
+              ></InputDateField>
             </div>
-            <Button
-              name="Add new participant"
-              design={"positive"}
-              onClick={() => onAddParticipant()}
-            />
-          </div>
-          <hr className="separatorLine"></hr>
-        </div>
 
-        <div className="sessionFormButtons">
-          <LinkButton name="Save" to="/" onClick={() => onSaveSession()} />
-          <LinkButton name="Start" to="/watchingRoom" />
+            <Checkbox
+              title="Record Session"
+              value={sessionData.record}
+              checked={sessionData.record}
+              onChange={() =>
+                handleSessionDataChange("record", !sessionData.record)
+              }
+            />
+            <hr className="separatorLine"></hr>
+            <Heading heading={"Participants"} />
+            <div className="participantCheckboxes"></div>
+            <div className="sessionFormParticipants">
+              <div className="scrollableParticipants">
+                {participantList.map((participant, index) => {
+                  return (
+                    <ParticipantData
+                      onDeleteParticipant={() => onDeleteParticipant(index)}
+                      key={index}
+                      index={index}
+                      onChange={handleParticipantChange}
+                      first_name={participant.first_name}
+                      last_name={participant.last_name}
+                      link={participant.link}
+                      muted={participant.muted}
+                      parameters={participantGroups[index]}
+                    />
+                  );
+                })}
+              </div>
+              <Button
+                name="Add new participant"
+                design={"positive"}
+                onClick={() => onAddParticipant()}
+              />
+            </div>
+            <hr className="separatorLine"></hr>
+          </div>
+
+          <div className="sessionFormButtons">
+            <LinkButton name="Save" to="/" onClick={() => onSaveSession()} />
+            <LinkButton name="Start" to="/watchingRoom" />
+          </div>
         </div>
-      </div>
+      )}
+      <Button
+        name={""}
+        icon={showSessionDataForm ? <FaAngleLeft /> : <FaAngleRight />}
+        design={"close"}
+        onClick={() => onShowSessionFormModal()}
+        title={"Show/Close session form"}
+      />
       <div className="sessionFormCanvas">
         <DragAndDrop
           participantShapes={participantShapes}
