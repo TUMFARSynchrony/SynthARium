@@ -121,6 +121,7 @@ function SessionForm() {
               title="Time Limit"
               value={sessionData.time_limit}
               placeholder={"Your time limit in ms"}
+              inputType={"number"}
               onChange={(newTimeLimit) =>
                 handleSessionDataChange("time_limit", newTimeLimit)
               }

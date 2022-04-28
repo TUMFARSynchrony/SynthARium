@@ -1,12 +1,15 @@
 import { BACKEND } from "../utils/constants";
 
 export default class Connection {
+  messageHandler;
   mainPc; // RTCPeerConnection | undefined
+  dc;
   userType;
   sessionId;
   participantId;
 
-  constructor(localStream, sessionId, participantId) {
+  constructor(messageHandler, localStream, sessionId, participantId) {
+    this.messageHandler = messageHandler;
     this.localStream = localStream; // optional, required for participant only
     this.sessionId = sessionId; // optional, required for participant only
     this.participantId = participantId; // optional, required for participant only
@@ -17,9 +20,10 @@ export default class Connection {
 
   async start() {
     // Add localStream to peer connection
+    console.log(this.localStream);
     this.localStream?.getTracks().forEach((track) => {
       console.log("Adding track", track);
-      this.pc.addTrack(track, this.localStream);
+      this.mainPc.addTrack(track, this.localStream);
     });
 
     await this.#negotiate();
@@ -27,7 +31,10 @@ export default class Connection {
 
   stop() {}
 
-  sendRequest() {}
+  sendRequest(type, data) {
+    const message = { type: type, data: data };
+    this.dc.send(message);
+  }
 
   #initPeerConnection() {
     const config = {
@@ -58,6 +65,16 @@ export default class Connection {
       false
     );
 
+    // Setup datachannel
+    this.dc = this.mainPc.createDataChannel("chat");
+    this.dc.onclose = function () {
+      console.log("datachannel onclose");
+    };
+    this.dc.onopen = function () {
+      console.log("datachannel onopen");
+    };
+    this.dc.onmessage = this.messageHandler;
+
     // Receive audio / video
     this.mainPc.addEventListener("track", (e) => {
       console.log("Received a", e.track.kind, "track from remote");
@@ -76,7 +93,7 @@ export default class Connection {
       offerToReceiveVideo: true,
       offerToReceiveAudio: true,
     });
-    await this.pc.setLocalDescription(offer);
+    await this.mainPc.setLocalDescription(offer);
 
     // Wait for iceGatheringState to be "complete".
     await new Promise((resolve) => {
@@ -96,7 +113,7 @@ export default class Connection {
       }
     });
 
-    const localDesc = this.pc.localDescription;
+    const localDesc = this.mainPc.localDescription;
     let request;
     if (this.userType === "participant") {
       request = {

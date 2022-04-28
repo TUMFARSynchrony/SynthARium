@@ -14,8 +14,8 @@ function App() {
   const [connection, setConnection] = useState(null);
 
   const requireLocalStream = window.location.pathname === "/experimentRoom";
-  const sessionId = "123";
-  const participantId = "123";
+  const sessionId = "example_session_id_1";
+  const participantId = "example_user_id";
 
   useEffect(() => {
     const asyncStreamHelper = async () => {
@@ -25,21 +25,33 @@ function App() {
       }
       return stream;
     };
+    asyncStreamHelper();
+  }, []);
 
+  useEffect(() => {
     if (connection !== null) {
       // Return if connection was already established
       return;
     }
 
-    if (requireLocalStream) {
+    let newConnection;
+    if (requireLocalStream && localStream) {
       // We are a participant
-      const stream = asyncStreamHelper();
-      setConnection(new Connection(stream, sessionId, participantId));
-    } else {
+      newConnection = new Connection(
+        messageHandler,
+        localStream,
+        sessionId,
+        participantId
+      );
+    } else if (!requireLocalStream) {
       // We are a experimenter
-      setConnection(new Connection());
+      newConnection = new Connection(messageHandler);
+    } else {
+      return;
     }
-  }, [requireLocalStream, connection]);
+    setConnection(newConnection);
+    newConnection.start();
+  }, [connection, localStream, requireLocalStream]);
 
   return (
     <div className="App">
@@ -61,3 +73,7 @@ function App() {
 }
 
 export default App;
+
+function messageHandler(message) {
+  console.log("messageHandler received:", message);
+}
