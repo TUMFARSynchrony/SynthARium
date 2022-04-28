@@ -35,3 +35,5 @@ export const INITIAL_PARTICIPANT_DATA = {
     height: 0,
   },
 };
+
+export const BACKEND = "http://127.0.0.1:8080";

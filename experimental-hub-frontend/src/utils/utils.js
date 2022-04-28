@@ -38,3 +38,16 @@ export const getTotalBox = (boxes) => {
     height: maxY - minY,
   };
 };
+
+export const getLocalStream = async () => {
+  // TODO: allow the user to select a specific camera / audio device?
+  const constraints = {
+    video: true,
+    audio: true,
+  };
+  try {
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (error) {
+    console.error("Error opening video camera.", error);
+  }
+};
