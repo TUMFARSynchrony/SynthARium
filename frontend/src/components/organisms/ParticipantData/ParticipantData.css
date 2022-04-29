@@ -35,10 +35,6 @@
     flex-direction: column;
 }
 
-.additionalInformationClosingButton {
-    align-self: flex-end;
-}
-
 .participantVideoSize {
     display: flex;
     align-items: center;

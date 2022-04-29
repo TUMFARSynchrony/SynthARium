@@ -46,8 +46,7 @@
     box-shadow: none;
     border-radius: 70px;
     width: fit-content;
-    margin: 1em;
-    padding: 0em;
+    padding: 1em;
   }
 
 .button:hover {

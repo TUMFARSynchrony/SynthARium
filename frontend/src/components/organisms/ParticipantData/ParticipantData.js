@@ -1,7 +1,7 @@
 import Button from "../../atoms/Button/Button";
 import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
-import { FaRegTrashAlt, FaRegWindowClose } from "react-icons/fa";
+import { FaRegTrashAlt } from "react-icons/fa";
 import Checkbox from "../../molecules/Checkbox/Checkbox";
 import { useState } from "react";
 import Heading from "../../atoms/Heading/Heading";
@@ -17,7 +17,7 @@ function ParticipantData({
   muted,
   parameters,
 }) {
-  const [showAdditionalInput, setShowAdditionalInput] = useState(false);
+  const [showAdditionalInput, setShowAdditionalInput] = useState(true);
 
   const handleChange = (first_name, last_name, link, muted) => {
     onChange(index, { first_name, last_name, link, muted });
@@ -56,15 +56,6 @@ function ParticipantData({
         <div className="additionalParticipantInfoContainer">
           <div className="additionalParticipantInfo">
             <div className="additionalParticipantInfoCard">
-              <div className="additionalInformationClosingButton">
-                <Button
-                  name={""}
-                  icon={<FaRegWindowClose />}
-                  design={"close"}
-                  onClick={() => onAddAdditionalInformation()}
-                />
-              </div>
-
               <Heading heading={"General information:"} />
 
               <InputTextField
