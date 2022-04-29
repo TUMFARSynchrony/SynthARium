@@ -25,6 +25,7 @@ function App() {
       }
       return stream;
     };
+
     asyncStreamHelper();
   }, []);
 
@@ -49,6 +50,7 @@ function App() {
     } else {
       return;
     }
+
     setConnection(newConnection);
     newConnection.start();
   }, [connection, localStream, requireLocalStream]);

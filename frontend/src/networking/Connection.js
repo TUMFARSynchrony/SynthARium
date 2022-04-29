@@ -32,7 +32,7 @@ export default class Connection {
   stop() {}
 
   sendRequest(type, data) {
-    const message = { type: type, data: data };
+    const message = JSON.stringify({ type: type, data: data });
     this.dc.send(message);
   }
 
@@ -73,7 +73,11 @@ export default class Connection {
     this.dc.onopen = function () {
       console.log("datachannel onopen");
     };
-    this.dc.onmessage = this.messageHandler;
+    this.dc.onmessage = this.dc.onmessage = (e) => {
+      const msgObj = JSON.parse(e.data);
+      console.log("Received", msgObj);
+      this.messageHandler(msgObj);
+    };
 
     // Receive audio / video
     this.mainPc.addEventListener("track", (e) => {
