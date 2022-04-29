@@ -3,12 +3,14 @@
 
 from __future__ import annotations
 import json
+
 from os import listdir
 from os.path import isfile, join
 
 from custom_types.session import SessionDict
 from modules.session import Session
 from modules.util import generate_unique_id
+from modules import BACKEND_DIR
 
 
 class SessionManager:
@@ -45,7 +47,7 @@ class SessionManager:
         """
         print("[SessionManager]: Initiating SessionManager")
         self._sessions = {}
-        self._session_dir = session_dir
+        self._session_dir = join(BACKEND_DIR, session_dir)
         self._read_files_from_drive()
 
     def get_session_list(self):

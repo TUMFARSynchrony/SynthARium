@@ -4,6 +4,8 @@
 from typing import Literal
 
 import json
+from os.path import join
+from modules import BACKEND_DIR
 
 
 class Config:
@@ -21,7 +23,8 @@ class Config:
         ValueError
             If a key in `backend/config.json` is missing or has the wrong type.
         """
-        config = json.load(open("./config.json"))
+        config_path = join(BACKEND_DIR, "config.json")
+        config = json.load(open(config_path))
 
         # Check if keys exist and types are correct.
         data_types = {
