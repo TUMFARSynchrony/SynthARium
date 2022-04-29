@@ -94,7 +94,9 @@ class Hub:
 
         elif user_type == "experimenter":
             id = generate_unique_id([e.id for e in self.experimenters])
-            answer, experimenter = await _experimenter.experimenter_factory(offer, id)
+            answer, experimenter = await _experimenter.experimenter_factory(
+                offer, id, self
+            )
             self.experimenters.append(experimenter)
 
         else:

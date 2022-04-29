@@ -22,9 +22,10 @@ class Experimenter(_user.User):
     _experiment: _experiment.Experiment
     _hub: _hub.Hub
 
-    def __init__(self, id: str):
+    def __init__(self, id: str, hub: _hub.Hub):
         """TODO document"""
         super().__init__(id)
+        self._hub = hub
         self.on("GET_SESSION_LIST", self._handle_get_session_list)
         self.on("SAVE_SESSION", self._handle_save_session)
         self.on("DELETE_SESSION", self._handle_delete_session)
@@ -122,9 +123,9 @@ class Experimenter(_user.User):
         return MessageDict(type="SUCCESS", data=success)
 
 
-async def experimenter_factory(offer: RTCSessionDescription, id: str):
+async def experimenter_factory(offer: RTCSessionDescription, id: str, hub: _hub.Hub):
     """TODO document"""
-    experimenter = Experimenter(id)
+    experimenter = Experimenter(id, hub)
     answer, connection = await connection_factory(offer, experimenter.handle_message)
     experimenter.set_connection(connection)
     return (answer, experimenter)
