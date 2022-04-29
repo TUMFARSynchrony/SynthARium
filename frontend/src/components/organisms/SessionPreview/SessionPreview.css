@@ -4,7 +4,7 @@
     border-top: 3px solid hsl(212, 86%, 64%);
     border-radius: 0.5em;
     padding: 2em;
-    margin: 2em;
+    margin: 1em;
     display: flex;
     flex-direction: column;
     max-height: 300px;
@@ -29,6 +29,4 @@
 
 .sessionPreviewButtons {
     display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
 }

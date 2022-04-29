@@ -1,8 +1,11 @@
+import { INITIAL_SESSION_DATA } from "../../../utils/constants";
 import { integerToDateTime } from "../../../utils/utils";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
 function SessionPreview({ sessionInformation }) {
+  const onEdit = () => {};
+
   return (
     <div className="sessionPreviewContainer">
       <div className="sessionPreviewHeader">
@@ -21,8 +24,16 @@ function SessionPreview({ sessionInformation }) {
       </p>
       <>
         <div className="sessionPreviewButtons">
-          <LinkButton name={"COPY"} to="/sessionForm" />
-          <LinkButton name={"EDIT"} to="/sessionForm" />
+          <LinkButton
+            name={"COPY"}
+            to="/sessionForm"
+            state={{ initialData: sessionInformation, action: "COPY" }}
+          />
+          <LinkButton
+            name={"EDIT"}
+            to="/sessionForm"
+            state={{ initialData: sessionInformation, action: "EDIT" }}
+          />
           <LinkButton name={"START"} to="/watchingRoom" />
         </div>
       </>

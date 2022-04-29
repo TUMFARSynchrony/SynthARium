@@ -16,8 +16,9 @@ function ParticipantData({
   link,
   muted,
   parameters,
+  showModal,
 }) {
-  const [showAdditionalInput, setShowAdditionalInput] = useState(true);
+  const [showAdditionalInput, setShowAdditionalInput] = useState(showModal);
 
   const handleChange = (first_name, last_name, link, muted) => {
     onChange(index, { first_name, last_name, link, muted });

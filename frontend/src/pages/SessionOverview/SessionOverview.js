@@ -6,6 +6,7 @@ import NavigationBar from "../../components/organisms/NavigationBar/NavigationBa
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { getSessionJson } from "../../utils/mockServer";
+import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
 function SessionOverview() {
   var sessionCards = getSessionJson();
@@ -23,7 +24,11 @@ function SessionOverview() {
       <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
       <div className="sessionOverviewContainer">
         <div className="sessionOverviewCards">
-          <LinkButton name="CREATE NEW SESSION" to="/sessionForm" />
+          <LinkButton
+            name="CREATE NEW SESSION"
+            to="/sessionForm"
+            state={{ initialData: INITIAL_SESSION_DATA, action: "NEW_SESSION" }}
+          />
           {sessionCards.length !== 0 ? (
             sessionCards.map((session, index) => {
               return (

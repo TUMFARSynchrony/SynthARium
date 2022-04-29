@@ -51,3 +51,30 @@ export const getLocalStream = async () => {
     console.error("Error opening video camera.", error);
   }
 };
+
+export const getShapesFromParticipants = (participants) => {
+  const shapesArray = [];
+  let groupArray = [];
+
+  participants.forEach((participant, _) => {
+    shapesArray.push({
+      x: 0,
+      y: 0,
+      fill: getRandomColor(),
+      first_name: participant.first_name,
+      last_name: participant.last_name,
+    });
+    groupArray.push({
+      x: participant.position.x,
+      y: participant.position.y,
+      width: participant.size.width,
+      height: participant.size.height,
+    });
+  });
+
+  console.log("shapesArray", shapesArray);
+  console.log("groupArray", groupArray);
+  console.log("participants", participants);
+
+  return { shapesArray: shapesArray, groupArray: groupArray };
+};

@@ -6,22 +6,35 @@ import Button from "../../components/atoms/Button/Button";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import Heading from "../../components/atoms/Heading/Heading";
-import {
-  INITIAL_PARTICIPANT_DATA,
-  INITIAL_SESSION_DATA,
-} from "../../utils/constants";
+import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
 
 import "./SessionForm.css";
 import { useState } from "react";
-import { filterListByIndex, getRandomColor } from "../../utils/utils";
+import {
+  filterListByIndex,
+  getRandomColor,
+  getShapesFromParticipants,
+} from "../../utils/utils";
 import TextField from "../../components/molecules/TextField/TextField";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
 
 function SessionForm() {
-  const [participantList, setParticipantList] = useState([]);
-  const [sessionData, setSessionData] = useState(INITIAL_SESSION_DATA);
-  const [participantShapes, setParticipantShapes] = useState([]);
-  const [participantGroups, setParticipantGroups] = useState([]);
+  const location = useLocation();
+  const participantShapesObject = getShapesFromParticipants(
+    location.state.initialData.participants
+  );
+
+  const [participantList, setParticipantList] = useState(
+    location.state.initialData.participants
+  );
+  const [sessionData, setSessionData] = useState(location.state.initialData);
+  const [participantShapes, setParticipantShapes] = useState(
+    participantShapesObject.shapesArray
+  );
+  const [participantGroups, setParticipantGroups] = useState(
+    participantShapesObject.groupArray
+  );
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
 
   const onDeleteParticipant = (index) => {
@@ -105,7 +118,6 @@ function SessionForm() {
     return sessionData;
   };
 
-  console.log("participantData", participantList);
   return (
     <div className="sessionFormContainer">
       {showSessionDataForm && (
@@ -175,6 +187,11 @@ function SessionForm() {
                       link={participant.link}
                       muted={participant.muted}
                       parameters={participantGroups[index]}
+                      showModal={
+                        location.state.initialData.participants.length > 0
+                          ? false
+                          : true
+                      }
                     />
                   );
                 })}
