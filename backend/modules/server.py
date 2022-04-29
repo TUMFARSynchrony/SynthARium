@@ -56,7 +56,7 @@ class Server:
         self._app.on_shutdown.append(self._shutdown)
         routes = []
         routes.append(self._app.router.add_get("/", self.get_hello_world))
-        routes.append(self._app.router.add_get("/offer", self.handle_offer))
+        routes.append(self._app.router.add_post("/offer", self.handle_offer))
 
         if not use_cors:
             return
@@ -73,7 +73,7 @@ class Server:
                     "*": aiohttp_cors.ResourceOptions(
                         allow_credentials=True,
                         expose_headers=("X-Custom-Server-Header",),
-                        allow_methods=["GET"],
+                        allow_methods=["GET", "POST"],
                         allow_headers=("X-Requested-With", "Content-Type"),
                     )
                 },
@@ -137,7 +137,7 @@ class Server:
 
         # Parse request
         try:
-            params: dict = await request.json()
+            params: dict = (await request.json())["request"]
         except json.JSONDecodeError:
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Failed to parse request."
@@ -145,10 +145,10 @@ class Server:
 
         # Check if all required keys exist in params
         required_keys = ["sdp", "type", "user_type"]
-        if params["user_type"] == "participant":
+        if params.get("user_type") == "participant":
             required_keys.extend(["session_id", "participant_id"])
 
-        missing_keys = list(filter(lambda key: key not in params, required_keys))
+        missing_keys = list(filter(lambda key: key not in params.keys(), required_keys))
 
         if len(missing_keys) > 0:
             raise ErrorDictException(
@@ -184,6 +184,7 @@ class Server:
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
+            print("[SERVER] Failed to parse offer.")
             return web.Response(
                 content_type="application/json",
                 status=error.code,
@@ -224,7 +225,10 @@ class Server:
             )
 
         # Create response
-        answer = MessageDict(type="SESSION_DESCRIPTION", data=response)
+        answer = MessageDict(
+            type="SESSION_DESCRIPTION",
+            data={"sdp": response.sdp, "type": response.type},
+        )
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
     def get_index(self):

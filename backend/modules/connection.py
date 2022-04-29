@@ -1,6 +1,7 @@
 """TODO document"""
 
-from typing import Callable, Any, Tuple
+import json
+from typing import Callable, Tuple
 from aiortc import (
     RTCPeerConnection,
     RTCDataChannel,
@@ -8,6 +9,9 @@ from aiortc import (
     MediaStreamTrack,
 )
 
+from modules.util import check_valid_typed_dict
+
+from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 
 
@@ -35,8 +39,9 @@ class Connection:
         pc.on("track", f=self._on_track)
 
     def send(self, data):
-        """TODO document"""
-        pass
+        stringified = json.dumps(data)
+        print("[Connection] Sending", stringified)
+        self._dc.send(stringified)
 
     @property
     def incoming_audio(self):
@@ -57,7 +62,35 @@ class Connection:
     def _on_datachannel(self, channel: RTCDataChannel):
         """TODO document"""
         print("[CONNECTION]: datachannel")
-        channel.on("message", self._message_handler)
+        self._dc = channel
+        self._dc.on("message", self._handle_message)
+
+    def _handle_message(self, message):
+        """TODO document"""
+        if not isinstance(message, str):
+            return
+
+        try:
+            message_obj = json.loads(message)
+        except Exception as err:
+            print("[CONNECTION] Failed to parse message.", err)
+            # Send error response in following if statement.
+            message_obj = None
+
+        # Handle invalid message type
+        if message_obj is None or not check_valid_typed_dict(message_obj, MessageDict):
+            print("[CONNECTION] Received message with invalid type.", message)
+            err = ErrorDict(
+                type="INVALID_REQUEST",
+                code=400,
+                description="Received message is not a valid Message object.",
+            )
+            response = MessageDict(type="ERROR", data=err)
+            self.send(response)
+            return
+
+        # Pass message to message handler in user.
+        self._message_handler(message_obj)
 
     def _on_connection_state_change(self):
         """TODO document"""

@@ -26,9 +26,9 @@ class User(ABC):
         """TODO document"""
         self._connection = connection
 
-    def send(self, data):
+    def send(self, message: MessageDict):
         """TODO document"""
-        pass
+        self._connection.send(message)
 
     def disconnect(self):
         """TODO document"""
@@ -51,10 +51,8 @@ class User(ABC):
 
     def handle_message(self, message: MessageDict | Any):
         """TODO document"""
-        # TODO check if valid message
 
         endpoint = message["type"]
-
         handler_functions = self._handlers.get(endpoint, None)
 
         if handler_functions is None:
@@ -62,20 +60,21 @@ class User(ABC):
             return
 
         print(
-            f"[USER]: Received {endpoint}. Calling {len(handler_functions)} handlers."
+            f"[USER]: Received {endpoint}. Calling {len(handler_functions)} handler(s)."
         )
         for handler in handler_functions:
             try:
                 response = handler(message["data"])
             except ErrorDictException as err:
                 response = err.error_message
-            except Exception:
+            except Exception as err:
+                print("[USER] INTERNAL SERVER ERROR:", err)
                 err = ErrorDict(
                     type="INTERNAL_SERVER_ERROR",
                     code=500,
                     description="Internal server error.",
                 )
-                response = MessageDict(type="ERROR", data={})  # TODO data
+                response = MessageDict(type="ERROR", data=err)
 
             if response is not None:
                 self.send(response)
