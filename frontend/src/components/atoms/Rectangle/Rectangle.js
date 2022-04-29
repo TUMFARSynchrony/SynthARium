@@ -14,6 +14,10 @@ const Rectangle = ({
   const trRef = useRef();
 
   useEffect(() => {
+    if (!trRef.current) {
+      return;
+    }
+
     if (isSelected) {
       trRef.current.nodes([shapeRef.current]);
       trRef.current.getLayer().batchDraw();
@@ -21,6 +25,9 @@ const Rectangle = ({
   }, [isSelected]);
 
   const onTransformEnd = () => {
+    if (!shapeRef.current) {
+      return;
+    }
     const old = shapeRef.current;
     const scaleX = old.scaleX();
     const scaleY = old.scaleY();
@@ -39,6 +46,10 @@ const Rectangle = ({
   const onDragMove = (e) => {
     onSelect(e);
     let newAbsPos = {};
+
+    if (!trRef.current) {
+      return;
+    }
 
     const boxes = trRef.current.nodes().map((node) => node.getClientRect());
     const box = getTotalBox(boxes);

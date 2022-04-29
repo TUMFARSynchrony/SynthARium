@@ -56,12 +56,15 @@ function ParticipantData({
         <div className="additionalParticipantInfoContainer">
           <div className="additionalParticipantInfo">
             <div className="additionalParticipantInfoCard">
-              {/* <Button
-                name={""}
-                icon={<FaRegWindowClose />}
-                design={"close"}
-                onClick={() => onAddAdditionalInformation()}
-              /> */}
+              <div className="additionalInformationClosingButton">
+                <Button
+                  name={""}
+                  icon={<FaRegWindowClose />}
+                  design={"close"}
+                  onClick={() => onAddAdditionalInformation()}
+                />
+              </div>
+
               <Heading heading={"General information:"} />
 
               <InputTextField

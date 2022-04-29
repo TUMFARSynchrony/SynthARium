@@ -18,7 +18,7 @@ function SessionOverview() {
   };
 
   return (
-    <div>
+    <>
       <NavigationBar />
       <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
       <div className="sessionOverviewContainer">
@@ -47,7 +47,7 @@ function SessionOverview() {
           )}
         </>
       </div>
-    </div>
+    </>
   );
 }
 

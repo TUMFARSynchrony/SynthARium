@@ -99,11 +99,13 @@ function SessionForm() {
 
     let newSessionData = { ...sessionData };
     newSessionData.participants = participantList;
+    newSessionData.time_limit *= 60000;
     setSessionData(newSessionData);
 
     return sessionData;
   };
 
+  console.log("participantData", participantList);
   return (
     <div className="sessionFormContainer">
       {showSessionDataForm && (
@@ -128,9 +130,9 @@ function SessionForm() {
             ></TextField>
             <div className="timeInput">
               <InputTextField
-                title="Time Limit"
+                title="Time Limit (in minutes)"
                 value={sessionData.time_limit}
-                placeholder={"Your time limit in ms"}
+                placeholder={"Input time limit in MINUTES"}
                 inputType={"number"}
                 onChange={(newTimeLimit) =>
                   handleSessionDataChange("time_limit", newTimeLimit)
