@@ -4,10 +4,12 @@
 from __future__ import annotations
 import json
 
-from os import listdir
+import os
 from os.path import isfile, join
 
 from custom_types.session import SessionDict
+
+from modules.exceptions import ErrorDictException
 from modules.session import Session
 from modules.util import generate_unique_id
 from modules import BACKEND_DIR
@@ -137,13 +139,27 @@ class SessionManager:
         bool
             True, if the session was found and successfully deleted, otherwise
             False.
+
+        Raises
+        ------
+        ErrorDictException
+            If there is no session with `id`.
         """
         if id not in self._sessions:
             print(
-                f"[SessionManager]: WARNING: Cannot delete session with id {id}, no ",
+                f"[SessionManager]: Cannot delete session with id {id}, no ",
                 "session with this id was found.",
             )
-            return False
+            raise ErrorDictException(
+                code=404,
+                type="INVALID_REQUEST",
+                description="No session found for the given ID.",
+            )
+
+        # TODO check if the session obj is used in an experiment.
+
+        print("[SessionManager]: Deleting session. ID:", id)
+        self._delete_file(id + ".json")
         return self._sessions.pop(id, None) != None
 
     def _handle_session_update(self, session: Session):
@@ -200,7 +216,7 @@ class SessionManager:
     def _get_filenames(self):
         """Get all filenames of files in `self._session_dir`."""
         filenames: list[str] = []
-        for filename in listdir(self._session_dir):
+        for filename in os.listdir(self._session_dir):
             if isfile(join(self._session_dir, filename)):
                 filenames.append(filename)
         return filenames
@@ -235,3 +251,17 @@ class SessionManager:
         path = join(self._session_dir, filename)
         with open(path, "w") as file:
             json.dump(session_dict, file, indent=4)
+
+    def _delete_file(self, filename: str):
+        """Delete a file in the sessions folder.
+
+        Parameters
+        ----------
+        filename : str
+            name of the file inside `self._session_dir`.
+        """
+        path = join(self._session_dir, filename)
+        if os.path.exists(path):
+            os.remove(path)
+        else:
+            print("[SessionManager]: Cant delete file, file not found.", path)
