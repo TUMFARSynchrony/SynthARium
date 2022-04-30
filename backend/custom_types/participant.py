@@ -3,8 +3,8 @@
 Use for type hints and static type checking without any overhead during runtime.
 """
 
-from typing import Any, TypedDict
-from typing_extensions import NotRequired
+from typing import Any
+from typing_extensions import NotRequired, TypedDict
 
 from custom_types.size import SizeDict
 from custom_types.position import PositionDict
