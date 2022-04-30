@@ -2,8 +2,9 @@
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
-from modules.experiment import Experiment
+import asyncio
 
+from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
@@ -53,11 +54,13 @@ class Hub:
     async def stop(self):
         """Stop the hub, close all connection and stop the server."""
         print("[HUB] stopping")
-        await self.server.stop()
+        tasks = [self.server.stop()]
         for experimenter in self.experimenters:
-            experimenter.disconnect()
+            tasks.append(experimenter.disconnect())
         for experiment in self.experiments.values():
             experiment.stop()
+
+        await asyncio.gather(*tasks)
 
     async def handle_offer(
         self,

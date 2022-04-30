@@ -38,6 +38,10 @@ class Connection:
         pc.on("connectionstatechange", f=self._on_connection_state_change)
         pc.on("track", f=self._on_track)
 
+    async def stop(self):
+        if self._main_pc:
+            await self._main_pc.close()
+
     def send(self, data):
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)

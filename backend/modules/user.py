@@ -30,9 +30,9 @@ class User(ABC):
         """TODO document"""
         self._connection.send(message)
 
-    def disconnect(self):
+    async def disconnect(self):
         """TODO document"""
-        pass
+        await self._connection.stop()
 
     def subscribe_to(self, user: User):
         """TODO document"""
