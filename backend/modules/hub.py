@@ -2,6 +2,7 @@
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
+from backend.modules.experiment import Experiment
 
 from modules.config import Config
 from modules.util import generate_unique_id
@@ -172,6 +173,36 @@ class Hub:
 
         return answer
 
-    def start_experiment(self, session):
-        """TODO document"""
-        pass
+    def create_experiment(self, session_id: str) -> Experiment:
+        """Create a new Experiment based on existing session data.
+
+        Parameters
+        ----------
+        session_id : str
+            ID for session data the experiment should be based on.
+
+        Raises
+        ------
+        ErrorDictException
+            If experiment already exists or there is no session with `session_id`.
+        """
+        # Check if experiment already exists
+        if session_id in self.experiments:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_REQUEST",
+                description="Experiment already exists.",
+            )
+
+        # Load session data for experiment
+        session = self.session_manager.get_session(session_id)
+        if session is None:
+            raise ErrorDictException(
+                code=400,
+                type="UNKNOWN_SESSION",
+                description="No session with the given ID found.",
+            )
+
+        experiment = Experiment(session)
+        self.experiments[session_id] = experiment
+        return experiment

@@ -29,6 +29,8 @@ class Experimenter(_user.User):
         self.on("GET_SESSION_LIST", self._handle_get_session_list)
         self.on("SAVE_SESSION", self._handle_save_session)
         self.on("DELETE_SESSION", self._handle_delete_session)
+        self.on("CREATE_EXPERIMENT", self._handle_create_experiment)
+        self.on("JOIN_EXPERIMENT", self._handle_join_experiment)
         self.on("START_EXPERIMENT", self._handle_start_experiment)
         self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on("ADD_NOTE", self._handle_add_note)
@@ -82,6 +84,49 @@ class Experimenter(_user.User):
 
         success = SuccessDict(
             type="DELETE_SESSION", description="Successfully deleted session."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_create_experiment(self, data):
+        """TODO document"""
+        if "session_id" not in data:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Missing session_id in request.",
+            )
+
+        self._experiment = self._hub.create_experiment(data["session_id"])
+        self._experiment.add_experimenter(self)
+
+        success = SuccessDict(
+            type="CREATE_EXPERIMENT", description="Successfully started session."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_join_experiment(self, data):
+        """TODO document"""
+        if "session_id" not in data:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Missing session_id in request.",
+            )
+
+        experiment = self._hub.experiments.get(data["session_id"])
+
+        if experiment is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_EXPERIMENT",
+                description="There is no experiment with the given ID.",
+            )
+
+        self._experiment = experiment
+        self._experiment.add_experimenter(self)
+
+        success = SuccessDict(
+            type="JOIN_EXPERIMENT", description="Successfully joined experiment."
         )
         return MessageDict(type="SUCCESS", data=success)
 

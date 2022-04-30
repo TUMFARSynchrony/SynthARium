@@ -40,6 +40,7 @@ ERROR_TYPES = Literal[
     "INTERNAL_SERVER_ERROR",
     "INVALID_REQUEST",
     "UNKNOWN_SESSION",
+    "UNKNOWN_EXPERIMENT",
     "UNKNOWN_PARTICIPANT",
 ]
 """Possible error types for custom_types.error.ErrorDict.
