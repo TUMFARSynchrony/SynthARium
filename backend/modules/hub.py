@@ -2,7 +2,7 @@
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
-from backend.modules.experiment import Experiment
+from modules.experiment import Experiment
 
 from modules.config import Config
 from modules.util import generate_unique_id
