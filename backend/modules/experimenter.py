@@ -40,16 +40,28 @@ class Experimenter(_user.User):
 
     def _handle_save_session(self, data):
         """TODO document"""
-        # TODO data checks
-        assert type(data) == SessionDict
+        # Data check
+        if not check_valid_typed_dict(data, SessionDict):
+            raise ErrorDictException(
+                code=400, type="INVALID_REQUEST", description="Expected session object."
+            )
+        assert isinstance(data, SessionDict)
+
         sm = self._hub.session_manager
-        session = sm.get_session(data)
-        if session is not None:
-            # Update existing session
-            session.update(data)
-        else:
+        if "id" not in data:
             # Create new session
             sm.create_session(data)
+        else:
+            # Update existing session
+            session = sm.get_session(data["id"])
+            if session is not None:
+                session.update(data)
+            else:
+                raise ErrorDictException(
+                    code=404,
+                    type="UNKNOWN_SESSION",
+                    description="No session with the given ID found to update.",
+                )
 
         success = SuccessDict(
             type="SAVE_SESSION", description="Successfully saved session."
@@ -73,7 +85,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_start_experiment(self, data):
+    def _handle_start_experiment(self, _):
         """TODO document"""
         if not self._experiment:
             raise ErrorDictException(
@@ -92,7 +104,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_stop_experiment(self, data):
+    def _handle_stop_experiment(self, _):
         """TODO document"""
         if not self._experiment:
             raise ErrorDictException(
