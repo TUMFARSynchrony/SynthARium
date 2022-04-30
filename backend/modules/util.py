@@ -1,6 +1,8 @@
 from typing import Any, Type, TypedDict
 import uuid
 
+from custom_types.session import SessionDict
+
 
 def generate_unique_id(existing_ids: list[str]):
     """Generate an unique id without collision with `existing_ids`.
@@ -80,11 +82,57 @@ def check_dict(data: dict, required_keys: list[str], optional_keys: list[str]):
     # Check if required keys exist in data
     for key in required_keys:
         if key not in data:
+            print("[check_dict] missing key:", key)
             return False
 
     # Check that only required & optional keys exist in data
     for key in data.keys():
         if key not in required_keys and key not in optional_keys:
+            print(
+                f"[check_dict] non allowed key: {key}. Required keys:",
+                f"{required_keys}, optional keys: {optional_keys}.",
+            )
             return False
 
     return True
+
+
+def get_participant_ids(session_dict: SessionDict) -> list[str | None]:
+    """Get all participant IDs from session_dict. Missing IDs will be None.
+
+    Parameters
+    ----------
+    data : custom_types.session.SessionDict
+        Session data with participants.
+
+    Returns
+    -------
+    list of str and/or None
+        Participant IDs in `session_dict` with None for missing/empty IDs.
+
+    See Also
+    --------
+    get_filtered_participant_ids : Get IDs without None values for missing IDs.
+    """
+    return [p.get("id") for p in session_dict.get("participants", [])]
+
+
+def get_filtered_participant_ids(session_dict: SessionDict) -> list[str]:
+    """Get all participant IDs from session_dict. Missing IDs will be filtered out.
+
+    Parameters
+    ----------
+    data : custom_types.session.SessionDict
+        Session data with participants.
+
+    Returns
+    -------
+    list of str
+        Participant IDs in `session_dict` without missing/empty IDs.
+
+    See Also
+    --------
+    get_participant_ids : Get IDs with None values for missing IDs.
+    """
+    p_ids = get_participant_ids(session_dict)
+    return [id for id in p_ids if id is not None]

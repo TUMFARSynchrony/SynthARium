@@ -9,9 +9,9 @@ from os.path import isfile, join
 
 from custom_types.session import SessionDict
 
+from modules.util import generate_unique_id, check_valid_typed_dict
 from modules.exceptions import ErrorDictException
 from modules.session import Session
-from modules.util import generate_unique_id
 from modules import BACKEND_DIR
 
 
@@ -104,22 +104,23 @@ class SessionManager:
         -------
         modules.session.Session
             New session object.
+
+        Raises
+        ------
+        ValueError
+            If ID exists in session_dict.
+        ErrorDictException
+            If a duplicate participant ID was found.
         """
         if "id" in session_dict:
             print(
                 "[SessionManager]: ERROR: Cannot create new session with existing id -",
                 "in create_session()",
             )
-            return
+            raise ValueError("Cannot create new session with existing ID.")
 
         session_id = self._generate_unique_session_id()
         session_dict["id"] = session_id
-
-        participant_ids = []
-        for participant in session_dict["participants"]:
-            id = generate_unique_id(participant_ids)
-            participant_ids.append(id)
-            participant["id"] = id
 
         session = Session(session_dict, self._handle_session_update)
         self._sessions[session_id] = session
@@ -195,23 +196,38 @@ class SessionManager:
         filenames = self._get_filenames()
         print(f"[SessionManager]: Found {len(filenames)} files: {filenames}")
 
+        sessions_with_missing_ids: list[SessionDict] = []
         for file in filenames:
             session_dict: SessionDict = self._read(file)
-            # TODO data checks
+            if not check_valid_typed_dict(session_dict, SessionDict):
+                print(
+                    f"[SessionManager]: ERROR invalid session file: {file}. Ignoring",
+                    "file.",
+                )
+                continue
 
             if "id" not in session_dict:
-                # TODO handle
-                print("[SessionManager]: ERROR Session ID missing in", file)
+                # Generate ID after loading the rest of the files.
+                sessions_with_missing_ids.append(session_dict)
                 continue
 
             if session_dict["id"] in self._sessions.keys():
                 print(
-                    "[SessionManager]: ERROR Session ID duplicate:", session_dict["id"]
+                    "[SessionManager]: ERROR Session ID duplicate:",
+                    f"{session_dict['id']}. Ignoring file: {file}.",
                 )
                 continue
 
-            session_obj = Session(session_dict, self._handle_session_update)
+            try:
+                session_obj = Session(session_dict, self._handle_session_update)
+            except ErrorDictException:
+                print(f"[SessionManager] ERROR: Participant ID duplicate in: {file}.")
+                continue
             self._sessions[session_dict["id"]] = session_obj
+
+        # Create sessions for files with missing session IDs
+        for session_dict in sessions_with_missing_ids:
+            session_obj = self.create_session(session_dict)
 
     def _get_filenames(self):
         """Get all filenames of files in `self._session_dir`."""
