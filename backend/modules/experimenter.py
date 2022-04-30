@@ -69,7 +69,7 @@ class Experimenter(_user.User):
         self._hub.session_manager.delete_session(session_id)
 
         success = SuccessDict(
-            type="STOP_EXPERIMENT", description="Successfully deleted session."
+            type="DELETE_SESSION", description="Successfully deleted session."
         )
         return MessageDict(type="SUCCESS", data=success)
 
@@ -88,7 +88,7 @@ class Experimenter(_user.User):
         self._experiment.start()
 
         success = SuccessDict(
-            type="STOP_EXPERIMENT", description="Successfully stopped experiment."
+            type="START_EXPERIMENT", description="Successfully started experiment."
         )
         return MessageDict(type="SUCCESS", data=success)
 
@@ -107,7 +107,7 @@ class Experimenter(_user.User):
         self._experiment.stop()
 
         success = SuccessDict(
-            type="SAVE_SESSION", description="Successfully saved session."
+            type="STOP_EXPERIMENT", description="Successfully stopped experiment."
         )
         return MessageDict(type="SUCCESS", data=success)
 
