@@ -1,4 +1,4 @@
-"""TODO document"""
+"""This module provides the Connection class."""
 
 import json
 from typing import Callable, Tuple
@@ -16,7 +16,26 @@ from custom_types.message import MessageDict
 
 
 class Connection:
-    """TODO document"""
+    """Connection with a single client.
+
+    Manages one or multiple WebRTC connections with the same client.  Provides interface
+    unaffected by the number of actual connections.
+
+    Notes
+    -----
+    The sequence should be something like this:
+
+    Receive offer -> create Connection (adds event listeners for tracks, datachannel
+    etc.) -> set remote description -> create answer -> set local description -> send
+    answer to peer.
+
+    This is not intended as a guide to aiortc / WebRTC, just as a reference when to
+    create the Connection instance.
+
+    See Also
+    --------
+    connection_factory : use to create new Connection and answer for an WebRTC offer.
+    """
 
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel
@@ -26,8 +45,25 @@ class Connection:
 
     def __init__(
         self, pc: RTCPeerConnection, message_handler: Callable[[MessageDict], None]
-    ):
-        """TODO document"""
+    ) -> None:
+        """Create new Connection based on a aiortc.RTCPeerConnection.
+
+        Add event listeners to `pc`.  Should be donne the remote description of `pc` is
+        set.
+
+        Parameters
+        ----------
+        pc : aiortc.RTCPeerConnection
+            WebRTC peer connection.
+        message_handler : function (custom_typed.message.MessageDict) -> None
+            Handler for incoming messages over the datachannel.  Incoming messages will
+            be parsed and type checked (only top level, not including contents of data).
+
+        See Also
+        --------
+        connection_factory : use to create new Connection and answer for an WebRTC
+            offer.
+        """
         self._main_pc = pc
         self._message_handler = message_handler
         self._incoming_audio = None
@@ -38,11 +74,19 @@ class Connection:
         pc.on("connectionstatechange", f=self._on_connection_state_change)
         pc.on("track", f=self._on_track)
 
-    async def stop(self):
+    async def stop(self) -> None:
+        """Stop this connection.  Use for cleanup."""
         if self._main_pc:
             await self._main_pc.close()
 
-    def send(self, data):
+    def send(self, data: MessageDict | dict) -> None:
+        """Send `data` to peer over the datachannel.
+
+        Parameters
+        ----------
+        data : MessageDict or dict
+            Data that will be stringified and send to the peer.
+        """
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)
         self._dc.send(stringified)
@@ -64,13 +108,29 @@ class Connection:
         pass
 
     def _on_datachannel(self, channel: RTCDataChannel):
-        """TODO document"""
+        """Handle new incoming datachannel.
+
+        Parameters
+        ----------
+        channel : aiortc.RTCDataChannel
+            Incoming data channel.
+        """
         print("[CONNECTION]: datachannel")
         self._dc = channel
         self._dc.on("message", self._handle_message)
 
-    def _handle_message(self, message):
-        """TODO document"""
+    def _handle_message(self, message: str):
+        """Handle incoming datachannel message.
+
+        Checks if message is a valid string containting a
+        custom_types.message.MessageDict JSON object.  If contents are invalid, a error
+        response is send.
+
+        Parameters
+        ----------
+        message : str
+            Incoming data channel message.
+        """
         if not isinstance(message, str):
             return
 
@@ -97,11 +157,17 @@ class Connection:
         self._message_handler(message_obj)
 
     def _on_connection_state_change(self):
-        """TODO document"""
+        """Handle connection state change for `_main_pc`."""
         print(f"[CONNECTION] Connection state is {self._main_pc.connectionState}")
 
     def _on_track(self, track: MediaStreamTrack):
-        """TODO document"""
+        """Handle incoming tracks.
+
+        Parameters
+        ----------
+        track : aiortc.MediaStreamTrack
+            Incoming track.
+        """
         print(f"[CONNECTION] {track.kind} Track received")
         if track.kind == "audio":
             self._incoming_audio = track
@@ -116,6 +182,7 @@ class Connection:
 
         @track.on("ended")
         def on_ended():
+            """Handles tracks ended event."""
             print("[CONNECTION] Track ended:", track.kind)
 
 
@@ -123,7 +190,21 @@ async def connection_factory(
     offer: RTCSessionDescription,
     message_handler: Callable[[MessageDict], None],
 ) -> Tuple[RTCSessionDescription, Connection]:
-    """TODO document"""
+    """Instantiate Connection.
+
+    Parameters
+    ----------
+    offer : aiortc.RTCSessionDescription
+        WebRTC offer for building the connection to the client.
+    message_handler : function (message: custom_types.message.MessageDict) -> None
+        Message handler for Connection.  Connection will pass parsed MessageDicts to
+        this handler.
+
+    Returns
+    -------
+    tuple with aiortc.RTCSessionDescription, modules.connection.Connection
+        WebRTC answer that should be send back to the client and a Connection.
+    """
     pc = RTCPeerConnection()
     connection = Connection(pc, message_handler)
 

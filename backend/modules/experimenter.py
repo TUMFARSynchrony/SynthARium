@@ -1,4 +1,8 @@
-"""This module provides the Experimenter class."""
+"""This module provides the Experimenter class and experimenter_factory.
+
+Use experimenter_factory for creating new Experimenters to ensure that they have a valid
+modules.connection.Connection.
+"""
 
 from __future__ import annotations
 from typing import TypedDict
@@ -12,22 +16,27 @@ from custom_types.note import NoteDict
 from modules.util import check_valid_typed_dict
 from modules.connection import connection_factory
 from modules.exceptions import ErrorDictException
+from modules.user import User
 import modules.experiment as _experiment
 import modules.hub as _hub
-import modules.user as _user
 
 
-class Experimenter(_user.User):
+class Experimenter(User):
     """Experimenter is a type of modules.user.User with experimenter rights.
 
     Has access to a different set of API endpoints than other Users.  API endpoints for
     experimenters are defined here.
+
+    See Also
+    --------
+    experimenter_factory : Instantiate connection with a new Experimenter based on
+        WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
     """
 
     _experiment: _experiment.Experiment
     _hub: _hub.Hub
 
-    def __init__(self, id: str, hub: _hub.Hub):
+    def __init__(self, id: str, hub: _hub.Hub) -> None:
         """Instantiate new Experimenter instance.
 
         Parameters
@@ -36,6 +45,11 @@ class Experimenter(_user.User):
             Unique identifier for this Experimenter.
         hub : modules.hub.Hub
             Hub this Experimenter is part of.  Used for api calls.
+
+        See Also
+        --------
+        experimenter_factory : Instantiate connection with a new Experimenter based on
+            WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
         """
         super().__init__(id)
         self._hub = hub
@@ -50,7 +64,7 @@ class Experimenter(_user.User):
         self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on("ADD_NOTE", self._handle_add_note)
 
-    def _handle_get_session_list(self, _):
+    def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
 
         Loads all known sessions from session manager.  Responds with type:
@@ -70,7 +84,7 @@ class Experimenter(_user.User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    def _handle_save_session(self, data):
+    def _handle_save_session(self, data) -> MessageDict:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
@@ -121,7 +135,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_delete_session(self, data):
+    def _handle_delete_session(self, data) -> MessageDict:
         """Handle requests with type `DELETE_SESSION`.
 
         Check if data is a valid dict with `session_id`.  If found, delete session with
@@ -159,7 +173,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_create_experiment(self, data):
+    def _handle_create_experiment(self, data) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
         Check if data is a valid dict with `session_id`.  If found, try to create a new
@@ -197,7 +211,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_join_experiment(self, data):
+    def _handle_join_experiment(self, data) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
         Check if data is a valid dict with `session_id`.  If found, try to join an
@@ -244,7 +258,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_start_experiment(self, _):
+    def _handle_start_experiment(self, _) -> MessageDict:
         """Handle requests with type `START_EXPERIMENT`.
 
         Parameters
@@ -281,7 +295,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_stop_experiment(self, _):
+    def _handle_stop_experiment(self, _) -> MessageDict:
         """Handle requests with type `STOP_EXPERIMENT`.
 
         Parameters
@@ -318,7 +332,7 @@ class Experimenter(_user.User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_add_note(self, data):
+    def _handle_add_note(self, data) -> MessageDict:
         """Handle requests with type `ADD_NOTE`.
 
         Check if data is a valid custom_types.note.NoteDict and adds the note to the
@@ -350,8 +364,32 @@ class Experimenter(_user.User):
         return MessageDict(type="SUCCESS", data=success)
 
 
-async def experimenter_factory(offer: RTCSessionDescription, id: str, hub: _hub.Hub):
-    """TODO document"""
+async def experimenter_factory(
+    offer: RTCSessionDescription, id: str, hub: _hub.Hub
+) -> tuple[RTCSessionDescription, Experimenter]:
+    """Instantiate connection with a new Experimenter based on WebRTC `offer`.
+
+    Instantiate new modules.experimenter.Experimenter, handle offer using
+    modules.connection.connection_factory and set connection for the Experimenter.
+
+    This sequence must be donne for all experimenters.  Instantiating an Experimenter
+    directly will likely lead to problems, since it wont have a Connection.
+
+    Parameters
+    ----------
+    offer : aiortc.RTCSessionDescription
+        WebRTC offer for building the connection to the client.
+    id : str
+        Unique identifier for Experimenter.
+    hub : modules.hub.Hub
+        Hub the Experimenter will be part of.  Used for api calls.
+
+    Returns
+    -------
+    tuple with aiortc.RTCSessionDescription, modules.experimenter.Experimenter
+        WebRTC answer that should be send back to the client and Experimenter
+        representing the client.
+    """
     experimenter = Experimenter(id, hub)
     answer, connection = await connection_factory(offer, experimenter.handle_message)
     experimenter.set_connection(connection)
