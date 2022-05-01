@@ -1,6 +1,7 @@
 """This module provides the Experimenter class."""
 
 from __future__ import annotations
+from typing import TypedDict
 from aiortc import RTCSessionDescription
 
 from custom_types.message import MessageDict
@@ -143,7 +144,7 @@ class Experimenter(_user.User):
             If data is not a valid dict with an `session_id` str or if `session_id` is
             not known.
         """
-        if not isinstance(data, dict) or "session_id" not in data:
+        if not check_valid_typed_dict(data, TypedDict("SessionIdDict", session_id=str)):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -181,7 +182,7 @@ class Experimenter(_user.User):
             If data is not a valid dict with an `session_id` str, if `session_id` is not
             known or if there is already an Experiment with `session_id`.
         """
-        if not isinstance(data, dict) or "session_id" not in data:
+        if not check_valid_typed_dict(data, TypedDict("SessionIdDict", session_id=str)):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -219,7 +220,7 @@ class Experimenter(_user.User):
             If data is not a valid dict with a `session_id` str or if there is no
             Experiment with `session_id`.
         """
-        if not isinstance(data, dict) or "session_id" not in data:
+        if not check_valid_typed_dict(data, TypedDict("SessionIdDict", session_id=str)):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
