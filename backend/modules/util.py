@@ -1,4 +1,10 @@
 from typing import Any, Type, TypedDict
+
+# typing_extensions TypedDict is required for compatibility. E.g. SessionDict uses
+# typing_extensions.TypedDict, because of support for NonRequired / Required Keys.
+# Support will come to typing in python 3.11. See PEP 655.
+from typing_extensions import TypedDict as TypedDictExt
+
 import uuid
 
 from custom_types.session import SessionDict
@@ -28,7 +34,7 @@ def generate_unique_id(existing_ids: list[str]):
     return id
 
 
-def check_valid_typed_dict(data: Any, type: Type[TypedDict]) -> bool:
+def check_valid_typed_dict(data: Any, type: Type[TypedDict | TypedDictExt]) -> bool:
     """Check if `data` is a valid dict according to `type`.
 
     Checks if all required and only required or optional keys from `type` exist in
@@ -38,10 +44,8 @@ def check_valid_typed_dict(data: Any, type: Type[TypedDict]) -> bool:
     ----------
     data : dict
         Dictionary to perform key check on.
-    required_keys : list of str
-        Keys that must be present in `data`.
-    optional_keys : list of str
-        Keys that may be present in `data`, but are not required.
+    type: typing.TypedDict or typing_extensions.TypedDict
+        Target TypedDict with optional and / or required keys.
 
     Returns
     -------
