@@ -24,15 +24,30 @@ class Participant(User):
         `offer`.  Use factory instead of initiating Participants directly.
     """
 
-    experiment: _experiment.Experiment
+    _experiment: _experiment.Experiment
 
-    def __init__(self):
-        """TODO document"""
-        pass
+    def __init__(self, id: str, experiment: _experiment.Experiment) -> None:
+        """Instantiate new Participant instance.
 
-    def handle_message(self, message):
-        """TODO document"""
-        pass
+        Parameters
+        ----------
+        id : str
+            Unique identifier for Participant.  Must exist in experiment.
+        experiment : modules.experiment.Experiment
+            Experiment the participant is part of.
+
+        See Also
+        --------
+        experimenter_factory : Instantiate connection with a new Experimenter based on
+            WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
+        """
+        super().__init__(id)
+
+        self._experiment = experiment
+        experiment.add_participant(self)
+
+        # TODO Add API endpoints
+        # self.on(...
 
     def kick(self, reason: str):
         """TODO document"""
@@ -40,7 +55,7 @@ class Participant(User):
 
 
 async def participant_factory(
-    offer: RTCSessionDescription,
+    offer: RTCSessionDescription, id: str, experiment: _experiment.Experiment
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -54,8 +69,10 @@ async def participant_factory(
     ----------
     offer : aiortc.RTCSessionDescription
         WebRTC offer for building the connection to the client.
-
-    TODO add parameters when implementing Participant
+    id : str
+        Unique identifier for Participant.  Must exist in experiment.
+    experiment : modules.experiment.Experiment
+        Experiment the participant is part of.
 
     Returns
     -------
@@ -63,7 +80,7 @@ async def participant_factory(
         WebRTC answer that should be send back to the client and Participant
         representing the client.
     """
-    participant = Participant()
+    participant = Participant(id, experiment)
     answer, connection = await connection_factory(offer, participant.handle_message)
     participant.set_connection(connection)
     return (answer, participant)

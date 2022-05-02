@@ -171,7 +171,9 @@ class Hub:
                 description="Participant not found in the given session.",
             )
 
-        answer, participant = await _participant.participant_factory(offer)
+        answer, participant = await _participant.participant_factory(
+            offer, participant_id, experiment
+        )
         experiment.add_participant(participant)
 
         return answer
