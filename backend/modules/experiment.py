@@ -119,7 +119,7 @@ class Experiment:
     def knows_participant_id(self, participant_id: str) -> bool:
         """Check if `participant_id` is an ID for a participant in this experiment."""
         known_ids = map(lambda p: p.get("id", ""), self.session.participants)
-        return participant_id is not "" and participant_id in known_ids
+        return participant_id != "" and participant_id in known_ids
 
     def add_participant(self, participant: _participant.Participant):
         """Add participant to experiment.

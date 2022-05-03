@@ -37,7 +37,7 @@ async def stop():
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop_policy().get_event_loop()
     try:
         # asyncio.run(main())
         loop.run_until_complete(main())
@@ -45,4 +45,5 @@ if __name__ == "__main__":
         print("Detected Keyboard Interrupt. Exiting...")
         loop.run_until_complete(stop())
     finally:
+        loop.stop()
         print("Program finished.")
