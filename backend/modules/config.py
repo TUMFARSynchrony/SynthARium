@@ -1,4 +1,4 @@
-"""TProvide the `Config` class."""
+"""Provide the `Config` class."""
 
 
 from typing import Literal
