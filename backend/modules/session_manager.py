@@ -46,7 +46,7 @@ class SessionManager:
         session_dir : str
             Directory of session data JSONs relative to the backend folder.
         """
-        print("[SessionManager]: Initiating SessionManager")
+        print("[SessionManager] Initiating SessionManager")
         self._sessions = {}
         self._session_dir = join(BACKEND_DIR, session_dir)
         self._read_files_from_drive()
@@ -113,7 +113,7 @@ class SessionManager:
         """
         if "id" in session_dict:
             print(
-                "[SessionManager]: ERROR: Cannot create new session with existing id -",
+                "[SessionManager] ERROR: Cannot create new session with existing id -",
                 "in create_session()",
             )
             raise ValueError("Cannot create new session with existing ID.")
@@ -147,7 +147,7 @@ class SessionManager:
         """
         if id not in self._sessions:
             print(
-                f"[SessionManager]: Cannot delete session with id {id}, no ",
+                f"[SessionManager] Cannot delete session with id {id}, no ",
                 "session with this id was found.",
             )
             raise ErrorDictException(
@@ -158,7 +158,7 @@ class SessionManager:
 
         # TODO check if the session obj is used in an experiment.
 
-        print("[SessionManager]: Deleting session. ID:", id)
+        print("[SessionManager] Deleting session. ID:", id)
         self._delete_file(id + ".json")
         return self._sessions.pop(id, None) != None
 
@@ -176,11 +176,11 @@ class SessionManager:
         """
         # TODO further error handling in this function
         if session.id is None:
-            print("[SessionManager]: ERROR: Cannot update session without id")
+            print("[SessionManager] ERROR: Cannot update session without id")
             return
 
         if session.id not in self._sessions.keys():
-            print("[SessionManager]: ERROR: Cannot update unknown session", session.id)
+            print("[SessionManager] ERROR: Cannot update unknown session", session.id)
             return
 
         self._write(session.asdict)
@@ -193,14 +193,14 @@ class SessionManager:
     def _read_files_from_drive(self):
         """Read sessions saved on the drive, save in `self._sessions`."""
         filenames = self._get_filenames()
-        print(f"[SessionManager]: Found {len(filenames)} files: {filenames}")
+        print(f"[SessionManager] Found {len(filenames)} files: {filenames}")
 
         sessions_with_missing_ids: list[SessionDict] = []
         for file in filenames:
             session_dict: SessionDict = self._read(file)
             if not check_valid_typed_dict(session_dict, SessionDict):
                 print(
-                    f"[SessionManager]: ERROR invalid session file: {file}. Ignoring",
+                    f"[SessionManager] ERROR invalid session file: {file}. Ignoring",
                     "file.",
                 )
                 continue
@@ -212,7 +212,7 @@ class SessionManager:
 
             if session_dict["id"] in self._sessions.keys():
                 print(
-                    "[SessionManager]: ERROR Session ID duplicate:",
+                    "[SessionManager] ERROR: Session ID duplicate:",
                     f"{session_dict['id']}. Ignoring file: {file}.",
                 )
                 continue
@@ -259,7 +259,7 @@ class SessionManager:
             directory.
         """
         if "id" not in session_dict:
-            print("[SessionManager]: ERROR: Cannot save session without ID")
+            print("[SessionManager] ERROR: Cannot save session without ID.")
             return
 
         filename = session_dict["id"] + ".json"
@@ -279,4 +279,4 @@ class SessionManager:
         if os.path.exists(path):
             os.remove(path)
         else:
-            print("[SessionManager]: Cant delete file, file not found.", path)
+            print("[SessionManager] Cant delete file, file not found.", path)

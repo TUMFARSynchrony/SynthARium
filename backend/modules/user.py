@@ -133,11 +133,11 @@ class User(ABC):
         handler_functions = self._handlers.get(endpoint, None)
 
         if handler_functions is None:
-            print(f"[USER]: No handler for {endpoint} found.")
+            print(f"[User] No handler for {endpoint} found.")
             return
 
         print(
-            f"[USER]: Received {endpoint}. Calling {len(handler_functions)} handler(s)."
+            f"[User] Received {endpoint}. Calling {len(handler_functions)} handler(s)."
         )
         for handler in handler_functions:
             try:
@@ -145,7 +145,7 @@ class User(ABC):
             except ErrorDictException as err:
                 response = err.error_message
             except Exception as err:
-                print("[USER] INTERNAL SERVER ERROR:", err)
+                print("[User] INTERNAL SERVER ERROR:", err)
                 err = ErrorDict(
                     type="INTERNAL_SERVER_ERROR",
                     code=500,

@@ -38,7 +38,7 @@ class Hub:
         config : modules.config.Config
             Configuration for the hub.
         """
-        print("[HUB] Initializing Hub")
+        print("[Hub] Initializing Hub")
         self.experimenters = []
         self.experiments = {}
         self.config = config
@@ -53,7 +53,7 @@ class Hub:
 
     async def stop(self):
         """Stop the hub, close all connection and stop the server."""
-        print("[HUB] stopping")
+        print("[Hub] stopping")
         tasks = [self.server.stop()]
         for experimenter in self.experimenters:
             tasks.append(experimenter.disconnect())
@@ -139,20 +139,20 @@ class Hub:
         this function will raise the exception with a fitting error message.
         """
         if participant_id is None:
-            print("[HUB] WARNING: Missing participant_id in offer handler")
+            print("[Hub] WARNING: Missing participant_id in offer handler")
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Missing participant_id."
             )
 
         if session_id is None:
-            print("[HUB] WARNING: Missing session_id in offer handler")
+            print("[Hub] WARNING: Missing session_id in offer handler")
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Missing session_id."
             )
 
         if session_id not in self.experiments.keys():
             print(
-                f"[HUB]: WARNING: session {session_id} not found.",
+                f"[Hub] WARNING: session {session_id} not found.",
                 f"Participant {participant_id} failed to join",
             )
             raise ErrorDictException(
@@ -162,7 +162,7 @@ class Hub:
         experiment = self.experiments[session_id]
         if not experiment.knows_participant_id(participant_id):
             print(
-                f"[HUB]: WARNING: participant {participant_id} not found in session:",
+                f"[Hub] WARNING: participant {participant_id} not found in session:",
                 session_id,
             )
             raise ErrorDictException(

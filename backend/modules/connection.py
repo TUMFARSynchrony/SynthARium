@@ -115,7 +115,7 @@ class Connection:
         channel : aiortc.RTCDataChannel
             Incoming data channel.
         """
-        print("[CONNECTION]: datachannel")
+        print("[Connection] datachannel")
         self._dc = channel
         self._dc.on("message", self._handle_message)
 
@@ -137,13 +137,13 @@ class Connection:
         try:
             message_obj = json.loads(message)
         except Exception as err:
-            print("[CONNECTION] Failed to parse message.", err)
+            print("[Connection] Failed to parse message.", err)
             # Send error response in following if statement.
             message_obj = None
 
         # Handle invalid message type
         if message_obj is None or not check_valid_typed_dict(message_obj, MessageDict):
-            print("[CONNECTION] Received message with invalid type.", message)
+            print("[Connection] Received message with invalid type.", message)
             err = ErrorDict(
                 type="INVALID_REQUEST",
                 code=400,
@@ -158,7 +158,7 @@ class Connection:
 
     def _on_connection_state_change(self):
         """Handle connection state change for `_main_pc`."""
-        print(f"[CONNECTION] Connection state is {self._main_pc.connectionState}")
+        print(f"[Connection] Connection state is {self._main_pc.connectionState}")
 
     def _on_track(self, track: MediaStreamTrack):
         """Handle incoming tracks.
@@ -168,14 +168,14 @@ class Connection:
         track : aiortc.MediaStreamTrack
             Incoming track.
         """
-        print(f"[CONNECTION] {track.kind} Track received")
+        print(f"[Connection] {track.kind} Track received")
         if track.kind == "audio":
             self._incoming_audio = track
         elif track.kind == "video":
             self._incoming_video = track
         else:
             # TODO error handling?
-            print(f"[CONNECTION] ERROR: unknown track kind {track.kind}.")
+            print(f"[Connection] ERROR: unknown track kind {track.kind}.")
 
         # TODO add modified track back
         self._main_pc.addTrack(track)
@@ -183,7 +183,7 @@ class Connection:
         @track.on("ended")
         def on_ended():
             """Handles tracks ended event."""
-            print("[CONNECTION] Track ended:", track.kind)
+            print("[Connection] Track ended:", track.kind)
 
 
 async def connection_factory(

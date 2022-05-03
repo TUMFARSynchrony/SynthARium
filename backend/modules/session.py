@@ -235,7 +235,7 @@ class Session:
             index = participant_ids.index(participant_id)
         except ValueError:
             print(
-                f"[SESSION]: participant with id {participant_id} was not found in",
+                f"[Session] participant with ID {participant_id} was not found in",
                 "participants",
             )
             return

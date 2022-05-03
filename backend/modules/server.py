@@ -63,7 +63,7 @@ class Server:
 
         # Using cors is only intended for development, when the client is not hosted by
         # this server but a separate development server.
-        print("[SERVER] WARNING: Using CORS. Only use for development!")
+        print("[Server] WARNING: Using CORS. Only use for development!")
 
         cors = aiohttp_cors.setup(self._app)  # type: ignore
         for route in routes:
@@ -81,7 +81,7 @@ class Server:
 
     async def start(self):
         """Start the server."""
-        print(f"[SERVER] Starting server on http://{self._host}:{self._port}")
+        print(f"[Server] Starting server on http://{self._host}:{self._port}")
         # Set up aiohttp - like run_app, but non-blocking
         # (Source: https://stackoverflow.com/a/53465910)
         self._runner = web.AppRunner(self._app)
@@ -95,13 +95,13 @@ class Server:
 
     async def stop(self):
         """Stop the server."""
-        print("[SERVER] Server stopping")
+        print("[Server] Server stopping")
         await self._app.shutdown()
         await self._app.cleanup()
 
     async def get_hello_world(self, request: web.Request) -> web.StreamResponse:
         """Placeholder for testing if the server is accessible"""
-        print("[SERVER] Get hello world")
+        print("[Server] Get hello world")
         return web.Response(
             content_type="application/json",
             text=json.dumps({"text": "Hello World", "timestamp": str(datetime.now())}),
@@ -179,12 +179,12 @@ class Server:
         aiohttp.web.StreamResponse
             Response to request from client.
         """
-        print(f"[SERVER] Handle offer from {request.host}")
+        print(f"[Server] Handle offer from {request.host}")
         # Check and parse request.
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
-            print("[SERVER] Failed to parse offer.")
+            print("[Server] Failed to parse offer.")
             return web.Response(
                 content_type="application/json",
                 status=error.code,

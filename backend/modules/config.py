@@ -50,7 +50,7 @@ class Config:
         self.host = config["host"]
         self.port = config["port"]
         self.environment = config["environment"]
-        print(f"[CONFIG] successfully loaded config: {self}")
+        print(f"[Config] successfully loaded config: {str(self)}")
 
     def __str__(self) -> str:
         """Get string representation of parameters in this Config.
