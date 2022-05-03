@@ -6,10 +6,9 @@
 
 .textAreaField {
     resize: vertical;
-    font-size: 1em;
     color: rgb(95, 95, 95);
     background-color: #f8f8f8;
-    font-size: 1em;
+    font-size: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
