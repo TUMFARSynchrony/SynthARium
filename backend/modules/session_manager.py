@@ -1,5 +1,4 @@
-"""This module provides the SessionManager class, which Manages session data.
-"""
+"""Provide the `SessionManager` class, which manages session data."""
 
 from __future__ import annotations
 import json

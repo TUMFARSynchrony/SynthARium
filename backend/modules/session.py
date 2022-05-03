@@ -1,4 +1,4 @@
-"""This module provides the Session class"""
+"""Provide the `Session` class."""
 
 from __future__ import annotations
 from typing import Callable, Optional, Any

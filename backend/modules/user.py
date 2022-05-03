@@ -1,4 +1,4 @@
-"""This module provides the abstract User class.
+"""Provide the abstract `User` class.
 
 See Also
 --------

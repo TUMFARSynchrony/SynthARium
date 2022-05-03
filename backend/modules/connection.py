@@ -1,4 +1,4 @@
-"""This module provides the Connection class."""
+"""Provide the `Connection` class."""
 
 import json
 from typing import Callable, Tuple

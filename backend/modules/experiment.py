@@ -1,4 +1,4 @@
-"""This module provides the Experiment class."""
+"""Provide the `Experiment` class."""
 import time
 from typing import Any, Optional
 

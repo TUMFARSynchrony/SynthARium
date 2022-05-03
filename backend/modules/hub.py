@@ -1,4 +1,4 @@
-"""This module provides the Hub class, which is the center of the experiment hub."""
+"""Provide the `Hub` class, which is the center of the experiment hub."""
 
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription

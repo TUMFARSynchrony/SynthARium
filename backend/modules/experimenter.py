@@ -1,5 +1,7 @@
-"""This module provides the Experimenter class and experimenter_factory.
+"""Provide the `Experimenter` class and `experimenter_factory` factory function.
 
+Notes
+-----
 Use experimenter_factory for creating new Experimenters to ensure that they have a valid
 modules.connection.Connection.
 """

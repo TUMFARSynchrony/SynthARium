@@ -1,5 +1,7 @@
-"""This module provides the Participant class and participant_factory.
+"""Provide the `Participant` class and `participant_factory` factory function.
 
+Notes
+-----
 Use participant_factory for creating new participants to ensure that they have a valid
 modules.connection.Connection.
 """

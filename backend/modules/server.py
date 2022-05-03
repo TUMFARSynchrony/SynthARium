@@ -1,4 +1,4 @@
-"""Provides the Server class, which serves the frontend and other endpoints."""
+"""Provides the `Server` class, which serves the frontend and other endpoints."""
 
 import aiohttp_cors
 import json

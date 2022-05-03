@@ -1,4 +1,4 @@
-"""Provides the `ExperimentState` enum."""
+"""Provide the `ExperimentState` enum."""
 
 from enum import Enum
 

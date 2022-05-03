@@ -1,11 +1,12 @@
+"""Provide utility functions used by different parts of the software."""
+
+import uuid
 from typing import Any, Type, TypedDict
 
-# typing_extensions TypedDict is required for compatibility. E.g. SessionDict uses
+# typing_extensions.TypedDict is required for compatibility. E.g. SessionDict uses
 # typing_extensions.TypedDict, because of support for NonRequired / Required Keys.
 # Support will come to typing in python 3.11. See PEP 655.
 from typing_extensions import TypedDict as TypedDictExt
-
-import uuid
 
 from custom_types.session import SessionDict
 
@@ -41,6 +42,8 @@ def check_valid_typed_dict(
 
     Checks if all required and only required or optional keys from `type` exist in
     `data`.
+
+    TODO include type checks (not just key checks).
 
     Parameters
     ----------

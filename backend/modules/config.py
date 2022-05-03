@@ -1,4 +1,4 @@
-"""Provide Config class"""
+"""TProvide the `Config` class."""
 
 
 from typing import Literal
@@ -9,7 +9,7 @@ from modules import BACKEND_DIR
 
 
 class Config:
-    """Config for experimental hub backend"""
+    """Config for experimental hub backend."""
 
     host: str
     port: int
