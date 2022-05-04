@@ -1,0 +1,65 @@
+.button {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    background-color: hsl(212, 86%, 64%);
+    border: none;
+    padding: 1em 1.5em;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+    color: white;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    height: fit-content;
+    margin: 0.3em;
+    cursor: pointer;
+}
+
+.positive {
+    background-color: #50ad64;
+    text-transform: none;
+    display: block;
+    padding: 0.8em 1em;
+}
+
+.negative {
+    background-color: #de4040;
+    text-transform: none;
+    padding: 0.6em 0.8em;
+}
+
+.secondary {
+    border: 1px solid hsl(212, 86%, 64%);
+    color: hsl(212, 86%, 64%);
+    box-shadow: none;
+    background-color: white;
+    text-transform: none;
+    padding: 0.6em 0.8em;
+}
+
+.close {
+    background-color: white;
+    color: black;
+    box-shadow: none;
+    border-radius: 70px;
+    width: fit-content;
+    padding: 1em;
+  }
+
+.button:hover {
+    background: #2980b9;
+}
+
+.positive:hover {
+    background: #165b25;
+}
+
+.negative:hover {
+    background: #aa3131;
+}
+
+.secondary:hover {
+    background: hsl(212, 86%, 64%);
+    color: white;
+}

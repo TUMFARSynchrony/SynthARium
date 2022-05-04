@@ -1,0 +1,58 @@
+.sessionFormContainer {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 1em;
+    /* overflow:auto; */
+}
+
+.sessionFormData {
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 0.5em;
+    box-shadow: 1px 3px 6px 1px rgba(0,0,0,0.2);
+    background-color: white;
+    min-width: fit-content;
+    border-right: 6px solid hsl(212, 86%, 64%);
+    margin-right: 1em;
+    margin-left: 1em;
+}
+
+.sessionForm {
+    display: flex;
+    flex-direction: column;
+}
+
+.separatorLine {
+    border-style: dotted;
+    width: 100%;
+}
+
+.sessionFormParticipants {
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollableParticipants {
+    max-height: 20em;
+    overflow-y: auto;
+    margin: 0.6em;
+}
+.sessionFormButtons{
+    padding: 3em;
+}
+
+.participantCheckboxes {
+    display: flex;
+    justify-content: space-around;
+}
+
+.timeInput {
+    display: flex;
+    justify-content: left;
+}
+
+.sessionFormCanvas {
+    box-shadow: 1px 3px 6px 1px rgba(0,0,0,0.2);
+    border-radius: 6px;
+    background-color: whitesmoke;
+}

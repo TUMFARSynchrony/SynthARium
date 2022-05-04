@@ -1,0 +1,20 @@
+.linkButton {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    background-color: hsl(212, 86%, 64%);
+    border: none;
+    padding: 1em 1.5em;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+    color: white;
+    border-radius: 4px;
+    margin: 1.5em 2.5em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.linkButton:hover {
+    background: #2980b9;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
