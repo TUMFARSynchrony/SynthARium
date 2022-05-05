@@ -39,6 +39,7 @@ MESSAGE_TYPES = Literal[
     "ERROR",
     "SESSION_DESCRIPTION",
     "SESSION_LIST",
+    "SESSION",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

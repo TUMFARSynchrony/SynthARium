@@ -100,8 +100,8 @@ class Experimenter(User):
         Returns
         -------
         custom_types.message.MessageDict
-            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
-            SuccessDict type: `SAVE_SESSION`.
+            MessageDict with type: `SESSION`, data: custom_types.session.SessionDict.
+            Saved session, including generated session and participant ids.
 
         Raises
         ------
@@ -119,7 +119,7 @@ class Experimenter(User):
         sm = self._hub.session_manager
         if "id" not in data:
             # Create new session
-            sm.create_session(data)
+            session = sm.create_session(data)
         else:
             # Update existing session
             session = sm.get_session(data["id"])
@@ -132,10 +132,7 @@ class Experimenter(User):
                     description="No session with the given ID found to update.",
                 )
 
-        success = SuccessDict(
-            type="SAVE_SESSION", description="Successfully saved session."
-        )
-        return MessageDict(type="SUCCESS", data=success)
+        return MessageDict(type="SESSION", data=session)
 
     def _handle_delete_session(self, data) -> MessageDict:
         """Handle requests with type `DELETE_SESSION`.
