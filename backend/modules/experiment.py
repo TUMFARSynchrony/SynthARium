@@ -3,6 +3,7 @@ import time
 from typing import Any
 
 from custom_types.message import MessageDict
+from custom_types.kick import KickRequestDict
 from custom_types.chat_message import ChatMessageDict
 
 from modules.experiment_state import ExperimentState
@@ -18,7 +19,7 @@ class Experiment:
     _state: ExperimentState
     session: _session.Session
     _experimenters: list[_experimenter.Experimenter]
-    _participants: list[_participant.Participant]
+    _participants: dict[str, _participant.Participant]
 
     def __init__(self, session: _session.Session):
         """Start a new Experiment.
@@ -32,7 +33,7 @@ class Experiment:
         self._state = ExperimentState.WAITING
         self.session = session
         self._experimenters = []
-        self._participants = []
+        self._participants = {}
 
     def start(self):
         """Start the experiment.
@@ -107,18 +108,18 @@ class Experiment:
         targets: list[_experimenter.Experimenter | _participant.Participant] = []
         match to:
             case "all":
-                targets.extend(self._participants)
+                targets.extend(self._participants.values())
             case "experimenter":
                 targets.extend(self._experimenters)
             case _:
-                for participant in self._participants:
-                    if participant.id is to:
-                        targets.append(participant)
-
-        if len(targets) == 0:
-            raise ErrorDictException(
-                404, "UNKNOWN_USER", f"Failed to send data to {to}, user not found."
-            )
+                if to in self._participants:
+                    targets.append(self._participants[to])
+                else:
+                    raise ErrorDictException(
+                        404,
+                        "UNKNOWN_USER",
+                        f"Failed to send data to {to}, user not found.",
+                    )
 
         # Send data
         for user in targets:
@@ -147,7 +148,23 @@ class Experiment:
         participant : modules.participant.Participant
             Participant joining the experiment.
         """
-        self._participants.append(participant)
+        self._participants[participant.id] = participant
+
+    async def kick_participant(self, kick_request: KickRequestDict):
+        """TODO document"""
+        participant = self._participants.get(kick_request["participant_id"])
+        if participant is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=(
+                    "Failed to kick Participant. Participant with the given ID not "
+                    "found."
+                ),
+            )
+
+        await participant.kick(kick_request["reason"])
+        self._participants.pop(kick_request["participant_id"])
 
     def add_experimenter(self, experimenter: _experimenter.Experimenter):
         """Add experimenter to experiment.

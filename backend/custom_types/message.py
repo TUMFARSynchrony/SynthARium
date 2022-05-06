@@ -41,6 +41,8 @@ MESSAGE_TYPES = Literal[
     "SESSION_LIST",
     "SESSION",
     "CHAT",
+    "KICK",
+    "KICK_NOTIFICATION",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 from aiortc import RTCSessionDescription
 
 from custom_types.chat_message import ChatMessageDict
+from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
@@ -57,9 +58,13 @@ class Participant(User):
         # Add API endpoints
         self.on("CHAT", self._handle_chat)
 
-    def kick(self, reason: str):
+    async def kick(self, reason: str):
         """TODO document"""
-        pass
+        kick_notification = KickNotificationDict(reason=reason)
+        message = MessageDict(type="KICK_NOTIFICATION", data=kick_notification)
+        self.send(message)
+
+        await self.disconnect()
 
     def _handle_chat(self, data) -> MessageDict:
         """TODO document"""

@@ -39,6 +39,7 @@ SUCCESS_TYPES = Literal[
     "STOP_EXPERIMENT",
     "ADD_NOTE",
     "CHAT",
+    "KICK",
 ]
 """Possible success types for custom_types.success.SuccessDict.
 
