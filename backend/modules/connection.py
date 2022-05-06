@@ -1,7 +1,7 @@
 """Provide the `Connection` class."""
 
 import json
-from typing import Callable, Tuple
+from typing import Any, Callable, Coroutine, Tuple
 from aiortc import (
     RTCPeerConnection,
     RTCDataChannel,
@@ -39,12 +39,14 @@ class Connection:
 
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel
-    _message_handler: Callable[[MessageDict], None]
+    _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
     _incoming_audio: MediaStreamTrack | None  # AudioStreamTrack ?
     _incoming_video: MediaStreamTrack | None  # VideoStreamTrack ?
 
     def __init__(
-        self, pc: RTCPeerConnection, message_handler: Callable[[MessageDict], None]
+        self,
+        pc: RTCPeerConnection,
+        message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -117,9 +119,9 @@ class Connection:
         """
         print("[Connection] datachannel")
         self._dc = channel
-        self._dc.on("message", self._handle_message)
+        self._dc.on("message", self._parse_and_handle_message)
 
-    def _handle_message(self, message: str):
+    async def _parse_and_handle_message(self, message: str):
         """Handle incoming datachannel message.
 
         Checks if message is a valid string containting a
@@ -154,7 +156,7 @@ class Connection:
             return
 
         # Pass message to message handler in user.
-        self._message_handler(message_obj)
+        await self._message_handler(message_obj)
 
     def _on_connection_state_change(self):
         """Handle connection state change for `_main_pc`."""
@@ -188,7 +190,7 @@ class Connection:
 
 async def connection_factory(
     offer: RTCSessionDescription,
-    message_handler: Callable[[MessageDict], None],
+    message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 

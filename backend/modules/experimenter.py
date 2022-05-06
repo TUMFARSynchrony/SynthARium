@@ -70,7 +70,7 @@ class Experimenter(User):
         self.on("CHAT", self._handle_chat)
         self.on("KICK", self._handle_kick)
 
-    def _handle_get_session_list(self, _) -> MessageDict:
+    async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
 
         Loads all known sessions from session manager.  Responds with type:
@@ -90,7 +90,7 @@ class Experimenter(User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    def _handle_save_session(self, data) -> MessageDict:
+    async def _handle_save_session(self, data) -> MessageDict:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
@@ -138,7 +138,7 @@ class Experimenter(User):
 
         return MessageDict(type="SESSION", data=session)
 
-    def _handle_delete_session(self, data) -> MessageDict:
+    async def _handle_delete_session(self, data) -> MessageDict:
         """Handle requests with type `DELETE_SESSION`.
 
         Check if data is a valid dict with `session_id`.  If found, delete session with
@@ -176,7 +176,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_create_experiment(self, data) -> MessageDict:
+    async def _handle_create_experiment(self, data) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
         Check if data is a valid dict with `session_id`.  If found, try to create a new
@@ -214,7 +214,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_join_experiment(self, data) -> MessageDict:
+    async def _handle_join_experiment(self, data) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
         Check if data is a valid dict with `session_id`.  If found, try to join an
@@ -261,7 +261,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_start_experiment(self, _) -> MessageDict:
+    async def _handle_start_experiment(self, _) -> MessageDict:
         """Handle requests with type `START_EXPERIMENT`.
 
         Parameters
@@ -298,7 +298,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_stop_experiment(self, _) -> MessageDict:
+    async def _handle_stop_experiment(self, _) -> MessageDict:
         """Handle requests with type `STOP_EXPERIMENT`.
 
         Parameters
@@ -335,7 +335,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_add_note(self, data) -> MessageDict:
+    async def _handle_add_note(self, data) -> MessageDict:
         """Handle requests with type `ADD_NOTE`.
 
         Check if data is a valid custom_types.note.NoteDict and adds the note to the
@@ -366,7 +366,7 @@ class Experimenter(User):
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_chat(self, data) -> MessageDict:
+    async def _handle_chat(self, data) -> MessageDict:
         """TODO document"""
         if not check_valid_typed_dict(data, ChatMessageDict):
             raise ErrorDictException(
@@ -382,7 +382,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _handle_kick(self, data) -> MessageDict:
+    async def _handle_kick(self, data) -> MessageDict:
         """TODO document"""
         if not check_valid_typed_dict(data, KickRequestDict):
             raise ErrorDictException(
@@ -391,9 +391,7 @@ class Experimenter(User):
                 description="Request data must be a valid kick request.",
             )
 
-        raise NotImplementedError()
-        # TODO enable when async support is implemented.
-        # await self._experiment.kick_participant(data)
+        await self._experiment.kick_participant(data)
 
         success = SuccessDict(
             type="KICK", description="Successfully kicked participant."

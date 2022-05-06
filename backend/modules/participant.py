@@ -66,7 +66,7 @@ class Participant(User):
 
         await self.disconnect()
 
-    def _handle_chat(self, data) -> MessageDict:
+    async def _handle_chat(self, data) -> MessageDict:
         """TODO document"""
         if not check_valid_typed_dict(data, ChatMessageDict):
             raise ErrorDictException(

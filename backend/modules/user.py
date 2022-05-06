@@ -8,7 +8,7 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 
 from __future__ import annotations
 from abc import ABC
-from typing import Callable, Any
+from typing import Callable, Any, Coroutine
 
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
@@ -51,7 +51,7 @@ class User(ABC):
 
     id: str
     _connection: _connection.Connection
-    _handlers: dict[str, list[Callable[[Any], MessageDict | None]]]
+    _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
 
     def __init__(self, id: str):
         """Instantiate new User base class.
@@ -100,7 +100,11 @@ class User(ABC):
         """TODO document when implemented."""
         pass
 
-    def on(self, endpoint: str, handler: Callable[[Any], MessageDict | None]) -> None:
+    def on(
+        self,
+        endpoint: str,
+        handler: Callable[[Any], Coroutine[Any, Any, MessageDict | None]],
+    ) -> None:
         """Register an `handler` function for incoming messages with type `endpoint`.
 
         Parameters
@@ -116,7 +120,7 @@ class User(ABC):
         else:
             self._handlers[endpoint] = [handler]
 
-    def handle_message(self, message: MessageDict | Any) -> None:
+    async def handle_message(self, message: MessageDict | Any) -> None:
         """Handle incoming message from client.
 
         Pass Message data to all functions registered to message type endpoint using
@@ -141,7 +145,7 @@ class User(ABC):
         )
         for handler in handler_functions:
             try:
-                response = handler(message["data"])
+                response = await handler(message["data"])
             except ErrorDictException as err:
                 response = err.error_message
             except Exception as err:
