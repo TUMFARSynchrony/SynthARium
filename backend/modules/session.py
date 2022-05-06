@@ -8,9 +8,10 @@ from copy import deepcopy
 from modules.exceptions import ErrorDictException
 from modules.util import generate_unique_id, get_filtered_participant_ids
 
+from custom_types.note import NoteDict
 from custom_types.session import SessionDict
 from custom_types.participant import ParticipantDict
-from custom_types.note import NoteDict
+from custom_types.chat_message import ChatMessageDict
 
 
 class Session:
@@ -125,6 +126,11 @@ class Session:
     def __repr__(self) -> str:
         """Get representation of this Session obj.  Format: `Session(<id>)`."""
         return f"Session({self.id})"
+
+    def log_chat_message(self, message: ChatMessageDict) -> None:
+        """TODO document"""
+        # TODO implement
+        raise NotImplementedError()
 
     @property
     def asdict(self) -> SessionDict:

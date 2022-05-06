@@ -1,6 +1,9 @@
 """Provide the `Experiment` class."""
 import time
-from typing import Any, Optional
+from typing import Any
+
+from custom_types.message import MessageDict
+from custom_types.chat_message import ChatMessageDict
 
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
@@ -77,7 +80,7 @@ class Experiment:
         self,
         to: str,
         data: Any,
-        exclude: Optional[_experimenter.Experimenter | _participant.Participant],
+        exclude: str = "",
     ):
         """Send data to a single or group of users.
 
@@ -87,34 +90,49 @@ class Experiment:
         Parameters
         ----------
         to : str
-            Target for the data. Can be a participant id or one of the following groups:
-            -`"all"` send data to all experimenters and participants.
-            -`"experimenters"` send data to all experimenters.
-            -`"participants"` send data to all participants.
+            Target for the data. Can be a participant ID or one of the following groups:
+            -`"all"` send data to all participants.
+            -`"experimenter"` send data to all experimenters.
         data : Any
             Data that will be send.
-        exclude : modules.experimenter.Experimenter or modules.participant.Participant, optional
-            User to exclude from targets, e.g. sender of `data`.
+        exclude : str, optional
+            User ID to exclude from targets, e.g. ID from sender of `data`.
+
+        Raises
+        ------
+        ErrorDictException
+            If `to` is not "all", "experimenter" or a known participant ID.
         """
         # Select target
         targets: list[_experimenter.Experimenter | _participant.Participant] = []
         match to:
             case "all":
-                targets.extend(self._experimenters)
                 targets.extend(self._participants)
-            case "experimenters":
+            case "experimenter":
                 targets.extend(self._experimenters)
-            case "participants":
-                targets.extend(self._participants)
             case _:
                 for participant in self._participants:
                     if participant.id is to:
                         targets.append(participant)
 
+        if len(targets) == 0:
+            raise ErrorDictException(
+                404, "UNKNOWN_USER", f"Failed to send data to {to}, user not found."
+            )
+
         # Send data
         for user in targets:
-            if exclude is None or exclude.id is not user.id:
+            if exclude != user.id:
                 user.send(data)
+
+    def send_chat_message(self, chat_message: ChatMessageDict):
+        """TODO document"""
+        # Save message in log
+        self.session.log_chat_message(chat_message)
+
+        # Send message
+        msg_dict = MessageDict(type="CHAT", data=chat_message)
+        self.send(chat_message["target"], msg_dict)
 
     def knows_participant_id(self, participant_id: str) -> bool:
         """Check if `participant_id` is an ID for a participant in this experiment."""

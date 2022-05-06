@@ -44,6 +44,7 @@ ERROR_TYPES = Literal[
     "UNKNOWN_SESSION",
     "UNKNOWN_EXPERIMENT",
     "UNKNOWN_PARTICIPANT",
+    "UNKNOWN_USER",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

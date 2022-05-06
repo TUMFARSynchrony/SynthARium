@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TypedDict
 from aiortc import RTCSessionDescription
 
+from custom_types.chat_message import ChatMessageDict
 from custom_types.message import MessageDict
 from custom_types.session import SessionDict
 from custom_types.success import SuccessDict
@@ -65,6 +66,7 @@ class Experimenter(User):
         self.on("START_EXPERIMENT", self._handle_start_experiment)
         self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on("ADD_NOTE", self._handle_add_note)
+        self.on("CHAT", self._handle_chat)
 
     def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -360,6 +362,22 @@ class Experimenter(User):
         self._experiment.session.add_note(data)
 
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
+        return MessageDict(type="SUCCESS", data=success)
+
+    def _handle_chat(self, data) -> MessageDict:
+        """TODO document"""
+        if not check_valid_typed_dict(data, ChatMessageDict):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Expected ChatMessage object.",
+            )
+
+        self._experiment.send_chat_message(data)
+
+        success = SuccessDict(
+            type="CHAT", description="Successfully send chat message."
+        )
         return MessageDict(type="SUCCESS", data=success)
 
 
