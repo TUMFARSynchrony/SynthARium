@@ -9,8 +9,14 @@ modules.connection.Connection.
 from __future__ import annotations
 from aiortc import RTCSessionDescription
 
-from modules.connection import connection_factory
+from custom_types.chat_message import ChatMessageDict
+from custom_types.message import MessageDict
+from custom_types.success import SuccessDict
+
 import modules.experiment as _experiment
+from modules.exceptions import ErrorDictException
+from modules.connection import connection_factory
+from modules.util import check_valid_typed_dict
 from modules.user import User
 
 
@@ -48,12 +54,42 @@ class Participant(User):
         self._experiment = experiment
         experiment.add_participant(self)
 
-        # TODO Add API endpoints
-        # self.on(...
+        # Add API endpoints
+        self.on("CHAT", self._handle_chat)
 
     def kick(self, reason: str):
         """TODO document"""
         pass
+
+    def _handle_chat(self, data) -> MessageDict:
+        """TODO document"""
+        if not check_valid_typed_dict(data, ChatMessageDict):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Expected ChatMessage object.",
+            )
+
+        if data["target"] != "experimenter":
+            raise ErrorDictException(
+                code=403,
+                type="INVALID_REQUEST",
+                description='Participants can only chat with "experimenter".',
+            )
+
+        if data["author"] != self.id:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Author of message must be participant ID.",
+            )
+
+        self._experiment.send_chat_message(data)
+
+        success = SuccessDict(
+            type="CHAT", description="Successfully send chat message."
+        )
+        return MessageDict(type="SUCCESS", data=success)
 
 
 async def participant_factory(
