@@ -1,0 +1,79 @@
+{
+	"id": "8a503d7142",
+	"title": "Example Session 2",
+	"description": "Example description with 500 characters: Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. voluptu",
+	"date": 1650380763073,
+	"time_limit": 300,
+	"record": false,
+	"participants": [
+		{
+			"id": "9c93d486fe",
+			"first_name": "Max",
+			"last_name": "Mustermann",
+			"muted": false,
+			"filters": [],
+			"position": {
+				"x": 0,
+				"y": 10,
+				"z": 10
+			},
+			"size": {
+				"width": 100,
+				"height": 100
+			},
+			"chat": [
+				{
+					"message": "Welcome to todays experiment!",
+					"time": 1650380763075,
+					"author": "experimenter",
+					"target": "all"
+				}
+			]
+		},
+		{
+			"id": "2d1882e48b",
+			"first_name": "Erika",
+			"last_name": "Mustermann",
+			"muted": true,
+			"filters": [],
+			"position": {
+				"x": 0,
+				"y": 150,
+				"z": 200
+			},
+			"size": {
+				"width": 100,
+				"height": 100
+			},
+			"chat": [
+				{
+					"message": "Welcome to todays experiment!",
+					"time": 1650380763075,
+					"author": "experimenter",
+					"target": "all"
+				},
+				{
+					"message": "Hello Erika. Please enable your video camera to start the experiment.",
+					"time": 1650380764175,
+					"author": "experimenter",
+					"target": "25a882669d"
+				},
+				{
+					"message": "Hello, of course. It should work now.",
+					"time": 1650380765075,
+					"author": "25a882669d",
+					"target": "experimenter"
+				}
+			]
+		}
+	],
+	"start_time": 1650380763076,
+	"end_time": 1650380864076,
+	"notes": [
+		{
+			"time": 1650380763076,
+			"speakers": ["speaker"],
+			"content": "This is a note"
+		}
+	]
+}
