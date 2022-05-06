@@ -7,6 +7,7 @@ from typing import Any
 from typing_extensions import NotRequired, TypedDict
 
 from custom_types.size import SizeDict
+from custom_types.chat_log import ChatLogDict
 from custom_types.position import PositionDict
 
 
@@ -34,7 +35,8 @@ class ParticipantDict(TypedDict):
         Position of the participant's stream on the canvas.
     size : custom_types.size.SizeDict
         Size of the participant's stream on the canvas.
-
+    chat : list of custom_types.chat_log.ChatLogDict
+        Chat log between experimenter and participant.
 
     See Also
     --------
@@ -49,3 +51,4 @@ class ParticipantDict(TypedDict):
     filters: list[Any]
     position: PositionDict
     size: SizeDict
+    chat: list[ChatLogDict]
