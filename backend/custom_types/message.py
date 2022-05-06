@@ -43,6 +43,8 @@ MESSAGE_TYPES = Literal[
     "CHAT",
     "KICK",
     "KICK_NOTIFICATION",
+    "EXPERIMENT_STARTED",
+    "EXPERIMENT_ENDED",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

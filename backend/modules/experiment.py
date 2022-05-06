@@ -56,6 +56,10 @@ class Experiment:
         self._state = ExperimentState.RUNNING
         self.session.start_time = round(time.time() * 1000)
 
+        # Notify all users
+        end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
+        self.send("*", end_message)
+
     def stop(self):
         """Stop the experiment.
 
@@ -77,6 +81,10 @@ class Experiment:
         self._state = ExperimentState.ENDED
         self.session.end_time = round(time.time() * 1000)
 
+        # Notify all users
+        end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
+        self.send("*", end_message)
+
     def send(
         self,
         to: str,
@@ -92,6 +100,8 @@ class Experiment:
         ----------
         to : str
             Target for the data. Can be a participant ID or one of the following groups:
+            - `"*"` send data to all participants and experimenters.  Only for internal
+              use.
             -`"all"` send data to all participants.
             -`"experimenter"` send data to all experimenters.
         data : Any
@@ -107,6 +117,9 @@ class Experiment:
         # Select target
         targets: list[_experimenter.Experimenter | _participant.Participant] = []
         match to:
+            case "*":
+                targets.extend(self._participants.values())
+                targets.extend(self._experimenters)
             case "all":
                 targets.extend(self._participants.values())
             case "experimenter":
