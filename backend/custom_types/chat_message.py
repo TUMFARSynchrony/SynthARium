@@ -25,7 +25,7 @@ class ChatMessageDict(TypedDict):
     See Also
     --------
     Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#chatlog
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#chatmessage
     """
 
     message: str

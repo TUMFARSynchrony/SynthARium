@@ -129,8 +129,38 @@ class Session:
 
     def log_chat_message(self, message: ChatMessageDict) -> None:
         """TODO document"""
-        # TODO implement
-        raise NotImplementedError()
+        # Save message in all participants if message is broadcast
+        if message["target"] == "all":
+            for participant in self._data["participants"]:
+                participant["chat"].append(message)
+            self._on_update(self)
+            return
+
+        if message["target"] == "experimenter":
+            participant_id = message["author"]
+        else:
+            participant_id = message["target"]
+
+        # Save message in
+        participant = None
+        for p in self._data["participants"]:
+            if p.get("id") == participant_id:
+                participant = p
+                break
+
+        if participant is None:
+            print(
+                f"[Session] No Participant with ID {participant_id} found for chat.",
+                f"Message: {message}",
+            )
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_USER",
+                description="No participant found for the given ID.",
+            )
+
+        participant["chat"].append(message)
+        self._on_update(self)
 
     @property
     def asdict(self) -> SessionDict:

@@ -7,7 +7,7 @@ from typing import Any
 from typing_extensions import NotRequired, TypedDict
 
 from custom_types.size import SizeDict
-from custom_types.chat_log import ChatLogDict
+from custom_types.chat_message import ChatMessageDict
 from custom_types.position import PositionDict
 
 
@@ -51,4 +51,4 @@ class ParticipantDict(TypedDict):
     filters: list[Any]
     position: PositionDict
     size: SizeDict
-    chat: list[ChatLogDict]
+    chat: list[ChatMessageDict]
