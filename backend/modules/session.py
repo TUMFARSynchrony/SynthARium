@@ -6,10 +6,10 @@ import json
 from copy import deepcopy
 
 from modules.exceptions import ErrorDictException
-from modules.util import generate_unique_id, get_filtered_participant_ids
+from modules.util import generate_unique_id
 
 from custom_types.note import NoteDict
-from custom_types.session import SessionDict
+from custom_types.session import SessionDict, get_filtered_participant_ids
 from custom_types.participant import ParticipantDict
 from custom_types.chat_message import ChatMessageDict
 

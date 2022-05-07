@@ -1,4 +1,4 @@
-"""Provide the `SessionDict` TypedDict.
+"""Provide the `SessionDict` TypedDict and related utility functions.
 
 Use for type hints and static type checking without any overhead during runtime.
 """
@@ -117,3 +117,44 @@ def is_valid_session(data, recursive: bool) -> bool:
         and isinstance(data["time_limit"], int)
         and isinstance(data["record"], bool)
     )
+
+
+def get_participant_ids(session_dict: SessionDict) -> list[str | None]:
+    """Get all participant IDs from session_dict. Missing IDs will be None.
+
+    Parameters
+    ----------
+    data : custom_types.session.SessionDict
+        Session data with participants.
+
+    Returns
+    -------
+    list of str and/or None
+        Participant IDs in `session_dict` with None for missing/empty IDs.
+
+    See Also
+    --------
+    get_filtered_participant_ids : Get IDs without None values for missing IDs.
+    """
+    return [p.get("id") for p in session_dict.get("participants", [])]
+
+
+def get_filtered_participant_ids(session_dict: SessionDict) -> list[str]:
+    """Get all participant IDs from session_dict. Missing IDs will be filtered out.
+
+    Parameters
+    ----------
+    data : custom_types.session.SessionDict
+        Session data with participants.
+
+    Returns
+    -------
+    list of str
+        Participant IDs in `session_dict` without missing/empty IDs.
+
+    See Also
+    --------
+    get_participant_ids : Get IDs with None values for missing IDs.
+    """
+    p_ids = get_participant_ids(session_dict)
+    return [id for id in p_ids if id is not None]

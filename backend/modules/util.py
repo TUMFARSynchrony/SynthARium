@@ -8,8 +8,6 @@ from typing import Any, Type, TypedDict
 # Support will come to typing in python 3.11. See PEP 655.
 from typing_extensions import TypedDict as TypedDictExt
 
-import custom_types.session as _session_dict
-
 
 def generate_unique_id(existing_ids: list[str]):
     """Generate an unique id without collision with `existing_ids`.
@@ -106,44 +104,3 @@ def check_dict(data: dict, required_keys: list[str], optional_keys: list[str]):
             return False
 
     return True
-
-
-def get_participant_ids(session_dict: _session_dict.SessionDict) -> list[str | None]:
-    """Get all participant IDs from session_dict. Missing IDs will be None.
-
-    Parameters
-    ----------
-    data : custom_types.session.SessionDict
-        Session data with participants.
-
-    Returns
-    -------
-    list of str and/or None
-        Participant IDs in `session_dict` with None for missing/empty IDs.
-
-    See Also
-    --------
-    get_filtered_participant_ids : Get IDs without None values for missing IDs.
-    """
-    return [p.get("id") for p in session_dict.get("participants", [])]
-
-
-def get_filtered_participant_ids(session_dict: _session_dict.SessionDict) -> list[str]:
-    """Get all participant IDs from session_dict. Missing IDs will be filtered out.
-
-    Parameters
-    ----------
-    data : custom_types.session.SessionDict
-        Session data with participants.
-
-    Returns
-    -------
-    list of str
-        Participant IDs in `session_dict` without missing/empty IDs.
-
-    See Also
-    --------
-    get_participant_ids : Get IDs with None values for missing IDs.
-    """
-    p_ids = get_participant_ids(session_dict)
-    return [id for id in p_ids if id is not None]
