@@ -10,7 +10,8 @@
 			"id": "9ba5fdccde",
 			"first_name": "Max",
 			"last_name": "Mustermann",
-			"muted": false,
+			"muted_video": false,
+			"muted_audio": false,
 			"filters": [],
 			"position": {
 				"x": 0,
@@ -34,7 +35,8 @@
 			"id": "25a882669d",
 			"first_name": "Erika",
 			"last_name": "Mustermann",
-			"muted": true,
+			"muted_video": false,
+			"muted_audio": true,
 			"filters": [],
 			"position": {
 				"x": 0,
@@ -70,7 +72,8 @@
 			"id": "8e39086e83",
 			"first_name": "Bob",
 			"last_name": "Builder",
-			"muted": true,
+			"muted_video": true,
+			"muted_audio": true,
 			"filters": [],
 			"position": {
 				"x": 0,

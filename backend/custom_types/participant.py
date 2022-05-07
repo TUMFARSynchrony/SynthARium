@@ -49,7 +49,8 @@ class ParticipantDict(TypedDict):
     id: NotRequired[str]
     first_name: str
     last_name: str
-    muted: bool
+    muted_video: bool
+    muted_audio: bool
     filters: list[Any]
     position: PositionDict
     size: SizeDict
@@ -102,5 +103,6 @@ def is_valid_participant(data, recursive: bool) -> bool:
         valid_id
         and isinstance(data["first_name"], str)
         and isinstance(data["last_name"], str)
-        and isinstance(data["muted"], bool)
+        and isinstance(data["muted_video"], bool)
+        and isinstance(data["muted_audio"], bool)
     )

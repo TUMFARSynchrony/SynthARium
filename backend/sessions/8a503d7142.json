@@ -10,7 +10,8 @@
 			"id": "9c93d486fe",
 			"first_name": "Max",
 			"last_name": "Mustermann",
-			"muted": false,
+			"muted_video": false,
+			"muted_audio": false,
 			"filters": [],
 			"position": {
 				"x": 0,
@@ -34,7 +35,8 @@
 			"id": "2d1882e48b",
 			"first_name": "Erika",
 			"last_name": "Mustermann",
-			"muted": true,
+			"muted_video": false,
+			"muted_audio": true,
 			"filters": [],
 			"position": {
 				"x": 0,
