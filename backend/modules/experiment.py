@@ -58,7 +58,7 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
-        self.send("*", end_message)
+        self.send("", end_message, broadcast=True)
 
     def stop(self):
         """Stop the experiment.
@@ -83,14 +83,9 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
-        self.send("*", end_message)
+        self.send("", end_message, broadcast=True)
 
-    def send(
-        self,
-        to: str,
-        data: Any,
-        exclude: str = "",
-    ):
+    def send(self, to: str, data: Any, exclude: str = "", broadcast: bool = False):
         """Send data to a single or group of users.
 
         Select the correct target (group) according to the `to` parameter and send the
@@ -100,14 +95,20 @@ class Experiment:
         ----------
         to : str
             Target for the data. Can be a participant ID or one of the following groups:
-            - `"*"` send data to all participants and experimenters.  Only for internal
-              use.
             -`"all"` send data to all participants.
             -`"experimenter"` send data to all experimenters.
         data : Any
             Data that will be send.
         exclude : str, optional
             User ID to exclude from targets, e.g. ID from sender of `data`.
+        broadcast : bool, default False
+            For sending a data to all clients, participants and experimenters.  Only for
+            internal use.  If true, `to` is ignored.
+
+        Notes
+        -----
+        broadcast is a separate variable to avoid misbehaving clients sending data to
+        everyone.
 
         Raises
         ------
@@ -116,23 +117,24 @@ class Experiment:
         """
         # Select target
         targets: list[_experimenter.Experimenter | _participant.Participant] = []
-        match to:
-            case "*":
-                targets.extend(self._participants.values())
-                targets.extend(self._experimenters)
-            case "all":
-                targets.extend(self._participants.values())
-            case "experimenter":
-                targets.extend(self._experimenters)
-            case _:
-                if to in self._participants:
-                    targets.append(self._participants[to])
-                else:
-                    raise ErrorDictException(
-                        404,
-                        "UNKNOWN_USER",
-                        f"Failed to send data to {to}, user not found.",
-                    )
+        if broadcast:
+            targets.extend(self._participants.values())
+            targets.extend(self._experimenters)
+        else:
+            match to:
+                case "all":
+                    targets.extend(self._participants.values())
+                case "experimenter":
+                    targets.extend(self._experimenters)
+                case _:
+                    if to in self._participants:
+                        targets.append(self._participants[to])
+                    else:
+                        raise ErrorDictException(
+                            404,
+                            "UNKNOWN_USER",
+                            f"Failed to send data to {to}, user not found.",
+                        )
 
         # Send data
         for user in targets:
