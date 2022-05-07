@@ -6,9 +6,9 @@ import json
 import os
 from os.path import isfile, join
 
-from custom_types.session import SessionDict
+from custom_types.session import SessionDict, is_valid_session
 
-from modules.util import generate_unique_id, check_valid_typed_dict
+from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 from modules.session import Session
 from modules import BACKEND_DIR
@@ -198,7 +198,7 @@ class SessionManager:
         sessions_with_missing_ids: list[SessionDict] = []
         for file in filenames:
             session_dict: SessionDict = self._read(file)
-            if not check_valid_typed_dict(session_dict, SessionDict):
+            if not is_valid_session(session_dict, True):
                 print(
                     f"[SessionManager] ERROR invalid session file: {file}. Ignoring",
                     "file.",

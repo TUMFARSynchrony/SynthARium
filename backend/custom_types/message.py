@@ -5,7 +5,9 @@ Use for type hints and static type checking without any overhead during runtime.
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, TypedDict, get_args
+
+import modules.util as util
 
 
 class MessageDict(TypedDict):
@@ -53,3 +55,27 @@ See Also
 Data Types Wiki :
     https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message
 """
+
+
+def is_valid_messagedict(data) -> bool:
+    """Check if `data` is a valid MessageDict.
+
+    Checks if all required and only required or optional keys exist in data as well as
+    the data type of the values.
+    Does not check the contents of MessageDict.data / non recursive.
+
+    Parameters
+    ----------
+    data : any
+        Data to perform check on.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid MessageDict.
+    """
+    # Check if all required and only required or optional keys exist in data
+    if not util.check_valid_typeddict_keys(data, MessageDict):
+        return False
+
+    return data["type"] in get_args(MESSAGE_TYPES)

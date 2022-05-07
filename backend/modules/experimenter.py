@@ -10,14 +10,14 @@ from __future__ import annotations
 from typing import TypedDict
 from aiortc import RTCSessionDescription
 
-from custom_types.chat_message import ChatMessageDict
-from custom_types.kick import KickRequestDict
+from custom_types.chat_message import is_valid_chatmessage
+from custom_types.kick import is_valid_kickrequest
 from custom_types.message import MessageDict
-from custom_types.session import SessionDict
+from custom_types.session import SessionDict, is_valid_session
 from custom_types.success import SuccessDict
-from custom_types.note import NoteDict
+from custom_types.note import is_valid_note
 
-from modules.util import check_valid_typed_dict
+from modules.util import check_valid_typeddict_keys
 from modules.connection import connection_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
@@ -114,7 +114,7 @@ class Experimenter(User):
             unknown session).
         """
         # Data check
-        if not check_valid_typed_dict(data, SessionDict):
+        if not is_valid_session(data, True):
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Expected session object."
             )
@@ -161,7 +161,9 @@ class Experimenter(User):
             If data is not a valid dict with an `session_id` str or if `session_id` is
             not known.
         """
-        if not check_valid_typed_dict(data, TypedDict("SessionIdDict", session_id=str)):
+        if not check_valid_typeddict_keys(
+            data, TypedDict("SessionIdDict", session_id=str)  # TODO move typeddict
+        ):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -199,7 +201,9 @@ class Experimenter(User):
             If data is not a valid dict with an `session_id` str, if `session_id` is not
             known or if there is already an Experiment with `session_id`.
         """
-        if not check_valid_typed_dict(data, TypedDict("SessionIdDict", session_id=str)):
+        if not check_valid_typeddict_keys(
+            data, TypedDict("SessionIdDict", session_id=str)  # TODO move typeddict
+        ):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -237,7 +241,9 @@ class Experimenter(User):
             If data is not a valid dict with a `session_id` str or if there is no
             Experiment with `session_id`.
         """
-        if not check_valid_typed_dict(data, TypedDict("SessionIdDict", session_id=str)):
+        if not check_valid_typeddict_keys(
+            data, TypedDict("SessionIdDict", session_id=str)  # TODO move typeddict
+        ):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -357,7 +363,7 @@ class Experimenter(User):
         ErrorDictException
             If data is not a valid custom_types.note.NoteDict.
         """
-        if not check_valid_typed_dict(data, NoteDict):
+        if not is_valid_note(data):
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Expected note object."
             )
@@ -368,7 +374,7 @@ class Experimenter(User):
 
     async def _handle_chat(self, data) -> MessageDict:
         """TODO document"""
-        if not check_valid_typed_dict(data, ChatMessageDict):
+        if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -384,7 +390,7 @@ class Experimenter(User):
 
     async def _handle_kick(self, data) -> MessageDict:
         """TODO document"""
-        if not check_valid_typed_dict(data, KickRequestDict):
+        if not is_valid_kickrequest(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",

@@ -9,7 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 from aiortc import RTCSessionDescription
 
-from custom_types.chat_message import ChatMessageDict
+from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
@@ -17,7 +17,6 @@ from custom_types.success import SuccessDict
 import modules.experiment as _experiment
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
-from modules.util import check_valid_typed_dict
 from modules.user import User
 
 
@@ -68,7 +67,7 @@ class Participant(User):
 
     async def _handle_chat(self, data) -> MessageDict:
         """TODO document"""
-        if not check_valid_typed_dict(data, ChatMessageDict):
+        if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",

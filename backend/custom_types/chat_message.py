@@ -5,6 +5,8 @@ Use for type hints and static type checking without any overhead during runtime.
 
 from typing import TypedDict
 
+import modules.util as util
+
 
 class ChatMessageDict(TypedDict):
     """TypedDict for sending chat messages between client and server.
@@ -32,3 +34,28 @@ class ChatMessageDict(TypedDict):
     time: int
     author: str
     target: str
+
+
+def is_valid_chatmessage(data) -> bool:
+    """Check if `data` is a valid ChatMessageDict.
+
+    Checks if all required and only required or optional keys exist in data as well as
+    the data type of the values.
+
+    Parameters
+    ----------
+    data : any
+        Data to perform check on.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid ChatMessageDict.
+    """
+    return (
+        util.check_valid_typeddict_keys(data, ChatMessageDict)
+        and isinstance(data["message"], str)
+        and isinstance(data["time"], int)
+        and isinstance(data["author"], str)
+        and isinstance(data["target"], str)
+    )

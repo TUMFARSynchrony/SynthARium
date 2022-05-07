@@ -9,10 +9,8 @@ from aiortc import (
     MediaStreamTrack,
 )
 
-from modules.util import check_valid_typed_dict
-
 from custom_types.error import ErrorDict
-from custom_types.message import MessageDict
+from custom_types.message import MessageDict, is_valid_messagedict
 
 
 class Connection:
@@ -144,7 +142,7 @@ class Connection:
             message_obj = None
 
         # Handle invalid message type
-        if message_obj is None or not check_valid_typed_dict(message_obj, MessageDict):
+        if message_obj is None or not is_valid_messagedict(message_obj):
             print("[Connection] Received message with invalid type.", message)
             err = ErrorDict(
                 type="INVALID_REQUEST",

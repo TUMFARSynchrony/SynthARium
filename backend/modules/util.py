@@ -8,7 +8,7 @@ from typing import Any, Type, TypedDict
 # Support will come to typing in python 3.11. See PEP 655.
 from typing_extensions import TypedDict as TypedDictExt
 
-from custom_types.session import SessionDict
+import custom_types.session as _session_dict
 
 
 def generate_unique_id(existing_ids: list[str]):
@@ -35,7 +35,7 @@ def generate_unique_id(existing_ids: list[str]):
     return id
 
 
-def check_valid_typed_dict(
+def check_valid_typeddict_keys(
     data: Any, type: Type[TypedDict] | Type[TypedDictExt]
 ) -> bool:
     """Check if `data` is a valid dict according to `type`.
@@ -43,7 +43,9 @@ def check_valid_typed_dict(
     Checks if all required and only required or optional keys from `type` exist in
     `data`.
 
-    TODO include type checks (not just key checks).
+    Does not check the data type of values in `data`!  Full checks, including data type
+    checks, should be included within the TypedDicts modules.  These checks should
+    include this function.
 
     Parameters
     ----------
@@ -106,7 +108,7 @@ def check_dict(data: dict, required_keys: list[str], optional_keys: list[str]):
     return True
 
 
-def get_participant_ids(session_dict: SessionDict) -> list[str | None]:
+def get_participant_ids(session_dict: _session_dict.SessionDict) -> list[str | None]:
     """Get all participant IDs from session_dict. Missing IDs will be None.
 
     Parameters
@@ -126,7 +128,7 @@ def get_participant_ids(session_dict: SessionDict) -> list[str | None]:
     return [p.get("id") for p in session_dict.get("participants", [])]
 
 
-def get_filtered_participant_ids(session_dict: SessionDict) -> list[str]:
+def get_filtered_participant_ids(session_dict: _session_dict.SessionDict) -> list[str]:
     """Get all participant IDs from session_dict. Missing IDs will be filtered out.
 
     Parameters

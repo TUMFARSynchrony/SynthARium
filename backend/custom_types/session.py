@@ -6,8 +6,10 @@ Use for type hints and static type checking without any overhead during runtime.
 from typing import Any
 from typing_extensions import NotRequired, TypedDict
 
-from custom_types.participant import ParticipantDict
-from custom_types.note import NoteDict
+import modules.util as util
+
+from custom_types.participant import ParticipantDict, is_valid_participant
+from custom_types.note import NoteDict, is_valid_note
 
 
 class SessionDict(TypedDict):
@@ -61,3 +63,57 @@ class SessionDict(TypedDict):
     end_time: NotRequired[int]
     notes: list[NoteDict]
     log: NotRequired[Any]
+
+
+def is_valid_session(data, recursive: bool) -> bool:
+    """Check if `data` is a valid SessionDict.
+
+    Checks if all required and only required or optional keys exist in data as well as
+    the data type of the values.
+
+    Parameters
+    ----------
+    data : any
+        Data to perform check on.
+    recursive : bool
+        If true, participants and notes will be checked recursively.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid SessionDict.
+    """
+    if not util.check_valid_typeddict_keys(data, SessionDict):
+        return False
+
+    # Check participants and notes
+    if not isinstance(data["participants"], list) or not isinstance(
+        data["notes"], list
+    ):
+        return False
+
+    if recursive:
+        for entry in data["participants"]:
+            if not is_valid_participant(entry, recursive):
+                return False
+        for entry in data["notes"]:
+            if not is_valid_note(entry):
+                return False
+
+    # TODO check log
+
+    # Check optional keys
+    valid_id = "id" not in data or isinstance(data["id"], str)
+    valid_start_time = "start_time" not in data or isinstance(data["start_time"], int)
+    valid_end_time = "end_time" not in data or isinstance(data["end_time"], int)
+
+    return (
+        valid_id
+        and valid_start_time
+        and valid_end_time
+        and isinstance(data["title"], str)
+        and isinstance(data["description"], str)
+        and isinstance(data["date"], int)
+        and isinstance(data["time_limit"], int)
+        and isinstance(data["record"], bool)
+    )
