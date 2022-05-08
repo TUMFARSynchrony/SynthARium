@@ -95,7 +95,7 @@ def check_dict(data: dict, required_keys: list[str], optional_keys: list[str]):
             return False
 
     # Check that only required & optional keys exist in data
-    for key in data.keys():
+    for key in data:
         if key not in required_keys and key not in optional_keys:
             print(
                 f"[check_dict] non allowed key: {key}. Required keys:",
