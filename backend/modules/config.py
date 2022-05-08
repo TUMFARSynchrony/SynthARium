@@ -32,7 +32,7 @@ class Config:
             "port": int,
             "environment": str,  # Literal not supported here, check afterwards.
         }
-        for key in data_types.keys():
+        for key in data_types:
             if key not in config:
                 raise ValueError(
                     f"{key} with type {data_types[key]} is missing in config.json."

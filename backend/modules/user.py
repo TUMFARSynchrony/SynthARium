@@ -115,7 +115,7 @@ class User(ABC):
         handler : function(data: Any) -> custom_types.message.MessageDict
             Function that handles incoming data for Messages with type `endpoint`.
         """
-        if endpoint in self._handlers.keys():
+        if endpoint in self._handlers:
             self._handlers[endpoint].append(handler)
         else:
             self._handlers[endpoint] = [handler]

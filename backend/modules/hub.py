@@ -150,7 +150,7 @@ class Hub:
                 code=400, type="INVALID_REQUEST", description="Missing session_id."
             )
 
-        if session_id not in self.experiments.keys():
+        if session_id not in self.experiments:
             print(
                 f"[Hub] WARNING: session {session_id} not found.",
                 f"Participant {participant_id} failed to join",

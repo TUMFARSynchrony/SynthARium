@@ -179,7 +179,7 @@ class SessionManager:
             print("[SessionManager] ERROR: Cannot update session without id")
             return
 
-        if session.id not in self._sessions.keys():
+        if session.id not in self._sessions:
             print("[SessionManager] ERROR: Cannot update unknown session", session.id)
             return
 
@@ -187,7 +187,7 @@ class SessionManager:
 
     def _generate_unique_session_id(self):
         """Generate an unique session id."""
-        existing_ids = list(self._sessions.keys())
+        existing_ids = list(self._sessions)
         return generate_unique_id(existing_ids)
 
     def _read_files_from_drive(self):
@@ -210,7 +210,7 @@ class SessionManager:
                 sessions_with_missing_ids.append(session_dict)
                 continue
 
-            if session_dict["id"] in self._sessions.keys():
+            if session_dict["id"] in self._sessions:
                 print(
                     "[SessionManager] ERROR: Session ID duplicate:",
                     f"{session_dict['id']}. Ignoring file: {file}.",
