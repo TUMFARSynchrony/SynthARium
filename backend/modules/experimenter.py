@@ -288,7 +288,7 @@ class Experimenter(User):
                 type="INVALID_REQUEST",
                 description=(
                     "Cannot start experiment. Experimenter is not connected to an "
-                    + "experiment."
+                    "experiment."
                 ),
             )
 

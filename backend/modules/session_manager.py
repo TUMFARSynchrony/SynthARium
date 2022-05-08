@@ -159,7 +159,7 @@ class SessionManager:
         # TODO check if the session obj is used in an experiment.
 
         print("[SessionManager] Deleting session. ID:", id)
-        self._delete_file(id + ".json")
+        self._delete_file(f"{id}.json")
         return self._sessions.pop(id, None) != None
 
     def _handle_session_update(self, session: Session):
@@ -262,7 +262,7 @@ class SessionManager:
             print("[SessionManager] ERROR: Cannot save session without ID.")
             return
 
-        filename = session_dict["id"] + ".json"
+        filename = f"{session_dict['id']}.json"
         path = join(self._session_dir, filename)
         with open(path, "w") as file:
             json.dump(session_dict, file, indent=4)
