@@ -7,17 +7,16 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
-from typing import TypedDict
 from aiortc import RTCSessionDescription
 
+from custom_types.general import is_valid_session_id_request
+from custom_types.session import SessionDict, is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
 from custom_types.message import MessageDict
-from custom_types.session import SessionDict, is_valid_session
 from custom_types.success import SuccessDict
 from custom_types.note import is_valid_note
 
-from modules.util import check_valid_typeddict_keys
 from modules.connection import connection_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
@@ -141,8 +140,8 @@ class Experimenter(User):
     async def _handle_delete_session(self, data) -> MessageDict:
         """Handle requests with type `DELETE_SESSION`.
 
-        Check if data is a valid dict with `session_id`.  If found, delete session with
-        `session_id`.
+        Check if data is a valid custom_types.general.SessionIdRequest dict.  If
+        found, delete session with the `session_id` in `data`.
 
         Parameters
         ----------
@@ -161,9 +160,7 @@ class Experimenter(User):
             If data is not a valid dict with an `session_id` str or if `session_id` is
             not known.
         """
-        if not check_valid_typeddict_keys(
-            data, TypedDict("SessionIdDict", session_id=str)  # TODO move typeddict
-        ):
+        if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -181,8 +178,9 @@ class Experimenter(User):
     async def _handle_create_experiment(self, data) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
-        Check if data is a valid dict with `session_id`.  If found, try to create a new
-        modules.experiment.Experiment based on the session with `session_id`.
+        Check if data is a valid custom_types.general.SessionIdRequest dict.  If
+        found, try to create a new modules.experiment.Experiment based on the session
+        with `the session_id` in `data`.
 
         Parameters
         ----------
@@ -201,9 +199,7 @@ class Experimenter(User):
             If data is not a valid dict with an `session_id` str, if `session_id` is not
             known or if there is already an Experiment with `session_id`.
         """
-        if not check_valid_typeddict_keys(
-            data, TypedDict("SessionIdDict", session_id=str)  # TODO move typeddict
-        ):
+        if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -221,8 +217,9 @@ class Experimenter(User):
     async def _handle_join_experiment(self, data) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
-        Check if data is a valid dict with `session_id`.  If found, try to join an
-        existing modules.experiment.Experiment with ID: `session_id`.
+        Check if data is a valid custom_types.general.SessionIdRequest dict.  If
+        found, try to join an existing modules.experiment.Experiment with the
+        `session_id` in `data`.
 
         Parameters
         ----------
@@ -241,9 +238,7 @@ class Experimenter(User):
             If data is not a valid dict with a `session_id` str or if there is no
             Experiment with `session_id`.
         """
-        if not check_valid_typeddict_keys(
-            data, TypedDict("SessionIdDict", session_id=str)  # TODO move typeddict
-        ):
+        if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -330,7 +325,7 @@ class Experimenter(User):
                 type="INVALID_REQUEST",
                 description=(
                     "Cannot start experiment. Experimenter is not connected to an "
-                    + "experiment."
+                    "experiment."
                 ),
             )
 
