@@ -3,7 +3,6 @@
 Use for type hints and static type checking without any overhead during runtime.
 """
 
-from typing import Any
 from typing_extensions import NotRequired, TypedDict
 
 import modules.util as util
@@ -12,6 +11,7 @@ from custom_types.filters import is_valid_filter_dict
 from custom_types.size import SizeDict, is_valid_size
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.position import PositionDict, is_valid_position
+from custom_types.filters import BasicFilterDict
 
 
 class ParticipantDict(TypedDict):
@@ -30,9 +30,11 @@ class ParticipantDict(TypedDict):
         First name of the participant.
     last_name : str
         Last name of the participant.
-    muted : bool
-        TODO define
-    filters : list of TODO define type
+    muted_video : bool
+        Whether the participants' video is forcefully muted by the experimenter.
+    muted_audio : bool
+        Whether the participants' audio is forcefully muted by the experimenter.
+    filters : list of custom_types.filter.BasicFilterDict
         Active filters for this participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
@@ -52,7 +54,7 @@ class ParticipantDict(TypedDict):
     last_name: str
     muted_video: bool
     muted_audio: bool
-    filters: list[Any]
+    filters: list[BasicFilterDict]
     position: PositionDict
     size: SizeDict
     chat: list[ChatMessageDict]
