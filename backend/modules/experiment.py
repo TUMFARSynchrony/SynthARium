@@ -150,11 +150,6 @@ class Experiment:
         msg_dict = MessageDict(type="CHAT", data=chat_message)
         self.send(chat_message["target"], msg_dict)
 
-    def knows_participant_id(self, participant_id: str) -> bool:
-        """Check if `participant_id` is an ID for a participant in this experiment."""
-        known_ids = map(lambda p: p.get("id", ""), self.session.participants)
-        return participant_id != "" and participant_id in known_ids
-
     def add_participant(self, participant: _participant.Participant):
         """Add participant to experiment.
 
@@ -180,6 +175,13 @@ class Experiment:
 
         await participant.kick(kick_request["reason"])
         self._participants.pop(kick_request["participant_id"])
+
+    def mute_participant(self, participant_id: str, video: bool, audio: bool):
+        """TODO document"""
+
+        # Mute participant if participant is already connected
+        if participant_id in self._participants:
+            self._participants[participant_id].set_muted(video, audio)
 
     def add_experimenter(self, experimenter: _experimenter.Experimenter):
         """Add experimenter to experiment.

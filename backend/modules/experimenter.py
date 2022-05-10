@@ -8,6 +8,7 @@ modules.connection.Connection.
 
 from __future__ import annotations
 from aiortc import RTCSessionDescription
+from backend.custom_types.general import is_valid_mute_request
 
 from custom_types.general import is_valid_session_id_request
 from custom_types.session import SessionDict, is_valid_session
@@ -68,6 +69,7 @@ class Experimenter(User):
         self.on("ADD_NOTE", self._handle_add_note)
         self.on("CHAT", self._handle_chat)
         self.on("KICK", self._handle_kick)
+        self.on("MUTE", self._handle_mute)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -396,6 +398,24 @@ class Experimenter(User):
 
         success = SuccessDict(
             type="KICK", description="Successfully kicked participant."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_mute(self, data) -> MessageDict:
+        """TODO document"""
+        if not is_valid_mute_request(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Request data must contain a valid participant ID.",
+            )
+
+        self._experiment.mute_participant(
+            data["participant_id"], data["mute_video"], data["mute_audio"]
+        )
+
+        success = SuccessDict(
+            type="MUTE", description="Successfully changed muted state for participant."
         )
         return MessageDict(type="SUCCESS", data=success)
 

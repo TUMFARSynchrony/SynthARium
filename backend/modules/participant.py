@@ -33,8 +33,16 @@ class Participant(User):
     """
 
     _experiment: _experiment.Experiment
+    _muted_video: bool
+    _muted_audio: bool
 
-    def __init__(self, id: str, experiment: _experiment.Experiment) -> None:
+    def __init__(
+        self,
+        id: str,
+        experiment: _experiment.Experiment,
+        muted_video: bool,
+        muted_audio: bool,
+    ) -> None:
         """Instantiate new Participant instance.
 
         Parameters
@@ -52,10 +60,24 @@ class Participant(User):
         super().__init__(id)
 
         self._experiment = experiment
+        self._muted_video = muted_video
+        self._muted_audio = muted_audio
         experiment.add_participant(self)
 
         # Add API endpoints
         self.on("CHAT", self._handle_chat)
+
+    def set_muted(self, video: bool, audio: bool):
+        """TODO document"""
+        if self._muted_video == video and self._muted_audio == audio:
+            return
+
+        self._muted_video = video
+        self._muted_audio = audio
+
+        # TODO Implement mute on connection (when connection is finished)
+
+        # TODO Notify user about mute
 
     async def kick(self, reason: str):
         """TODO document"""
@@ -97,7 +119,11 @@ class Participant(User):
 
 
 async def participant_factory(
-    offer: RTCSessionDescription, id: str, experiment: _experiment.Experiment
+    offer: RTCSessionDescription,
+    id: str,
+    experiment: _experiment.Experiment,
+    muted_video: bool,
+    muted_audio: bool,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -122,7 +148,7 @@ async def participant_factory(
         WebRTC answer that should be send back to the client and Participant
         representing the client.
     """
-    participant = Participant(id, experiment)
+    participant = Participant(id, experiment, muted_video, muted_audio)
     answer, connection = await connection_factory(offer, participant.handle_message)
     participant.set_connection(connection)
     return (answer, participant)

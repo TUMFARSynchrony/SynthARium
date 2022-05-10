@@ -238,6 +238,13 @@ class Session:
         """Get Session participants list."""
         return self._data.get("participants")
 
+    def get_participant(self, participant_id: str):
+        """TODO Document"""
+        for participant in self.participants:
+            if participant.get("id") == participant_id:
+                return participant
+        return None
+
     def add_participant(self, participant: ParticipantDict):
         """Add a participant to the Session.
 

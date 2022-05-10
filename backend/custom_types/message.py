@@ -47,6 +47,7 @@ MESSAGE_TYPES = Literal[
     "KICK_NOTIFICATION",
     "EXPERIMENT_STARTED",
     "EXPERIMENT_ENDED",
+    "MUTE",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

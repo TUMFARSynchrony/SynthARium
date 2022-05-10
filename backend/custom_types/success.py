@@ -40,6 +40,7 @@ SUCCESS_TYPES = Literal[
     "ADD_NOTE",
     "CHAT",
     "KICK",
+    "MUTE",
 ]
 """Possible success types for custom_types.success.SuccessDict.
 

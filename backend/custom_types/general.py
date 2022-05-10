@@ -46,21 +46,24 @@ def is_valid_session_id_request(data) -> bool:
     )
 
 
-class ParticipantIdRequest(TypedDict):
-    """TypedDict for requests containing a single participant ID, e.g. for MUTE_AUDIO or
-    MUTE_VIDEO.
+class MuteRequest(TypedDict):
+    """TypedDict for the MUTE request.
 
     Attributes
     ----------
     participant_id : int
         Participant ID for the requested endpoint.
+    mute_video : bool
+    mute_audio : bool
     """
 
     participant_id: int
+    mute_video: bool
+    mute_audio: bool
 
 
-def is_valid_participant_id_request(data) -> bool:
-    """Check if `data` is a valid custom_types.general.ParticipantIdRequest.
+def is_valid_mute_request(data) -> bool:
+    """Check if `data` is a valid custom_types.general.MuteRequest.
 
     Checks if all required and only required or optional keys exist in data as well as
     the data type of the values.
@@ -73,8 +76,11 @@ def is_valid_participant_id_request(data) -> bool:
     Returns
     -------
     bool
-        True if `data` is a valid ParticipantIdRequest.
+        True if `data` is a valid MuteRequest.
     """
-    return util.check_valid_typeddict_keys(data, ParticipantIdRequest) and isinstance(
-        data["participant_id"], int
+    return (
+        util.check_valid_typeddict_keys(data, MuteRequest)
+        and isinstance(data["participant_id"], int)
+        and isinstance(data["mute_video"], bool)
+        and isinstance(data["mute_audio"], bool)
     )

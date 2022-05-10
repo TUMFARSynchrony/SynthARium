@@ -160,7 +160,8 @@ class Hub:
             )
 
         experiment = self.experiments[session_id]
-        if not experiment.knows_participant_id(participant_id):
+        participant = experiment.session.get_participant(participant_id)
+        if participant is None:
             print(
                 f"[Hub] WARNING: participant {participant_id} not found in session:",
                 session_id,
@@ -172,7 +173,11 @@ class Hub:
             )
 
         answer, participant = await _participant.participant_factory(
-            offer, participant_id, experiment
+            offer,
+            participant_id,
+            experiment,
+            participant["muted_video"],
+            participant["muted_audio"],
         )
         experiment.add_participant(participant)
 
