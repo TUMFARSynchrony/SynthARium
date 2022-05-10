@@ -37,6 +37,7 @@ class ErrorDict(TypedDict):
 # TODO define valid types
 ERROR_TYPES = Literal[
     "TO_BE_DEFINED",  # Placeholder
+    "NOT_IMPLEMENTED",
     "INTERNAL_SERVER_ERROR",
     "INVALID_REQUEST",
     "UNKNOWN_ID",

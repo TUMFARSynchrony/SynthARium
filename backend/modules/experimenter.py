@@ -8,9 +8,10 @@ modules.connection.Connection.
 
 from __future__ import annotations
 from aiortc import RTCSessionDescription
-from backend.custom_types.general import is_valid_mute_request
 
-from custom_types.general import is_valid_session_id_request
+from custom_types.error import ErrorDict
+from custom_types.filters import is_valid_set_filters_request
+from custom_types.general import is_valid_session_id_request, is_valid_mute_request
 from custom_types.session import SessionDict, is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
@@ -70,6 +71,7 @@ class Experimenter(User):
         self.on("CHAT", self._handle_chat)
         self.on("KICK", self._handle_kick)
         self.on("MUTE", self._handle_mute)
+        self.on("SET_FILTERS", self._handle_set_filters)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -418,6 +420,24 @@ class Experimenter(User):
             type="MUTE", description="Successfully changed muted state for participant."
         )
         return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_set_filters(self, data) -> MessageDict:
+        """TODO document"""
+        if not is_valid_set_filters_request(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Request data must be a valid filter.",
+            )
+
+        # TODO implement
+
+        response = ErrorDict(
+            type="NOT_IMPLEMENTED",
+            code=501,
+            description="Received valid filters, but feature is not yet implemented.",
+        )
+        return MessageDict(type="ERROR", data=response)
 
 
 async def experimenter_factory(

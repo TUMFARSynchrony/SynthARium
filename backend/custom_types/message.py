@@ -48,6 +48,7 @@ MESSAGE_TYPES = Literal[
     "EXPERIMENT_STARTED",
     "EXPERIMENT_ENDED",
     "MUTE",
+    "SET_FILTERS",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

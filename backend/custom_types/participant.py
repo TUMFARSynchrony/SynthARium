@@ -8,6 +8,7 @@ from typing_extensions import NotRequired, TypedDict
 
 import modules.util as util
 
+from custom_types.filters import is_valid_filter_dict
 from custom_types.size import SizeDict, is_valid_size
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.position import PositionDict, is_valid_position
@@ -88,12 +89,11 @@ def is_valid_participant(data, recursive: bool) -> bool:
         return False
 
     if recursive:
-        # TODO implement filter checks
-        # for entry in data["filters"]:
-        #     if not is_valid_filter(entry):
-        #         return False
-        for entry in data["chat"]:
-            if not is_valid_chatmessage(entry):
+        for filter in data["filters"]:
+            if not is_valid_filter_dict(filter):
+                return False
+        for message in data["chat"]:
+            if not is_valid_chatmessage(message):
                 return False
         if not is_valid_size(data["size"]) or not is_valid_position(data["position"]):
             return False
