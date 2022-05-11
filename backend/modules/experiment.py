@@ -142,7 +142,19 @@ class Experiment:
                 user.send(data)
 
     def send_chat_message(self, chat_message: ChatMessageDict):
-        """TODO document"""
+        """Log and send a chat message to `target` in `chat_message`.
+
+        Parameters
+        ----------
+        participant : custom_types.chat_message.ChatMessageDict
+            Chat message that will be send.
+
+        Raises
+        ------
+        ErrorDictException
+            If `target` in `chat_message` is not "all", "experimenter" or a known
+            participant ID.
+        """
         # Save message in log
         self.session.log_chat_message(chat_message)
 
@@ -161,7 +173,20 @@ class Experiment:
         self._participants[participant.id] = participant
 
     async def kick_participant(self, kick_request: KickRequestDict):
-        """TODO document"""
+        """Kick a participant from this experiment.
+
+        Notify the participant before disconnecting the connection.
+
+        Parameters
+        ----------
+        kick_request : custom_types.kick.KickRequestDict
+            Kick request received from experimenter.
+
+        Raises
+        ------
+        ErrorDictException
+            If the `participant_id` in `kick_request` is not known.
+        """
         participant = self._participants.get(kick_request["participant_id"])
         if participant is None:
             raise ErrorDictException(
@@ -177,8 +202,17 @@ class Experiment:
         self._participants.pop(kick_request["participant_id"])
 
     def mute_participant(self, participant_id: str, video: bool, audio: bool):
-        """TODO document"""
+        """Set the muted state for the participant with `participant_id`.
 
+        Parameters
+        ----------
+        participant_id : str
+            ID of the target participant.
+        video : bool
+            Wheather the participants video should be muted.
+        audio : bool
+            Wheather the participants audio should be muted.
+        """
         # Mute participant if participant is already connected
         if participant_id in self._participants:
             self._participants[participant_id].set_muted(video, audio)

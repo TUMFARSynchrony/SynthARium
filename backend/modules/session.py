@@ -128,7 +128,22 @@ class Session:
         return f"Session({self.id})"
 
     def log_chat_message(self, message: ChatMessageDict) -> None:
-        """TODO document"""
+        """Save the given message in the session log.
+
+        If target is "all", message is logged in all participants.  Otherwise the
+        correct participant is found and message is appended to its log.
+
+        Parameters
+        ----------
+        session : custom_types.chat_message.ChatMessageDict
+            Chat message that will be logged.
+
+        Raises
+        ------
+        ErrorDictException
+            If no participant with either the ID in `author` (if `target` is
+            "experimenter") or `target` was found.
+        """
         # Save message in all participants if message is broadcast
         if message["target"] == "all":
             for participant in self._data["participants"]:
@@ -141,7 +156,7 @@ class Session:
         else:
             participant_id = message["target"]
 
-        # Save message in
+        # Save message in single participant (no broadcast)
         participant = None
         for p in self._data["participants"]:
             if p.get("id") == participant_id:
@@ -239,7 +254,7 @@ class Session:
         return self._data.get("participants")
 
     def get_participant(self, participant_id: str):
-        """TODO Document"""
+        """Get participant with the ID `participant_id`."""
         for participant in self.participants:
             if participant.get("id") == participant_id:
                 return participant

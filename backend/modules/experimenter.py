@@ -348,8 +348,8 @@ class Experimenter(User):
 
         Parameters
         ----------
-        _ : any
-            Message data.  Ignored / not required.
+        data : any
+            Message data.
 
         Returns
         -------
@@ -372,7 +372,27 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_chat(self, data) -> MessageDict:
-        """TODO document"""
+        """Handle requests with type `CHAT`.
+
+        Check if data is a valid custom_types.chat_message.ChatMessageDict and pass the
+        request to the experiment.
+
+        Parameters
+        ----------
+        data : any
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `CHAT`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.chat_message.ChatMessageDict.
+        """
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
@@ -388,7 +408,27 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_kick(self, data) -> MessageDict:
-        """TODO document"""
+        """Handle requests with type `KICK`.
+
+        Check if data is a valid custom_types.kick.KickRequestDict and pass the request
+        to the experiment.
+
+        Parameters
+        ----------
+        data : any
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `KICK`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.kick.KickRequestDict.
+        """
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
                 code=400,
@@ -404,7 +444,27 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_mute(self, data) -> MessageDict:
-        """TODO document"""
+        """Handle requests with type `MUTE`.
+
+        Check if data is a valid custom_types.general.MuteRequest, parse and pass the
+        request to the experiment.
+
+        Parameters
+        ----------
+        data : any
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `MUTE`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.general.MuteRequest.
+        """
         if not is_valid_mute_request(data):
             raise ErrorDictException(
                 code=400,
@@ -422,7 +482,28 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_set_filters(self, data) -> MessageDict:
-        """TODO document"""
+        """Handle requests with type `SET_FILTERS`.
+
+        Check if data is a valid custom_types.filters.SetFiltersRequest.
+
+        Handling not yet implemented.
+
+        Parameters
+        ----------
+        data : any
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `ERROR`, data: custom_types.error.ErrorDict and
+            ErrorType type: `NOT_IMPLEMENTED`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.SetFiltersRequest.
+        """
         if not is_valid_set_filters_request(data):
             raise ErrorDictException(
                 code=400,
@@ -430,7 +511,7 @@ class Experimenter(User):
                 description="Request data must be a valid filter.",
             )
 
-        # TODO implement
+        # TODO implement handling for SET_FILTERS requests.
 
         response = ErrorDict(
             type="NOT_IMPLEMENTED",

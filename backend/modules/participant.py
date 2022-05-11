@@ -68,7 +68,15 @@ class Participant(User):
         self.on("CHAT", self._handle_chat)
 
     def set_muted(self, video: bool, audio: bool):
-        """TODO document"""
+        """Set the muted state for this participant.
+
+        Parameters
+        ----------
+        video : bool
+            Wheather the participants video should be muted.
+        audio : bool
+            Wheather the participants audio should be muted.
+        """
         if self._muted_video == video and self._muted_audio == audio:
             return
 
@@ -80,7 +88,17 @@ class Participant(User):
         # TODO Notify user about mute
 
     async def kick(self, reason: str):
-        """TODO document"""
+        """Kick the participant.
+
+        Notify the participant about the kick with a `KICK_NOTIFICATION` message and
+        disconnect the participant.
+
+        Parameters
+        ----------
+        reason : str
+            Reason for the kick.  Will be send to the participant in the
+            `KICK_NOTIFICATION`.
+        """
         kick_notification = KickNotificationDict(reason=reason)
         message = MessageDict(type="KICK_NOTIFICATION", data=kick_notification)
         self.send(message)
@@ -88,7 +106,29 @@ class Participant(User):
         await self.disconnect()
 
     async def _handle_chat(self, data) -> MessageDict:
-        """TODO document"""
+        """Handle requests with type `CHAT`.
+
+        Check if data is a valid custom_types.chat_message.ChatMessageDict, target is
+        set to "experimenter", author is the ID of this participant and pass the request
+        to the experiment.
+
+        Parameters
+        ----------
+        data : any
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `CHAT`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.chat_message.ChatMessageDict, target is
+            not set to "experimenter" or author is not the ID of this participant.
+        """
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
