@@ -42,6 +42,8 @@ class ParticipantDict(TypedDict):
         Size of the participant's stream on the canvas.
     chat : list of custom_types.chat_log.ChatLogDict
         Chat log between experimenter and participant.
+    banned : bool
+        Whether this participant is banned from the experiment.
 
     See Also
     --------
@@ -58,9 +60,10 @@ class ParticipantDict(TypedDict):
     position: PositionDict
     size: SizeDict
     chat: list[ChatMessageDict]
+    banned: bool
 
 
-def is_valid_participant(data, recursive: bool) -> bool:
+def is_valid_participant(data, recursive: bool = True) -> bool:
     """Check if `data` is a valid ParticipantDict.
 
     Checks if all required and only required or optional keys exist in data as well as
@@ -70,7 +73,7 @@ def is_valid_participant(data, recursive: bool) -> bool:
     ----------
     data : any
         Data to perform check on.
-    recursive : bool
+    recursive : bool, default True
         If true, filters, chat, position and size will be checked recursively.
 
     Returns
@@ -81,7 +84,7 @@ def is_valid_participant(data, recursive: bool) -> bool:
     if not util.check_valid_typeddict_keys(data, ParticipantDict):
         return False
 
-    # Check filters & chat list
+    # Shallow checks for variables with recursive types
     if (
         not isinstance(data["filters"], list)
         or not isinstance(data["chat"], list)
@@ -107,4 +110,5 @@ def is_valid_participant(data, recursive: bool) -> bool:
         and isinstance(data["last_name"], str)
         and isinstance(data["muted_video"], bool)
         and isinstance(data["muted_audio"], bool)
+        and isinstance(data["banned"], bool)
     )

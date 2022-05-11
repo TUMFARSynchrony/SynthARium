@@ -69,7 +69,8 @@ class Experimenter(User):
         self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on("ADD_NOTE", self._handle_add_note)
         self.on("CHAT", self._handle_chat)
-        self.on("KICK", self._handle_kick)
+        self.on("KICK_PARTICIPANT", self._handle_kick)
+        self.on("BAN_PARTICIPANT", self._handle_ban)
         self.on("MUTE", self._handle_mute)
         self.on("SET_FILTERS", self._handle_set_filters)
 
@@ -444,10 +445,46 @@ class Experimenter(User):
                 description="Request data must be a valid kick request.",
             )
 
-        await self._experiment.kick_participant(data)
+        await self._experiment.kick_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
-            type="KICK", description="Successfully kicked participant."
+            type="KICK_PARTICIPANT", description="Successfully kicked participant."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_ban(self, data) -> MessageDict:
+        """Handle requests with type `BAN`.
+
+        Check if data is a valid custom_types.kick.KickRequestDict and pass the request
+        to the experiment.
+
+        Parameters
+        ----------
+        data : any
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `BAN`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.kick.KickRequestDict.
+        """
+        if not is_valid_kickrequest(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Request data must be a valid ban request.",
+            )
+
+        await self._experiment.ban_participant(data["participant_id"], data["reason"])
+
+        success = SuccessDict(
+            type="BAN_PARTICIPANT", description="Successfully banned participant."
         )
         return MessageDict(type="SUCCESS", data=success)
 

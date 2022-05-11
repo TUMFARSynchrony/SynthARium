@@ -105,6 +105,24 @@ class Participant(User):
 
         await self.disconnect()
 
+    async def ban(self, reason: str):
+        """Ban the participant.
+
+        Notify the participant about the ban with a `BAN_NOTIFICATION` message and
+        disconnect the participant.
+
+        Parameters
+        ----------
+        reason : str
+            Reason for the kick.  Will be send to the participant in the
+            `BAN_NOTIFICATION`.
+        """
+        ban_notification = KickNotificationDict(reason=reason)
+        message = MessageDict(type="BAN_NOTIFICATION", data=ban_notification)
+        self.send(message)
+
+        await self.disconnect()
+
     async def _handle_chat(self, data) -> MessageDict:
         """Handle requests with type `CHAT`.
 

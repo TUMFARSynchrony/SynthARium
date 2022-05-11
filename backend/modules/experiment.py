@@ -172,22 +172,24 @@ class Experiment:
         """
         self._participants[participant.id] = participant
 
-    async def kick_participant(self, kick_request: KickRequestDict):
+    async def kick_participant(self, participant_id: str, reason: str):
         """Kick a participant from this experiment.
 
         Notify the participant before disconnecting the connection.
 
         Parameters
         ----------
-        kick_request : custom_types.kick.KickRequestDict
-            Kick request received from experimenter.
+        participant_id : str
+            ID of the participant that should be kicked.
+        reason : str
+            Reason for kicking the participant.
 
         Raises
         ------
         ErrorDictException
-            If the `participant_id` in `kick_request` is not known.
+            If the `participant_id` is not known.
         """
-        participant = self._participants.get(kick_request["participant_id"])
+        participant = self._participants.get(participant_id)
         if participant is None:
             raise ErrorDictException(
                 code=404,
@@ -198,8 +200,46 @@ class Experiment:
                 ),
             )
 
-        await participant.kick(kick_request["reason"])
-        self._participants.pop(kick_request["participant_id"])
+        await participant.kick(reason)
+        self._participants.pop(participant_id)
+
+    async def ban_participant(self, participant_id: str, reason: str):
+        """Ban a participant from this experiment.
+
+        Notify the participant before disconnecting the connection.
+
+        Parameters
+        ----------
+        participant_id : str
+            ID of the participant that should be banned.
+        reason : str
+            Reason for banning the participant.
+
+        Raises
+        ------
+        ErrorDictException
+            If `participant_id` is not known.
+        """
+        participant_data = self.session.get_participant(participant_id)
+        if participant_data is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=(
+                    "Failed to ban Participant. Participant with the given ID not "
+                    "found."
+                ),
+            )
+
+        # Notify and remove participant, if connected.
+        if participant_id in self._participants:
+            participant = self._participants["participant_id"]
+            await participant.ban(reason)
+            self._participants.pop(participant_id)
+
+        # Save banned state in session / participant data
+        participant_data["banned"] = True
+        self.session._on_update(self.session)  # TODO avoid private function call
 
     def mute_participant(self, participant_id: str, video: bool, audio: bool):
         """Set the muted state for the participant with `participant_id`.
