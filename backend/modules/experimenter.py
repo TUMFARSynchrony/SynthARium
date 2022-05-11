@@ -374,8 +374,8 @@ class Experimenter(User):
     async def _handle_chat(self, data) -> MessageDict:
         """Handle requests with type `CHAT`.
 
-        Check if data is a valid custom_types.chat_message.ChatMessageDict and pass the
-        request to the experiment.
+        Check if data is a valid custom_types.chat_message.ChatMessageDict, `target` is
+        "experimenter" and pass the request to the experiment.
 
         Parameters
         ----------
@@ -391,13 +391,21 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.chat_message.ChatMessageDict.
+            If data is not a valid custom_types.chat_message.ChatMessageDict or
+            `target` is not "experimenter".
         """
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
                 description="Expected ChatMessage object.",
+            )
+
+        if data["author"] != "experimenter":
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Author of message must be experimenter.",
             )
 
         self._experiment.send_chat_message(data)
