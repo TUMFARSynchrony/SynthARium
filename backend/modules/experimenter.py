@@ -144,7 +144,7 @@ class Experimenter(User):
     async def _handle_delete_session(self, data) -> MessageDict:
         """Handle requests with type `DELETE_SESSION`.
 
-        Check if data is a valid custom_types.general.SessionIdRequest dict.  If
+        Check if data is a valid custom_types.general.SessionIdRequestDict dict.  If
         found, delete session with the `session_id` in `data`.
 
         Parameters
@@ -182,7 +182,7 @@ class Experimenter(User):
     async def _handle_create_experiment(self, data) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
-        Check if data is a valid custom_types.general.SessionIdRequest dict.  If
+        Check if data is a valid custom_types.general.SessionIdRequestDict dict.  If
         found, try to create a new modules.experiment.Experiment based on the session
         with `the session_id` in `data`.
 
@@ -221,7 +221,7 @@ class Experimenter(User):
     async def _handle_join_experiment(self, data) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
-        Check if data is a valid custom_types.general.SessionIdRequest dict.  If
+        Check if data is a valid custom_types.general.SessionIdRequestDict dict.  If
         found, try to join an existing modules.experiment.Experiment with the
         `session_id` in `data`.
 
@@ -454,7 +454,7 @@ class Experimenter(User):
     async def _handle_mute(self, data) -> MessageDict:
         """Handle requests with type `MUTE`.
 
-        Check if data is a valid custom_types.general.MuteRequest, parse and pass the
+        Check if data is a valid custom_types.general.MuteRequestDict, parse and pass the
         request to the experiment.
 
         Parameters
@@ -471,7 +471,7 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.general.MuteRequest.
+            If data is not a valid custom_types.general.MuteRequestDict.
         """
         if not is_valid_mute_request(data):
             raise ErrorDictException(
@@ -492,7 +492,7 @@ class Experimenter(User):
     async def _handle_set_filters(self, data) -> MessageDict:
         """Handle requests with type `SET_FILTERS`.
 
-        Check if data is a valid custom_types.filters.SetFiltersRequest.
+        Check if data is a valid custom_types.filters.SetFiltersRequestDict.
 
         Handling not yet implemented.
 
@@ -510,13 +510,13 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.filters.SetFiltersRequest.
+            If data is not a valid custom_types.filters.SetFiltersRequestDict.
         """
         if not is_valid_set_filters_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
-                description="Request data must be a valid filter.",
+                description="Request data must be a valid set filter request.",
             )
 
         # TODO implement handling for SET_FILTERS requests.

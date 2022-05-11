@@ -1,4 +1,4 @@
-"""Provide filter TypedDicts: `SetFiltersRequest` and `BasicFilterDict`.
+"""Provide filter TypedDicts: `SetFiltersRequestDict` and `BasicFilterDict`.
 
 Use for type hints and static type checking without any overhead during runtime.
 
@@ -50,7 +50,7 @@ def is_valid_filter_dict(data) -> bool:
     )
 
 
-class SetFiltersRequest(TypedDict):
+class SetFiltersRequestDict(TypedDict):
     """TypedDict for `SET_FILTERS` requests.
 
     Attributes
@@ -81,11 +81,11 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
     Returns
     -------
     bool
-        True if `data` is a valid SessionIdRequest.
+        True if `data` is a valid BasicFilterDict.
     """
-    if not util.check_valid_typeddict_keys(data, BasicFilterDict) or not isinstance(
-        data["filters"], list
-    ):
+    if not util.check_valid_typeddict_keys(
+        data, SetFiltersRequestDict
+    ) or not isinstance(data["filters"], list):
         return False
 
     if recursive:
