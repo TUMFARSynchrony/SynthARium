@@ -73,9 +73,9 @@ class Participant(User):
         Parameters
         ----------
         video : bool
-            Wheather the participants video should be muted.
+            Whether the participants video should be muted.
         audio : bool
-            Wheather the participants audio should be muted.
+            Whether the participants audio should be muted.
         """
         if self._muted_video == video and self._muted_audio == audio:
             return

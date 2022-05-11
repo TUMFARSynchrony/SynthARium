@@ -209,9 +209,9 @@ class Experiment:
         participant_id : str
             ID of the target participant.
         video : bool
-            Wheather the participants video should be muted.
+            Whether the participants video should be muted.
         audio : bool
-            Wheather the participants audio should be muted.
+            Whether the participants audio should be muted.
         """
         # Mute participant if participant is already connected
         if participant_id in self._participants:
