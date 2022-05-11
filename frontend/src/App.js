@@ -12,6 +12,7 @@ import Connection from "./networking/Connection";
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
+  const [sessionsList, setSessionsList] = useState([]);
 
   const requireLocalStream = window.location.pathname === "/experimentRoom";
   const sessionId = "example_session_id_1";
@@ -30,7 +31,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (connection !== null) {
+    if (connection) {
       // Return if connection was already established
       return;
     }
@@ -51,15 +52,45 @@ function App() {
       return;
     }
 
-    setConnection(newConnection);
-    newConnection.start();
+    const startConnection = async (newConnection) => {
+      await newConnection.start();
+      setConnection(newConnection);
+    };
+
+    startConnection(newConnection);
   }, [connection, localStream, requireLocalStream]);
+
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+
+    connection.dc.addEventListener("open", () => {
+      connection.sendRequest("GET_SESSION_LIST", {});
+    });
+  }, [connection, connection?.dc]);
+
+  const messageHandler = (message) => {
+    if (message.type === "SESSION_LIST") {
+      setSessionsList(message.data);
+    }
+  };
 
   return (
     <div className="App">
       <Router>
         <Routes>
-          <Route exact path="/" element={<SessionOverview />} />
+          <Route
+            exact
+            path="/"
+            element={
+              <SessionOverview
+                connection={connection}
+                sessions={sessionsList}
+              />
+            }
+            // element={<SessionOverview />}
+          />
           <Route
             exact
             path="/postProcessingRoom"
@@ -75,7 +106,3 @@ function App() {
 }
 
 export default App;
-
-function messageHandler(message) {
-  console.log("messageHandler received:", message);
-}

@@ -23,7 +23,8 @@ export const INITIAL_PARTICIPANT_DATA = {
   first_name: "",
   last_name: "",
   link: "",
-  muted: true,
+  muted_audio: true,
+  muted_video: true,
   filters: [],
   position: {
     x: 0,

@@ -20,7 +20,7 @@ export default class Connection {
 
   async start() {
     // Add localStream to peer connection
-    console.log(this.localStream);
+    console.log("this.localStream", this.localStream);
     this.localStream?.getTracks().forEach((track) => {
       console.log("Adding track", track);
       this.mainPc.addTrack(track, this.localStream);
@@ -154,5 +154,7 @@ export default class Connection {
     }
     const remoteDescription = answer.data;
     await this.mainPc.setRemoteDescription(remoteDescription);
+
+    console.log("negotiation finished");
   }
 }

@@ -101,6 +101,7 @@ function SessionForm() {
   };
 
   const onSaveSession = () => {
+    //TODO: send data to backend... how will we do that? pass connection to session form?
     let newParticipantList = [];
     newParticipantList = participantList.forEach((participant, index) => {
       participant.position.x = participantGroups[index].x;
@@ -185,7 +186,8 @@ function SessionForm() {
                       first_name={participant.first_name}
                       last_name={participant.last_name}
                       link={participant.link}
-                      muted={participant.muted}
+                      muted_audio={participant.muted_audio}
+                      muted_video={participant.muted_video}
                       parameters={participantGroups[index]}
                       showModal={
                         location.state.initialData.participants.length > 0

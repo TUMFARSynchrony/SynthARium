@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import "./SessionOverview.css";
@@ -8,10 +8,12 @@ import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { getSessionJson } from "../../utils/mockServer";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
-function SessionOverview() {
-  var sessionCards = getSessionJson();
+function SessionOverview({ sessions }) {
+  console.log("!!!SessionOverview rendering!!!");
+  var sessionCards = sessions;
+
   const [selectedSession, setSelectedSession] = useState(
-    sessionCards.length !== 0 ? sessionCards[0] : null
+    sessionCards?.length !== 0 ? sessionCards[0] : null
   );
 
   const handleClick = (session) => {
@@ -29,8 +31,9 @@ function SessionOverview() {
             to="/sessionForm"
             state={{ initialData: INITIAL_SESSION_DATA, action: "NEW_SESSION" }}
           />
-          {sessionCards.length !== 0 ? (
-            sessionCards.map((session, index) => {
+          {sessionCards?.length !== 0 ? (
+            sessionCards?.map((session, index) => {
+              console.log("SessionCard creation!");
               return (
                 <SessionCard
                   title={session.title}
@@ -38,7 +41,7 @@ function SessionOverview() {
                   date={session.date}
                   description={session.description}
                   onClick={() => handleClick(session)}
-                  selected={session.title === selectedSession.title}
+                  selected={session.title === selectedSession?.title}
                 />
               );
             })

@@ -14,17 +14,32 @@ function ParticipantData({
   first_name,
   last_name,
   link,
-  muted,
+  muted_audio,
+  muted_video,
   parameters,
   showModal,
 }) {
   const [showAdditionalInput, setShowAdditionalInput] = useState(showModal);
 
-  const handleChange = (first_name, last_name, link, muted) => {
-    onChange(index, { first_name, last_name, link, muted });
+  const handleChange = (
+    first_name,
+    last_name,
+    link,
+    muted_audio,
+    muted_video
+  ) => {
+    onChange(index, {
+      first_name,
+      last_name,
+      link,
+      muted_audio,
+      muted_video,
+    });
   };
 
   const onAddAdditionalInformation = () => {
+    //TODO: send data to backend and wait for link...
+
     setShowAdditionalInput(!showAdditionalInput);
   };
 
@@ -64,7 +79,13 @@ function ParticipantData({
                 value={first_name}
                 placeholder={"Name of participant"}
                 onChange={(newFirstName) =>
-                  handleChange(newFirstName, last_name, link, muted)
+                  handleChange(
+                    newFirstName,
+                    last_name,
+                    link,
+                    muted_audio,
+                    muted_video
+                  )
                 }
               />
               <InputTextField
@@ -72,7 +93,13 @@ function ParticipantData({
                 value={last_name}
                 placeholder={"Name of participant"}
                 onChange={(newLastName) =>
-                  handleChange(first_name, newLastName, link, muted)
+                  handleChange(
+                    first_name,
+                    newLastName,
+                    link,
+                    muted_audio,
+                    muted_video
+                  )
                 }
               />
               <InputTextField
@@ -81,16 +108,42 @@ function ParticipantData({
                 placeholder={"Save session to generate link."}
                 readonly={true}
                 onChange={(newLink) =>
-                  handleChange(first_name, last_name, newLink, muted)
+                  handleChange(
+                    first_name,
+                    last_name,
+                    newLink,
+                    muted_audio,
+                    muted_video
+                  )
                 }
               />
               <div className="participantMuteCheckbox">
                 <Checkbox
-                  title="Mute"
-                  value={muted}
-                  checked={muted}
+                  title="Mute Audio"
+                  value={muted_audio}
+                  checked={muted_audio}
                   onChange={() =>
-                    handleChange(first_name, last_name, link, !muted)
+                    handleChange(
+                      first_name,
+                      last_name,
+                      link,
+                      !muted_audio,
+                      muted_video
+                    )
+                  }
+                />
+                <Checkbox
+                  title="Mute Video"
+                  value={muted_video}
+                  checked={muted_video}
+                  onChange={() =>
+                    handleChange(
+                      first_name,
+                      last_name,
+                      link,
+                      muted_audio,
+                      !muted_video
+                    )
                   }
                 />
               </div>
