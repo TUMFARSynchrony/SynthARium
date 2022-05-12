@@ -7,6 +7,7 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+from typing import Any
 from aiortc import RTCSessionDescription
 
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
@@ -123,7 +124,7 @@ class Participant(User):
 
         await self.disconnect()
 
-    async def _handle_chat(self, data) -> MessageDict:
+    async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
         """Handle requests with type `CHAT`.
 
         Check if data is a valid custom_types.chat_message.ChatMessageDict, target is
@@ -132,7 +133,7 @@ class Participant(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.chat_message.ChatMessageDict
             Message data.
 
         Returns

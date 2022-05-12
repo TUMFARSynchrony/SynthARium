@@ -7,17 +7,23 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+from typing import Any
 from aiortc import RTCSessionDescription
 
 from custom_types.error import ErrorDict
-from custom_types.filters import is_valid_set_filters_request
-from custom_types.general import is_valid_session_id_request, is_valid_mute_request
+from custom_types.filters import SetFiltersRequestDict, is_valid_set_filters_request
 from custom_types.session import SessionDict, is_valid_session
-from custom_types.chat_message import is_valid_chatmessage
-from custom_types.kick import is_valid_kickrequest
+from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
+from custom_types.kick import KickRequestDict, is_valid_kickrequest
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
-from custom_types.note import is_valid_note
+from custom_types.note import NoteDict, is_valid_note
+from custom_types.general import (
+    MuteRequestDict,
+    SessionIdRequestDict,
+    is_valid_session_id_request,
+    is_valid_mute_request,
+)
 
 from modules.connection import connection_factory
 from modules.exceptions import ErrorDictException
@@ -94,7 +100,7 @@ class Experimenter(User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    async def _handle_save_session(self, data) -> MessageDict:
+    async def _handle_save_session(self, data: SessionDict | Any) -> MessageDict:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
@@ -102,7 +108,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.session.SessionDict
             Message data.  Checks if data is valid custom_types.session.SessionDict.
 
         Returns
@@ -122,7 +128,6 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Expected session object."
             )
-        assert isinstance(data, SessionDict)
 
         sm = self._hub.session_manager
         if "id" not in data:
@@ -142,15 +147,17 @@ class Experimenter(User):
 
         return MessageDict(type="SESSION", data=session)
 
-    async def _handle_delete_session(self, data) -> MessageDict:
+    async def _handle_delete_session(
+        self, data: SessionIdRequestDict | Any
+    ) -> MessageDict:
         """Handle requests with type `DELETE_SESSION`.
 
-        Check if data is a valid custom_types.general.SessionIdRequestDict dict.  If
-        found, delete session with the `session_id` in `data`.
+        Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
+        delete session with the `session_id` in `data`.
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.general.SessionIdRequestDict
             Message data.
 
         Returns
@@ -180,16 +187,18 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_create_experiment(self, data) -> MessageDict:
+    async def _handle_create_experiment(
+        self, data: SessionIdRequestDict | Any
+    ) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
-        Check if data is a valid custom_types.general.SessionIdRequestDict dict.  If
-        found, try to create a new modules.experiment.Experiment based on the session
-        with `the session_id` in `data`.
+        Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
+        try to create a new modules.experiment.Experiment based on the session with
+        the `session_id` in `data`.
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.general.SessionIdRequestDict
             Message data.
 
         Returns
@@ -219,16 +228,18 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_join_experiment(self, data) -> MessageDict:
+    async def _handle_join_experiment(
+        self, data: SessionIdRequestDict | Any
+    ) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
-        Check if data is a valid custom_types.general.SessionIdRequestDict dict.  If
-        found, try to join an existing modules.experiment.Experiment with the
-        `session_id` in `data`.
+        Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
+        try to join an existing modules.experiment.Experiment with the `session_id`
+        in `data`.
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.general.SessionIdRequestDict
             Message data.
 
         Returns
@@ -341,7 +352,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_add_note(self, data) -> MessageDict:
+    async def _handle_add_note(self, data: NoteDict | Any) -> MessageDict:
         """Handle requests with type `ADD_NOTE`.
 
         Check if data is a valid custom_types.note.NoteDict and adds the note to the
@@ -349,7 +360,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.note.NoteDict
             Message data.
 
         Returns
@@ -372,7 +383,7 @@ class Experimenter(User):
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_chat(self, data) -> MessageDict:
+    async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
         """Handle requests with type `CHAT`.
 
         Check if data is a valid custom_types.chat_message.ChatMessageDict, `target` is
@@ -380,7 +391,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.chat_message.ChatMessageDict
             Message data.
 
         Returns
@@ -416,7 +427,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_kick(self, data) -> MessageDict:
+    async def _handle_kick(self, data: KickRequestDict | Any) -> MessageDict:
         """Handle requests with type `KICK`.
 
         Check if data is a valid custom_types.kick.KickRequestDict and pass the request
@@ -424,7 +435,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.kick.KickRequestDict
             Message data.
 
         Returns
@@ -452,7 +463,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_ban(self, data) -> MessageDict:
+    async def _handle_ban(self, data: KickRequestDict | Any) -> MessageDict:
         """Handle requests with type `BAN`.
 
         Check if data is a valid custom_types.kick.KickRequestDict and pass the request
@@ -460,7 +471,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.kick.KickRequestDict
             Message data.
 
         Returns
@@ -488,7 +499,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_mute(self, data) -> MessageDict:
+    async def _handle_mute(self, data: MuteRequestDict | Any) -> MessageDict:
         """Handle requests with type `MUTE`.
 
         Check if data is a valid custom_types.general.MuteRequestDict, parse and pass the
@@ -496,7 +507,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.general.MuteRequestDict
             Message data.
 
         Returns
@@ -526,7 +537,9 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_set_filters(self, data) -> MessageDict:
+    async def _handle_set_filters(
+        self, data: SetFiltersRequestDict | Any
+    ) -> MessageDict:
         """Handle requests with type `SET_FILTERS`.
 
         Check if data is a valid custom_types.filters.SetFiltersRequestDict.
@@ -535,7 +548,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any
+        data : any or custom_types.filters.SetFiltersRequestDict
             Message data.
 
         Returns
