@@ -10,7 +10,7 @@ from custom_types.session import SessionDict, is_valid_session
 
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
-from modules.session import Session
+from modules.data import SessionData
 from modules import BACKEND_DIR
 
 
@@ -23,17 +23,17 @@ class SessionManager:
 
     Methods
     -------
-    get_session_list() : list of modules.session.Session
+    get_session_list() : list of modules.data.SessionData
         Get all sessions.
-    get_session(id) : modules.session.Session or None
+    get_session(id) : modules.data.SessionData or None
         Get the session with the given id.
-    create_session(session) : None
-        Instantiate a new session with the given session data.
+    create_session(session_dict) : None
+        Instantiate a new session with the given session dict.
     delete_session(id) : bool
         Delete the session with `id`.
     """
 
-    _sessions: dict[str, Session]
+    _sessions: dict[str, SessionData]
     _session_dir: str
 
     def __init__(self, session_dir: str):
@@ -56,7 +56,7 @@ class SessionManager:
 
         Returns
         -------
-        list of modules.session.Session
+        list of modules.data.SessionData
             List containing all sessions managed by this SessionManager.
         """
         return list(self._sessions.values())
@@ -82,7 +82,7 @@ class SessionManager:
 
         Returns
         -------
-        modules.session.Session or None
+        modules.data.SessionData or None
             None if `id` does not correlate to a known session, otherwise
             session data.
         """
@@ -101,7 +101,7 @@ class SessionManager:
 
         Returns
         -------
-        modules.session.Session
+        modules.data.SessionData
             New session object.
 
         Raises
@@ -121,9 +121,9 @@ class SessionManager:
         session_id = self._generate_unique_session_id()
         session_dict["id"] = session_id
 
-        session = Session(session_dict, self._handle_session_update)
+        session = SessionData(self._handle_session_update, session_dict)
         self._sessions[session_id] = session
-        self._write(session.asdict)
+        self._write(session.asdict())
         return session
 
     def delete_session(self, id: str):
@@ -162,28 +162,29 @@ class SessionManager:
         self._delete_file(f"{id}.json")
         return self._sessions.pop(id, None) != None
 
-    def _handle_session_update(self, session: Session):
+    def _handle_session_update(self, session_id: str):
         """Update session data changes on the drive.
 
         Parameters
         ----------
-        session : modules.session.Session
-            Session data.  Must contain an id known to this SessionManager.
+        session_id : str
+            ID of the session that was updated.
 
         Notes
         -----
-        Use Session.update to update a session, it will call this function.
+        Use `SessionData.update()` to update a session, it will call this function.
         """
         # TODO further error handling in this function
-        if session.id is None:
+        if session_id is None:
             print("[SessionManager] ERROR: Cannot update session without id")
             return
 
-        if session.id not in self._sessions:
-            print("[SessionManager] ERROR: Cannot update unknown session", session.id)
+        if session_id not in self._sessions:
+            print("[SessionManager] ERROR: Cannot update unknown session", session_id)
             return
 
-        self._write(session.asdict)
+        session = self._sessions[session_id]
+        self._write(session.asdict())
 
     def _generate_unique_session_id(self):
         """Generate an unique session id."""
@@ -218,7 +219,7 @@ class SessionManager:
                 continue
 
             try:
-                session_obj = Session(session_dict, self._handle_session_update)
+                session_obj = SessionData(self._handle_session_update, session_dict)
             except ErrorDictException:
                 print(f"[SessionManager] ERROR: Participant ID duplicate in: {file}.")
                 continue

@@ -378,7 +378,7 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Expected note object."
             )
-        self._experiment.session.add_note(data)
+        self._experiment.session.notes.append(data)
 
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
         return MessageDict(type="SUCCESS", data=success)

@@ -158,3 +158,20 @@ def get_filtered_participant_ids(session_dict: SessionDict) -> list[str]:
     """
     p_ids = get_participant_ids(session_dict)
     return [id for id in p_ids if id is not None]
+
+
+def has_duplicate_participant_ids(session_dict: SessionDict) -> bool:
+    """Check if `session_dict` has duplicate session IDs.
+
+    Parameters
+    ----------
+    session_dict : custom_types.session.SessionDict
+        Session dictionary that should be checked for duplicates.
+
+    Returns
+    -------
+    bool
+        True if there are duplicate IDs, False if no duplicate IDs where found.
+    """
+    participant_ids = get_filtered_participant_ids(session_dict)
+    return len(participant_ids) != len(set(participant_ids))

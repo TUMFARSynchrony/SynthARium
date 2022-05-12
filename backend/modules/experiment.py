@@ -3,31 +3,30 @@ import time
 from typing import Any
 
 from custom_types.message import MessageDict
-from custom_types.kick import KickRequestDict
 from custom_types.chat_message import ChatMessageDict
 
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
+from modules.data import SessionData
 import modules.experimenter as _experimenter
 import modules.participant as _participant
-import modules.session as _session
 
 
 class Experiment:
     """Experiment representing a running session."""
 
     _state: ExperimentState
-    session: _session.Session
+    session: SessionData
     _experimenters: list[_experimenter.Experimenter]
     _participants: dict[str, _participant.Participant]
 
-    def __init__(self, session: _session.Session):
+    def __init__(self, session: SessionData):
         """Start a new Experiment.
 
         Parameters
         ----------
-        session : modules.session.Session
-            Session this experiment is based on. Will modify the session during
+        session : modules.data.SessionData
+            SessionData this experiment is based on. Will modify the session during
             execution.
         """
         self._state = ExperimentState.WAITING
@@ -155,8 +154,21 @@ class Experiment:
             If `target` in `chat_message` is not "all", "experimenter" or a known
             participant ID.
         """
-        # Save message in log
-        self.session.log_chat_message(chat_message)
+        # Save message in log of the correct participant(s)
+        target = chat_message["target"]
+        if target == "all":
+            for p in self.session.participants.values():
+                p.chat.append(chat_message)
+        else:
+            # In this case target is assumed to be a single participant
+            participant = self.session.participants.get(target)
+            if participant is None:
+                raise ErrorDictException(
+                    code=404,
+                    type="UNKNOWN_USER",
+                    description="No participant found for the given ID.",
+                )
+            participant.chat.append(chat_message)
 
         # Send message
         msg_dict = MessageDict(type="CHAT", data=chat_message)
@@ -220,7 +232,7 @@ class Experiment:
         ErrorDictException
             If `participant_id` is not known.
         """
-        participant_data = self.session.get_participant(participant_id)
+        participant_data = self.session.participants[participant_id]
         if participant_data is None:
             raise ErrorDictException(
                 code=404,
@@ -238,8 +250,7 @@ class Experiment:
             self._participants.pop(participant_id)
 
         # Save banned state in session / participant data
-        participant_data["banned"] = True
-        self.session._on_update(self.session)  # TODO avoid private function call
+        participant_data.banned = True
 
     def mute_participant(self, participant_id: str, video: bool, audio: bool):
         """Set the muted state for the participant with `participant_id`.
