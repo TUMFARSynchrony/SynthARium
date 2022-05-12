@@ -29,7 +29,8 @@
 					"author": "experimenter",
 					"target": "all"
 				}
-			]
+			],
+			"banned": false
 		},
 		{
 			"id": "25a882669d",
@@ -66,7 +67,8 @@
 					"author": "25a882669d",
 					"target": "experimenter"
 				}
-			]
+			],
+			"banned": false
 		},
 		{
 			"id": "8e39086e83",
@@ -103,7 +105,8 @@
 					"author": "8e39086e83",
 					"target": "experimenter"
 				}
-			]
+			],
+			"banned": false
 		}
 	],
 	"start_time": 1650380763076,
