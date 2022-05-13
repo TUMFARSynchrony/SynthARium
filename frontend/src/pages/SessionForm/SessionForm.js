@@ -7,20 +7,21 @@ import ParticipantData from "../../components/organisms/ParticipantData/Particip
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import Heading from "../../components/atoms/Heading/Heading";
 import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
-
-import "./SessionForm.css";
-import { useState } from "react";
 import {
   filterListByIndex,
   getRandomColor,
   getShapesFromParticipants,
 } from "../../utils/utils";
 import TextField from "../../components/molecules/TextField/TextField";
+
+import "./SessionForm.css";
+import { useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 
-function SessionForm() {
+function SessionForm({ onSendSessionToBackend }) {
   const location = useLocation();
+
   const participantShapesObject = getShapesFromParticipants(
     location.state.initialData.participants
   );
@@ -36,6 +37,7 @@ function SessionForm() {
     participantShapesObject.groupArray
   );
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
+  const [showParticipantInput, setShowParticipantInput] = useState(false);
 
   const onDeleteParticipant = (index) => {
     setParticipantList(filterListByIndex(participantList, index));
@@ -44,6 +46,7 @@ function SessionForm() {
   };
 
   const onAddParticipant = () => {
+    setShowParticipantInput(true);
     const newParticipantList = [...participantList, INITIAL_PARTICIPANT_DATA];
     setParticipantList(newParticipantList);
 
@@ -101,7 +104,6 @@ function SessionForm() {
   };
 
   const onSaveSession = () => {
-    //TODO: send data to backend... how will we do that? pass connection to session form?
     let newParticipantList = [];
     newParticipantList = participantList.forEach((participant, index) => {
       participant.position.x = participantGroups[index].x;
@@ -113,10 +115,11 @@ function SessionForm() {
 
     let newSessionData = { ...sessionData };
     newSessionData.participants = participantList;
+
     newSessionData.time_limit *= 60000;
     setSessionData(newSessionData);
 
-    return sessionData;
+    onSendSessionToBackend({ ...newSessionData });
   };
 
   return (
@@ -189,11 +192,8 @@ function SessionForm() {
                       muted_audio={participant.muted_audio}
                       muted_video={participant.muted_video}
                       parameters={participantGroups[index]}
-                      showModal={
-                        location.state.initialData.participants.length > 0
-                          ? false
-                          : true
-                      }
+                      showParticipantInput={showParticipantInput}
+                      setShowParticipantInput={setShowParticipantInput}
                     />
                   );
                 })}

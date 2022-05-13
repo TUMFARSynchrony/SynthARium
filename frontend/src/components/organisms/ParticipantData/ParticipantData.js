@@ -3,7 +3,6 @@ import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
 import { FaRegTrashAlt } from "react-icons/fa";
 import Checkbox from "../../molecules/Checkbox/Checkbox";
-import { useState } from "react";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
 
@@ -17,10 +16,9 @@ function ParticipantData({
   muted_audio,
   muted_video,
   parameters,
-  showModal,
+  showParticipantInput,
+  setShowParticipantInput,
 }) {
-  const [showAdditionalInput, setShowAdditionalInput] = useState(showModal);
-
   const handleChange = (
     first_name,
     last_name,
@@ -40,7 +38,7 @@ function ParticipantData({
   const onAddAdditionalInformation = () => {
     //TODO: send data to backend and wait for link...
 
-    setShowAdditionalInput(!showAdditionalInput);
+    setShowParticipantInput(!showParticipantInput);
   };
 
   return (
@@ -68,7 +66,7 @@ function ParticipantData({
         />
       </div>
 
-      {showAdditionalInput && (
+      {showParticipantInput && (
         <div className="additionalParticipantInfoContainer">
           <div className="additionalParticipantInfo">
             <div className="additionalParticipantInfoCard">

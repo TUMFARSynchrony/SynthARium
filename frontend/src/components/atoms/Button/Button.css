@@ -12,9 +12,10 @@
     letter-spacing: 1px;
     font-weight: 500;
     height: fit-content;
-    margin: 0.3em;
+    margin: 0.6em;
     cursor: pointer;
 }
+
 
 .positive {
     background-color: #50ad64;

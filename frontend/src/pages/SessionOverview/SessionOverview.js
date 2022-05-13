@@ -1,19 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import "./SessionOverview.css";
 import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
-import { getSessionJson } from "../../utils/mockServer";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
-function SessionOverview({ sessions }) {
-  console.log("!!!SessionOverview rendering!!!");
+function SessionOverview({ sessions, onDeleteSession }) {
   var sessionCards = sessions;
 
   const [selectedSession, setSelectedSession] = useState(
-    sessionCards?.length !== 0 ? sessionCards[0] : null
+    sessionCards?.length !== 0 ? sessionCards[0] : {}
   );
 
   const handleClick = (session) => {
@@ -29,11 +27,12 @@ function SessionOverview({ sessions }) {
           <LinkButton
             name="CREATE NEW SESSION"
             to="/sessionForm"
-            state={{ initialData: INITIAL_SESSION_DATA, action: "NEW_SESSION" }}
+            state={{
+              initialData: INITIAL_SESSION_DATA,
+            }}
           />
           {sessionCards?.length !== 0 ? (
             sessionCards?.map((session, index) => {
-              console.log("SessionCard creation!");
               return (
                 <SessionCard
                   title={session.title}
@@ -51,7 +50,10 @@ function SessionOverview({ sessions }) {
         </div>
         <>
           {sessionCards.length > 0 && (
-            <SessionPreview sessionInformation={selectedSession} />
+            <SessionPreview
+              sessionInformation={selectedSession}
+              onDeleteSession={onDeleteSession}
+            />
           )}
         </>
       </div>

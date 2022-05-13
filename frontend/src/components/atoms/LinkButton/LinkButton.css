@@ -8,10 +8,11 @@
     font-size: 15px;
     color: white;
     border-radius: 4px;
-    margin: 1.5em 2.5em;
+    margin: 0.6em;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
+    height: fit-content;
 }
 
 .linkButton:hover {

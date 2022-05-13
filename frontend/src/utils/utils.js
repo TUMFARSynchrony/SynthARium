@@ -72,9 +72,5 @@ export const getShapesFromParticipants = (participants) => {
     });
   });
 
-  console.log("shapesArray", shapesArray);
-  console.log("groupArray", groupArray);
-  console.log("participants", participants);
-
   return { shapesArray: shapesArray, groupArray: groupArray };
 };

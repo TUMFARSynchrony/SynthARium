@@ -8,11 +8,13 @@ import SessionForm from "./pages/SessionForm/SessionForm";
 import { useEffect, useState } from "react";
 import { getLocalStream } from "./utils/utils";
 import Connection from "./networking/Connection";
+import Heading from "./components/atoms/Heading/Heading";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [sessionsList, setSessionsList] = useState([]);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
 
   const requireLocalStream = window.location.pathname === "/experimentRoom";
   const sessionId = "example_session_id_1";
@@ -73,34 +75,63 @@ function App() {
   const messageHandler = (message) => {
     if (message.type === "SESSION_LIST") {
       setSessionsList(message.data);
+      setSessionsLoaded(true);
+    } else if (message.type === "SUCCESS") {
+      if (message.data.type === "DELETE_SESSION") {
+        // connection.sendRequest("GET_SESSION_LIST", {});
+      }
     }
+  };
+
+  const onDeleteSession = (sessionId) => {
+    console.log("ON DELETE");
+    if (!connection) {
+      return;
+    }
+
+    connection.sendRequest("DELETE_SESSION", {
+      session_id: sessionId,
+    });
+  };
+
+  const onSendSessionToBackend = (session) => {
+    connection.sendRequest("SAVE_SESSION", session);
   };
 
   return (
     <div className="App">
-      <Router>
-        <Routes>
-          <Route
-            exact
-            path="/"
-            element={
-              <SessionOverview
-                connection={connection}
-                sessions={sessionsList}
-              />
-            }
-            // element={<SessionOverview />}
-          />
-          <Route
-            exact
-            path="/postProcessingRoom"
-            element={<PostProcessing />}
-          />
-          <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
-          <Route exact path="/watchingRoom" element={<WatchingRoom />} />
-          <Route exact path="/sessionForm" element={<SessionForm />} />
-        </Routes>
-      </Router>
+      {sessionsLoaded ? (
+        <Router>
+          <Routes>
+            <Route
+              exact
+              path="/"
+              element={
+                <SessionOverview
+                  sessions={sessionsList}
+                  onDeleteSession={onDeleteSession}
+                />
+              }
+            />
+            <Route
+              exact
+              path="/postProcessingRoom"
+              element={<PostProcessing />}
+            />
+            <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
+            <Route exact path="/watchingRoom" element={<WatchingRoom />} />
+            <Route
+              exact
+              path="/sessionForm"
+              element={
+                <SessionForm onSendSessionToBackend={onSendSessionToBackend} />
+              }
+            />
+          </Routes>
+        </Router>
+      ) : (
+        <Heading heading={"Loading..."} />
+      )}
     </div>
   );
 }
