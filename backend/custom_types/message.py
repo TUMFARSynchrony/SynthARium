@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypedDict, get_args
 
-import modules.util as util
+import custom_types.util as util
 
 
 class MessageDict(TypedDict):

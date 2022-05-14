@@ -9,7 +9,7 @@ based on BasicFilterDict.
 
 from typing import TypedDict
 
-import modules.util as util
+import custom_types.util as util
 
 
 class BasicFilterDict(TypedDict):

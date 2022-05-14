@@ -5,7 +5,7 @@ Use for type hints and static type checking without any overhead during runtime.
 
 from typing_extensions import NotRequired, TypedDict
 
-import modules.util as util
+import custom_types.util as util
 
 from custom_types.filters import is_valid_filter_dict
 from custom_types.size import SizeDict, is_valid_size

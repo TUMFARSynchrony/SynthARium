@@ -5,7 +5,7 @@ Use for type hints and static type checking without any overhead during runtime.
 
 from typing import TypedDict
 
-import modules.util as util
+import custom_types.util as util
 
 
 class NoteDict(TypedDict):

@@ -6,7 +6,7 @@ Use for type hints and static type checking without any overhead during runtime.
 from typing import Any
 from typing_extensions import NotRequired, TypedDict
 
-import modules.util as util
+import custom_types.util as util
 
 from custom_types.participant import ParticipantDict, is_valid_participant
 from custom_types.note import NoteDict, is_valid_note
