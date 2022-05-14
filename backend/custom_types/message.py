@@ -73,8 +73,9 @@ Data Types Wiki :
 def is_valid_messagedict(data) -> bool:
     """Check if `data` is a valid MessageDict.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
+
     Does not check the contents of MessageDict.data / non recursive.
 
     Parameters

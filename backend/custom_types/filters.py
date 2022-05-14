@@ -32,8 +32,8 @@ class BasicFilterDict(TypedDict):
 def is_valid_filter_dict(data) -> bool:
     """Check if `data` is a valid BasicFilterDict.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
 
     Parameters
     ----------
@@ -68,8 +68,8 @@ class SetFiltersRequestDict(TypedDict):
 def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
     """Check if `data` is a valid custom_types.filters.SetFiltersRequest.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
 
     Parameters
     ----------

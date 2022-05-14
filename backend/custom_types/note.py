@@ -34,8 +34,8 @@ class NoteDict(TypedDict):
 def is_valid_note(data) -> bool:
     """Check if `data` is a valid NoteDict.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
 
     Parameters
     ----------

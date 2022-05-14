@@ -79,5 +79,6 @@
 			"speakers": ["speaker"],
 			"content": "This is a note"
 		}
-	]
+	],
+	"log": []
 }

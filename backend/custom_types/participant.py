@@ -3,7 +3,7 @@
 Use for type hints and static type checking without any overhead during runtime.
 """
 
-from typing_extensions import NotRequired, TypedDict
+from typing import TypedDict
 
 import custom_types.util as util
 
@@ -23,7 +23,7 @@ class ParticipantDict(TypedDict):
 
     Attributes
     ----------
-    id: str, optional
+    id: str, default ""
         Unique id for this participant in a Session.  When creating a new Participant in
         a Session, this field is initially left blank.
     first_name : str
@@ -51,7 +51,7 @@ class ParticipantDict(TypedDict):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#Participant
     """
 
-    id: NotRequired[str]
+    id: str
     first_name: str
     last_name: str
     muted_video: bool
@@ -66,8 +66,8 @@ class ParticipantDict(TypedDict):
 def is_valid_participant(data, recursive: bool = True) -> bool:
     """Check if `data` is a valid ParticipantDict.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
 
     Parameters
     ----------
@@ -103,9 +103,8 @@ def is_valid_participant(data, recursive: bool = True) -> bool:
         if not is_valid_size(data["size"]) or not is_valid_position(data["position"]):
             return False
 
-    valid_id = "id" not in data or isinstance(data["id"], str)
     return (
-        valid_id
+        isinstance(data["id"], str)
         and isinstance(data["first_name"], str)
         and isinstance(data["last_name"], str)
         and isinstance(data["muted_video"], bool)

@@ -27,8 +27,8 @@ class SessionIdRequestDict(TypedDict):
 def is_valid_session_id_request(data) -> bool:
     """Check if `data` is a valid custom_types.general.SessionIdRequestDict.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
 
     Parameters
     ----------
@@ -64,8 +64,8 @@ class MuteRequestDict(TypedDict):
 def is_valid_mute_request(data) -> bool:
     """Check if `data` is a valid custom_types.general.MuteRequestDict.
 
-    Checks if all required and only required or optional keys exist in data as well as
-    the data type of the values.
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
 
     Parameters
     ----------

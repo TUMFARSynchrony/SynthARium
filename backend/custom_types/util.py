@@ -1,12 +1,9 @@
 """Provide utility functions for type checking."""
 
 from typing import Any, Type, TypedDict
-from typing_extensions import TypedDict as TypedDictExt
 
 
-def check_valid_typeddict_keys(
-    data: Any, type: Type[TypedDict] | Type[TypedDictExt]
-) -> bool:
+def check_valid_typeddict_keys(data: Any, type: Type[TypedDict]) -> bool:
     """Check if `data` is a valid dict according to `type`.
 
     Checks if all required and only required or optional keys from `type` exist in
@@ -20,7 +17,7 @@ def check_valid_typeddict_keys(
     ----------
     data : dict
         Dictionary to perform key check on.
-    type: typing.TypedDict or typing_extensions.TypedDict
+    type: typing.TypedDict
         Target TypedDict with optional and / or required keys.
 
     Returns
