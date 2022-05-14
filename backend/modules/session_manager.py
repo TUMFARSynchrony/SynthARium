@@ -91,6 +91,9 @@ class SessionManager:
     def create_session(self, session_dict: SessionDict):
         """Instantiate a new session with the given session data.
 
+        Check if required default values in `session_dict` are set correctly.  This
+        includes: `id`, `end_time`, `start_time` and participants ids.
+
         Generate session id and participant ids inplace.  Then save the session
         in this manager and on the drive for persistence.
 
@@ -107,15 +110,49 @@ class SessionManager:
         Raises
         ------
         ValueError
-            If `id` in session_dict is not an empty string or if a duplicate participant
-            ID was found.
+
+        ErrorDictException
+            If `id` in session_dict is not an empty string, if `end_time` is not set to
+            0, if `start_time` is not set to 0 or if a duplicate participant ID was
+            found.
         """
+        # Check fields with required default values for initiating new sessions
         if session_dict["id"] != "":
-            print(
-                "[SessionManager] ERROR: Cannot create new session with existing id -",
-                "in create_session()",
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description=(
+                    'Session "id" must initially be set to an empty string as default '
+                    "value."
+                ),
             )
-            raise ValueError("Cannot create new session with existing ID.")
+
+        for participant in session_dict["participants"]:
+            if participant["id"] != "":
+                raise ErrorDictException(
+                    code=400,
+                    type="INVALID_REQUEST",
+                    description=(
+                        'Participant "id" must initially be set to an empty string as '
+                        "default value."
+                    ),
+                )
+
+        if session_dict["end_time"] != 0:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description='"end_time" must initially be set to the default value 0.',
+            )
+
+        if session_dict["start_time"] != 0:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description=(
+                    '"start_time" must initially be set to the default value 0.'
+                ),
+            )
 
         session_id = self._generate_unique_session_id()
         session_dict["id"] = session_id

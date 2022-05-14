@@ -351,11 +351,16 @@ class SessionData:
         Raises
         ------
         ValueError
-            If `id` in `session_dict` is an empty string or if a duplicate participant
-            ID was found.
+            If `id` in `session_dict` is an empty string.
+        ErrorDictException
+            If a duplicate participant ID was found.
         """
         if has_duplicate_participant_ids(session_dict):
-            raise ValueError("Duplicate participant ID found in session data.")
+            raise ErrorDictException(
+                type="DUPLICATE_ID",
+                code=400,
+                description="Duplicate participant ID found in session data.",
+            )
 
         self._set_variables(session_dict, False)
         self._on_update = on_update
@@ -520,7 +525,7 @@ class SessionData:
         known_ids = self.participants.keys()
 
         for id in participant_ids:
-            if id is None or id not in known_ids:
+            if id != "" and id not in known_ids:
                 return True
 
         return False
