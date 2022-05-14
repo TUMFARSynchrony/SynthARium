@@ -114,7 +114,6 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Expected session object."
             )
-        assert isinstance(data, SessionDict)
 
         sm = self._hub.session_manager
         if "id" not in data:
