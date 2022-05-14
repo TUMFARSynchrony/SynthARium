@@ -57,7 +57,7 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
-        self.send("", end_message, broadcast=True)
+        self.send("all", end_message, secure_origin=True)
 
     def stop(self):
         """Stop the experiment.
@@ -82,9 +82,9 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
-        self.send("", end_message, broadcast=True)
+        self.send("all", end_message, secure_origin=True)
 
-    def send(self, to: str, data: Any, exclude: str = "", broadcast: bool = False):
+    def send(self, to: str, data: Any, exclude: str = "", secure_origin: bool = False):
         """Send data to a single or group of users.
 
         Select the correct target (group) according to the `to` parameter and send the
@@ -94,15 +94,18 @@ class Experiment:
         ----------
         to : str
             Target for the data. Can be a participant ID or one of the following groups:
-            -`"participants"` send data to all participants.
-            -`"experimenter"` send data to all experimenters.
+            - `"all"` send data to all participants and experimenters. `secure_origin`
+              must be true for this group to avoid the use of all from a untrusted
+              client (only allowed internally).
+            - `"participants"` send data to all participants.
+            - `"experimenter"` send data to all experimenters.
+
         data : Any
             Data that will be send.
         exclude : str, optional
             User ID to exclude from targets, e.g. ID from sender of `data`.
-        broadcast : bool, default False
-            For sending a data to all clients, participants and experimenters.  Only for
-            internal use.  If true, `to` is ignored.
+        secure_origin : bool, default False
+            If True, `to` = "all" is allowed.  Used to disallow clients using "all".
 
         Notes
         -----
@@ -112,28 +115,34 @@ class Experiment:
         Raises
         ------
         ErrorDictException
-            If `to` is not "participants", "experimenter" or a known participant ID.
+            If `to` is not "all", "participants", "experimenter" or a known participant
+            ID.  Also raised if `to` is set to "all", but `secure_origin` is false.
         """
         # Select target
         targets: list[_experimenter.Experimenter | _participant.Participant] = []
-        if broadcast:
-            targets.extend(self._participants.values())
-            targets.extend(self._experimenters)
-        else:
-            match to:
-                case "participants":
-                    targets.extend(self._participants.values())
-                case "experimenter":
-                    targets.extend(self._experimenters)
-                case _:
-                    if to in self._participants:
-                        targets.append(self._participants[to])
-                    else:
-                        raise ErrorDictException(
-                            404,
-                            "UNKNOWN_USER",
-                            f"Failed to send data to {to}, user not found.",
-                        )
+        match to:
+            case "all":
+                if not secure_origin:
+                    raise ErrorDictException(
+                        400,
+                        "INVALID_REQUEST",
+                        f'Message tartget "all" is not allowed.',
+                    )
+                targets.extend(self._participants.values())
+                targets.extend(self._experimenters)
+            case "participants":
+                targets.extend(self._participants.values())
+            case "experimenter":
+                targets.extend(self._experimenters)
+            case _:
+                if to in self._participants:
+                    targets.append(self._participants[to])
+                else:
+                    raise ErrorDictException(
+                        404,
+                        "UNKNOWN_USER",
+                        f"Failed to send data to {to}, user not found.",
+                    )
 
         # Send data
         for user in targets:
