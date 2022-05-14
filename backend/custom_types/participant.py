@@ -25,7 +25,7 @@ class ParticipantDict(TypedDict):
     ----------
     id: str, default ""
         Unique id for this participant in a Session.  When creating a new Participant in
-        a Session, this field is initially left blank.
+        a Session, this field is initially set to an empty string.
     first_name : str
         First name of the participant.
     last_name : str

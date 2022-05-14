@@ -104,7 +104,7 @@ class Experimenter(User):
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
-        if `id` exists in data, otherwise try to create new session.
+        if `id` in data is not a empty string, otherwise try to create new session.
 
         If the session was newly created, an `CREATED_SESSION` message is send to all
         experimenters.  Otherwise, if the session was updated, an `UPDATED_SESSION` is
@@ -128,7 +128,7 @@ class Experimenter(User):
             )
 
         sm = self._hub.session_manager
-        if "id" not in data:
+        if data["id"] == "":
             # Create new session
             session = sm.create_session(data)
 

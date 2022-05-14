@@ -212,9 +212,9 @@ class ParticipantData(_BaseDataClass):
         Raises
         ------
         ValueError
-            If `id` is missing in `participant_dict`.
+            If `id` in `participant_dict is an empty string`.
         """
-        if "id" not in participant_dict:
+        if participant_dict["id"] == "":
             raise ValueError('Missing "id" in participant dict.')
 
         # Save simple variables
@@ -327,13 +327,13 @@ class SessionData:
     _trigger_updates: bool | None = field(repr=False, init=False, compare=False)
 
     # Variables with default values:
-    log: Any | None = field(repr=False, default=None)
+    log: Any = field(repr=False, default_factory=list)
     """TODO Document - log still wip"""
 
-    end_time: int | None = field(repr=False, default=None)
+    end_time: int = field(repr=False, default=0)
     """Session end time in milliseconds since January 1, 1970, 00:00:00 (UTC)."""
 
-    start_time: int | None = field(repr=False, default=None)
+    start_time: int = field(repr=False, default=0)
     """Session start time in milliseconds since January 1, 1970, 00:00:00 (UTC)."""
 
     def __init__(self, on_update: Callable[[str], None], session_dict: SessionDict):
@@ -351,8 +351,8 @@ class SessionData:
         Raises
         ------
         ValueError
-            If `session_dict` is missing the (session) `id` variable or if a duplicate
-            participant ID was found.
+            If `id` in `session_dict` is an empty string or if a duplicate participant
+            ID was found.
         """
         if has_duplicate_participant_ids(session_dict):
             raise ValueError("Duplicate participant ID found in session data.")
@@ -381,7 +381,7 @@ class SessionData:
             Also occurs if a duplicate participant ID was found.
         """
         # Data checks.
-        if session_dict.get("id") is not self.id:
+        if session_dict["id"] is not self.id:
             raise ValueError("Session.update can not change the ID of a Session")
 
         if self._has_unknown_participant_ids(session_dict):
@@ -415,8 +415,11 @@ class SessionData:
             "record": self.record,
             "time_limit": self.time_limit,
             "description": self.description,
+            "end_time": self.end_time,
+            "start_time": self.start_time,
             "notes": self.notes,
             "participants": [p.asdict() for p in self.participants.values()],
+            "log": self.log,
         }
 
         if self.log is not None:
@@ -444,14 +447,14 @@ class SessionData:
         Raises
         ------
         ValueError
-            If `session_dict` is missing the (session) `id` variable.
+            If `id` in `session_dict` is an empty string.
 
         See Also
         --------
         _handle_updates() :
             Handle updates in data. See for information about `self._trigger_updates`.
         """
-        if "id" not in session_dict:
+        if session_dict["id"] == "":
             raise ValueError('Missing "id" in session dict.')
 
         self._trigger_updates = False
@@ -464,11 +467,9 @@ class SessionData:
         self.time_limit = session_dict["time_limit"]
         self.description = session_dict["description"]
         self.notes = session_dict["notes"]
-
-        # Save simple but optional variables
-        self.log = session_dict.get("log")
-        self.end_time = session_dict.get("end_time")
-        self.start_time = session_dict.get("end_time")
+        self.log = session_dict["log"]
+        self.end_time = session_dict["end_time"]
+        self.start_time = session_dict["end_time"]
 
         # Parse participants
         _generate_participant_ids(session_dict)
@@ -534,9 +535,9 @@ def _generate_participant_ids(session_dict: SessionDict) -> None:
         Session dictionary where the participant ids will be generated in.
     """
     participant_ids = get_filtered_participant_ids(session_dict)
-    for participant in session_dict.get("participants", []):
-        id = participant.get("id")
-        if id is None:
+    for participant in session_dict["participants"]:
+        id = participant["id"]
+        if id == "":
             # New participant without id
             new_id = generate_unique_id(participant_ids)
             participant_ids.append(new_id)

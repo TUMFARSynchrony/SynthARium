@@ -107,11 +107,10 @@ class SessionManager:
         Raises
         ------
         ValueError
-            If ID exists in session_dict.
-        ErrorDictException
-            If a duplicate participant ID was found.
+            If `id` in session_dict is not an empty string or if a duplicate participant
+            ID was found.
         """
-        if "id" in session_dict:
+        if session_dict["id"] != "":
             print(
                 "[SessionManager] ERROR: Cannot create new session with existing id -",
                 "in create_session()",
@@ -206,7 +205,7 @@ class SessionManager:
                 )
                 continue
 
-            if "id" not in session_dict:
+            if session_dict["id"] == "":
                 # Generate ID after loading the rest of the files.
                 sessions_with_missing_ids.append(session_dict)
                 continue
@@ -259,7 +258,7 @@ class SessionManager:
             session data that should be written to the self._session_dir
             directory.
         """
-        if "id" not in session_dict:
+        if session_dict["id"] == "":
             print("[SessionManager] ERROR: Cannot save session without ID.")
             return
 
