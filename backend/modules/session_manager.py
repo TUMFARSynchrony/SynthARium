@@ -69,7 +69,7 @@ class SessionManager:
         list of custom_types.session.SessionDict
             List containing all sessions managed by this SessionManager as dictionary.
         """
-        response = [s.asdict for s in list(self._sessions.values())]
+        response = [s.asdict() for s in list(self._sessions.values())]
         return response
 
     def get_session(self, id: str):
