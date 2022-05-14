@@ -100,22 +100,20 @@ class Experimenter(User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    async def _handle_save_session(self, data: SessionDict | Any) -> MessageDict:
+    async def _handle_save_session(self, data: SessionDict | Any) -> None:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
         if `id` exists in data, otherwise try to create new session.
 
+        If the session was newly created, an `CREATED_SESSION` message is send to all
+        experimenters.  Otherwise, if the session was updated, an `UPDATED_SESSION` is
+        send to all experimenters.
+
         Parameters
         ----------
         data : any or custom_types.session.SessionDict
             Message data.  Checks if data is valid custom_types.session.SessionDict.
-
-        Returns
-        -------
-        custom_types.message.MessageDict
-            MessageDict with type: `SESSION`, data: custom_types.session.SessionDict.
-            Saved session, including generated session and participant ids.
 
         Raises
         ------
@@ -133,38 +131,37 @@ class Experimenter(User):
         if "id" not in data:
             # Create new session
             session = sm.create_session(data)
+
+            message = MessageDict(type="CREATED_SESSION", data=session.asdict())
+            self._experiment.send("experimenters", message, secure_origin=True)
+            return
+
+        # Update existing session
+        session = sm.get_session(data["id"])
+        if session is not None:
+            session.update(data)
         else:
-            # Update existing session
-            session = sm.get_session(data["id"])
-            if session is not None:
-                session.update(data)
-            else:
-                raise ErrorDictException(
-                    code=404,
-                    type="UNKNOWN_SESSION",
-                    description="No session with the given ID found to update.",
-                )
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_SESSION",
+                description="No session with the given ID found to update.",
+            )
 
-        return MessageDict(type="SESSION", data=session)
+        message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
+        self._experiment.send("experimenters", message, secure_origin=True)
 
-    async def _handle_delete_session(
-        self, data: SessionIdRequestDict | Any
-    ) -> MessageDict:
+    async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
 
         Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
         delete session with the `session_id` in `data`.
 
+        After deletion, a `DELETED_SESSION` message is send to all experimenters.
+
         Parameters
         ----------
         data : any or custom_types.general.SessionIdRequestDict
             Message data.
-
-        Returns
-        -------
-        custom_types.message.MessageDict
-            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
-            SuccessDict type: `DELETE_SESSION`.
 
         Raises
         ------
@@ -182,10 +179,8 @@ class Experimenter(User):
         session_id = data["session_id"]
         self._hub.session_manager.delete_session(session_id)
 
-        success = SuccessDict(
-            type="DELETE_SESSION", description="Successfully deleted session."
-        )
-        return MessageDict(type="SUCCESS", data=success)
+        message = MessageDict(type="DELETED_SESSION", data=session_id)
+        self._experiment.send("experimenters", message, secure_origin=True)
 
     async def _handle_create_experiment(
         self, data: SessionIdRequestDict | Any
