@@ -27,7 +27,7 @@
 					"message": "Welcome to todays experiment!",
 					"time": 1650380763075,
 					"author": "experimenter",
-					"target": "all"
+					"target": "participants"
 				}
 			],
 			"banned": false
@@ -53,7 +53,7 @@
 					"message": "Welcome to todays experiment!",
 					"time": 1650380763075,
 					"author": "experimenter",
-					"target": "all"
+					"target": "participants"
 				},
 				{
 					"message": "Hello Erika. Please enable your video camera to start the experiment.",
@@ -91,7 +91,7 @@
 					"message": "Welcome to todays experiment!",
 					"time": 1650380763075,
 					"author": "experimenter",
-					"target": "all"
+					"target": "participants"
 				},
 				{
 					"message": "Hello World!",

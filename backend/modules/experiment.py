@@ -94,7 +94,7 @@ class Experiment:
         ----------
         to : str
             Target for the data. Can be a participant ID or one of the following groups:
-            -`"all"` send data to all participants.
+            -`"participants"` send data to all participants.
             -`"experimenter"` send data to all experimenters.
         data : Any
             Data that will be send.
@@ -112,7 +112,7 @@ class Experiment:
         Raises
         ------
         ErrorDictException
-            If `to` is not "all", "experimenter" or a known participant ID.
+            If `to` is not "participants", "experimenter" or a known participant ID.
         """
         # Select target
         targets: list[_experimenter.Experimenter | _participant.Participant] = []
@@ -121,7 +121,7 @@ class Experiment:
             targets.extend(self._experimenters)
         else:
             match to:
-                case "all":
+                case "participants":
                     targets.extend(self._participants.values())
                 case "experimenter":
                     targets.extend(self._experimenters)
@@ -140,7 +140,7 @@ class Experiment:
             if exclude != user.id:
                 user.send(data)
 
-    def send_chat_message(self, chat_message: ChatMessageDict):
+    def handle_chat_message(self, chat_message: ChatMessageDict):
         """Log and send a chat message to `target` in `chat_message`.
 
         Parameters
@@ -151,17 +151,23 @@ class Experiment:
         Raises
         ------
         ErrorDictException
-            If `target` in `chat_message` is not "all", "experimenter" or a known
-            participant ID.
+            If `target` in `chat_message` is not "participants", "experimenter" or a
+            known participant ID.
         """
         # Save message in log of the correct participant(s)
         target = chat_message["target"]
-        if target == "all":
+        author = chat_message["author"]
+
+        if target in "participants":
             for p in self.session.participants.values():
                 p.chat.append(chat_message)
         else:
-            # In this case target is assumed to be a single participant
-            participant = self.session.participants.get(target)
+            # In this case target or author is assumed to be a single participant
+            if target == "experimenters":
+                participant = self.session.participants.get(author)
+            else:
+                participant = self.session.participants.get(target)
+
             if participant is None:
                 raise ErrorDictException(
                     code=404,

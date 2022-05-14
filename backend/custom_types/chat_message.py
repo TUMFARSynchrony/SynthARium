@@ -22,7 +22,8 @@ class ChatMessageDict(TypedDict):
     target : str
         Intended receiver of the message. Participant ID or "experimenter".
         For participant: always "experimenter".
-        For experimenter: specific participant ID or "all" for broadcast.
+        For experimenter: specific participant ID or "participants" for sending message
+        to all participants.
 
     See Also
     --------

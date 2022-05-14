@@ -420,7 +420,7 @@ class Experimenter(User):
                 description="Author of message must be experimenter.",
             )
 
-        self._experiment.send_chat_message(data)
+        self._experiment.handle_chat_message(data)
 
         success = SuccessDict(
             type="CHAT", description="Successfully send chat message."
