@@ -36,19 +36,26 @@ class MessageDict(TypedDict):
 
 # TODO define valid types
 MESSAGE_TYPES = Literal[
-    "TO_BE_DEFINED",  # Placeholder
     "SUCCESS",
     "ERROR",
     "SESSION_DESCRIPTION",
+    "SAVE_SESSION",
+    "DELETE_SESSION",
+    "GET_SESSION_LIST",
     "SESSION_LIST",
     "SESSION",
     "CHAT",
+    "CREATE_EXPERIMENT",
+    "JOIN_EXPERIMENT",
+    "START_EXPERIMENT",
+    "STOP_EXPERIMENT",
+    "EXPERIMENT_STARTED",
+    "EXPERIMENT_ENDED",
+    "ADD_NOTE",
     "KICK_PARTICIPANT",
     "BAN_PARTICIPANT",
     "KICK_NOTIFICATION",
     "BAN_NOTIFICATION",
-    "EXPERIMENT_STARTED",
-    "EXPERIMENT_ENDED",
     "MUTE",
     "SET_FILTERS",
 ]
