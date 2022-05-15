@@ -18,11 +18,10 @@ from custom_types.kick import KickRequestDict, is_valid_kickrequest
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 from custom_types.note import NoteDict, is_valid_note
-from custom_types.general import (
-    MuteRequestDict,
+from custom_types.mute import MuteRequestDict, is_valid_mute_request
+from custom_types.session_id_request import (
     SessionIdRequestDict,
     is_valid_session_id_request,
-    is_valid_mute_request,
 )
 
 from modules.connection import connection_factory
@@ -179,14 +178,14 @@ class Experimenter(User):
     async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
 
-        Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
-        delete session with the `session_id` in `data`.
+        Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
+        If found, delete session with the `session_id` in `data`.
 
         After deletion, a `DELETED_SESSION` message is send to all experimenters.
 
         Parameters
         ----------
-        data : any or custom_types.general.SessionIdRequestDict
+        data : any or custom_types.session_id_request.SessionIdRequestDict
             Message data.
 
         Raises
@@ -214,13 +213,13 @@ class Experimenter(User):
     ) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
-        Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
-        try to create a new modules.experiment.Experiment based on the session with
-        the `session_id` in `data`.
+        Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
+        If found, try to create a new modules.experiment.Experiment based on the session
+        with the `session_id` in `data`.
 
         Parameters
         ----------
-        data : any or custom_types.general.SessionIdRequestDict
+        data : any or custom_types.session_id_request.SessionIdRequestDict
             Message data.
 
         Returns
@@ -255,13 +254,13 @@ class Experimenter(User):
     ) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
-        Check if data is a valid custom_types.general.SessionIdRequestDict.  If found,
-        try to join an existing modules.experiment.Experiment with the `session_id`
-        in `data`.
+        Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
+        If found, try to join an existing modules.experiment.Experiment with the
+        `session_id` in `data`.
 
         Parameters
         ----------
-        data : any or custom_types.general.SessionIdRequestDict
+        data : any or custom_types.session_id_request.SessionIdRequestDict
             Message data.
 
         Returns
@@ -524,12 +523,12 @@ class Experimenter(User):
     async def _handle_mute(self, data: MuteRequestDict | Any) -> MessageDict:
         """Handle requests with type `MUTE`.
 
-        Check if data is a valid custom_types.general.MuteRequestDict, parse and pass the
+        Check if data is a valid custom_types.mute.MuteRequestDict, parse and pass the
         request to the experiment.
 
         Parameters
         ----------
-        data : any or custom_types.general.MuteRequestDict
+        data : any or custom_types.mute.MuteRequestDict
             Message data.
 
         Returns
@@ -541,7 +540,7 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.general.MuteRequestDict.
+            If data is not a valid custom_types.mute.MuteRequestDict.
         """
         if not is_valid_mute_request(data):
             raise ErrorDictException(
