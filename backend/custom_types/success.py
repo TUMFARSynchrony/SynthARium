@@ -28,7 +28,6 @@ class SuccessDict(TypedDict):
     description: str
 
 
-# TODO define valid types
 SUCCESS_TYPES = Literal[
     "TO_BE_DEFINED",
     "SAVE_SESSION",

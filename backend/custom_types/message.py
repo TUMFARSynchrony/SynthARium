@@ -34,7 +34,6 @@ class MessageDict(TypedDict):
     data: Any
 
 
-# TODO define valid types
 MESSAGE_TYPES = Literal[
     "SUCCESS",
     "ERROR",
