@@ -46,6 +46,8 @@ ERROR_TYPES = Literal[
     "UNKNOWN_EXPERIMENT",
     "UNKNOWN_PARTICIPANT",
     "UNKNOWN_USER",
+    "SESSION_ALREADY_STARTED",
+    "INVALID_PARAMETER",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

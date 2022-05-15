@@ -132,21 +132,47 @@ class Experimenter(User):
             # Create new session
             session = sm.create_session(data)
 
+            # Notify all experimenters about the change
             message = MessageDict(type="CREATED_SESSION", data=session.asdict())
             self._experiment.send("experimenters", message, secure_origin=True)
             return
 
         # Update existing session
         session = sm.get_session(data["id"])
-        if session is not None:
-            session.update(data)
-        else:
+        if session is None:
             raise ErrorDictException(
                 code=404,
                 type="UNKNOWN_SESSION",
                 description="No session with the given ID found to update.",
             )
 
+        # Check if session has already started and should not be edited anymore
+        if session.start_time != 0:
+            raise ErrorDictException(
+                code=409,
+                type="SESSION_ALREADY_STARTED",
+                description="Cannot edit session, session has already started.",
+            )
+
+        # Check if read only parameters where changed
+        # Checks for participant IDs are included in session.update()
+        if data["start_time"] != session.start_time:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_PARAMETER",
+                description='Cannot edit session "start_time", read only for client.',
+            )
+
+        if data["end_time"] != session.end_time:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_PARAMETER",
+                description='Cannot edit session "end_time", read only for client.',
+            )
+
+        session.update(data)
+
+        # Notify all experimenters about the change
         message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
         self._experiment.send("experimenters", message, secure_origin=True)
 
@@ -179,6 +205,7 @@ class Experimenter(User):
         session_id = data["session_id"]
         self._hub.session_manager.delete_session(session_id)
 
+        # Notify all experimenters about the change
         message = MessageDict(type="DELETED_SESSION", data=session_id)
         self._experiment.send("experimenters", message, secure_origin=True)
 
