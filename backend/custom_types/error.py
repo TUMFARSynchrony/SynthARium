@@ -48,6 +48,8 @@ ERROR_TYPES = Literal[
     "UNKNOWN_USER",
     "SESSION_ALREADY_STARTED",
     "INVALID_PARAMETER",
+    "NOT_CONNECTED_TO_EXPERIMENT",
+    "EXPERIMENT_RUNNING",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

@@ -43,7 +43,7 @@ class Experimenter(User):
         WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
     """
 
-    _experiment: _experiment.Experiment
+    _experiment: _experiment.Experiment | None
     _hub: _hub.Hub
 
     def __init__(self, id: str, hub: _hub.Hub) -> None:
@@ -63,6 +63,7 @@ class Experimenter(User):
         """
         super().__init__(id)
         self._hub = hub
+        self._experiment = None
 
         # Add API endpoints
         self.on("GET_SESSION_LIST", self._handle_get_session_list)
@@ -202,6 +203,14 @@ class Experimenter(User):
             )
 
         session_id = data["session_id"]
+        # Check if there is an experiment running with this session_id
+        if session_id in self._hub.experiments:
+            raise ErrorDictException(
+                code=400,
+                type="EXPERIMENT_RUNNING",
+                description="Cannot delete session with running experiment.",
+            )
+
         self._hub.session_manager.delete_session(session_id)
 
         # Notify all experimenters about the change
@@ -356,17 +365,8 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already ended.
         """
-        if not self._experiment:
-            raise ErrorDictException(
-                code=409,
-                type="INVALID_REQUEST",
-                description=(
-                    "Cannot start experiment. Experimenter is not connected to an "
-                    "experiment."
-                ),
-            )
-
-        self._experiment.stop()
+        experiment = self._get_experiment_or_raise("Cannot stop experiment.")
+        experiment.stop()
 
         success = SuccessDict(
             type="STOP_EXPERIMENT", description="Successfully stopped experiment."
@@ -393,13 +393,16 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.note.NoteDict.
+            If data is not a valid custom_types.note.NoteDict or if this Experimenter is
+            not connected to an modules.experiment.Experiment.
         """
         if not is_valid_note(data):
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Expected note object."
             )
-        self._experiment.session.notes.append(data)
+
+        experiment = self._get_experiment_or_raise("Cannot add note.")
+        experiment.session.notes.append(data)
 
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
         return MessageDict(type="SUCCESS", data=success)
@@ -424,8 +427,9 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.chat_message.ChatMessageDict or
-            `target` is not "experimenter".
+            If data is not a valid custom_types.chat_message.ChatMessageDict,
+            `target` is not "experimenter" or this Experimenter is not connected to an
+            modules.experiment.Experiment.
         """
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
@@ -441,7 +445,8 @@ class Experimenter(User):
                 description="Author of message must be experimenter.",
             )
 
-        self._experiment.handle_chat_message(data)
+        experiment = self._get_experiment_or_raise("Cannot chat.")
+        experiment.handle_chat_message(data)
 
         success = SuccessDict(
             type="CHAT", description="Successfully send chat message."
@@ -468,7 +473,8 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.kick.KickRequestDict.
+            If data is not a valid custom_types.kick.KickRequestDict or if this
+            Experimenter is not connected to an modules.experiment.Experiment.
         """
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
@@ -477,7 +483,8 @@ class Experimenter(User):
                 description="Request data must be a valid kick request.",
             )
 
-        await self._experiment.kick_participant(data["participant_id"], data["reason"])
+        experiment = self._get_experiment_or_raise("Cannot kick participant.")
+        await experiment.kick_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
             type="KICK_PARTICIPANT", description="Successfully kicked participant."
@@ -504,7 +511,8 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.kick.KickRequestDict.
+            If data is not a valid custom_types.kick.KickRequestDict or if this
+            Experimenter is not connected to an modules.experiment.Experiment.
         """
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
@@ -513,7 +521,8 @@ class Experimenter(User):
                 description="Request data must be a valid ban request.",
             )
 
-        await self._experiment.ban_participant(data["participant_id"], data["reason"])
+        experiment = self._get_experiment_or_raise("Cannot ban participant.")
+        await experiment.ban_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
             type="BAN_PARTICIPANT", description="Successfully banned participant."
@@ -540,7 +549,8 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.mute.MuteRequestDict.
+            If data is not a valid custom_types.mute.MuteRequestDict or if this
+            Experimenter is not connected to an modules.experiment.Experiment.
         """
         if not is_valid_mute_request(data):
             raise ErrorDictException(
@@ -549,7 +559,8 @@ class Experimenter(User):
                 description="Request data must contain a valid participant ID.",
             )
 
-        self._experiment.mute_participant(
+        experiment = self._get_experiment_or_raise("Failed to mute participant.")
+        experiment.mute_participant(
             data["participant_id"], data["mute_video"], data["mute_audio"]
         )
 
@@ -598,6 +609,39 @@ class Experimenter(User):
             description="Received valid filters, but feature is not yet implemented.",
         )
         return MessageDict(type="ERROR", data=response)
+
+    def _get_experiment_or_raise(
+        self, action_prefix: str = ""
+    ) -> _experiment.Experiment:
+        """Get `self._experiment` or raise ErrorDictException if it is None.
+
+        Use to check if this Experimenter is connected to an
+        modules.experiment.Experiment.
+
+        Parameters
+        ----------
+        action_prefix : str, optional
+            Prefix for the error message.  If not set / default (empty string), the
+            error message is: *Experimenter is not connected to an experiment.*,
+            otherwise: *<action_prefix> Experimenter is not connected to an experiment.*
+            .
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None
+        """
+        if self._experiment is not None:
+            return self._experiment
+
+        if action_prefix == "":
+            desc = "Experimenter is not connected to an experiment."
+        else:
+            desc = f"{action_prefix} Experimenter is not connected to an experiment."
+
+        raise ErrorDictException(
+            code=409, type="NOT_CONNECTED_TO_EXPERIMENT", description=desc
+        )
 
 
 async def experimenter_factory(
