@@ -151,8 +151,8 @@ class Participant(User):
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Expected ChatMessage object.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid ChatMessage.",
             )
 
         if data["target"] != "experimenter":

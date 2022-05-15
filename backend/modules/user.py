@@ -153,7 +153,7 @@ class User(ABC):
                 err = ErrorDict(
                     type="INTERNAL_SERVER_ERROR",
                     code=500,
-                    description="Internal server error.",
+                    description="Internal server error. See server log for details.",
                 )
                 response = MessageDict(type="ERROR", data=err)
 

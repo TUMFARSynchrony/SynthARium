@@ -47,7 +47,7 @@ class Experiment:
         """
         if self._state != ExperimentState.WAITING:
             raise ErrorDictException(
-                code=400,
+                code=409,
                 type="INVALID_REQUEST",
                 description="Experiment cant be started, state is not WAITING.",
             )
@@ -72,7 +72,7 @@ class Experiment:
         """
         if self._state is ExperimentState.ENDED:
             raise ErrorDictException(
-                code=400,
+                code=409,
                 type="INVALID_REQUEST",
                 description="Experiment is already stopped.",
             )
@@ -126,7 +126,7 @@ class Experiment:
                     raise ErrorDictException(
                         400,
                         "INVALID_REQUEST",
-                        f'Message tartget "all" is not allowed.',
+                        f'Message target "all" is not allowed.',
                     )
                 targets.extend(self._participants.values())
                 targets.extend(self._experimenters)

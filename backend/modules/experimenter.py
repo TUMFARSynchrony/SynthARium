@@ -124,7 +124,9 @@ class Experimenter(User):
         # Data check
         if not is_valid_session(data, True):
             raise ErrorDictException(
-                code=400, type="INVALID_REQUEST", description="Expected session object."
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid Session object.",
             )
 
         sm = self._hub.session_manager
@@ -160,14 +162,14 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=409,
                 type="INVALID_PARAMETER",
-                description='Cannot edit session "start_time", read only for client.',
+                description='Cannot change session "start_time", field is read only.',
             )
 
         if data["end_time"] != session.end_time:
             raise ErrorDictException(
                 code=409,
                 type="INVALID_PARAMETER",
-                description='Cannot edit session "end_time", read only for client.',
+                description='Cannot change session "end_time", field is read only.',
             )
 
         session.update(data)
@@ -198,8 +200,8 @@ class Experimenter(User):
         if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must be a valid JSON with session_id.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid SessionIdRequest.",
             )
 
         session_id = data["session_id"]
@@ -246,8 +248,8 @@ class Experimenter(User):
         if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must be a valid JSON with session_id.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid SessionIdRequest.",
             )
 
         self._experiment = self._hub.create_experiment(data["session_id"])
@@ -287,8 +289,8 @@ class Experimenter(User):
         if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must be a valid JSON with session_id.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid SessionIdRequest.",
             )
 
         experiment = self._hub.experiments.get(data["session_id"])
@@ -398,7 +400,9 @@ class Experimenter(User):
         """
         if not is_valid_note(data):
             raise ErrorDictException(
-                code=400, type="INVALID_REQUEST", description="Expected note object."
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid Note.",
             )
 
         experiment = self._get_experiment_or_raise("Cannot add note.")
@@ -434,8 +438,8 @@ class Experimenter(User):
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Expected ChatMessage object.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid ChatMessage.",
             )
 
         if data["author"] != "experimenter":
@@ -479,8 +483,8 @@ class Experimenter(User):
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must be a valid kick request.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid KickRequest.",
             )
 
         experiment = self._get_experiment_or_raise("Cannot kick participant.")
@@ -517,8 +521,8 @@ class Experimenter(User):
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must be a valid ban request.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid KickRequest.",
             )
 
         experiment = self._get_experiment_or_raise("Cannot ban participant.")
@@ -555,8 +559,8 @@ class Experimenter(User):
         if not is_valid_mute_request(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must contain a valid participant ID.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid MuteRequest.",
             )
 
         experiment = self._get_experiment_or_raise("Failed to mute participant.")
@@ -597,8 +601,8 @@ class Experimenter(User):
         if not is_valid_set_filters_request(data):
             raise ErrorDictException(
                 code=400,
-                type="INVALID_REQUEST",
-                description="Request data must be a valid set filter request.",
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid SetFiltersRequest.",
             )
 
         # TODO implement handling for SET_FILTERS requests.

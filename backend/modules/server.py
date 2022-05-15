@@ -140,7 +140,9 @@ class Server:
             params: dict = (await request.json())["request"]
         except json.JSONDecodeError:
             raise ErrorDictException(
-                code=400, type="INVALID_REQUEST", description="Failed to parse request."
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Failed to parse request.",
             )
 
         # Check if all required keys exist in params
