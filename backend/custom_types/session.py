@@ -114,7 +114,7 @@ def is_valid_session(data, recursive: bool) -> bool:
 
 
 def get_participant_ids(session_dict: SessionDict) -> list[str]:
-    """Get all participant IDs from session_dict. Missing IDs will be None.
+    """Get all participant IDs from session_dict.
 
     Parameters
     ----------
@@ -123,8 +123,8 @@ def get_participant_ids(session_dict: SessionDict) -> list[str]:
 
     Returns
     -------
-    list of str and/or None
-        Participant IDs in `session_dict` with None for missing/empty IDs.
+    list of str
+        Participant IDs in `session_dict`.
 
     See Also
     --------
