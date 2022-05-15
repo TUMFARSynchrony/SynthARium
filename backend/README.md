@@ -2,7 +2,10 @@
 
 ## Prerequisites
 
--   python 3.x
+-   python 3.10.x
+    -   Previous versions may work, but are not yet checked
+
+**TODO** check compatibility with older python versions
 
 ## Installing dependencies
 
@@ -16,5 +19,4 @@ Depending on your system, `python3` can be replaced with `py` or `python`
 
 # Development Guidelines
 
--   [PEP 8 – Style Guide for Python Code](https://peps.python.org/pep-0008/)
--   [autopep8 formatter](https://code.visualstudio.com/docs/python/editing#_general-formatting-settings)
+See [Contributing](./../CONTRIBUTING.md).

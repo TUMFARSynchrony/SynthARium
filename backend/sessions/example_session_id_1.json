@@ -1,0 +1,35 @@
+{
+	"id": "example_session_id_1",
+	"title": "example_session 1",
+	"description": "example_session description",
+	"date": 1650380763073,
+	"time_limit": 300,
+	"record": false,
+	"participants": [
+		{
+			"id": "example_user_id",
+			"first_name": "max",
+			"last_name": "Mustermann",
+			"muted": false,
+			"filters": [],
+			"position": {
+				"x": 0,
+				"y": 1,
+				"z": 2
+			},
+			"size": {
+				"width": 100,
+				"height": 100
+			}
+		}
+	],
+	"start_time": 1650380763076,
+	"end_time": 1650380764076,
+	"notes": [
+		{
+			"time": 1650380763076,
+			"speakers": ["speaker"],
+			"content": "This is a note"
+		}
+	]
+}
