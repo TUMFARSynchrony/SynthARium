@@ -4,6 +4,8 @@ from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
 
+from custom_types.message import MessageDict
+
 from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
@@ -216,3 +218,16 @@ class Hub:
         experiment = Experiment(session)
         self.experiments[session_id] = experiment
         return experiment
+
+    def send_to_experimenters(self, data: MessageDict):
+        """Send `data` to all connected experimenters.
+
+        Can be used to inform experimenters about changes to sessions.
+
+        Parameters
+        ----------
+        data : custom_types.message.MessageDict
+            Message for the experimenters.
+        """
+        for experimenter in self.experimenters:
+            experimenter.send(data)

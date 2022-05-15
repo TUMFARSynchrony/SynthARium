@@ -134,7 +134,7 @@ class Experimenter(User):
 
             # Notify all experimenters about the change
             message = MessageDict(type="CREATED_SESSION", data=session.asdict())
-            self._experiment.send("experimenters", message, secure_origin=True)
+            self._hub.send_to_experimenters(message)
             return
 
         # Update existing session
@@ -174,7 +174,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the change
         message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
-        self._experiment.send("experimenters", message, secure_origin=True)
+        self._hub.send_to_experimenters(message)
 
     async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
@@ -215,7 +215,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the change
         message = MessageDict(type="DELETED_SESSION", data=session_id)
-        self._experiment.send("experimenters", message, secure_origin=True)
+        self._hub.send_to_experimenters(message)
 
     async def _handle_create_experiment(
         self, data: SessionIdRequestDict | Any
