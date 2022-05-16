@@ -92,6 +92,8 @@ class Hub:
         ------
         ErrorDictException
             If user_type is not "participant" or "experimenter".
+            In case the user_type is participant: If the session or participant was not
+            found or the participant is banned.
         """
         if user_type == "participant":
             answer = await self._handle_offer_participant(
@@ -132,7 +134,8 @@ class Hub:
         Raises
         ------
         ErrorDictException
-            if session_id or participant_id are not defined.
+            if session_id or participant_id are not defined, the session or participant
+            was not found or the participant is banned.
 
         Notes
         -----
@@ -172,6 +175,15 @@ class Hub:
                 code=400,
                 type="UNKNOWN_PARTICIPANT",
                 description="Participant not found in the given session.",
+            )
+
+        if participant.banned:
+            raise ErrorDictException(
+                code=400,
+                type="BANNED_PARTICIPANT",
+                description=(
+                    "You have been banned and can no longer join the experiment."
+                ),
             )
 
         answer, participant = await _participant.participant_factory(
