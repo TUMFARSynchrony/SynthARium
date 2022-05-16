@@ -35,7 +35,6 @@ class ErrorDict(TypedDict):
 
 
 ERROR_TYPES = Literal[
-    "TO_BE_DEFINED",  # Placeholder
     "NOT_IMPLEMENTED",
     "INTERNAL_SERVER_ERROR",
     "INVALID_REQUEST",
