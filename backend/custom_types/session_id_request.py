@@ -14,11 +14,11 @@ class SessionIdRequestDict(TypedDict):
 
     Attributes
     ----------
-    session_id : int
+    session_id : str
         Session ID for the requested endpoint.
     """
 
-    session_id: int
+    session_id: str
 
 
 def is_valid_session_id_request(data) -> bool:
@@ -38,5 +38,5 @@ def is_valid_session_id_request(data) -> bool:
         True if `data` is a valid SessionIdRequestDict.
     """
     return util.check_valid_typeddict_keys(data, SessionIdRequestDict) and isinstance(
-        data["session_id"], int
+        data["session_id"], str
     )

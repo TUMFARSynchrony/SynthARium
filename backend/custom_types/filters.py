@@ -55,13 +55,13 @@ class SetFiltersRequestDict(TypedDict):
 
     Attributes
     ----------
-    participant_id : int
+    participant_id : str
         Participant ID for the requested endpoint.
     filters : list of custom_types.filters.BasicFilterDict
         Active filters for participant with `participant_id`.
     """
 
-    participant_id: int
+    participant_id: str
     filters: list[BasicFilterDict]
 
 
@@ -93,4 +93,4 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
             if not is_valid_filter_dict(filter):
                 return False
 
-    return isinstance(data["participant_id"], int)
+    return isinstance(data["participant_id"], str)
