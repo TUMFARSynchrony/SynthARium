@@ -31,7 +31,6 @@ class SuccessDict(TypedDict):
 SUCCESS_TYPES = Literal[
     "SAVE_SESSION",
     "DELETE_SESSION",
-    "CREATE_EXPERIMENT",
     "JOIN_EXPERIMENT",
     "START_EXPERIMENT",
     "STOP_EXPERIMENT",

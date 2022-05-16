@@ -228,6 +228,9 @@ class Experimenter(User):
         If found, try to create a new modules.experiment.Experiment based on the session
         with the `session_id` in `data`.
 
+        Sends a `CREATED_EXPERIMENT` message to all experimenters, if experiment was
+        successfully started.
+
         Parameters
         ----------
         data : any or custom_types.session_id_request.SessionIdRequestDict
@@ -237,7 +240,7 @@ class Experimenter(User):
         -------
         custom_types.message.MessageDict
             MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
-            SuccessDict type: `CREATE_EXPERIMENT`.
+            SuccessDict type: `JOIN_EXPERIMENT`.
 
         Raises
         ------
@@ -255,8 +258,14 @@ class Experimenter(User):
         self._experiment = self._hub.create_experiment(data["session_id"])
         self._experiment.add_experimenter(self)
 
+        # Notify all experimenters about the new experiment
+        message = MessageDict(type="CREATED_EXPERIMENT", data=data)
+        self._hub.send_to_experimenters(message)
+
+        # Notify caller that he joined the experiment
         success = SuccessDict(
-            type="CREATE_EXPERIMENT", description="Successfully started session."
+            type="JOIN_EXPERIMENT",
+            description="Successfully started and joined experiment.",
         )
         return MessageDict(type="SUCCESS", data=success)
 
