@@ -2,7 +2,15 @@ import InputField from "../../atoms/InputField/InputField";
 import Label from "../../atoms/Label/Label";
 import "./Checkbox.css";
 
-function Checkbox({ title, value, onChange, checked }) {
+function Checkbox({
+  title,
+  value,
+  onChange,
+  checked,
+  register,
+  label,
+  required,
+}) {
   return (
     <div className="checkboxContainer">
       <Label title={title} />
@@ -11,6 +19,9 @@ function Checkbox({ title, value, onChange, checked }) {
         value={value}
         onChange={onChange}
         checked={checked}
+        register={register}
+        label={label}
+        required={required}
       />
     </div>
   );

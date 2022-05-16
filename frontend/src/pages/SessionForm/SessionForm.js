@@ -18,9 +18,11 @@ import "./SessionForm.css";
 import { useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 function SessionForm({ onSendSessionToBackend }) {
   const location = useLocation();
+  const { register, handleSubmit } = useForm();
 
   const participantShapesObject = getShapesFromParticipants(
     location.state.initialData.participants
@@ -91,6 +93,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
+    console.log("handleSessionDataChange");
     let newObject = {};
     newObject[objKey] = newObj;
     setSessionData((sessionData) => ({
@@ -119,6 +122,7 @@ function SessionForm({ onSendSessionToBackend }) {
     newSessionData.time_limit *= 60000;
     setSessionData(newSessionData);
 
+    console.log(newSessionData);
     onSendSessionToBackend({ ...newSessionData });
   };
 
@@ -135,7 +139,11 @@ function SessionForm({ onSendSessionToBackend }) {
               onChange={(newTitle) =>
                 handleSessionDataChange("title", newTitle)
               }
+              register={register}
+              required={true}
+              label={"title"}
             ></InputTextField>
+
             <TextField
               title="Description"
               value={sessionData.description}
@@ -143,6 +151,9 @@ function SessionForm({ onSendSessionToBackend }) {
               onChange={(newDescription) =>
                 handleSessionDataChange("description", newDescription)
               }
+              register={register}
+              required={true}
+              label={"description"}
             ></TextField>
             <div className="timeInput">
               <InputTextField
@@ -153,6 +164,9 @@ function SessionForm({ onSendSessionToBackend }) {
                 onChange={(newTimeLimit) =>
                   handleSessionDataChange("time_limit", newTimeLimit)
                 }
+                register={register}
+                required={true}
+                label={"time_limit"}
               ></InputTextField>
               <InputDateField
                 title="Date"
@@ -163,6 +177,9 @@ function SessionForm({ onSendSessionToBackend }) {
                     newDate ? new Date(newDate).getTime() : 0
                   )
                 }
+                register={register}
+                required={true}
+                label={"date"}
               ></InputDateField>
             </div>
 
@@ -173,6 +190,9 @@ function SessionForm({ onSendSessionToBackend }) {
               onChange={() =>
                 handleSessionDataChange("record", !sessionData.record)
               }
+              register={register}
+              required={true}
+              label={"record"}
             />
             <hr className="separatorLine"></hr>
             <Heading heading={"Participants"} />
@@ -208,7 +228,11 @@ function SessionForm({ onSendSessionToBackend }) {
           </div>
 
           <div className="sessionFormButtons">
-            <LinkButton name="Save" to="/" onClick={() => onSaveSession()} />
+            <LinkButton
+              name="Save"
+              to="/"
+              onClick={handleSubmit(onSaveSession)}
+            />
             <LinkButton name="Start" to="/watchingRoom" />
           </div>
         </div>

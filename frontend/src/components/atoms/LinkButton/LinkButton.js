@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import "./LinkButton.css";
 
-function LinkButton({ name, to, onClick, state }) {
+function LinkButton({ name, to, state, onClick }) {
   return (
-    <Link className="linkButton" to={to} onClick={onClick} state={state}>
+    <Link className="linkButton" to={to} state={state} onClick={onClick}>
       {name}
     </Link>
   );

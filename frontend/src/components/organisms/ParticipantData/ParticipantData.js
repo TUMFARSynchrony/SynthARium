@@ -1,10 +1,12 @@
 import Button from "../../atoms/Button/Button";
 import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
-import { FaRegTrashAlt } from "react-icons/fa";
 import Checkbox from "../../molecules/Checkbox/Checkbox";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
+
+import { useForm } from "react-hook-form";
+import { FaRegTrashAlt } from "react-icons/fa";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -19,6 +21,8 @@ function ParticipantData({
   showParticipantInput,
   setShowParticipantInput,
 }) {
+  const { register, handleSubmit } = useForm();
+
   const handleChange = (
     first_name,
     last_name,
@@ -36,8 +40,6 @@ function ParticipantData({
   };
 
   const onAddAdditionalInformation = () => {
-    //TODO: send data to backend and wait for link...
-
     setShowParticipantInput(!showParticipantInput);
   };
 
@@ -50,6 +52,9 @@ function ParticipantData({
           .filter((str) => str.length > 0)
           .join(" ")}
         readonly={true}
+        register={register}
+        label={"name"}
+        required={false}
       />
       <div className="participantButtons">
         <Button
@@ -85,6 +90,9 @@ function ParticipantData({
                     muted_video
                   )
                 }
+                register={register}
+                label={"first_name"}
+                required={true}
               />
               <InputTextField
                 title="Last Name"
@@ -99,6 +107,9 @@ function ParticipantData({
                     muted_video
                   )
                 }
+                register={register}
+                label={"last_name"}
+                required={true}
               />
               <InputTextField
                 title="Link"
@@ -114,6 +125,9 @@ function ParticipantData({
                     muted_video
                   )
                 }
+                register={register}
+                label={"last_name"}
+                required={false}
               />
               <div className="participantMuteCheckbox">
                 <Checkbox
@@ -129,6 +143,9 @@ function ParticipantData({
                       muted_video
                     )
                   }
+                  register={register}
+                  label={"muted_audio"}
+                  required={false}
                 />
                 <Checkbox
                   title="Mute Video"
@@ -143,6 +160,9 @@ function ParticipantData({
                       !muted_video
                     )
                   }
+                  register={register}
+                  label={"muted_video"}
+                  required={false}
                 />
               </div>
               <Heading heading={"Current video position and size:"} />
@@ -163,7 +183,7 @@ function ParticipantData({
               <Button
                 name="Save"
                 design={"secondary"}
-                onClick={() => onAddAdditionalInformation()}
+                onClick={handleSubmit(onAddAdditionalInformation)}
               />
             </div>
           </div>
