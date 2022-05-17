@@ -7,10 +7,17 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+from typing import Any
 from aiortc import RTCSessionDescription
 
-from modules.connection import connection_factory
+from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
+from custom_types.kick import KickNotificationDict
+from custom_types.message import MessageDict
+from custom_types.success import SuccessDict
+
 import modules.experiment as _experiment
+from modules.exceptions import ErrorDictException
+from modules.connection import connection_factory
 from modules.user import User
 
 
@@ -27,8 +34,16 @@ class Participant(User):
     """
 
     _experiment: _experiment.Experiment
+    _muted_video: bool
+    _muted_audio: bool
 
-    def __init__(self, id: str, experiment: _experiment.Experiment) -> None:
+    def __init__(
+        self,
+        id: str,
+        experiment: _experiment.Experiment,
+        muted_video: bool,
+        muted_audio: bool,
+    ) -> None:
         """Instantiate new Participant instance.
 
         Parameters
@@ -46,18 +61,128 @@ class Participant(User):
         super().__init__(id)
 
         self._experiment = experiment
+        self._muted_video = muted_video
+        self._muted_audio = muted_audio
         experiment.add_participant(self)
 
-        # TODO Add API endpoints
-        # self.on(...
+        # Add API endpoints
+        self.on("CHAT", self._handle_chat)
 
-    def kick(self, reason: str):
-        """TODO document"""
-        pass
+    def set_muted(self, video: bool, audio: bool):
+        """Set the muted state for this participant.
+
+        Parameters
+        ----------
+        video : bool
+            Whether the participants video should be muted.
+        audio : bool
+            Whether the participants audio should be muted.
+        """
+        if self._muted_video == video and self._muted_audio == audio:
+            return
+
+        self._muted_video = video
+        self._muted_audio = audio
+
+        # TODO Implement mute on connection (when connection is finished)
+
+        # TODO Notify user about mute
+
+    async def kick(self, reason: str):
+        """Kick the participant.
+
+        Notify the participant about the kick with a `KICK_NOTIFICATION` message and
+        disconnect the participant.
+
+        Parameters
+        ----------
+        reason : str
+            Reason for the kick.  Will be send to the participant in the
+            `KICK_NOTIFICATION`.
+        """
+        kick_notification = KickNotificationDict(reason=reason)
+        message = MessageDict(type="KICK_NOTIFICATION", data=kick_notification)
+        self.send(message)
+
+        await self.disconnect()
+
+    async def ban(self, reason: str):
+        """Ban the participant.
+
+        Notify the participant about the ban with a `BAN_NOTIFICATION` message and
+        disconnect the participant.
+
+        Parameters
+        ----------
+        reason : str
+            Reason for the kick.  Will be send to the participant in the
+            `BAN_NOTIFICATION`.
+        """
+        ban_notification = KickNotificationDict(reason=reason)
+        message = MessageDict(type="BAN_NOTIFICATION", data=ban_notification)
+        self.send(message)
+
+        await self.disconnect()
+
+    async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
+        """Handle requests with type `CHAT`.
+
+        Check if data is a valid custom_types.chat_message.ChatMessageDict, target is
+        set to "experimenter", author is the ID of this participant and pass the request
+        to the experiment.
+
+        Parameters
+        ----------
+        data : any or custom_types.chat_message.ChatMessageDict
+            Message data.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `CHAT`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.chat_message.ChatMessageDict, target is
+            not set to "experimenter" or author is not the ID of this participant.
+        """
+        if not is_valid_chatmessage(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid ChatMessage.",
+            )
+
+        if data["target"] != "experimenter":
+            raise ErrorDictException(
+                code=403,
+                type="INVALID_REQUEST",
+                description='Participants can only chat with "experimenter".',
+            )
+
+        if data["author"] != self.id:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Author of message must be participant ID.",
+            )
+
+        self._experiment.handle_chat_message(data)
+
+        success = SuccessDict(
+            type="CHAT", description="Successfully send chat message."
+        )
+        return MessageDict(type="SUCCESS", data=success)
 
 
 async def participant_factory(
-    offer: RTCSessionDescription, id: str, experiment: _experiment.Experiment
+    offer: RTCSessionDescription,
+    id: str,
+    experiment: _experiment.Experiment,
+    muted_video: bool,
+    muted_audio: bool,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -82,7 +207,7 @@ async def participant_factory(
         WebRTC answer that should be send back to the client and Participant
         representing the client.
     """
-    participant = Participant(id, experiment)
+    participant = Participant(id, experiment, muted_video, muted_audio)
     answer, connection = await connection_factory(offer, participant.handle_message)
     participant.set_connection(connection)
     return (answer, participant)

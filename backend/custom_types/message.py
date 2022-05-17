@@ -5,7 +5,9 @@ Use for type hints and static type checking without any overhead during runtime.
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, TypedDict, get_args
+
+import custom_types.util as util
 
 
 class MessageDict(TypedDict):
@@ -32,13 +34,32 @@ class MessageDict(TypedDict):
     data: Any
 
 
-# TODO define valid types
 MESSAGE_TYPES = Literal[
-    "TO_BE_DEFINED",  # Placeholder
     "SUCCESS",
     "ERROR",
     "SESSION_DESCRIPTION",
+    "SAVE_SESSION",
+    "CREATED_SESSION",
+    "UPDATED_SESSION",
+    "DELETE_SESSION",
+    "DELETED_SESSION",
+    "GET_SESSION_LIST",
     "SESSION_LIST",
+    "CHAT",
+    "CREATE_EXPERIMENT",
+    "CREATED_EXPERIMENT",
+    "JOIN_EXPERIMENT",
+    "START_EXPERIMENT",
+    "STOP_EXPERIMENT",
+    "EXPERIMENT_STARTED",
+    "EXPERIMENT_ENDED",
+    "ADD_NOTE",
+    "KICK_PARTICIPANT",
+    "BAN_PARTICIPANT",
+    "KICK_NOTIFICATION",
+    "BAN_NOTIFICATION",
+    "MUTE",
+    "SET_FILTERS",
 ]
 """Possible message types for custom_types.message.MessageDict.
 
@@ -47,3 +68,28 @@ See Also
 Data Types Wiki :
     https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message
 """
+
+
+def is_valid_messagedict(data) -> bool:
+    """Check if `data` is a valid MessageDict.
+
+    Checks if all required and no unknown keys exist in data as well as the data types
+    of the values.
+
+    Does not check the contents of MessageDict.data / non recursive.
+
+    Parameters
+    ----------
+    data : any
+        Data to perform check on.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid MessageDict.
+    """
+    # Check if all required and only required or optional keys exist in data
+    if not util.check_valid_typeddict_keys(data, MessageDict):
+        return False
+
+    return data["type"] in get_args(MESSAGE_TYPES)

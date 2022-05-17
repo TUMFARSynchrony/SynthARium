@@ -28,16 +28,17 @@ class SuccessDict(TypedDict):
     description: str
 
 
-# TODO define valid types
 SUCCESS_TYPES = Literal[
-    "TO_BE_DEFINED",
     "SAVE_SESSION",
     "DELETE_SESSION",
-    "CREATE_EXPERIMENT",
     "JOIN_EXPERIMENT",
     "START_EXPERIMENT",
     "STOP_EXPERIMENT",
     "ADD_NOTE",
+    "CHAT",
+    "KICK_PARTICIPANT",
+    "BAN_PARTICIPANT",
+    "MUTE",
 ]
 """Possible success types for custom_types.success.SuccessDict.
 

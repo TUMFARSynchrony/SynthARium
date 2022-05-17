@@ -4,6 +4,8 @@ from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
 
+from custom_types.message import MessageDict
+
 from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
@@ -90,6 +92,8 @@ class Hub:
         ------
         ErrorDictException
             If user_type is not "participant" or "experimenter".
+            In case the user_type is participant: If the session or participant was not
+            found or the participant is banned.
         """
         if user_type == "participant":
             answer = await self._handle_offer_participant(
@@ -130,7 +134,8 @@ class Hub:
         Raises
         ------
         ErrorDictException
-            if session_id or participant_id are not defined.
+            if session_id or participant_id are not defined, the session or participant
+            was not found or the participant is banned.
 
         Notes
         -----
@@ -150,7 +155,7 @@ class Hub:
                 code=400, type="INVALID_REQUEST", description="Missing session_id."
             )
 
-        if session_id not in self.experiments.keys():
+        if session_id not in self.experiments:
             print(
                 f"[Hub] WARNING: session {session_id} not found.",
                 f"Participant {participant_id} failed to join",
@@ -160,7 +165,8 @@ class Hub:
             )
 
         experiment = self.experiments[session_id]
-        if not experiment.knows_participant_id(participant_id):
+        participant = experiment.session.participants.get(participant_id)
+        if participant is None:
             print(
                 f"[Hub] WARNING: participant {participant_id} not found in session:",
                 session_id,
@@ -171,8 +177,21 @@ class Hub:
                 description="Participant not found in the given session.",
             )
 
+        if participant.banned:
+            raise ErrorDictException(
+                code=400,
+                type="BANNED_PARTICIPANT",
+                description=(
+                    "You have been banned and can no longer join the experiment."
+                ),
+            )
+
         answer, participant = await _participant.participant_factory(
-            offer, participant_id, experiment
+            offer,
+            participant_id,
+            experiment,
+            participant.muted_video,
+            participant.muted_audio,
         )
         experiment.add_participant(participant)
 
@@ -211,3 +230,16 @@ class Hub:
         experiment = Experiment(session)
         self.experiments[session_id] = experiment
         return experiment
+
+    def send_to_experimenters(self, data: MessageDict):
+        """Send `data` to all connected experimenters.
+
+        Can be used to inform experimenters about changes to sessions.
+
+        Parameters
+        ----------
+        data : custom_types.message.MessageDict
+            Message for the experimenters.
+        """
+        for experimenter in self.experimenters:
+            experimenter.send(data)

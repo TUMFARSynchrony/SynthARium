@@ -34,16 +34,22 @@ class ErrorDict(TypedDict):
     description: str
 
 
-# TODO define valid types
 ERROR_TYPES = Literal[
-    "TO_BE_DEFINED",  # Placeholder
+    "NOT_IMPLEMENTED",
     "INTERNAL_SERVER_ERROR",
     "INVALID_REQUEST",
+    "INVALID_DATATYPE",
     "UNKNOWN_ID",
     "DUPLICATE_ID",
     "UNKNOWN_SESSION",
     "UNKNOWN_EXPERIMENT",
     "UNKNOWN_PARTICIPANT",
+    "UNKNOWN_USER",
+    "BANNED_PARTICIPANT",
+    "SESSION_ALREADY_STARTED",
+    "INVALID_PARAMETER",
+    "NOT_CONNECTED_TO_EXPERIMENT",
+    "EXPERIMENT_RUNNING",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

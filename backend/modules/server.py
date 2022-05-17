@@ -140,7 +140,9 @@ class Server:
             params: dict = (await request.json())["request"]
         except json.JSONDecodeError:
             raise ErrorDictException(
-                code=400, type="INVALID_REQUEST", description="Failed to parse request."
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Failed to parse request.",
             )
 
         # Check if all required keys exist in params
@@ -148,7 +150,7 @@ class Server:
         if params.get("user_type") == "participant":
             required_keys.extend(["session_id", "participant_id"])
 
-        missing_keys = list(filter(lambda key: key not in params.keys(), required_keys))
+        missing_keys = list(filter(lambda key: key not in params, required_keys))
 
         if len(missing_keys) > 0:
             raise ErrorDictException(
