@@ -1,0 +1,52 @@
+{
+    "id": "bbbef1d7d0",
+    "title": "CONNECTION TEST SESSION",
+    "date": 1650380763073,
+    "record": false,
+    "time_limit": 300,
+    "description": "Test session for testing backend - frontend communication.",
+    "end_time": 1652818738337,
+    "start_time": 1652818690828,
+    "notes": [],
+    "participants": [
+        {
+            "id": "ef798c85d5",
+            "first_name": "Max",
+            "last_name": "Mustermann",
+            "banned": false,
+            "size": {
+                "width": 250,
+                "height": 250
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 30
+            },
+            "chat": [],
+            "filters": []
+        },
+        {
+            "id": "2c5ad8f231",
+            "first_name": "Erika",
+            "last_name": "Mustermann",
+            "banned": false,
+            "size": {
+                "width": 250,
+                "height": 250
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 100,
+                "y": 200,
+                "z": 300
+            },
+            "chat": [],
+            "filters": []
+        }
+    ],
+    "log": []
+}
