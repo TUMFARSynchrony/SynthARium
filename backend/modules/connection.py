@@ -1,6 +1,6 @@
 """Provide the `Connection` class."""
 
-import json
+from __future__ import annotations
 from typing import Any, Callable, Coroutine, Tuple
 from aiortc import (
     RTCPeerConnection,
@@ -8,6 +8,9 @@ from aiortc import (
     RTCSessionDescription,
     MediaStreamTrack,
 )
+import json
+
+from modules.util import generate_unique_id
 
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict, is_valid_messagedict
@@ -41,6 +44,8 @@ class Connection:
     _incoming_audio: MediaStreamTrack | None  # AudioStreamTrack ?
     _incoming_video: MediaStreamTrack | None  # VideoStreamTrack ?
 
+    _sub_connections: dict[str, SubConnection]
+
     def __init__(
         self,
         pc: RTCPeerConnection,
@@ -64,6 +69,7 @@ class Connection:
         connection_factory : use to create new Connection and answer for an WebRTC
             offer.
         """
+        self._sub_connections = {}
         self._main_pc = pc
         self._message_handler = message_handler
         self._incoming_audio = None
@@ -101,11 +107,55 @@ class Connection:
         """Get incoming video track."""
         return self._incoming_video
 
-    def add_outgoing_stream(
+    async def add_outgoing_stream(
         self, video_track: MediaStreamTrack, audio_track: MediaStreamTrack
     ):
         """TODO document"""
-        pass
+        id = generate_unique_id(list(self._sub_connections.keys()))
+        sc = SubConnection(id, self, video_track, audio_track)
+        self._sub_connections[id] = sc
+
+    async def _handle_connection_answer_message(self, data):
+        """TODO document - handle incoming CONNECTION_ANSWER messages."""
+        print("[Connection] received CONNECTION_ANSWER.")
+        if not self._is_valid_connection_answer(data):
+            # TODO error handling
+            print("[Connection] received invalid CONNECTION_ANSWER.")
+            return
+
+        id = data["id"]
+        answer = data["answer"]
+
+        sc = self._sub_connections.get(id)
+        if sc is None:
+            # TODO error handling
+            print(f"[Connection] no SubConnection found for ID: {id}.")
+            return
+
+        try:
+            answer_desc = RTCSessionDescription(sdp=answer["sdp"], type=answer["type"])
+        except ValueError as err:
+            # TODO error handling
+            print("[Connection] Failed to parse CONNECTION_ANSWER,", err)
+            return
+
+        await sc.handle_answer(answer_desc)
+
+    def _is_valid_connection_answer(self, data) -> bool:
+        """TODO document"""
+        return (
+            # Check contents of data
+            isinstance(data, dict)
+            and "answer" in data
+            and "type" in data
+            # Check contents of answer
+            and isinstance(data["answer"], dict)
+            and "sdp" in data["answer"]
+            and "type" in data["answer"]
+            # No unwanted keys?
+            and len(data) == 2
+            and len(data["answer"]) == 2
+        )
 
     def _on_datachannel(self, channel: RTCDataChannel):
         """Handle new incoming datachannel.
@@ -119,7 +169,7 @@ class Connection:
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
 
-    async def _parse_and_handle_message(self, message: str):
+    async def _parse_and_handle_message(self, message: Any):
         """Handle incoming datachannel message.
 
         Checks if message is a valid string containting a
@@ -128,21 +178,21 @@ class Connection:
 
         Parameters
         ----------
-        message : str
-            Incoming data channel message.
+        message : Any
+            Incoming data channel message.  Ignored if type is not str.
         """
         if not isinstance(message, str):
             return
 
         try:
-            message_obj = json.loads(message)
+            message_dict = json.loads(message)
         except Exception as err:
             print("[Connection] Failed to parse message.", err)
             # Send error response in following if statement.
-            message_obj = None
+            message_dict = None
 
         # Handle invalid message type
-        if message_obj is None or not is_valid_messagedict(message_obj):
+        if message_dict is None or not is_valid_messagedict(message_dict):
             print("[Connection] Received message with invalid type.", message)
             err = ErrorDict(
                 type="INVALID_REQUEST",
@@ -153,8 +203,12 @@ class Connection:
             self.send(response)
             return
 
+        if message_dict["type"] == "CONNECTION_ANSWER":
+            await self._handle_connection_answer_message(message_dict["data"])
+            return
+
         # Pass message to message handler in user.
-        await self._message_handler(message_obj)
+        await self._message_handler(message_dict)
 
     def _on_connection_state_change(self):
         """Handle connection state change for `_main_pc`."""
@@ -184,6 +238,53 @@ class Connection:
         def on_ended():
             """Handles tracks ended event."""
             print("[Connection] Track ended:", track.kind)
+
+
+class SubConnection:
+    """TODO document"""
+
+    id: str
+    connection: Connection
+    pc: RTCPeerConnection
+
+    _audio_track: MediaStreamTrack  # AudioStreamTrack ?
+    _video_track: MediaStreamTrack  # VideoStreamTrack ?
+
+    async def __init__(
+        self,
+        id: str,
+        connection: Connection,
+        video_track: MediaStreamTrack,
+        audio_track: MediaStreamTrack,
+    ) -> None:
+        """TODO document"""
+        self.id = id
+        self.connection = connection
+        self._audio_track = audio_track
+        self._video_track = video_track
+
+        self.pc = RTCPeerConnection()
+        self.pc.addTrack(video_track)
+        self.pc.addTrack(audio_track)
+
+        offer = await self.pc.createOffer()
+        await self.pc.setLocalDescription(offer)
+
+        message = MessageDict(
+            type="CONNECTION_OFFER",
+            data={
+                "id": id,
+                "offer": {
+                    "sdp": self.pc.localDescription.sdp,
+                    "type": self.pc.localDescription.type,
+                },
+            },
+        )
+        connection.send(message)
+
+    async def handle_answer(self, answer: RTCSessionDescription):
+        """TODO document"""
+        await self.pc.setRemoteDescription(answer)
 
 
 async def connection_factory(
