@@ -157,7 +157,7 @@ class Hub:
 
         if session_id not in self.experiments:
             print(
-                f"[Hub] WARNING: session {session_id} not found.",
+                f"[Hub] WARNING: No experiment for session ID {session_id} found.",
                 f"Participant {participant_id} failed to join",
             )
             raise ErrorDictException(
