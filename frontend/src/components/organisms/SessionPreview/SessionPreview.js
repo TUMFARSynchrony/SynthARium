@@ -4,6 +4,10 @@ import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
 function SessionPreview({ onDeleteSession, sessionInformation }) {
+  const deleteSession = () => {
+    onDeleteSession(sessionInformation.id);
+  };
+
   return (
     <div className="sessionPreviewContainer">
       <div className="sessionPreviewHeader">
@@ -41,7 +45,7 @@ function SessionPreview({ onDeleteSession, sessionInformation }) {
         <Button
           name={"DELETE"}
           design={"negative"}
-          onClick={() => onDeleteSession(sessionInformation.id)}
+          onClick={() => deleteSession()}
         />
       </>
     </div>

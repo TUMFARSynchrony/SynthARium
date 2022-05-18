@@ -7,8 +7,8 @@ import SessionPreview from "../../components/organisms/SessionPreview/SessionPre
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
-function SessionOverview({ sessions, onDeleteSession }) {
-  var sessionCards = sessions;
+function SessionOverview({ sessionsList, onDeleteSession }) {
+  var sessionCards = sessionsList;
 
   const [selectedSession, setSelectedSession] = useState(
     sessionCards?.length !== 0 ? sessionCards[0] : {}

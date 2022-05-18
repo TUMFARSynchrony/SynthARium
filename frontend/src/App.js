@@ -6,7 +6,7 @@ import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import { useEffect, useState } from "react";
-import { getLocalStream } from "./utils/utils";
+import { filterListById, getLocalStream } from "./utils/utils";
 import Connection from "./networking/Connection";
 import Heading from "./components/atoms/Heading/Heading";
 
@@ -34,6 +34,7 @@ function App() {
 
   useEffect(() => {
     if (connection) {
+      connection.messageHandler = messageHandler;
       // Return if connection was already established
       return;
     }
@@ -76,15 +77,13 @@ function App() {
     if (message.type === "SESSION_LIST") {
       setSessionsList(message.data);
       setSessionsLoaded(true);
-    } else if (message.type === "SUCCESS") {
-      if (message.data.type === "DELETE_SESSION") {
-        // connection.sendRequest("GET_SESSION_LIST", {});
-      }
+    } else if (message.type === "DELETED_SESSION") {
+      let newSessionsList = filterListById(sessionsList, message.data);
+      setSessionsList(newSessionsList);
     }
   };
 
   const onDeleteSession = (sessionId) => {
-    console.log("ON DELETE");
     if (!connection) {
       return;
     }
@@ -108,7 +107,7 @@ function App() {
               path="/"
               element={
                 <SessionOverview
-                  sessions={sessionsList}
+                  sessionsList={sessionsList}
                   onDeleteSession={onDeleteSession}
                 />
               }

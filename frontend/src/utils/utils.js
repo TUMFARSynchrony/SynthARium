@@ -15,6 +15,14 @@ export const filterListByIndex = (list, index) => {
   return filteredList;
 };
 
+export const filterListById = (list, id) => {
+  let filteredList = list.filter((obj) => {
+    return obj.id !== id;
+  });
+
+  return filteredList;
+};
+
 export const integerToDateTime = (integerDate) => {
   return new Date(integerDate).toLocaleString();
 };
