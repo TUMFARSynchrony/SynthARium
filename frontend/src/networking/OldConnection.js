@@ -29,7 +29,7 @@ export default class Connection {
     await this.#negotiate();
   }
 
-  stop() {}
+  stop() { }
 
   sendRequest(type, data) {
     const message = JSON.stringify({ type: type, data: data });
