@@ -16,7 +16,7 @@ export default class Connection {
   readonly connectionStateChange: SimpleEventHandler<ConnectionState>;
   readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
 
-  readonly sessionId: string;
+  readonly sessionId?: string;
   readonly participantId?: string;
   readonly userType: "participant" | "experimenter";
 
@@ -30,9 +30,9 @@ export default class Connection {
   private dc: RTCDataChannel;
 
 
-  constructor(userType: "participant" | "experimenter", sessionId: string, participantId?: string) {
-    if (userType === "participant" && !participantId) {
-      throw new Error("[Connection] userType participant requires the participantId to be defined.");
+  constructor(userType: "participant" | "experimenter", sessionId?: string, participantId?: string) {
+    if (userType === "participant" && (!participantId || !sessionId)) {
+      throw new Error("[Connection] userType participant requires the participantId and sessionId to be defined.");
     }
     this.sessionId = sessionId;
     this.participantId = participantId;

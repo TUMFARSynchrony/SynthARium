@@ -27,10 +27,10 @@ function App() {
     };
 
     // request local stream if requireLocalStream and localStream was not yet requested. 
-    if (userType === "participant" && !localStream) {
+    if (connection.userType === "participant" && !localStream) {
       asyncStreamHelper();
     }
-  }, [localStream]);
+  }, [localStream, connection]);
 
   return (
     <div className="App">
@@ -46,7 +46,7 @@ function App() {
           <Route exact path="/watchingRoom" element={<WatchingRoom />} />
           <Route exact path="/sessionForm" element={<SessionForm />} />
           <Route exact path="/connectionTest" element={
-            <ConnectionTest localStream={localStream} connection={connection} />
+            <ConnectionTest localStream={localStream} connection={connection} setConnection={setConnection} />
           } />
         </Routes>
       </Router>

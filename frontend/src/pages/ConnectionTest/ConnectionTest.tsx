@@ -3,11 +3,13 @@ import { useRef, useEffect, useState } from "react";
 
 import "./ConnectionTest.css";
 import Connection, { ConnectionState } from "../../networking/Connection";
+import InputField from "../../components/atoms/InputField/InputField";
 
 
 const ConnectionTest = (props: {
   localStream?: MediaStream,
-  connection: Connection;
+  connection: Connection,
+  setConnection: (connection: Connection) => void,
 }) => {
   const connection = props.connection;
   const [connectionState, setConnectionState] = useState(connection.state);
@@ -39,6 +41,7 @@ const ConnectionTest = (props: {
       </p>
       <button onClick={() => connection.start(props.localStream)} disabled={connection.state !== ConnectionState.NOT_STARTED}>Start Connection</button>
       <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
+      {connection.state === ConnectionState.NOT_STARTED ? <ReplaceConnection connection={connection} setConnection={props.setConnection} /> : ""}
       <div className="ownStreams">
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} />
         <Video title="remote stream" srcObject={connection.remoteStream} />
@@ -97,6 +100,59 @@ function PrettyJson(props: { json: any; }) {
   );
 }
 
+function ReplaceConnection(props: {
+  connection: Connection,
+  setConnection: (connection: Connection) => void,
+}) {
+  const [userType, setUserType] = useState<"participant" | "experimenter">(props.connection.userType);
+  const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
+  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const connection = new Connection(userType, sessionId, participantId);
+    props.setConnection(connection);
+    console.log("Updated connection");
+  };
+
+  const info = "Replace connection before connecting to change the user type, session id or participant id";
+
+  return (
+    <div className="replaceConnectionWrapper">
+      <span title={info}>Replace Connection:</span>
+      <form onSubmit={handleSubmit} className="replaceConnectionForm">
+        <label>Type:&nbsp;&nbsp;
+          <select
+            defaultValue={props.connection.userType}
+            onChange={(e) => setUserType(e.target.value as "participant" | "experimenter")}
+          >
+            <option value="participant">Participant</option>
+            <option value="experimenter">Experimenter</option>
+          </select>
+        </label>
+        {
+          userType === "participant" ? <>
+            <label>Session ID:&nbsp;&nbsp;
+              <input
+                type="text"
+                onChange={(e) => setSessionId(e.target.value)}
+                defaultValue={props.connection.sessionId}
+              />
+            </label>
+            <label>ParticipantID:&nbsp;&nbsp;
+              <input
+                type="text"
+                onChange={(e) => setParticipantId(e.target.value)}
+                defaultValue={props.connection.participantId}
+              />
+            </label>
+          </> : ""
+        }
+        <input type="submit" value="Apply" />
+      </form>
+    </div>
+  );
+}
 
 function Video(props: {
   title: string;

@@ -61,21 +61,21 @@ video {
 	padding: 0 5px;
 }
 
-.connectionState.NotStarted {
+.connectionState.NOT_STARTED {
 	background-color: greenyellow;
 }
 
-.connectionState.Connecting {
+.connectionState.CONNECTING {
 	background-color: lightblue;
 }
 
-.connectionState.Connected {
+.connectionState.CONNECTED {
 	background-color: green;
 	color: white;
 }
 
-.connectionState.Disconnected,
-.connectionState.Failed {
+.connectionState.DISCONNECTED,
+.connectionState.FAILED {
 	background-color: red;
 	color: white;
 }
@@ -115,4 +115,31 @@ video {
 	display: inline-block;
 	text-align: left;
 	white-space: pre-wrap;
+}
+
+/* ReplaceConnection Component */
+.replaceConnectionWrapper {
+	display: flex;
+	justify-content: center;
+	background-color: antiquewhite;
+}
+
+.replaceConnectionWrapper span {
+	margin: .4rem;
+	font-weight: bold;
+}
+
+.replaceConnectionForm,
+.replaceConnectionForm label {
+	padding: 5px;
+}
+
+.replaceConnectionForm select,
+.replaceConnectionForm input {
+	padding: 4px;
+	border-radius: 5px;
+}
+
+.replaceConnectionForm input {
+	border: 1px solid black
 }
