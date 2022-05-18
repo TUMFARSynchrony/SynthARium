@@ -3,11 +3,11 @@ import { SimpleEventHandler, ApiHandler } from "./ConnectionEvents";
 import { isValidMessage, Message } from "./Message";
 
 export enum ConnectionState {
-  NotStarted,
-  Connecting,
-  Connected,
-  Disconnected,
-  Failed
+  NOT_STARTED,
+  CONNECTING,
+  CONNECTED,
+  DISCONNECTED,
+  FAILED
 }
 
 export default class Connection {
@@ -37,7 +37,7 @@ export default class Connection {
     this.sessionId = sessionId;
     this.participantId = participantId;
     this.userType = userType;
-    this._state = ConnectionState.NotStarted;
+    this._state = ConnectionState.NOT_STARTED;
     this._remoteStream = new MediaStream();
 
     this.api = new ApiHandler();
@@ -60,11 +60,11 @@ export default class Connection {
     if (!localStream && this.userType === "participant") {
       throw new Error("Connection.start(): localStream is required for user type participant.");
     }
-    if (this._state !== ConnectionState.NotStarted) {
+    if (this._state !== ConnectionState.NOT_STARTED) {
       throw new Error(`Connection.start(): cannot start Connection, state is: ${ConnectionState[this._state]}`);
     }
     this.localStream = localStream;
-    this.setState(ConnectionState.Connecting);
+    this.setState(ConnectionState.CONNECTING);
 
     // Add localStream to peer connection
     console.log("[Connection] Stating -- Adding localStream:", this.localStream);
@@ -77,7 +77,7 @@ export default class Connection {
   }
 
   public stop() {
-    this.setState(ConnectionState.Disconnected);
+    this.setState(ConnectionState.DISCONNECTED);
 
     if (!this.mainPc || this.mainPc.connectionState === "closed") return;
 
@@ -106,7 +106,7 @@ export default class Connection {
   }
 
   public sendMessage(endpoint: string, data: any) {
-    if (this._state !== ConnectionState.Connected) {
+    if (this._state !== ConnectionState.CONNECTED) {
       throw Error(`[Connection] Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
     }
     const message: Message = {
@@ -169,7 +169,7 @@ export default class Connection {
     };
     this.dc.onopen = (_) => {
       console.log("[Connection] datachannel onopen");
-      this.setState(ConnectionState.Connected);
+      this.setState(ConnectionState.CONNECTED);
     };
     this.dc.onmessage = this.handleDcMessage.bind(this);
   }
@@ -246,13 +246,13 @@ export default class Connection {
       });
     } catch (error) {
       console.error("[Connection] Failed to connect to backend.", error.message);
-      this.setState(ConnectionState.Failed);
+      this.setState(ConnectionState.FAILED);
       return;
     }
 
     if (!response.ok) {
       console.error("[Connection] Failed to connect to backend. Response not ok");
-      this.setState(ConnectionState.Failed);
+      this.setState(ConnectionState.FAILED);
       return;
     }
 

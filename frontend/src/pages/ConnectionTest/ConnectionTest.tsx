@@ -37,8 +37,8 @@ const ConnectionTest = (props: {
       <p>Connection State:
         <span className={`connectionState ${ConnectionState[connectionState]}`}>{ConnectionState[connectionState]}</span>
       </p>
-      <button onClick={() => connection.start(props.localStream)} disabled={connection.state !== ConnectionState.NotStarted}>Start Connection</button>
-      <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.Connected}>Stop Connection</button>
+      <button onClick={() => connection.start(props.localStream)} disabled={connection.state !== ConnectionState.NOT_STARTED}>Start Connection</button>
+      <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
       <div className="ownStreams">
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} />
         <Video title="remote stream" srcObject={connection.remoteStream} />
