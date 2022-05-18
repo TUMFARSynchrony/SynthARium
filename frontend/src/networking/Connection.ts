@@ -5,7 +5,8 @@ export enum ConnectionState {
   NotStarted,
   Connecting,
   Connected,
-  Disconnected
+  Disconnected,
+  Failed
 }
 
 export default class Connection {
@@ -218,11 +219,13 @@ export default class Connection {
       });
     } catch (error) {
       console.error("[Connection] Failed to connect to backend.", error.message);
+      this.setState(ConnectionState.Failed);
       return;
     }
 
     if (!response.ok) {
       console.error("[Connection] Failed to connect to backend. Response not ok");
+      this.setState(ConnectionState.Failed);
       return;
     }
 
