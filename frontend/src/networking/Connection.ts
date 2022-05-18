@@ -1,6 +1,6 @@
 import { BACKEND } from "../utils/constants";
 import { SimpleEventHandler, ApiHandler } from "./ConnectionEvents";
-import { isValidMessage } from "./Message";
+import { isValidMessage, Message } from "./Message";
 
 export enum ConnectionState {
   NotStarted,
@@ -105,6 +105,18 @@ export default class Connection {
     }, 500);
   }
 
+  public sendMessage(endpoint: string, data: any) {
+    if (this._state !== ConnectionState.Connected) {
+      throw Error(`[Connection] Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
+    }
+    const message: Message = {
+      type: endpoint,
+      data: data
+    };
+    const stringified = JSON.stringify(message);
+    this.dc.send(stringified);
+  }
+
   private setState(state: ConnectionState): void {
     this._state = state;
     this.connectionStateChange.trigger(state);
@@ -159,23 +171,23 @@ export default class Connection {
       console.log("[Connection] datachannel onopen");
       this.setState(ConnectionState.Connected);
     };
-    this.dc.onmessage = this.handleDcMessage;
+    this.dc.onmessage = this.handleDcMessage.bind(this);
   }
 
-  private handleDcMessage(message: MessageEvent<any>) {
-    let messageObj;
+  private handleDcMessage(e: MessageEvent<any>) {
+    let message;
     try {
-      messageObj = JSON.parse(message.data);
+      message = JSON.parse(e.data);
     } catch (error) {
       console.error("[Connection] Failed to parse datachannel message received from the server.");
       return;
     }
-    if (!isValidMessage(messageObj)) {
-      console.error("[Connection] Received invalid message.", messageObj);
+    if (!isValidMessage(message)) {
+      console.error("[Connection] Received invalid message.", message);
       return;
     }
-    console.log("[Connection] Received", messageObj);
-    this.api.trigger(messageObj.type, messageObj.data);
+    console.log("[Connection] Received", message);
+    this.api.trigger(message.type, message.data);
   }
 
   private async negotiate() {

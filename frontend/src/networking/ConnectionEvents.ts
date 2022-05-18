@@ -20,7 +20,7 @@ export class SimpleEventHandler<T> {
 	}
 }
 
-export type ApiHandlerFunction = (endpoint: string, data?: any) => void;
+export type ApiHandlerFunction = (data: any) => void;
 
 export class ApiHandler {
 	private handlers: Map<string, ApiHandlerFunction[]>;
