@@ -11,7 +11,7 @@ import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 
 function App() {
-  const userType = "participant" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
+  const userType = "experimenter" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
   const sessionId = "bbbef1d7d0";
   const participantId = "ef798c85d5";
 

@@ -1,3 +1,38 @@
+.ConnectionTestPageWrapper button {
+	background-color: hsl(212, 86%, 64%);
+	border: 3px solid hsl(212, 86%, 64%);
+	padding: .4rem .6em;
+	text-align: center;
+	font-size: 14px;
+	color: white;
+	border-radius: 4px;
+	text-transform: uppercase;
+	margin: .3rem;
+	cursor: pointer;
+	transition: color .3s, background-color .3s, border-color .3s;
+}
+
+.ConnectionTestPageWrapper button.secondary {
+	background-color: transparent;
+	color: black;
+}
+
+.ConnectionTestPageWrapper button.secondary:hover {
+	background-color: hsl(212, 86%, 64%);
+	color: white;
+}
+
+.ConnectionTestPageWrapper button:not(.secondary):not(:disabled):hover {
+	background-color: hsl(212, 79%, 69%);
+	border-color: hsl(212, 86%, 64%);
+}
+
+.ConnectionTestPageWrapper button:disabled {
+	background-color: hsl(212, 83%, 77%);
+	border-color: hsl(212, 83%, 77%);
+	cursor: auto;
+}
+
 video {
 	max-width: 100vw;
 }
@@ -43,4 +78,41 @@ video {
 .connectionState.Failed {
 	background-color: red;
 	color: white;
+}
+
+/* ApiTests Component */
+.requestButtons {
+	margin-bottom: 10px;
+}
+
+.basicTabs,
+.requestButtons {
+	display: flex;
+	justify-content: center;
+	align-items: stretch;
+}
+
+.basicTabs button {
+	margin: 3px;
+}
+
+.basicTabs .tabsTitle {
+	padding-top: 8px;
+	padding-right: 8px;
+	font-weight: bold;
+}
+
+/* PrettyJson Component */
+.prettyJson {
+	background-color: beige;
+	border: 3px solid rgb(192, 192, 172);
+	border-radius: 5px;
+	margin: 4px 8px;
+}
+
+.prettyJson pre {
+	width: 100%;
+	display: inline-block;
+	text-align: left;
+	white-space: pre-wrap;
 }
