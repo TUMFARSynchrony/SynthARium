@@ -56,11 +56,11 @@ class Hub:
     async def stop(self):
         """Stop the hub, close all connection and stop the server."""
         print("[Hub] stopping")
+        for experiment in self.experiments.values():
+            experiment.stop()
         tasks = [self.server.stop()]
         for experimenter in self.experimenters:
             tasks.append(experimenter.disconnect())
-        for experiment in self.experiments.values():
-            experiment.stop()
 
         await asyncio.gather(*tasks)
 
