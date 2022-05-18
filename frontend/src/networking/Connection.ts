@@ -1,5 +1,6 @@
 import { BACKEND } from "../utils/constants";
-import SimpleEventHandler from "./ConnectionEvents";
+import { SimpleEventHandler, ApiHandler } from "./ConnectionEvents";
+import { isValidMessage } from "./Message";
 
 export enum ConnectionState {
   NotStarted,
@@ -11,15 +12,16 @@ export enum ConnectionState {
 
 export default class Connection {
   // Event handlers
-  public connectionStateChange: SimpleEventHandler<ConnectionState>;
-  public remoteStreamChange: SimpleEventHandler<MediaStream>;
+  readonly api: ApiHandler;
+  readonly connectionStateChange: SimpleEventHandler<ConnectionState>;
+  readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
 
   readonly sessionId: string;
   readonly participantId?: string;
   readonly userType: "participant" | "experimenter";
 
   // Private variables
-  private _state: ConnectionState
+  private _state: ConnectionState;
 
   private localStream: MediaStream;
   private _remoteStream: MediaStream;
@@ -38,6 +40,7 @@ export default class Connection {
     this._state = ConnectionState.NotStarted;
     this._remoteStream = new MediaStream();
 
+    this.api = new ApiHandler();
     this.remoteStreamChange = new SimpleEventHandler();
     this.connectionStateChange = new SimpleEventHandler();
 
@@ -46,11 +49,11 @@ export default class Connection {
   }
 
   public get remoteStream(): MediaStream {
-    return this._remoteStream
+    return this._remoteStream;
   }
 
   public get state(): ConnectionState {
-    return this._state
+    return this._state;
   }
 
   public async start(localStream?: MediaStream) {
@@ -61,7 +64,7 @@ export default class Connection {
       throw new Error(`Connection.start(): cannot start Connection, state is: ${ConnectionState[this._state]}`);
     }
     this.localStream = localStream;
-    this.setState(ConnectionState.Connecting)
+    this.setState(ConnectionState.Connecting);
 
     // Add localStream to peer connection
     console.log("[Connection] Stating -- Adding localStream:", this.localStream);
@@ -148,19 +151,31 @@ export default class Connection {
 
   private initDataChannel() {
     this.dc = this.mainPc.createDataChannel("API");
-    this.dc.onclose = (e) => {
+    this.dc.onclose = (_) => {
       console.log("[Connection] datachannel onclose");
       this.stop();
     };
-    this.dc.onopen = (e) => {
+    this.dc.onopen = (_) => {
       console.log("[Connection] datachannel onopen");
       this.setState(ConnectionState.Connected);
     };
-    this.dc.onmessage = (e) => {
-      const msgObj = JSON.parse(e.data);
-      console.log("[Connection] Received", msgObj);
-      // TODO
-    };
+    this.dc.onmessage = this.handleDcMessage;
+  }
+
+  private handleDcMessage(message: MessageEvent<any>) {
+    let messageObj;
+    try {
+      messageObj = JSON.parse(message.data);
+    } catch (error) {
+      console.error("[Connection] Failed to parse datachannel message received from the server.");
+      return;
+    }
+    if (!isValidMessage(messageObj)) {
+      console.error("[Connection] Received invalid message.", messageObj);
+      return;
+    }
+    console.log("[Connection] Received", messageObj);
+    this.api.trigger(messageObj.type, messageObj.data);
   }
 
   private async negotiate() {
