@@ -16,6 +16,11 @@ from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict, is_valid_messagedict
+from custom_types.connection_messages import is_valid_connection_answer_dict
+from custom_types.connection_messages import (
+    ConnectionOfferDict,
+    RTCSessionDescriptionDict,
+)
 
 
 class Connection:
@@ -139,7 +144,7 @@ class Connection:
     async def _handle_connection_answer_message(self, data):
         """TODO document - handle incoming CONNECTION_ANSWER messages."""
         print("[Connection] received CONNECTION_ANSWER.")
-        if not self._is_valid_connection_answer(data):
+        if not is_valid_connection_answer_dict(data):
             # TODO error handling
             print("[Connection] received invalid CONNECTION_ANSWER.")
             return
@@ -161,22 +166,6 @@ class Connection:
             return
 
         await sc.handle_answer(answer_desc)
-
-    def _is_valid_connection_answer(self, data) -> bool:
-        """TODO document"""
-        return (
-            # Check contents of data
-            isinstance(data, dict)
-            and "answer" in data
-            and "type" in data
-            # Check contents of answer
-            and isinstance(data["answer"], dict)
-            and "sdp" in data["answer"]
-            and "type" in data["answer"]
-            # No unwanted keys?
-            and len(data) == 2
-            and len(data["answer"]) == 2
-        )
 
     async def _on_datachannel(self, channel: RTCDataChannel):
         """Handle new incoming datachannel.
@@ -305,16 +294,11 @@ class SubConnection:
         offer = await self.pc.createOffer()
         await self.pc.setLocalDescription(offer)
 
-        message = MessageDict(
-            type="CONNECTION_OFFER",
-            data={
-                "id": self.id,
-                "offer": {
-                    "sdp": self.pc.localDescription.sdp,
-                    "type": self.pc.localDescription.type,
-                },
-            },
+        offer = RTCSessionDescriptionDict(
+            sdp=self.pc.localDescription.sdp, type=self.pc.localDescription.type  # type: ignore
         )
+        connection_offer = ConnectionOfferDict(id=self.id, offer=offer)
+        message = MessageDict(type="CONNECTION_OFFER", data=connection_offer)
         self.connection.send(message)
 
     async def handle_answer(self, answer: RTCSessionDescription):
