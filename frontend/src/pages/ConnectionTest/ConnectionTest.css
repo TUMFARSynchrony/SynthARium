@@ -90,6 +90,7 @@ video {
 	display: flex;
 	justify-content: center;
 	align-items: stretch;
+	flex-wrap: wrap;
 }
 
 .basicTabs button {
@@ -100,6 +101,20 @@ video {
 	padding-top: 8px;
 	padding-right: 8px;
 	font-weight: bold;
+}
+
+.inputBtnBox {
+	display: flex;
+	background-color: antiquewhite;
+	padding: 2px;
+	border-radius: 5px;
+	margin-right: 5px;
+	margin-top: 5px;
+}
+
+.inputBtnBox input {
+	margin: .3rem 0 .3rem 5px;
+	width: 80px;
 }
 
 /* PrettyJson Component */

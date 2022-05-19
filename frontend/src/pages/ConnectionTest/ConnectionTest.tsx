@@ -66,19 +66,37 @@ const ConnectionTest = (props: {
 export default ConnectionTest;
 
 
-function ApiTests(props: { connection: Connection, }): JSX.Element {
+function ApiTests(props: { connection: Connection; }): JSX.Element {
   const [responses, setResponses] = useState<{ endpoint: string, data: string; }[]>([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
+  const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
+  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
+
   useEffect(() => {
-    const sessionListHandler = async (data: any) => {
-      setResponses([...responses, { endpoint: "SESSION_LIST", data: data }]);
+    const saveGenericApiResponse = async (endpoint: string, response_Data: any) => {
+      // Add message received by api to responses and reset highlightedResponse  
+      setResponses([{ endpoint: endpoint, data: response_Data }, ...responses]);
       setHighlightedResponse(0);
     };
 
-    props.connection.api.on("SESSION_LIST", sessionListHandler);
+    const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
+    const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
+    const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
+    const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
+    const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
+
+    props.connection.api.on("SESSION_LIST", handleSessionList);
+    props.connection.api.on("SUCCESS", handleSuccess);
+    props.connection.api.on("ERROR", handleError);
+    props.connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
+    props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
 
     return () => {
-      props.connection.api.off("SESSION_LIST", sessionListHandler);
+      props.connection.api.off("SESSION_LIST", handleSessionList);
+      props.connection.api.off("SUCCESS", handleSuccess);
+      props.connection.api.off("ERROR", handleError);
+      props.connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
+      props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
     };
   }, [props.connection.api, responses]);
 
@@ -89,8 +107,54 @@ function ApiTests(props: { connection: Connection, }): JSX.Element {
           onClick={() => props.connection.sendMessage("GET_SESSION_LIST", {})}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          Request Sessions
+          GET_SESSION_LIST
         </button>
+        <button
+          onClick={() => props.connection.sendMessage("STOP_EXPERIMENT", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          STOP_EXPERIMENT
+        </button>
+        <div className="inputBtnBox">
+          <input
+            type="text"
+            placeholder="Session ID"
+            onChange={(e) => setSessionId(e.target.value)}
+            value={sessionId}
+          />
+          <button
+            onClick={() => props.connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId })}
+            disabled={props.connection.state !== ConnectionState.CONNECTED}
+          >
+            CREATE_EXPERIMENT
+          </button>
+          <button
+            onClick={() => props.connection.sendMessage("JOIN_EXPERIMENT", { session_id: sessionId })}
+            disabled={props.connection.state !== ConnectionState.CONNECTED}
+          >
+            JOIN_EXPERIMENT
+          </button>
+        </div>
+        <div className="inputBtnBox">
+          <input
+            type="text"
+            placeholder="Participant ID"
+            onChange={(e) => setParticipantId(e.target.value)}
+            value={participantId}
+          />
+          <button
+            onClick={() => props.connection.sendMessage("KICK_PARTICIPANT", { participant_id: participantId, reason: "Testing." })}
+            disabled={props.connection.state !== ConnectionState.CONNECTED}
+          >
+            KICK_PARTICIPANT
+          </button>
+          <button
+            onClick={() => props.connection.sendMessage("BAN_PARTICIPANT", { participant_id: participantId, reason: "Testing." })}
+            disabled={props.connection.state !== ConnectionState.CONNECTED}
+          >
+            BAN_PARTICIPANT
+          </button>
+        </div>
       </div>
       <div className="basicTabs">
         <span className="tabsTitle">Responses:</span>
