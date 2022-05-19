@@ -205,6 +205,16 @@ class Hub:
                 ),
             )
 
+        if participant_id in experiment.participants:
+            raise ErrorDictException(
+                code=409,
+                type="PARTICIPANT_ALREADY_CONNECTED",
+                description=(
+                    "You are already connected to the experiment. Participants can not "
+                    "have multiple simultaneous connections."
+                ),
+            )
+
         answer, participant = await _participant.participant_factory(
             offer,
             participant_id,
