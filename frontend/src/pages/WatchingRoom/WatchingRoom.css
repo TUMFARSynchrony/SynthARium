@@ -1,0 +1,17 @@
+.watchingRoomContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.watchingRoomHeader {
+    background-color: hsl(212, 86%, 64%);
+}
+
+.watchingRoomHeader > h2 {
+    font-weight: 400;
+    font-size:xx-large;
+    color: white;
+    margin: 0;
+    text-align: left;
+    margin-left: 0.5em;
+}
