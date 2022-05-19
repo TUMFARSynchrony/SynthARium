@@ -64,6 +64,25 @@ class Hub:
 
         await asyncio.gather(*tasks)
 
+    def remove_experimenter(self, experimenter: _experimenter.Experimenter):
+        """Remove an experimenter from this hub.
+
+        Should be used when a experimenter connection is closed or failed.
+
+        Does not close the connection on the experimenter or remove it from experiments.
+
+        Parameters
+        ----------
+        experimenter : modules.experimenter.Experimenter
+            Experimenter that will be removed from the hub
+
+        Raises
+        ------
+        ValueError
+            If the given `experimenter` is not part of this experiment.
+        """
+        self.experimenters.remove(experimenter)
+
     async def handle_offer(
         self,
         offer: RTCSessionDescription,

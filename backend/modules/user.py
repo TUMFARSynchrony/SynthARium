@@ -7,12 +7,13 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 """
 
 from __future__ import annotations
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Callable, Any, Coroutine
 
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 from modules.exceptions import ErrorDictException
+from modules.connection_state import ConnectionState
 import modules.connection as _connection
 
 
@@ -77,6 +78,7 @@ class User(ABC):
         modules.experimenter.Experimenter : Experimenter implementation of User.
         """
         self._connection = connection
+        self._connection.state_change.on(self._handle_connection_state_change)
 
     def send(self, message: MessageDict):
         """Send a custom_types.message.MessageDict to the connected client.
@@ -159,3 +161,7 @@ class User(ABC):
 
             if response is not None:
                 self.send(response)
+
+    @abstractmethod
+    async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        pass

@@ -24,6 +24,7 @@ from custom_types.session_id_request import (
     is_valid_session_id_request,
 )
 
+from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
@@ -61,7 +62,7 @@ class Experimenter(User):
         experimenter_factory : Instantiate connection with a new Experimenter based on
             WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
         """
-        super().__init__(id)
+        super(Experimenter, self).__init__(id)
         self._hub = hub
         self._experiment = None
 
@@ -79,6 +80,16 @@ class Experimenter(User):
         self.on("BAN_PARTICIPANT", self._handle_ban)
         self.on("MUTE", self._handle_mute)
         self.on("SET_FILTERS", self._handle_set_filters)
+
+    async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        """TODO Document"""
+        print("[Experimenter] handle state change. State:", state)
+        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            if self._experiment is not None:
+                print("[Experimenter] Removing self from experiment")
+                self._experiment.remove_experimenter(self)
+            print("[Experimenter] Removing self from hub")
+            self._hub.remove_experimenter(self)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.

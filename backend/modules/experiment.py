@@ -199,6 +199,16 @@ class Experiment:
         """
         self._participants[participant.id] = participant
 
+    def remove_participant(self, participant: _participant.Participant):
+        """Remove an participant from this experiment.
+
+        Parameters
+        ----------
+        participant : modules.participant.Participant
+            Participant leaving the experiment.
+        """
+        self._participants.pop(participant.id)
+
     async def kick_participant(self, participant_id: str, reason: str):
         """Kick a participant from this experiment.
 
@@ -292,3 +302,18 @@ class Experiment:
             Experimenter joining the experiment.
         """
         self._experimenters.append(experimenter)
+
+    def remove_experimenter(self, experimenter: _experimenter.Experimenter):
+        """Remove an experimenter from this experiment.
+
+        Parameters
+        ----------
+        experimenter : modules.experimenter.Experimenter
+            Experimenter leaving the experiment.
+
+        Raises
+        ------
+        ValueError
+            If the given `experimenter` is not part of this experiment.
+        """
+        self._experimenters.remove(experimenter)

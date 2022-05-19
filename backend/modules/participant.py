@@ -16,6 +16,7 @@ from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
 import modules.experiment as _experiment
+from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
 from modules.user import User
@@ -58,7 +59,7 @@ class Participant(User):
         experimenter_factory : Instantiate connection with a new Experimenter based on
             WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
         """
-        super().__init__(id)
+        super(Participant, self).__init__(id)
 
         self._experiment = experiment
         self._muted_video = muted_video
@@ -123,6 +124,13 @@ class Participant(User):
         self.send(message)
 
         await self.disconnect()
+
+    async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        """TODO Document"""
+        print("[Participant] handle state change. State:", state)
+        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            print("[Participant] Removing self from experiment")
+            self._experiment.remove_participant(self)
 
     async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
         """Handle requests with type `CHAT`.
