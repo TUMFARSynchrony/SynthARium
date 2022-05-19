@@ -61,7 +61,7 @@ video {
 	padding: 0 5px;
 }
 
-.connectionState.NOT_STARTED {
+.connectionState.NEW {
 	background-color: greenyellow;
 }
 
@@ -74,7 +74,7 @@ video {
 	color: white;
 }
 
-.connectionState.DISCONNECTED,
+.connectionState.CLOSED,
 .connectionState.FAILED {
 	background-color: red;
 	color: white;

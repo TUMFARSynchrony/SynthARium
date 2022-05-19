@@ -4,10 +4,10 @@ import { isValidConnectionOffer, isValidMessage, Message } from "./MessageTypes"
 import SubConnection from "./SubConnection";
 
 export enum ConnectionState {
-  NOT_STARTED,
+  NEW,
   CONNECTING,
   CONNECTED,
-  DISCONNECTED,
+  CLOSED,
   FAILED
 }
 
@@ -43,7 +43,7 @@ export default class Connection {
     this.participantId = participantId;
     this.userType = userType;
     this.subConnections = [];
-    this._state = ConnectionState.NOT_STARTED;
+    this._state = ConnectionState.NEW;
     this._remoteStream = new MediaStream();
     this._peerStreams = new Map();
 
@@ -73,7 +73,7 @@ export default class Connection {
     if (!localStream && this.userType === "participant") {
       throw new Error("Connection.start(): localStream is required for user type participant.");
     }
-    if (this._state !== ConnectionState.NOT_STARTED) {
+    if (this._state !== ConnectionState.NEW) {
       throw new Error(`Connection.start(): cannot start Connection, state is: ${ConnectionState[this._state]}`);
     }
     this.localStream = localStream;
@@ -90,7 +90,7 @@ export default class Connection {
   }
 
   public stop() {
-    this.setState(ConnectionState.DISCONNECTED);
+    this.setState(ConnectionState.CLOSED);
 
     if (!this.mainPc || this.mainPc.connectionState === "closed") return;
 
