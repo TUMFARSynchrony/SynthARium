@@ -1,150 +1,75 @@
-import { BACKEND } from "../utils/constants";
+import Connection from "./Connection";
+import { SimpleEventHandler } from "./ConnectionEvents";
+import { ConnectionOffer } from "./MessageTypes";
 
-/*
 export default class SubConnection {
-  pc: RTCPeerConnection; // RTCPeerConnection | undefined
-  dc: RTCDataChannel;
+  readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
+  readonly remoteStream: MediaStream;
 
-  constructor(localStream: MediaStream, sessionId?: string, participantId?: string) {
-    this.localStream = localStream;
-    this.sessionId = sessionId;
-    this.participantId = participantId;
-    this.userType = sessionId && participantId ? "participant" : "experimenter";
+  private pc: RTCPeerConnection;
+  private initialOffer: ConnectionOffer;
+  private connection: Connection;
 
-    this.mainPc = this.initPeerConnection("MAIN PC");
-    this.dc = this.initDataChannel(this.mainPc);
-  }
-
-  async start() {
-    // Add localStream to peer connection
-    console.log(this.localStream);
-    this.localStream?.getTracks().forEach((track) => {
-      console.log("Adding track", track);
-      this.mainPc.addTrack(track, this.localStream);
-    });
-
-    await this.negotiate();
-  }
-
-  stop() {
-    // TODO implement
-  }
-
-  private initPeerConnection(name: string): RTCPeerConnection {
+  constructor(offer: ConnectionOffer, connection: Connection) {
+    this.remoteStreamChange = new SimpleEventHandler();
+    this.remoteStream = new MediaStream();
     const config: any = {
       sdpSemantics: "unified-plan",
     };
-    const pc = new RTCPeerConnection(config);
+    this.pc = new RTCPeerConnection(config);
+    this.initialOffer = offer;
+    this.connection = connection;
+
+    this.log("Initiating SubConnection");
 
     // register event listeners for pc
-    pc.addEventListener(
+    this.pc.addEventListener(
       "icegatheringstatechange",
-      () => console.log(`[${name}] icegatheringstatechange: ${pc.iceGatheringState}`),
+      () => this.log(`icegatheringstatechange: ${this.pc.iceGatheringState}`),
       false
     );
-    pc.addEventListener(
+    this.pc.addEventListener(
       "iceconnectionstatechange",
-      () => console.log(`[${name}] iceConnectionState: ${pc.iceConnectionState}`),
+      () => this.log(`iceConnectionState: ${this.pc.iceConnectionState}`),
       false
     );
-    pc.addEventListener(
+    this.pc.addEventListener(
       "signalingstatechange",
-      () => console.log(`[${name}] signalingState: ${pc.signalingState}`),
+      () => this.log(`signalingState: ${this.pc.signalingState}`),
       false
     );
-
     // Receive audio / video
-    pc.addEventListener("track", (e) => {
-      console.log("Received a", e.track.kind, "track from remote");
-      if (e.track.kind === "video") {
-        // TODO:
-      } else if (e.track.kind === "audio") {
-        // TODO:
-      } else {
-        // TODO: error?
+    this.pc.addEventListener("track", (e) => {
+      this.log(`Received a ${e.track.kind}, track from remote`);
+      if (e.track.kind !== "video" && e.track.kind !== "audio") {
+        this.logError(`Received track with unknown kind: ${e.track.kind}`);
+        return;
       }
+      this.remoteStream.addTrack(e.track);
+      this.remoteStreamChange.trigger(this.remoteStream);
     });
-    return pc
   }
 
-  private initDataChannel(pc: RTCPeerConnection): RTCDataChannel {
-    const dc = pc.createDataChannel("API");
-    dc.onclose = function () {
-      console.log("datachannel onclose");
+  public async start() {
+    this.log("Starting SubConnection");
+    await this.pc.setRemoteDescription(this.initialOffer.offer as RTCSessionDescriptionInit);
+    const answer = await this.pc.createAnswer();
+    await this.pc.setLocalDescription(answer);
+    const connectionAnswer = {
+      id: this.initialOffer.id,
+      answer: {
+        type: answer.type,
+        sdp: answer.sdp
+      }
     };
-    dc.onopen = function () {
-      console.log("datachannel onopen");
-    };
-    dc.onmessage = dc.onmessage = (e) => {
-      const msgObj = JSON.parse(e.data);
-      console.log("Received", msgObj);
-      // TODO
-    };
-    return dc
+    this.connection.sendMessage("CONNECTION_ANSWER", connectionAnswer);
   }
 
-  private async negotiate() {
-    const offer = await this.mainPc.createOffer({
-      offerToReceiveVideo: true,
-      offerToReceiveAudio: true,
-    });
-    await this.mainPc.setLocalDescription(offer);
+  private log(message: string) {
+    console.log(`[SubConnection - ${this.initialOffer.id}] ${message}`);
+  }
 
-    // Wait for iceGatheringState to be "complete".
-    await new Promise((resolve) => {
-      if (this.mainPc?.iceGatheringState === "complete") {
-        resolve(undefined);
-      } else {
-        const checkState = () => {
-          if (this.mainPc?.iceGatheringState === "complete") {
-            this.mainPc.removeEventListener(
-              "icegatheringstatechange",
-              checkState
-            );
-            resolve(undefined);
-          }
-        };
-        this.mainPc?.addEventListener("icegatheringstatechange", checkState);
-      }
-    });
-
-    const localDesc = this.mainPc.localDescription;
-    let request;
-    if (this.userType === "participant") {
-      request = {
-        sdp: localDesc.sdp,
-        type: localDesc.type,
-        user_type: "participant",
-        session_id: this.sessionId,
-        participant_id: this.participantId,
-      };
-    } else {
-      request = {
-        sdp: localDesc.sdp,
-        type: localDesc.type,
-        user_type: "experimenter",
-      };
-    }
-
-    const response = await fetch(BACKEND + "/offer", {
-      body: JSON.stringify({ request }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      mode: "cors", // TODO for dev only
-    });
-
-    const answer = await response.json();
-    if (answer.type !== "SESSION_DESCRIPTION") {
-      console.log(
-        "Received unexpected answer from backend. type:",
-        answer.type
-      );
-      return;
-    }
-    const remoteDescription = answer.data;
-    await this.mainPc.setRemoteDescription(remoteDescription);
+  private logError(message: string) {
+    console.error(`[SubConnection - ${this.initialOffer.id}] ${message}`);
   }
 }
-*/

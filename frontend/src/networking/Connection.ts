@@ -1,6 +1,7 @@
 import { BACKEND } from "../utils/constants";
 import { SimpleEventHandler, ApiHandler } from "./ConnectionEvents";
-import { isValidMessage, Message } from "./Message";
+import { isValidConnectionOffer, isValidMessage, Message } from "./MessageTypes";
+import SubConnection from "./SubConnection";
 
 export enum ConnectionState {
   NOT_STARTED,
@@ -15,6 +16,7 @@ export default class Connection {
   readonly api: ApiHandler;
   readonly connectionStateChange: SimpleEventHandler<ConnectionState>;
   readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
+  readonly remotePeerStreamsChange: SimpleEventHandler<MediaStream[]>;
 
   readonly sessionId?: string;
   readonly participantId?: string;
@@ -25,9 +27,12 @@ export default class Connection {
 
   private localStream: MediaStream;
   private _remoteStream: MediaStream;
+  private _peerStreams: Map<string, MediaStream>;
 
   private mainPc: RTCPeerConnection; // RTCPeerConnection | undefined
   private dc: RTCDataChannel;
+
+  private subConnections: SubConnection[];
 
 
   constructor(userType: "participant" | "experimenter", sessionId?: string, participantId?: string) {
@@ -37,11 +42,15 @@ export default class Connection {
     this.sessionId = sessionId;
     this.participantId = participantId;
     this.userType = userType;
+    this.subConnections = [];
     this._state = ConnectionState.NOT_STARTED;
     this._remoteStream = new MediaStream();
+    this._peerStreams = new Map();
 
     this.api = new ApiHandler();
+    this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
     this.remoteStreamChange = new SimpleEventHandler();
+    this.remotePeerStreamsChange = new SimpleEventHandler();
     this.connectionStateChange = new SimpleEventHandler();
 
     this.initMainPeerConnection();
@@ -50,6 +59,10 @@ export default class Connection {
 
   public get remoteStream(): MediaStream {
     return this._remoteStream;
+  }
+
+  public get peerStreams(): MediaStream[] {
+    return Array.from(this._peerStreams, ([_, value]) => value);
   }
 
   public get state(): ConnectionState {
@@ -109,6 +122,11 @@ export default class Connection {
     if (this._state !== ConnectionState.CONNECTED) {
       throw Error(`[Connection] Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
     }
+
+    console.groupCollapsed(`[Connection] Sending ${endpoint} message`);
+    console.log(data);
+    console.groupEnd();
+
     const message: Message = {
       type: endpoint,
       data: data
@@ -270,5 +288,19 @@ export default class Connection {
 
     const remoteDescription = answer.data;
     await this.mainPc.setRemoteDescription(remoteDescription);
+  }
+
+  private async handleConnectionOffer(data: any): Promise<void> {
+    if (!isValidConnectionOffer(data)) {
+      console.error("[Connection] received invalid CONNECTION_OFFER.");
+      return;
+    }
+    const subConnection = new SubConnection(data, this);
+    this._peerStreams.set(data.id, subConnection.remoteStream);
+    subConnection.remoteStreamChange.on((_) => {
+      this.remotePeerStreamsChange.trigger(this.peerStreams);
+    });
+    await subConnection.start();
+    this.subConnections.push(subConnection);
   }
 }

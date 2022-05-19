@@ -3,7 +3,6 @@ import { useRef, useEffect, useState } from "react";
 
 import "./ConnectionTest.css";
 import Connection, { ConnectionState } from "../../networking/Connection";
-import InputField from "../../components/atoms/InputField/InputField";
 
 
 const ConnectionTest = (props: {
@@ -13,6 +12,7 @@ const ConnectionTest = (props: {
 }) => {
   const connection = props.connection;
   const [connectionState, setConnectionState] = useState(connection.state);
+  const [peerStreams, setPeerStreams] = useState<MediaStream[]>([]);
 
   const streamChangeHandler = (_: MediaStream) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -21,16 +21,26 @@ const ConnectionTest = (props: {
     console.log(`%cConnection state change Handler: ${state}`, "color:blue");
     setConnectionState(state);
   };
+  const peerStreamChangeHandler = (streams: MediaStream[]) => {
+    console.log(`%cConnection peer streams change Handler: ${streams}`, "color:blue");
+    setPeerStreams(streams);
+  };
 
   useEffect(() => {
     connection.remoteStreamChange.on(streamChangeHandler);
     connection.connectionStateChange.on(stateChangeHandler);
+    connection.remotePeerStreamsChange.on(peerStreamChangeHandler);
     return () => {
       // Remove event handlers when component is deconstructed
       connection.remoteStreamChange.off(streamChangeHandler);
       connection.connectionStateChange.off(stateChangeHandler);
+      connection.remotePeerStreamsChange.off(peerStreamChangeHandler);
     };
-  }, [connection.connectionStateChange, connection.remoteStreamChange]);
+  }, [
+    connection.connectionStateChange,
+    connection.remotePeerStreamsChange,
+    connection.remoteStreamChange
+  ]);
 
 
   return (
@@ -46,6 +56,8 @@ const ConnectionTest = (props: {
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} />
         <Video title="remote stream" srcObject={connection.remoteStream} />
       </div>
+      <p>Peer Streams ({peerStreams.length}):</p>
+      {peerStreams.map((stream, i) => <Video title={`Peer stream ${i}`} srcObject={stream} key={i} />)}
       <ApiTests connection={connection} />
     </div>
   );
@@ -58,7 +70,7 @@ function ApiTests(props: { connection: Connection, }): JSX.Element {
   const [responses, setResponses] = useState<{ endpoint: string, data: string; }[]>([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
   useEffect(() => {
-    const sessionListHandler = (data: any) => {
+    const sessionListHandler = async (data: any) => {
       setResponses([...responses, { endpoint: "SESSION_LIST", data: data }]);
       setHighlightedResponse(0);
     };
@@ -73,7 +85,10 @@ function ApiTests(props: { connection: Connection, }): JSX.Element {
   return (
     <>
       <div className="requestButtons">
-        <button onClick={() => props.connection.sendMessage("GET_SESSION_LIST", {})}>
+        <button
+          onClick={() => props.connection.sendMessage("GET_SESSION_LIST", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
           Request Sessions
         </button>
       </div>

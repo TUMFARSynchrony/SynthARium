@@ -20,7 +20,7 @@ export class SimpleEventHandler<T> {
 	}
 }
 
-export type ApiHandlerFunction = (data: any) => void;
+export type ApiHandlerFunction = (data: any) => Promise<void>;
 
 export class ApiHandler {
 	private handlers: Map<string, ApiHandlerFunction[]>;
@@ -41,7 +41,7 @@ export class ApiHandler {
 		this.handlers.get(endpoint)?.filter(h => h !== handler);
 	}
 
-	public trigger(endpoint: string, data: any): void {
+	public async trigger(endpoint: string, data: any): Promise<void> {
 		const handlers = this.handlers.get(endpoint);
 
 		if (!handlers || handlers.length === 0) {
@@ -49,6 +49,6 @@ export class ApiHandler {
 			return;
 		}
 
-		handlers.forEach(handler => handler(data));
+		await Promise.all(handlers.map(handler => handler(data)));
 	}
 }
