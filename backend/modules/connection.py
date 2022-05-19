@@ -10,7 +10,9 @@ from aiortc import (
 )
 import json
 
+from modules.event_handler import SimpleEventHandler
 from modules.util import generate_unique_id
+from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict, is_valid_messagedict
@@ -38,8 +40,10 @@ class Connection:
     connection_factory : use to create new Connection and answer for an WebRTC offer.
     """
 
+    _state: ConnectionState
+    _state_change: SimpleEventHandler
     _main_pc: RTCPeerConnection
-    _dc: RTCDataChannel
+    _dc: RTCDataChannel | None
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
     _incoming_audio: MediaStreamTrack | None  # AudioStreamTrack ?
     _incoming_video: MediaStreamTrack | None  # VideoStreamTrack ?
@@ -70,10 +74,13 @@ class Connection:
             offer.
         """
         self._sub_connections = {}
+        self._state = ConnectionState.NEW
+        self._state_change = SimpleEventHandler[ConnectionState]()
         self._main_pc = pc
         self._message_handler = message_handler
         self._incoming_audio = None
         self._incoming_video = None
+        self._dc = None
 
         # Register event handlers
         pc.on("datachannel", f=self._on_datachannel)
@@ -93,9 +100,23 @@ class Connection:
         data : MessageDict or dict
             Data that will be stringified and send to the peer.
         """
+        if self._dc is None:
+            # TODO error handling
+            return
+
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)
         self._dc.send(stringified)
+
+    @property
+    def state(self):
+        """TODO document"""
+        return self._state
+
+    @property
+    def state_change(self):
+        """TODO document"""
+        return self._state_change
 
     @property
     def incoming_audio(self):
@@ -157,7 +178,7 @@ class Connection:
             and len(data["answer"]) == 2
         )
 
-    def _on_datachannel(self, channel: RTCDataChannel):
+    async def _on_datachannel(self, channel: RTCDataChannel):
         """Handle new incoming datachannel.
 
         Parameters
@@ -165,9 +186,12 @@ class Connection:
         channel : aiortc.RTCDataChannel
             Incoming data channel.
         """
-        print("[Connection] datachannel")
+        print("[Connection] received datachannel")
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
+        self._state = ConnectionState.CONNECTED
+        print("[Connection] connection state is: CONNECTED")
+        await self._state_change.trigger(self._state)
 
     async def _parse_and_handle_message(self, message: Any):
         """Handle incoming datachannel message.
@@ -210,9 +234,19 @@ class Connection:
         # Pass message to message handler in user.
         await self._message_handler(message_dict)
 
-    def _on_connection_state_change(self):
+    async def _on_connection_state_change(self):
         """Handle connection state change for `_main_pc`."""
-        print(f"[Connection] Connection state is {self._main_pc.connectionState}")
+        print(
+            f"[Connection] Peer Connection state change:", self._main_pc.connectionState
+        )
+        state = parse_connection_state(self._main_pc.connectionState)
+        if state == ConnectionState.CONNECTED and self._dc is None:
+            # Connection is established, but dc is not yet open.
+            print("[Connection] Established connection, waiting for datachannel.")
+            return
+        print(f"[Connection] connection state is: {state}")
+        self._state = state
+        await self._state_change.trigger(state)
 
     def _on_track(self, track: MediaStreamTrack):
         """Handle incoming tracks.
