@@ -7,6 +7,7 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+import asyncio
 from typing import Any
 from aiortc import RTCSessionDescription
 
@@ -131,6 +132,16 @@ class Participant(User):
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             print("[Participant] Removing self from experiment")
             self._experiment.remove_participant(self)
+            return
+
+        if state is ConnectionState.CONNECTED:
+            tasks = []
+            for p in self._experiment.participants.values():
+                if p is self:
+                    continue
+                tasks.append(self.subscribe_to(p))
+                tasks.append(p.subscribe_to(self))
+            await asyncio.gather(*tasks)
 
     async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
         """Handle requests with type `CHAT`.

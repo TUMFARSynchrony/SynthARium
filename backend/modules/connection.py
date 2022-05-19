@@ -103,7 +103,6 @@ class Connection:
         if self._dc is None:
             # TODO error handling
             return
-
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)
         self._dc.send(stringified)
@@ -134,6 +133,7 @@ class Connection:
         """TODO document"""
         id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(id, self, video_track, audio_track)
+        await sc.start()
         self._sub_connections[id] = sc
 
     async def _handle_connection_answer_message(self, data):
@@ -284,7 +284,7 @@ class SubConnection:
     _audio_track: MediaStreamTrack  # AudioStreamTrack ?
     _video_track: MediaStreamTrack  # VideoStreamTrack ?
 
-    async def __init__(
+    def __init__(
         self,
         id: str,
         connection: Connection,
@@ -301,20 +301,21 @@ class SubConnection:
         self.pc.addTrack(video_track)
         self.pc.addTrack(audio_track)
 
+    async def start(self):
         offer = await self.pc.createOffer()
         await self.pc.setLocalDescription(offer)
 
         message = MessageDict(
             type="CONNECTION_OFFER",
             data={
-                "id": id,
+                "id": self.id,
                 "offer": {
                     "sdp": self.pc.localDescription.sdp,
                     "type": self.pc.localDescription.type,
                 },
             },
         )
-        connection.send(message)
+        self.connection.send(message)
 
     async def handle_answer(self, answer: RTCSessionDescription):
         """TODO document"""

@@ -8,7 +8,8 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Callable, Any, Coroutine
+from typing import Callable, Any, Coroutine, Tuple
+from aiortc import MediaStreamTrack
 
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
@@ -94,13 +95,22 @@ class User(ABC):
         """Disconnect.  Closes the connection with the client."""
         await self._connection.stop()
 
-    def subscribe_to(self, user: User):
-        """TODO document when implemented."""
-        pass
+    async def subscribe_to(self, user: User):
+        """TODO document"""
+        print(f"[User] {self.id} subscribing to {user.id}.")
+        video_track, audio_track = user.get_incoming_stream()
 
-    def set_muted(self, muted: bool):
-        """TODO document when implemented."""
-        pass
+        # TODO handle none values
+        assert video_track is not None
+        assert audio_track is not None
+
+        await self._connection.add_outgoing_stream(video_track, audio_track)
+
+    def get_incoming_stream(
+        self,
+    ) -> Tuple[MediaStreamTrack | None, MediaStreamTrack | None]:
+        """TODO document"""
+        return (self._connection.incoming_video, self._connection.incoming_audio)
 
     def on(
         self,

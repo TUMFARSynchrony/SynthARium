@@ -34,6 +34,11 @@ class Experiment:
         self._experimenters = []
         self._participants = {}
 
+    @property
+    def participants(self):
+        """Participants currently connected to the Experiment."""
+        return self._participants
+
     def start(self):
         """Start the experiment.
 

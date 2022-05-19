@@ -212,7 +212,6 @@ class Hub:
             participant.muted_video,
             participant.muted_audio,
         )
-        experiment.add_participant(participant)
 
         return answer
 
