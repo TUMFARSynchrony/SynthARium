@@ -57,8 +57,8 @@ class Participant(User):
 
         See Also
         --------
-        experimenter_factory : Instantiate connection with a new Experimenter based on
-            WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
+        participant_factory : Instantiate connection with a new Participant based on
+            WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
         super(Participant, self).__init__(id)
 
@@ -69,6 +69,17 @@ class Participant(User):
 
         # Add API endpoints
         self.on("CHAT", self._handle_chat)
+
+    def __str__(self) -> str:
+        """Get string representation of this participant.
+
+        Currently returns value of `__repr__`.
+        """
+        return self.__repr__()
+
+    def __repr__(self) -> str:
+        """Get representation of this participant."""
+        return f"Participant(id={self.id}, experiment={self._experiment.session.id})"
 
     def set_muted(self, video: bool, audio: bool):
         """Set the muted state for this participant.

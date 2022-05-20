@@ -81,6 +81,22 @@ class Experimenter(User):
         self.on("MUTE", self._handle_mute)
         self.on("SET_FILTERS", self._handle_set_filters)
 
+    def __str__(self) -> str:
+        """Get string representation of this experimenter.
+
+        Currently returns value of `__repr__`.
+        """
+        return self.__repr__()
+
+    def __repr__(self) -> str:
+        """Get representation of this experimenter."""
+        if self._experiment is None:
+            experiment_id = "None"
+        else:
+            experiment_id = self._experiment.session.id
+
+        return f"Experimenter(id={self.id}, experiment={experiment_id})"
+
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
         """TODO Document"""
         print("[Experimenter] handle state change. State:", state)

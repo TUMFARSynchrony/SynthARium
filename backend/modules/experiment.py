@@ -213,6 +213,10 @@ class Experiment:
             Participant leaving the experiment.
         """
         self._participants.pop(participant.id)
+        print(
+            "[Experiment] Participants in experiment:",
+            list(self._participants.values()),
+        )
 
     async def kick_participant(self, participant_id: str, reason: str):
         """Kick a participant from this experiment.
@@ -322,3 +326,4 @@ class Experiment:
             If the given `experimenter` is not part of this experiment.
         """
         self._experimenters.remove(experimenter)
+        print("[Experiment] Experimenters in experiment:", self._experimenters)
