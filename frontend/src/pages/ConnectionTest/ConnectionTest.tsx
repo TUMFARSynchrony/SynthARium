@@ -84,12 +84,14 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
     const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
+    const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
 
     props.connection.api.on("SESSION_LIST", handleSessionList);
     props.connection.api.on("SUCCESS", handleSuccess);
     props.connection.api.on("ERROR", handleError);
     props.connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
+    props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
 
     return () => {
       props.connection.api.off("SESSION_LIST", handleSessionList);
@@ -97,6 +99,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
       props.connection.api.off("ERROR", handleError);
       props.connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
+      props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
     };
   }, [props.connection.api, responses]);
 
