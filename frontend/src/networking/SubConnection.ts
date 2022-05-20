@@ -3,6 +3,8 @@ import { SimpleEventHandler } from "./ConnectionEvents";
 import { ConnectionOffer } from "./MessageTypes";
 
 export default class SubConnection {
+  readonly id: string;
+  readonly connectionClosed: SimpleEventHandler<string>;
   readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
   readonly remoteStream: MediaStream;
 
@@ -11,6 +13,8 @@ export default class SubConnection {
   private connection: Connection;
 
   constructor(offer: ConnectionOffer, connection: Connection) {
+    this.id = offer.id;
+    this.connectionClosed = new SimpleEventHandler();
     this.remoteStreamChange = new SimpleEventHandler();
     this.remoteStream = new MediaStream();
     const config: any = {
@@ -30,7 +34,7 @@ export default class SubConnection {
     );
     this.pc.addEventListener(
       "iceconnectionstatechange",
-      () => this.log(`iceConnectionState: ${this.pc.iceConnectionState}`),
+      this.handleIceConnectionStateChange.bind(this),
       false
     );
     this.pc.addEventListener(
@@ -56,7 +60,7 @@ export default class SubConnection {
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
     const connectionAnswer = {
-      id: this.initialOffer.id,
+      id: this.id,
       answer: {
         type: answer.type,
         sdp: answer.sdp
@@ -65,11 +69,35 @@ export default class SubConnection {
     this.connection.sendMessage("CONNECTION_ANSWER", connectionAnswer);
   }
 
+  public stop() {
+    if (this.pc.connectionState === "closed") return;
+
+    this.log("Closing");
+
+    // close transceivers
+    this.pc.getTransceivers().forEach(function (transceiver) {
+      if (transceiver.stop) {
+        transceiver.stop();
+      }
+    });
+
+    this.pc.close();
+    this.connectionClosed.trigger(this.id);
+  }
+
+  private handleIceConnectionStateChange() {
+    this.log(`iceConnectionState: ${this.pc.iceConnectionState}`);
+    if (this.pc.iceConnectionState in ["disconnected", "closed", "failed"]) {
+      this.log(`iceConnectionState: ${this.pc.iceConnectionState} -> CLOSING!`);
+      this.stop();
+    }
+  }
+
   private log(message: string) {
-    console.log(`[SubConnection - ${this.initialOffer.id}] ${message}`);
+    console.log(`[SubConnection - ${this.id}] ${message}`);
   }
 
   private logError(message: string) {
-    console.error(`[SubConnection - ${this.initialOffer.id}] ${message}`);
+    console.error(`[SubConnection - ${this.id}] ${message}`);
   }
 }

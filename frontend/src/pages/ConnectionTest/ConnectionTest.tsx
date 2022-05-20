@@ -56,6 +56,7 @@ const ConnectionTest = (props: {
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} />
         <Video title="remote stream" srcObject={connection.remoteStream} />
       </div>
+      <button onClick={() => console.log(connection)}>Print Debug</button>
       <p>Peer Streams ({peerStreams.length}):</p>
       {peerStreams.map((stream, i) => <Video title={`Peer stream ${i}`} srcObject={stream} key={i} />)}
       <ApiTests connection={connection} />

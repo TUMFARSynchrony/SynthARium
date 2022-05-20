@@ -92,16 +92,18 @@ export default class Connection {
   public stop() {
     this.setState(ConnectionState.CLOSED);
 
+    console.log("[Connection] Closing");
+
+    this.subConnections.forEach(sc => sc.stop());
+
     if (!this.mainPc || this.mainPc.connectionState === "closed") return;
 
     // close transceivers
-    if (this.mainPc.getTransceivers) {
-      this.mainPc.getTransceivers().forEach(function (transceiver) {
-        if (transceiver.stop) {
-          transceiver.stop();
-        }
-      });
-    }
+    this.mainPc.getTransceivers().forEach(function (transceiver) {
+      if (transceiver.stop) {
+        transceiver.stop();
+      }
+    });
 
     // close local audio / video
     this.mainPc.getSenders().forEach(function (sender) {
@@ -111,11 +113,7 @@ export default class Connection {
     });
 
     // close peer connection
-    setTimeout(() => {
-      if (this.mainPc) {
-        this.mainPc.close();
-      }
-    }, 500);
+    this.mainPc.close();
   }
 
   public sendMessage(endpoint: string, data: any) {
@@ -149,17 +147,17 @@ export default class Connection {
     // register event listeners for pc
     this.mainPc.addEventListener(
       "icegatheringstatechange",
-      () => console.log(`[Connection--MainPc] icegatheringstatechange: ${this.mainPc.iceGatheringState}`),
+      () => console.log(`[Connection] icegatheringstatechange: ${this.mainPc.iceGatheringState}`),
       false
     );
     this.mainPc.addEventListener(
       "iceconnectionstatechange",
-      () => console.log(`[Connection--MainPc] iceConnectionState: ${this.mainPc.iceConnectionState}`),
+      this.handleIceConnectionStateChange.bind(this),
       false
     );
     this.mainPc.addEventListener(
       "signalingstatechange",
-      () => console.log(`[Connection--MainPc] signalingState: ${this.mainPc.signalingState}`),
+      () => console.log(`[Connection] signalingState: ${this.mainPc.signalingState}`),
       false
     );
 
@@ -177,6 +175,19 @@ export default class Connection {
       this._remoteStream.addTrack(e.track);
       this.remoteStreamChange.trigger(this._remoteStream);
     });
+  }
+
+  private handleIceConnectionStateChange() {
+    console.log(`[Connection] iceConnectionState: ${this.mainPc.iceConnectionState}`);
+    if (this.mainPc.iceConnectionState in ["disconnected", "closed"]) {
+      this.setState(ConnectionState.CLOSED);
+      this.stop();
+      return;
+    }
+    if (this.mainPc.iceConnectionState === "failed") {
+      this.setState(ConnectionState.FAILED);
+      this.stop();
+    }
   }
 
   private initDataChannel() {
@@ -298,6 +309,10 @@ export default class Connection {
     const subConnection = new SubConnection(data, this);
     this._peerStreams.set(data.id, subConnection.remoteStream);
     subConnection.remoteStreamChange.on((_) => {
+      this.remotePeerStreamsChange.trigger(this.peerStreams);
+    });
+    subConnection.connectionClosed.on((id) => {
+      this._peerStreams.delete(id);
       this.remotePeerStreamsChange.trigger(this.peerStreams);
     });
     await subConnection.start();

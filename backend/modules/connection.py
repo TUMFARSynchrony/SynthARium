@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import Any, Callable, Coroutine, Tuple
+from aiortc.contrib.media import MediaRelay
 from aiortc import (
     RTCPeerConnection,
     RTCDataChannel,
@@ -54,6 +55,7 @@ class Connection:
     _incoming_video: MediaStreamTrack | None  # VideoStreamTrack ?
 
     _sub_connections: dict[str, SubConnection]
+    _relay: MediaRelay
 
     def __init__(
         self,
@@ -86,6 +88,7 @@ class Connection:
         self._incoming_audio = None
         self._incoming_video = None
         self._dc = None
+        self._relay = MediaRelay()
 
         # Register event handlers
         pc.on("datachannel", f=self._on_datachannel)
@@ -125,12 +128,16 @@ class Connection:
     @property
     def incoming_audio(self):
         """Get incoming audio track."""
-        return self._incoming_audio
+        if self._incoming_audio is None:
+            return None
+        return self._relay.subscribe(self._incoming_audio)
 
     @property
     def incoming_video(self):
         """Get incoming video track."""
-        return self._incoming_video
+        if self._incoming_video is None:
+            return None
+        return self._relay.subscribe(self._incoming_video)
 
     async def add_outgoing_stream(
         self, video_track: MediaStreamTrack, audio_track: MediaStreamTrack
@@ -138,8 +145,13 @@ class Connection:
         """TODO document"""
         id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(id, self, video_track, audio_track)
+        sc.connection_closed.on(self._remove_subconnection)
         await sc.start()
         self._sub_connections[id] = sc
+
+    async def _remove_subconnection(self, subconnection_id: str):
+        """TODO document"""
+        self._sub_connections.pop(subconnection_id)
 
     async def _handle_connection_answer_message(self, data):
         """TODO document - handle incoming CONNECTION_ANSWER messages."""
@@ -185,7 +197,7 @@ class Connection:
     async def _parse_and_handle_message(self, message: Any):
         """Handle incoming datachannel message.
 
-        Checks if message is a valid string containting a
+        Checks if message is a valid string containing a
         custom_types.message.MessageDict JSON object.  If contents are invalid, a error
         response is send.
 
@@ -268,10 +280,13 @@ class SubConnection:
 
     id: str
     connection: Connection
-    pc: RTCPeerConnection
+    _pc: RTCPeerConnection
 
     _audio_track: MediaStreamTrack  # AudioStreamTrack ?
     _video_track: MediaStreamTrack  # VideoStreamTrack ?
+
+    _connection_closed: SimpleEventHandler
+    _closed: bool
 
     def __init__(
         self,
@@ -285,25 +300,54 @@ class SubConnection:
         self.connection = connection
         self._audio_track = audio_track
         self._video_track = video_track
+        self._closed = False
 
-        self.pc = RTCPeerConnection()
-        self.pc.addTrack(video_track)
-        self.pc.addTrack(audio_track)
+        self._connection_closed = SimpleEventHandler[str]()
+
+        self._pc = RTCPeerConnection()
+        self._pc.addTrack(video_track)
+        self._pc.addTrack(audio_track)
+        self._pc.on("connectionstatechange", f=self._on_connection_state_change)
+
+    @property
+    def connection_closed(self):
+        """TODO document"""
+        return self._connection_closed
 
     async def start(self):
-        offer = await self.pc.createOffer()
-        await self.pc.setLocalDescription(offer)
+        """TODO document"""
+        offer = await self._pc.createOffer()
+        await self._pc.setLocalDescription(offer)
 
         offer = RTCSessionDescriptionDict(
-            sdp=self.pc.localDescription.sdp, type=self.pc.localDescription.type  # type: ignore
+            sdp=self._pc.localDescription.sdp, type=self._pc.localDescription.type  # type: ignore
         )
         connection_offer = ConnectionOfferDict(id=self.id, offer=offer)
         message = MessageDict(type="CONNECTION_OFFER", data=connection_offer)
         self.connection.send(message)
 
+    async def stop(self):
+        """TODO document"""
+        if self._closed:
+            return
+
+        print(f"[SubConnection - {self.id}] Closing")
+        self._closed = True
+        await self._pc.close()
+        await self._connection_closed.trigger(self.id)
+
     async def handle_answer(self, answer: RTCSessionDescription):
         """TODO document"""
-        await self.pc.setRemoteDescription(answer)
+        await self._pc.setRemoteDescription(answer)
+
+    async def _on_connection_state_change(self):
+        """Handle connection state change."""
+        print(
+            f"[SubConnection - {self.id}] Peer Connection state change:",
+            self._pc.connectionState,
+        )
+        if self._pc.connectionState in ["closed", "failed"]:
+            await self.stop()
 
 
 async def connection_factory(
