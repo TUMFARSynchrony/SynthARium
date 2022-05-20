@@ -105,6 +105,10 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
 
   return (
     <>
+      {props.connection.userType === "participant"
+        ? <p className="apiWarning"><b>Note:</b> API should only work for experimenters</p>
+        : <></>
+      }
       <div className="requestButtons">
         <button
           onClick={() => props.connection.sendMessage("GET_SESSION_LIST", {})}
@@ -190,11 +194,26 @@ function ReplaceConnection(props: {
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
   const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const updateConnection = (userType: "participant" | "experimenter", sessionId: string, participantId: string) => {
+    console.log(`%c[ReplaceConnection] Replaced connection with new parameters: ${userType}, ${sessionId}, ${participantId}`, "color:darkgreen");
     const connection = new Connection(userType, sessionId, participantId);
     props.setConnection(connection);
-    console.log("Updated connection");
+  };
+
+  const handleUserType = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newUserType = e.target.value as "participant" | "experimenter";
+    setUserType(newUserType);
+    updateConnection(newUserType, sessionId, participantId);
+  };
+
+  const handleSessionId = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSessionId(e.target.value);
+    updateConnection(userType, e.target.value, participantId);
+  };
+
+  const handleParticipantId = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setParticipantId(e.target.value);
+    updateConnection(userType, sessionId, e.target.value);
   };
 
   const info = "Replace connection before connecting to change the user type, session id or participant id";
@@ -202,11 +221,11 @@ function ReplaceConnection(props: {
   return (
     <div className="replaceConnectionWrapper">
       <span title={info}>Replace Connection:</span>
-      <form onSubmit={handleSubmit} className="replaceConnectionForm">
+      <form className="replaceConnectionForm">
         <label>Type:&nbsp;&nbsp;
           <select
             defaultValue={props.connection.userType}
-            onChange={(e) => setUserType(e.target.value as "participant" | "experimenter")}
+            onChange={handleUserType}
           >
             <option value="participant">Participant</option>
             <option value="experimenter">Experimenter</option>
@@ -217,20 +236,19 @@ function ReplaceConnection(props: {
             <label>Session ID:&nbsp;&nbsp;
               <input
                 type="text"
-                onChange={(e) => setSessionId(e.target.value)}
+                onChange={handleSessionId}
                 defaultValue={props.connection.sessionId}
               />
             </label>
             <label>ParticipantID:&nbsp;&nbsp;
               <input
                 type="text"
-                onChange={(e) => setParticipantId(e.target.value)}
+                onChange={handleParticipantId}
                 defaultValue={props.connection.participantId}
               />
             </label>
           </> : ""
         }
-        <input type="submit" value="Apply" />
       </form>
     </div>
   );
