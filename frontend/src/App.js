@@ -11,9 +11,9 @@ import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 
 function App() {
-  const userType = "experimenter" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
+  const userType = "participant" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
   const sessionId = "bbbef1d7d0";
-  const participantId = "ef798c85d5";
+  const participantId = "aa798c85d5";
 
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(new Connection(userType, sessionId, participantId));
