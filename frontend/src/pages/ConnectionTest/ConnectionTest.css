@@ -42,13 +42,18 @@ video {
 	max-width: 50vw;
 }
 
-.videoWrapper p {
+.videoWrapper>p {
 	margin: 5px;
 }
 
-
 .ownStreams {
 	display: flex;
+	justify-content: center;
+}
+
+.peerStreams {
+	display: flex;
+	flex-wrap: wrap;
 	justify-content: center;
 }
 

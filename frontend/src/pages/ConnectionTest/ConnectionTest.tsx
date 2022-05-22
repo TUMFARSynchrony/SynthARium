@@ -53,8 +53,10 @@ const ConnectionTest = (props: {
         <Video title="remote stream" srcObject={connection.remoteStream} />
       </div>
       <button onClick={() => console.log(connection)}>Print Debug</button>
-      <p>Peer Streams ({peerStreams.length}):</p>
-      {peerStreams.map((stream, i) => <Video title={`Peer stream ${i}`} srcObject={stream} key={i} />)}
+      <p><b>Peer Streams</b> ({peerStreams.length}):</p>
+      <div className="peerStreams">
+        {peerStreams.map((stream, i) => <Video title={`Peer stream ${i}`} srcObject={stream} key={i} />)}
+      </div>
       <ApiTests connection={connection} />
     </div>
   );
@@ -251,12 +253,7 @@ function ReplaceConnection(props: {
   );
 }
 
-function Video(props: {
-  title: string;
-  srcObject: MediaStream,
-  className?: string;
-  style?: React.CSSProperties;
-}): JSX.Element {
+function Video(props: { title: string, srcObject: MediaStream, }): JSX.Element {
   const refVideo = useRef<HTMLVideoElement>(null);
 
   const setSrcObj = (srcObj: MediaStream) => {
@@ -276,9 +273,9 @@ function Video(props: {
   }, [props.srcObject]);
 
   return (
-    <div className={"videoWrapper " + props.className ?? ""} style={props.style}>
+    <div className={"videoWrapper"}>
       <p>{props.title}{props.srcObject.active ? "" : " [inactive]"}</p>
-      <video ref={refVideo} autoPlay playsInline height={255} width={300}></video>
+      <video ref={refVideo} autoPlay playsInline width={300}></video>
     </div>
   );
 }
