@@ -1,5 +1,5 @@
 import { BACKEND } from "../utils/constants";
-import { SimpleEventHandler, ApiHandler } from "./ConnectionEvents";
+import { EventHandler } from "./EventHandler";
 import { isValidConnectionOffer, isValidMessage, Message } from "./MessageTypes";
 import SubConnection from "./SubConnection";
 
@@ -11,13 +11,8 @@ export enum ConnectionState {
   FAILED
 }
 
-export default class Connection {
-  // Event handlers
-  readonly api: ApiHandler;
-  readonly connectionStateChange: SimpleEventHandler<ConnectionState>;
-  readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
-  readonly remotePeerStreamsChange: SimpleEventHandler<MediaStream[]>;
-
+export default class Connection extends EventHandler<ConnectionState | MediaStream | MediaStream[]> {
+  readonly api: EventHandler<any>;
   readonly sessionId?: string;
   readonly participantId?: string;
   readonly userType: "participant" | "experimenter";
@@ -36,6 +31,7 @@ export default class Connection {
 
 
   constructor(userType: "participant" | "experimenter", sessionId?: string, participantId?: string) {
+    super(true, "ConnectionEvents");
     if (userType === "participant" && (!participantId || !sessionId)) {
       throw new Error("[Connection] userType participant requires the participantId and sessionId to be defined.");
     }
@@ -47,11 +43,8 @@ export default class Connection {
     this._remoteStream = new MediaStream();
     this._peerStreams = new Map();
 
-    this.api = new ApiHandler();
+    this.api = new EventHandler();
     this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
-    this.remoteStreamChange = new SimpleEventHandler();
-    this.remotePeerStreamsChange = new SimpleEventHandler();
-    this.connectionStateChange = new SimpleEventHandler();
 
     this.initMainPeerConnection();
     this.initDataChannel();
@@ -135,7 +128,7 @@ export default class Connection {
 
   private setState(state: ConnectionState): void {
     this._state = state;
-    this.connectionStateChange.trigger(state);
+    this.trigger("connectionStateChange", state);
   }
 
   private initMainPeerConnection() {
@@ -173,7 +166,7 @@ export default class Connection {
       }
 
       this._remoteStream.addTrack(e.track);
-      this.remoteStreamChange.trigger(this._remoteStream);
+      this.trigger("remoteStreamChange", this._remoteStream);
     });
   }
 
@@ -315,13 +308,13 @@ export default class Connection {
     }
     const subConnection = new SubConnection(data, this);
     this._peerStreams.set(data.id, subConnection.remoteStream);
-    subConnection.remoteStreamChange.on((_) => {
-      this.remotePeerStreamsChange.trigger(this.peerStreams);
+    subConnection.on("remoteStreamChange", async (_) => {
+      this.trigger("remotePeerStreamsChange", this.peerStreams);
     });
-    subConnection.connectionClosed.on((id) => {
+    subConnection.on("connectionClosed", async (id) => {
       console.log("[Connection] Subconnection connectionClosed event triggered. Removing subConnection:", id);
-      this._peerStreams.delete(id);
-      this.remotePeerStreamsChange.trigger(this.peerStreams);
+      this._peerStreams.delete(id as string);
+      this.trigger("remotePeerStreamsChange", this.peerStreams);
     });
     await subConnection.start();
     this.subConnections.push(subConnection);

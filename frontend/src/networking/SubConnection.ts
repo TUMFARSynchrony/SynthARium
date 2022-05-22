@@ -1,11 +1,9 @@
 import Connection from "./Connection";
-import { SimpleEventHandler } from "./ConnectionEvents";
+import { EventHandler } from "./EventHandler";
 import { ConnectionOffer } from "./MessageTypes";
 
-export default class SubConnection {
+export default class SubConnection extends EventHandler<MediaStream | string> {
   readonly id: string;
-  readonly connectionClosed: SimpleEventHandler<string>;
-  readonly remoteStreamChange: SimpleEventHandler<MediaStream>;
   readonly remoteStream: MediaStream;
 
   private pc: RTCPeerConnection;
@@ -13,9 +11,8 @@ export default class SubConnection {
   private connection: Connection;
 
   constructor(offer: ConnectionOffer, connection: Connection) {
+    super(true, "SubConnectionEvents");
     this.id = offer.id;
-    this.connectionClosed = new SimpleEventHandler();
-    this.remoteStreamChange = new SimpleEventHandler();
     this.remoteStream = new MediaStream();
     const config: any = {
       sdpSemantics: "unified-plan",
@@ -50,7 +47,7 @@ export default class SubConnection {
         return;
       }
       this.remoteStream.addTrack(e.track);
-      this.remoteStreamChange.trigger(this.remoteStream);
+      this.trigger("remoteStreamChange", this.remoteStream);
     });
   }
 
@@ -82,7 +79,7 @@ export default class SubConnection {
     });
 
     this.pc.close();
-    this.connectionClosed.trigger(this.id);
+    this.trigger("connectionClosed", this.id);
   }
 
   private handleSignalingStateChange() {

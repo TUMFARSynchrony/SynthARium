@@ -14,33 +14,29 @@ const ConnectionTest = (props: {
   const [connectionState, setConnectionState] = useState(connection.state);
   const [peerStreams, setPeerStreams] = useState<MediaStream[]>([]);
 
-  const streamChangeHandler = (_: MediaStream) => {
+  const streamChangeHandler = async (_: MediaStream) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
-  const stateChangeHandler = (state: ConnectionState) => {
-    console.log(`%cConnection state change Handler: ${state}`, "color:blue");
+  const stateChangeHandler = async (state: ConnectionState) => {
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
     setConnectionState(state);
   };
-  const peerStreamChangeHandler = (streams: MediaStream[]) => {
+  const peerStreamChangeHandler = async (streams: MediaStream[]) => {
     console.log(`%cConnection peer streams change Handler: ${streams}`, "color:blue");
     setPeerStreams(streams);
   };
 
   useEffect(() => {
-    connection.remoteStreamChange.on(streamChangeHandler);
-    connection.connectionStateChange.on(stateChangeHandler);
-    connection.remotePeerStreamsChange.on(peerStreamChangeHandler);
+    connection.on("remoteStreamChange", streamChangeHandler);
+    connection.on("connectionStateChange", stateChangeHandler);
+    connection.on("remotePeerStreamsChange", peerStreamChangeHandler);
     return () => {
       // Remove event handlers when component is deconstructed
-      connection.remoteStreamChange.off(streamChangeHandler);
-      connection.connectionStateChange.off(stateChangeHandler);
-      connection.remotePeerStreamsChange.off(peerStreamChangeHandler);
+      connection.off("remoteStreamChange", streamChangeHandler);
+      connection.off("connectionStateChange", stateChangeHandler);
+      connection.off("remotePeerStreamsChange", peerStreamChangeHandler);
     };
-  }, [
-    connection.connectionStateChange,
-    connection.remotePeerStreamsChange,
-    connection.remoteStreamChange
-  ]);
+  }, [connection]);
 
 
   return (
