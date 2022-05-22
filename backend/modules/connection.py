@@ -131,8 +131,11 @@ class Connection:
         data : MessageDict or dict
             Data that will be stringified and send to the peer.
         """
-        if self._dc is None:
+        if self._dc is None or self._dc.readyState != "open":
             # TODO error handling
+            print(
+                "[Connection] WARN: Not sending data because datachannel is not open."
+            )
             return
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)
