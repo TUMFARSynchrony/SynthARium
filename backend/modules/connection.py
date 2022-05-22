@@ -9,6 +9,7 @@ from aiortc import (
     RTCSessionDescription,
     MediaStreamTrack,
 )
+import asyncio
 import json
 
 from modules.event_handler import SimpleEventHandler
@@ -46,6 +47,7 @@ class Connection:
     connection_factory : use to create new Connection and answer for an WebRTC offer.
     """
 
+    _stopped: bool
     _state: ConnectionState
     _state_change: SimpleEventHandler
     _main_pc: RTCPeerConnection
@@ -80,6 +82,7 @@ class Connection:
         connection_factory : use to create new Connection and answer for an WebRTC
             offer.
         """
+        self._stopped = False
         self._sub_connections = {}
         self._state = ConnectionState.NEW
         self._state_change = SimpleEventHandler[ConnectionState]()
@@ -97,8 +100,28 @@ class Connection:
 
     async def stop(self) -> None:
         """Stop this connection.  Use for cleanup."""
-        if self._main_pc:
-            await self._main_pc.close()
+        if self._stopped:
+            return
+        self._stopped = True
+        print("[Connection] Stopping")
+
+        if self._state not in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            await self._set_state(ConnectionState.CLOSED)
+
+        # Close all SubConnections
+        tasks = []
+        for sc in self._sub_connections.values():
+            tasks.append(sc.stop())
+        await asyncio.gather(*tasks)
+
+        # Close main connection
+        if self._dc is not None:
+            self._dc.close()
+        if self._incoming_video is not None:
+            self._incoming_video.stop()
+        if self._incoming_audio is not None:
+            self._incoming_audio.stop()
+        await self._main_pc.close()
 
     def send(self, data: MessageDict | dict) -> None:
         """Send `data` to peer over the datachannel.
@@ -190,9 +213,7 @@ class Connection:
         print("[Connection] received datachannel")
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
-        self._state = ConnectionState.CONNECTED
-        print("[Connection] connection state is: CONNECTED")
-        await self._state_change.trigger(self._state)
+        await self._set_state(ConnectionState.CONNECTED)
 
     async def _parse_and_handle_message(self, message: Any):
         """Handle incoming datachannel message.
@@ -245,6 +266,10 @@ class Connection:
             # Connection is established, but dc is not yet open.
             print("[Connection] Established connection, waiting for datachannel.")
             return
+        await self._set_state(state)
+
+    async def _set_state(self, state: ConnectionState):
+        """TODO document"""
         print(f"[Connection] connection state is: {state}")
         self._state = state
         await self._state_change.trigger(state)
@@ -309,6 +334,10 @@ class SubConnection:
         self._pc.addTrack(audio_track)
         self._pc.on("connectionstatechange", f=self._on_connection_state_change)
 
+        # Stop SubConnection if one of the tracks ends
+        audio_track.on("ended", self.stop)
+        video_track.on("ended", self.stop)
+
     @property
     def connection_closed(self):
         """TODO document"""
@@ -330,6 +359,9 @@ class SubConnection:
         """TODO document"""
         if self._closed:
             return
+
+        self._audio_track.stop()
+        self._video_track.stop()
 
         print(f"[SubConnection - {self.id}] Closing")
         self._closed = True

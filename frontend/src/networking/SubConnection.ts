@@ -72,7 +72,7 @@ export default class SubConnection {
   public stop() {
     if (this.pc.connectionState === "closed") return;
 
-    this.log("Closing");
+    this.log("Stopping");
 
     // close transceivers
     this.pc.getTransceivers().forEach(function (transceiver) {
@@ -87,8 +87,7 @@ export default class SubConnection {
 
   private handleIceConnectionStateChange() {
     this.log(`iceConnectionState: ${this.pc.iceConnectionState}`);
-    if (this.pc.iceConnectionState in ["disconnected", "closed", "failed"]) {
-      this.log(`iceConnectionState: ${this.pc.iceConnectionState} -> CLOSING!`);
+    if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {
       this.stop();
     }
   }

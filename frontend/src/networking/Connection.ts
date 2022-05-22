@@ -92,7 +92,7 @@ export default class Connection {
   public stop() {
     this.setState(ConnectionState.CLOSED);
 
-    console.log("[Connection] Closing");
+    console.log("[Connection] Stopping");
 
     this.subConnections.forEach(sc => sc.stop());
 
@@ -179,7 +179,7 @@ export default class Connection {
 
   private handleIceConnectionStateChange() {
     console.log(`[Connection] iceConnectionState: ${this.mainPc.iceConnectionState}`);
-    if (this.mainPc.iceConnectionState in ["disconnected", "closed"]) {
+    if (["disconnected", "closed"].includes(this.mainPc.iceConnectionState)) {
       this.setState(ConnectionState.CLOSED);
       this.stop();
       return;
@@ -312,6 +312,7 @@ export default class Connection {
       this.remotePeerStreamsChange.trigger(this.peerStreams);
     });
     subConnection.connectionClosed.on((id) => {
+      console.log("[Connection] Subconnection connectionClosed event triggered. Removing subConnection:", id);
       this._peerStreams.delete(id);
       this.remotePeerStreamsChange.trigger(this.peerStreams);
     });
