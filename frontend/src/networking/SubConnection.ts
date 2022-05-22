@@ -39,7 +39,7 @@ export default class SubConnection {
     );
     this.pc.addEventListener(
       "signalingstatechange",
-      () => this.log(`signalingState: ${this.pc.signalingState}`),
+      this.handleSignalingStateChange.bind(this),
       false
     );
     // Receive audio / video
@@ -83,6 +83,13 @@ export default class SubConnection {
 
     this.pc.close();
     this.connectionClosed.trigger(this.id);
+  }
+
+  private handleSignalingStateChange() {
+    this.log(`signalingState: ${this.pc.signalingState}`);
+    if (this.pc.signalingState === "closed") {
+      this.stop();
+    }
   }
 
   private handleIceConnectionStateChange() {

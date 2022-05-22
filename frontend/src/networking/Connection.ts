@@ -157,7 +157,7 @@ export default class Connection {
     );
     this.mainPc.addEventListener(
       "signalingstatechange",
-      () => console.log(`[Connection] signalingState: ${this.mainPc.signalingState}`),
+      this.handleSignalingStateChange.bind(this),
       false
     );
 
@@ -186,6 +186,13 @@ export default class Connection {
     }
     if (this.mainPc.iceConnectionState === "failed") {
       this.setState(ConnectionState.FAILED);
+      this.stop();
+    }
+  }
+
+  private handleSignalingStateChange() {
+    console.log(`[Connection] signalingState: ${this.mainPc.signalingState}`);
+    if (this.mainPc.signalingState === "closed") {
       this.stop();
     }
   }
