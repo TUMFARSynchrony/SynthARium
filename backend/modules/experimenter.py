@@ -7,6 +7,7 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+import asyncio
 from typing import Any
 from aiortc import RTCSessionDescription
 
@@ -106,6 +107,19 @@ class Experimenter(User):
                 self._experiment.remove_experimenter(self)
             print("[Experimenter] Removing self from hub")
             self._hub.remove_experimenter(self)
+
+        if state is ConnectionState.CONNECTED:
+            await self._subscribe_to_participants_streams()
+
+    async def _subscribe_to_participants_streams(self):
+        """TODO document"""
+        if self._experiment is not None:
+            tasks = []
+            for p in self._experiment.participants.values():
+                if p is self:
+                    continue
+                tasks.append(self.subscribe_to(p))
+            await asyncio.gather(*tasks)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -289,6 +303,9 @@ class Experimenter(User):
         message = MessageDict(type="CREATED_EXPERIMENT", data=data)
         self._hub.send_to_experimenters(message)
 
+        # Subscribe to participants in experiment
+        await self._subscribe_to_participants_streams()
+
         # Notify caller that he joined the experiment
         success = SuccessDict(
             type="JOIN_EXPERIMENT",
@@ -340,6 +357,9 @@ class Experimenter(User):
 
         self._experiment = experiment
         self._experiment.add_experimenter(self)
+
+        # Subscribe to participants in experiment
+        await self._subscribe_to_participants_streams()
 
         success = SuccessDict(
             type="JOIN_EXPERIMENT", description="Successfully joined experiment."

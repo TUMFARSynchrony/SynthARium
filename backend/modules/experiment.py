@@ -39,6 +39,11 @@ class Experiment:
         """Participants currently connected to the Experiment."""
         return self._participants
 
+    @property
+    def experimenters(self):
+        """Experimenters currently connected to the Experiment."""
+        return self._experimenters
+
     def start(self):
         """Start the experiment.
 
