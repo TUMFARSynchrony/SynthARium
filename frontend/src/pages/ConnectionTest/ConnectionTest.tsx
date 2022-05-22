@@ -259,15 +259,25 @@ function Video(props: {
 }): JSX.Element {
   const refVideo = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    if (refVideo.current) {
-      refVideo.current.srcObject = props.srcObject;
+  const setSrcObj = (srcObj: MediaStream) => {
+    if (refVideo.current && srcObj.active) {
+      refVideo.current.srcObject = srcObj;
     }
+  };
+
+  useEffect(() => {
+    setSrcObj(props.srcObject);
+
+    const handler = () => setSrcObj(props.srcObject);
+    props.srcObject.addEventListener("active", handler);
+    return () => {
+      props.srcObject.removeEventListener("active", handler);
+    };
   }, [props.srcObject]);
 
   return (
     <div className={"videoWrapper " + props.className ?? ""} style={props.style}>
-      <p>{props.title}</p>
+      <p>{props.title}{props.srcObject.active ? "" : " [inactive]"}</p>
       <video ref={refVideo} autoPlay playsInline height={255} width={300}></video>
     </div>
   );
