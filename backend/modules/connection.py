@@ -167,13 +167,24 @@ class Connection:
 
     async def add_outgoing_stream(
         self, video_track: MediaStreamTrack, audio_track: MediaStreamTrack
-    ):
+    ) -> str:
         """TODO document"""
-        id = generate_unique_id(list(self._sub_connections.keys()))
-        sc = SubConnection(id, self, video_track, audio_track)
+        stream_id = generate_unique_id(list(self._sub_connections.keys()))
+        sc = SubConnection(stream_id, self, video_track, audio_track)
         sc.connection_closed.on(self._remove_subconnection)
         await sc.start()
-        self._sub_connections[id] = sc
+        self._sub_connections[stream_id] = sc
+        return stream_id
+
+    async def stop_outgoing_stream(self, stream_id: str):
+        """TODO document"""
+        if stream_id not in self._sub_connections:
+            raise KeyError(
+                f"Invalid stream id - no SubConnection with id: {stream_id}."
+            )
+
+        sub_connection = self._sub_connections.pop(stream_id)
+        await sub_connection.stop()
 
     async def _remove_subconnection(self, subconnection_id: str):
         """TODO document"""

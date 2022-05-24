@@ -76,6 +76,16 @@ class User(ABC):
         self._muted_audio = muted_audio
         self._handlers = {}
 
+    @property
+    def muted_video(self) -> bool:
+        """TODO Document"""
+        return self._muted_video
+
+    @property
+    def muted_audio(self) -> bool:
+        """TODO Document"""
+        return self._muted_audio
+
     def set_connection(self, connection: _connection.Connection):
         """Set the connection of this user.
 
