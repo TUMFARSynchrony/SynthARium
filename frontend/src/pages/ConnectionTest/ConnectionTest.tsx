@@ -11,6 +11,8 @@ const ConnectionTest = (props: {
   setConnection: (connection: Connection) => void,
 }) => {
   const connection = props.connection;
+  const [audioIsMuted, setAudioIsMuted] = useState(!props.localStream?.getAudioTracks()[0].enabled ?? false);
+  const [videoIsMuted, setVideoIsMuted] = useState(!props.localStream?.getVideoTracks()[0].enabled ?? false);
   const [connectionState, setConnectionState] = useState(connection.state);
   const [peerStreams, setPeerStreams] = useState<MediaStream[]>([]);
 
@@ -26,6 +28,7 @@ const ConnectionTest = (props: {
     setPeerStreams(streams);
   };
 
+  // Register Connection event handlers 
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
@@ -38,6 +41,37 @@ const ConnectionTest = (props: {
     };
   }, [connection]);
 
+  // Update audioIsMuted and videoIsMuted when localStream changes
+  useEffect(() => {
+    if (props.localStream) {
+      setAudioIsMuted(!props.localStream.getAudioTracks()[0].enabled);
+      setVideoIsMuted(!props.localStream.getVideoTracks()[0].enabled);
+    }
+  }, [props.localStream]);
+
+  /**
+   * Mute audio in localstream.
+   * @See {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/enabled}
+   */
+  const muteAudio = () => {
+    if (props.localStream) {
+      console.log(`${audioIsMuted ? "Unmute" : "Mute"} Audio`, audioIsMuted);
+      props.localStream.getAudioTracks()[0].enabled = audioIsMuted;
+      setAudioIsMuted(!audioIsMuted);
+    }
+  };
+
+  /**
+   * Mute video in localstream.
+   * @See {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/enabled}
+   */
+  const muteVideo = () => {
+    if (props.localStream) {
+      console.log(`${videoIsMuted ? "Unmute" : "Mute"} Video`, videoIsMuted);
+      props.localStream.getVideoTracks()[0].enabled = videoIsMuted;
+      setVideoIsMuted(!videoIsMuted);
+    }
+  };
 
   return (
     <div className="ConnectionTestPageWrapper">
@@ -51,7 +85,12 @@ const ConnectionTest = (props: {
       <div className="ownStreams">
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} />
         <Video title="remote stream" srcObject={connection.remoteStream} />
-      </div>
+      </div>{props.localStream ?
+        <>
+          <button onClick={muteAudio}>{audioIsMuted ? "Unmute" : "Mute"} localStream Audio</button>
+          <button onClick={muteVideo}>{videoIsMuted ? "Unmute" : "Mute"} localStream Video</button>
+        </> : ""
+      }
       <button onClick={() => console.log(connection)}>Print Debug</button>
       <p><b>Peer Streams</b> ({peerStreams.length}):</p>
       <div className="peerStreams">
