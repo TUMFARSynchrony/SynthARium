@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from typing import Any, Callable, Coroutine, Tuple
-from aiortc.contrib.media import MediaRelay
 from aiortc import (
     RTCPeerConnection,
     RTCDataChannel,
@@ -13,6 +12,7 @@ from pyee.asyncio import AsyncIOEventEmitter
 import asyncio
 import json
 
+from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.util import generate_unique_id
 from modules.connection_state import ConnectionState, parse_connection_state
 
@@ -52,11 +52,10 @@ class Connection(AsyncIOEventEmitter):
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel | None
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
-    _incoming_audio: MediaStreamTrack | None  # AudioStreamTrack ?
-    _incoming_video: MediaStreamTrack | None  # VideoStreamTrack ?
+    _incoming_audio: AudioTrackHandler | None
+    _incoming_video: VideoTrackHandler | None
 
     _sub_connections: dict[str, SubConnection]
-    _relay: MediaRelay
 
     def __init__(
         self,
@@ -90,7 +89,6 @@ class Connection(AsyncIOEventEmitter):
         self._incoming_audio = None
         self._incoming_video = None
         self._dc = None
-        self._relay = MediaRelay()
 
         # Register event handlers
         pc.on("datachannel", f=self._on_datachannel)
@@ -149,16 +147,12 @@ class Connection(AsyncIOEventEmitter):
     @property
     def incoming_audio(self):
         """Get incoming audio track."""
-        if self._incoming_audio is None:
-            return None
-        return self._relay.subscribe(self._incoming_audio, False)
+        return self._incoming_audio
 
     @property
     def incoming_video(self):
         """Get incoming video track."""
-        if self._incoming_video is None:
-            return None
-        return self._relay.subscribe(self._incoming_video, False)
+        return self._incoming_video
 
     async def add_outgoing_stream(
         self, video_track: MediaStreamTrack, audio_track: MediaStreamTrack
@@ -293,15 +287,14 @@ class Connection(AsyncIOEventEmitter):
         """
         print(f"[Connection] {track.kind} Track received")
         if track.kind == "audio":
-            self._incoming_audio = track
+            self._incoming_audio = AudioTrackHandler(track)
+            self._main_pc.addTrack(self._incoming_audio)
         elif track.kind == "video":
-            self._incoming_video = track
+            self._incoming_video = VideoTrackHandler(track)
+            self._main_pc.addTrack(self._incoming_video)
         else:
             # TODO error handling?
             print(f"[Connection] ERROR: unknown track kind {track.kind}.")
-
-        # TODO add modified track back
-        self._main_pc.addTrack(track)
 
         @track.on("ended")
         def on_ended():

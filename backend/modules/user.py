@@ -9,10 +9,11 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Callable, Any, Coroutine, Tuple
-from aiortc import MediaStreamTrack
 
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
+
+from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 import modules.connection as _connection
@@ -124,11 +125,13 @@ class User(ABC):
         assert video_track is not None
         assert audio_track is not None
 
-        await self._connection.add_outgoing_stream(video_track, audio_track)
+        await self._connection.add_outgoing_stream(
+            video_track.subscribe(), audio_track.subscribe()
+        )
 
     def get_incoming_stream(
         self,
-    ) -> Tuple[MediaStreamTrack | None, MediaStreamTrack | None]:
+    ) -> Tuple[VideoTrackHandler | None, AudioTrackHandler | None]:
         """TODO document"""
         return (self._connection.incoming_video, self._connection.incoming_audio)
 
@@ -207,6 +210,11 @@ class User(ABC):
 
         self._muted_video = video
         self._muted_audio = audio
+
+        if self._connection.incoming_video is not None:
+            self._connection.incoming_video.muted = video
+        if self._connection.incoming_audio is not None:
+            self._connection.incoming_audio.muted = audio
 
         # TODO Implement mute on connection (when connection is finished)
 
