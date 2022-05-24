@@ -9,10 +9,10 @@ from aiortc import (
     RTCSessionDescription,
     MediaStreamTrack,
 )
+from pyee.asyncio import AsyncIOEventEmitter
 import asyncio
 import json
 
-from modules.event_handler import SimpleEventHandler
 from modules.util import generate_unique_id
 from modules.connection_state import ConnectionState, parse_connection_state
 
@@ -25,7 +25,7 @@ from custom_types.connection_messages import (
 )
 
 
-class Connection:
+class Connection(AsyncIOEventEmitter):
     """Connection with a single client.
 
     Manages one or multiple WebRTC connections with the same client.  Provides interface
@@ -49,7 +49,6 @@ class Connection:
 
     _stopped: bool
     _state: ConnectionState
-    _state_change: SimpleEventHandler
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel | None
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
@@ -82,10 +81,10 @@ class Connection:
         connection_factory : use to create new Connection and answer for an WebRTC
             offer.
         """
+        super().__init__()
         self._stopped = False
         self._sub_connections = {}
         self._state = ConnectionState.NEW
-        self._state_change = SimpleEventHandler[ConnectionState]()
         self._main_pc = pc
         self._message_handler = message_handler
         self._incoming_audio = None
@@ -106,7 +105,7 @@ class Connection:
         print("[Connection] Stopping")
 
         if self._state not in [ConnectionState.CLOSED, ConnectionState.FAILED]:
-            await self._set_state(ConnectionState.CLOSED)
+            self._set_state(ConnectionState.CLOSED)
 
         # Close all SubConnections
         tasks = []
@@ -122,6 +121,7 @@ class Connection:
         if self._incoming_audio is not None:
             self._incoming_audio.stop()
         await self._main_pc.close()
+        self.remove_all_listeners()
 
     def send(self, data: MessageDict | dict) -> None:
         """Send `data` to peer over the datachannel.
@@ -147,11 +147,6 @@ class Connection:
         return self._state
 
     @property
-    def state_change(self):
-        """TODO document"""
-        return self._state_change
-
-    @property
     def incoming_audio(self):
         """Get incoming audio track."""
         if self._incoming_audio is None:
@@ -171,7 +166,7 @@ class Connection:
         """TODO document"""
         stream_id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(stream_id, self, video_track, audio_track)
-        sc.connection_closed.on(self._remove_subconnection)
+        sc.add_listener("connection_closed", self._handle_closed_subconnection)
         await sc.start()
         self._sub_connections[stream_id] = sc
         return stream_id
@@ -186,7 +181,7 @@ class Connection:
         sub_connection = self._sub_connections.pop(stream_id)
         await sub_connection.stop()
 
-    async def _remove_subconnection(self, subconnection_id: str):
+    async def _handle_closed_subconnection(self, subconnection_id: str):
         """TODO document"""
         self._sub_connections.pop(subconnection_id)
 
@@ -216,7 +211,7 @@ class Connection:
 
         await sc.handle_answer(answer_desc)
 
-    async def _on_datachannel(self, channel: RTCDataChannel):
+    def _on_datachannel(self, channel: RTCDataChannel):
         """Handle new incoming datachannel.
 
         Parameters
@@ -227,7 +222,7 @@ class Connection:
         print("[Connection] received datachannel")
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
-        await self._set_state(ConnectionState.CONNECTED)
+        self._set_state(ConnectionState.CONNECTED)
 
     async def _parse_and_handle_message(self, message: Any):
         """Handle incoming datachannel message.
@@ -270,7 +265,7 @@ class Connection:
         # Pass message to message handler in user.
         await self._message_handler(message_dict)
 
-    async def _on_connection_state_change(self):
+    def _on_connection_state_change(self):
         """Handle connection state change for `_main_pc`."""
         print(
             f"[Connection] Peer Connection state change:", self._main_pc.connectionState
@@ -280,13 +275,13 @@ class Connection:
             # Connection is established, but dc is not yet open.
             print("[Connection] Established connection, waiting for datachannel.")
             return
-        await self._set_state(state)
+        self._set_state(state)
 
-    async def _set_state(self, state: ConnectionState):
+    def _set_state(self, state: ConnectionState):
         """TODO document"""
         print(f"[Connection] connection state is: {state}")
         self._state = state
-        await self._state_change.trigger(state)
+        self.emit("state_change", state)
 
     def _on_track(self, track: MediaStreamTrack):
         """Handle incoming tracks.
@@ -314,7 +309,7 @@ class Connection:
             print("[Connection] Track ended:", track.kind)
 
 
-class SubConnection:
+class SubConnection(AsyncIOEventEmitter):
     """TODO document"""
 
     id: str
@@ -324,7 +319,6 @@ class SubConnection:
     _audio_track: MediaStreamTrack  # AudioStreamTrack ?
     _video_track: MediaStreamTrack  # VideoStreamTrack ?
 
-    _connection_closed: SimpleEventHandler
     _closed: bool
 
     def __init__(
@@ -335,13 +329,12 @@ class SubConnection:
         audio_track: MediaStreamTrack,
     ) -> None:
         """TODO document"""
+        super().__init__()
         self.id = id
         self.connection = connection
         self._audio_track = audio_track
         self._video_track = video_track
         self._closed = False
-
-        self._connection_closed = SimpleEventHandler[str]()
 
         self._pc = RTCPeerConnection()
         self._pc.addTrack(video_track)
@@ -351,11 +344,6 @@ class SubConnection:
         # Stop SubConnection if one of the tracks ends
         audio_track.on("ended", self.stop)
         video_track.on("ended", self.stop)
-
-    @property
-    def connection_closed(self):
-        """TODO document"""
-        return self._connection_closed
 
     async def start(self):
         """TODO document"""
@@ -380,7 +368,8 @@ class SubConnection:
         print(f"[SubConnection - {self.id}] Closing")
         self._closed = True
         await self._pc.close()
-        await self._connection_closed.trigger(self.id)
+        self.emit("connection_closed", self.id)
+        self.remove_all_listeners()
 
     async def handle_answer(self, answer: RTCSessionDescription):
         """TODO document"""

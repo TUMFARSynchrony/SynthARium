@@ -97,7 +97,9 @@ class User(ABC):
         modules.experimenter.Experimenter : Experimenter implementation of User.
         """
         self._connection = connection
-        self._connection.state_change.on(self._handle_connection_state_change)
+        self._connection.add_listener(
+            "state_change", self._handle_connection_state_change
+        )
 
     def send(self, message: MessageDict):
         """Send a custom_types.message.MessageDict to the connected client.

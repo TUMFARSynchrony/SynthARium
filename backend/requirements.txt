@@ -1,3 +1,4 @@
 aiortc
 aiohttp
+pyee
 aiohttp_cors # dev only
