@@ -109,6 +109,8 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
   const [highlightedResponse, setHighlightedResponse] = useState(0);
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
   const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
+  const [mutedVideo, setMutedVideo] = useState(false);
+  const [mutedAudio, setMutedAudio] = useState(false);
 
   useEffect(() => {
     const saveGenericApiResponse = async (endpoint: string, response_Data: any) => {
@@ -198,6 +200,34 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             BAN_PARTICIPANT
+          </button>
+        </div>
+        <div className="inputBtnBox">
+          <input
+            type="text"
+            placeholder="Participant ID"
+            onChange={(e) => setParticipantId(e.target.value)}
+            value={participantId}
+          />
+          <label>Mute Audio
+            <input
+              type="checkbox"
+              onChange={(e) => setMutedAudio(e.target.checked)}
+              checked={mutedAudio}
+            />
+          </label>
+          <label>Mute Video
+            <input
+              type="checkbox"
+              onChange={(e) => setMutedVideo(e.target.checked)}
+              checked={mutedVideo}
+            />
+          </label>
+          <button
+            onClick={() => props.connection.sendMessage("MUTE", { participant_id: participantId, mute_video: mutedVideo, mute_audio: mutedAudio })}
+            disabled={props.connection.state !== ConnectionState.CONNECTED}
+          >
+            MUTE
           </button>
         </div>
       </div>

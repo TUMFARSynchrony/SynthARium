@@ -110,6 +110,7 @@ video {
 
 .inputBtnBox {
 	display: flex;
+	align-items: stretch;
 	background-color: antiquewhite;
 	padding: 2px;
 	border-radius: 5px;
@@ -117,9 +118,21 @@ video {
 	margin-top: 5px;
 }
 
-.inputBtnBox input {
+.inputBtnBox>* {
 	margin: .3rem 0 .3rem 5px;
+}
+
+.inputBtnBox input[type="text"] {
 	width: 80px;
+}
+
+.inputBtnBox input[type="checkbox"] {
+	margin: 4px;
+}
+
+.inputBtnBox label {
+	display: flex;
+	align-items: center;
 }
 
 .apiWarning {
