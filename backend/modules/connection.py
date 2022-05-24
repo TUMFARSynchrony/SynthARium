@@ -151,14 +151,14 @@ class Connection(AsyncIOEventEmitter):
         """Get incoming audio track."""
         if self._incoming_audio is None:
             return None
-        return self._relay.subscribe(self._incoming_audio)
+        return self._relay.subscribe(self._incoming_audio, False)
 
     @property
     def incoming_video(self):
         """Get incoming video track."""
         if self._incoming_video is None:
             return None
-        return self._relay.subscribe(self._incoming_video)
+        return self._relay.subscribe(self._incoming_video, False)
 
     async def add_outgoing_stream(
         self, video_track: MediaStreamTrack, audio_track: MediaStreamTrack
