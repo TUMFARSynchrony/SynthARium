@@ -36,8 +36,6 @@ class Participant(User):
     """
 
     _experiment: _experiment.Experiment
-    _muted_video: bool
-    _muted_audio: bool
 
     def __init__(
         self,
@@ -54,17 +52,19 @@ class Participant(User):
             Unique identifier for Participant.  Must exist in experiment.
         experiment : modules.experiment.Experiment
             Experiment the participant is part of.
+        muted_video : bool
+            Whether the participants video should be muted.
+        muted_audio : bool
+            Whether the participants audio should be muted.
 
         See Also
         --------
         participant_factory : Instantiate connection with a new Participant based on
             WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
-        super(Participant, self).__init__(id)
+        super(Participant, self).__init__(id, muted_video, muted_audio)
 
         self._experiment = experiment
-        self._muted_video = muted_video
-        self._muted_audio = muted_audio
         experiment.add_participant(self)
 
         # Add API endpoints
@@ -80,26 +80,6 @@ class Participant(User):
     def __repr__(self) -> str:
         """Get representation of this participant."""
         return f"Participant(id={self.id}, experiment={self._experiment.session.id})"
-
-    def set_muted(self, video: bool, audio: bool):
-        """Set the muted state for this participant.
-
-        Parameters
-        ----------
-        video : bool
-            Whether the participants video should be muted.
-        audio : bool
-            Whether the participants audio should be muted.
-        """
-        if self._muted_video == video and self._muted_audio == audio:
-            return
-
-        self._muted_video = video
-        self._muted_audio = audio
-
-        # TODO Implement mute on connection (when connection is finished)
-
-        # TODO Notify user about mute
 
     async def kick(self, reason: str):
         """Kick the participant.

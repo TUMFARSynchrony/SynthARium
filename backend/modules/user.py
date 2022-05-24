@@ -52,10 +52,12 @@ class User(ABC):
     """
 
     id: str
+    _muted_video: bool
+    _muted_audio: bool
     _connection: _connection.Connection
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
 
-    def __init__(self, id: str):
+    def __init__(self, id: str, muted_video: bool = False, muted_audio: bool = False):
         """Instantiate new User base class.
 
         Should only be called by child classes.
@@ -64,8 +66,14 @@ class User(ABC):
         ----------
         id : str
             Unique identifier for this Experimenter.
+        muted_video : bool, default False
+            Whether the users video should be muted.
+        muted_audio : bool, default False
+            Whether the users audio should be muted.
         """
         self.id = id
+        self._muted_video = muted_video
+        self._muted_audio = muted_audio
         self._handlers = {}
 
     def set_connection(self, connection: _connection.Connection):
@@ -171,6 +179,26 @@ class User(ABC):
 
             if response is not None:
                 self.send(response)
+
+    def set_muted(self, video: bool, audio: bool):
+        """Set the muted state for this user.
+
+        Parameters
+        ----------
+        video : bool
+            Whether the users video should be muted.
+        audio : bool
+            Whether the users audio should be muted.
+        """
+        if self._muted_video == video and self._muted_audio == audio:
+            return
+
+        self._muted_video = video
+        self._muted_audio = audio
+
+        # TODO Implement mute on connection (when connection is finished)
+
+        # TODO Notify user about mute
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
