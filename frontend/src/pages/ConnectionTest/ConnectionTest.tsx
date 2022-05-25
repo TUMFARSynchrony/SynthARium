@@ -83,7 +83,7 @@ const ConnectionTest = (props: {
       <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
       {connection.state === ConnectionState.NEW ? <ReplaceConnection connection={connection} setConnection={props.setConnection} /> : ""}
       <div className="ownStreams">
-        <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} />
+        <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} mutedAudio />
         <Video title="remote stream" srcObject={connection.remoteStream} />
       </div>{props.localStream ?
         <>
@@ -322,12 +322,16 @@ function ReplaceConnection(props: {
   );
 }
 
-function Video(props: { title: string, srcObject: MediaStream, }): JSX.Element {
+function Video(props: { title: string, srcObject: MediaStream, mutedAudio?: boolean; }): JSX.Element {
   const refVideo = useRef<HTMLVideoElement>(null);
 
   const setSrcObj = (srcObj: MediaStream) => {
     if (refVideo.current && srcObj.active) {
-      refVideo.current.srcObject = srcObj;
+      if (props.mutedAudio) {
+        refVideo.current.srcObject = new MediaStream(srcObj.getVideoTracks());
+      } else {
+        refVideo.current.srcObject = srcObj;
+      }
     }
   };
 
