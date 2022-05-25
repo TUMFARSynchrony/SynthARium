@@ -16,16 +16,16 @@ class AudioTrackHandler(MediaStreamTrack):
     muted: bool
     _relay: MediaRelay
 
-    def __init__(self, track: MediaStreamTrack, muted: bool = False):
+    def __init__(self, track: MediaStreamTrack, muted: bool = False) -> None:
         super().__init__()
         self.track = track
         self.muted = muted
         self._relay = MediaRelay()
 
-    def subscribe(self):
+    def subscribe(self) -> MediaStreamTrack:
         return self._relay.subscribe(self, False)
 
-    async def recv(self):
+    async def recv(self) -> AudioFrame:
         if self.readyState != "live":
             raise MediaStreamError
 
@@ -40,7 +40,6 @@ class AudioTrackHandler(MediaStreamTrack):
             self.muted_frame.pts = frame.pts
             self.muted_frame.sample_rate = frame.sample_rate
             self.muted_frame.time_base = frame.time_base
-            print("MutedAudioFrame:", self.muted_frame)
             return self.muted_frame
 
         return frame
@@ -58,7 +57,7 @@ class VideoTrackHandler(MediaStreamTrack):
     _muted_frame_img: Image.Image
     _muted_frame: VideoFrame
 
-    def __init__(self, track: MediaStreamTrack, muted: bool = False):
+    def __init__(self, track: MediaStreamTrack, muted: bool = False) -> None:
         super().__init__()
         self.track = track
         self.muted = muted
@@ -68,10 +67,10 @@ class VideoTrackHandler(MediaStreamTrack):
         self._muted_frame_img = Image.open(img_path)
         self.muted_frame = VideoFrame.from_image(self._muted_frame_img)
 
-    def subscribe(self):
+    def subscribe(self) -> MediaStreamTrack:
         return self._relay.subscribe(self, False)
 
-    async def recv(self):
+    async def recv(self) -> VideoFrame:
         if self.readyState != "live":
             raise MediaStreamError
 
