@@ -22,6 +22,8 @@ class AudioTrackHandler(MediaStreamTrack):
         self.muted = muted
         self._relay = MediaRelay()
 
+        track.on("ended", self.stop)
+
     def subscribe(self) -> MediaStreamTrack:
         return self._relay.subscribe(self, False)
 
@@ -62,6 +64,8 @@ class VideoTrackHandler(MediaStreamTrack):
         self.track = track
         self.muted = muted
         self._relay = MediaRelay()
+
+        track.on("ended", self.stop)
 
         img_path = join(BACKEND_DIR, "images/muted.png")
         self._muted_frame_img = Image.open(img_path)
