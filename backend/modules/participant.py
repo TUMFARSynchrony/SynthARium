@@ -128,7 +128,7 @@ class Participant(User):
         if state is ConnectionState.CONNECTED:
             tasks = []
             # Add stream to all experimenters
-            for e in self._experiment._experimenters:
+            for e in self._experiment.experimenters:
                 tasks.append(e.subscribe_to(self))
 
             # Add stream to all participants and all participants streams to self

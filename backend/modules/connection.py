@@ -294,6 +294,9 @@ class Connection(AsyncIOEventEmitter):
 
     def _set_state(self, state: ConnectionState):
         """TODO document"""
+        if self._state == state:
+            return
+
         print(f"[Connection] connection state is: {state}")
         self._state = state
         self.emit("state_change", state)
