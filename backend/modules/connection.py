@@ -7,6 +7,7 @@ from aiortc import (
     RTCDataChannel,
     RTCSessionDescription,
     MediaStreamTrack,
+    RTCRtpSender,
 )
 from pyee.asyncio import AsyncIOEventEmitter
 import asyncio
@@ -214,9 +215,29 @@ class Connection(AsyncIOEventEmitter):
             Incoming data channel.
         """
         print("[Connection] received datachannel")
+        # TODO check channel readyState
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
+        self._dc.on("close", self._handle_datachannel_close)
         self._set_state(ConnectionState.CONNECTED)
+
+    async def _handle_datachannel_close(self):
+        """TODO document"""
+        print("[Connection] Datachannel closed")
+        await self._check_if_closed()
+
+    async def _check_if_closed(self):
+        """TODO document"""
+        incoming_audio = self._incoming_audio
+        incoming_video = self._incoming_video
+        if (
+            self._dc is not None
+            and self._dc.readyState == "closed"
+            and (incoming_audio is not None and incoming_audio.readyState == "ended")
+            and (incoming_video is not None and incoming_video.readyState == "ended")
+        ):
+            print("[Connection] datachannel and all incoming tracks are closed")
+            await self.stop()
 
     async def _parse_and_handle_message(self, message: Any):
         """Handle incoming datachannel message.
@@ -288,10 +309,12 @@ class Connection(AsyncIOEventEmitter):
         print(f"[Connection] {track.kind} Track received")
         if track.kind == "audio":
             self._incoming_audio = AudioTrackHandler(track)
-            self._main_pc.addTrack(self._incoming_audio)
+            sender = self._main_pc.addTrack(self._incoming_audio)
+            self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
             self._incoming_video = VideoTrackHandler(track)
-            self._main_pc.addTrack(self._incoming_video)
+            sender = self._main_pc.addTrack(self._incoming_video)
+            self._listen_to_track_close(self._incoming_video, sender)
         else:
             # TODO error handling?
             print(f"[Connection] ERROR: unknown track kind {track.kind}.")
@@ -300,6 +323,20 @@ class Connection(AsyncIOEventEmitter):
         def on_ended():
             """Handles tracks ended event."""
             print("[Connection] Track ended:", track.kind)
+
+    def _listen_to_track_close(
+        self, track: AudioTrackHandler | VideoTrackHandler, sender: RTCRtpSender
+    ):
+        """TODO document"""
+
+        @track.on("ended")
+        async def _close_audio_sender():
+            for transceiver in self._main_pc.getTransceivers():
+                if transceiver.sender is sender:
+                    print("[Connection] Found transceiver, closing")
+                    await transceiver.stop()
+                    break
+            await self._check_if_closed()
 
 
 class SubConnection(AsyncIOEventEmitter):
