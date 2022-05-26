@@ -83,7 +83,14 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   }
 
   public stop(closeSenders: boolean = true) {
-    this.setState(ConnectionState.CLOSED);
+    this.internalStop(undefined, closeSenders);
+  }
+
+  private internalStop(state?: ConnectionState, closeSenders: boolean = true) {
+    if ([ConnectionState.CLOSED, ConnectionState.FAILED].includes(this._state)) {
+      return;
+    }
+    this.setState(state ?? ConnectionState.CLOSED);
 
     console.log("[Connection] Stopping");
 
@@ -175,13 +182,11 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   private handleIceConnectionStateChange() {
     console.log(`[Connection] iceConnectionState: ${this.mainPc.iceConnectionState}`);
     if (["disconnected", "closed"].includes(this.mainPc.iceConnectionState)) {
-      this.setState(ConnectionState.CLOSED);
       this.stop();
       return;
     }
     if (this.mainPc.iceConnectionState === "failed") {
-      this.setState(ConnectionState.FAILED);
-      this.stop();
+      this.internalStop(ConnectionState.FAILED);
     }
   }
 
