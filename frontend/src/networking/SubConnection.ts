@@ -9,6 +9,7 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
   private pc: RTCPeerConnection;
   private initialOffer: ConnectionOffer;
   private connection: Connection;
+  private stopped: boolean;
 
   constructor(offer: ConnectionOffer, connection: Connection) {
     super(true, "SubConnectionEvents");
@@ -20,6 +21,7 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
     this.pc = new RTCPeerConnection(config);
     this.initialOffer = offer;
     this.connection = connection;
+    this.stopped = false;
 
     this.log("Initiating SubConnection");
 
@@ -67,8 +69,10 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
   }
 
   public stop() {
-    if (this.pc.connectionState === "closed") return;
-
+    if (this.stopped) {
+      return;
+    }
+    this.stopped = true;
     this.log("Stopping");
 
     // close transceivers
