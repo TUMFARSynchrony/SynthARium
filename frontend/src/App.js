@@ -11,12 +11,8 @@ import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 
 function App() {
-  const userType = "participant" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
-  const sessionId = "bbbef1d7d0";
-  const participantId = "aa798c85d5";
-
   const [localStream, setLocalStream] = useState(null);
-  const [connection, setConnection] = useState(new Connection(userType, sessionId, participantId));
+  const [connection, setConnection] = useState(null);
 
   useEffect(() => {
     const asyncStreamHelper = async () => {
@@ -27,10 +23,23 @@ function App() {
     };
 
     // request local stream if requireLocalStream and localStream was not yet requested. 
-    if (connection.userType === "participant" && !localStream) {
+    if (connection?.userType === "participant" && !localStream) {
       asyncStreamHelper();
     }
   }, [localStream, connection]);
+
+  useEffect(() => {
+    const userType = "participant" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
+    const sessionId = "bbbef1d7d0";
+    const participantId = "aa798c85d5";
+    // Could be in useState initiator, but then the connection is executed twice / six times if in StrictMode. 
+    const newConnection = new Connection(userType, sessionId, participantId)
+    setConnection(newConnection)
+    return () => {
+      newConnection.stop()
+    }
+  }, [])
+
 
   return (
     <div className="App">
@@ -46,8 +55,8 @@ function App() {
           <Route exact path="/watchingRoom" element={<WatchingRoom />} />
           <Route exact path="/sessionForm" element={<SessionForm />} />
           <Route exact path="/connectionTest" element={
-            <ConnectionTest localStream={localStream} connection={connection} setConnection={setConnection} />
-          } />
+            connection ? <ConnectionTest localStream={localStream} connection={connection} setConnection={setConnection} /> : "loading"}
+          />
         </Routes>
       </Router>
     </div>
