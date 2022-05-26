@@ -82,28 +82,30 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     await this.negotiate();
   }
 
-  public stop() {
+  public stop(closeSenders: boolean = true) {
     this.setState(ConnectionState.CLOSED);
 
     console.log("[Connection] Stopping");
 
     this.subConnections.forEach(sc => sc.stop());
 
-    if (!this.mainPc || this.mainPc.connectionState === "closed") return;
+    this.dc.close();
 
     // close transceivers
     this.mainPc.getTransceivers().forEach(function (transceiver) {
-      if (transceiver.stop) {
+      if (transceiver.currentDirection && transceiver.currentDirection !== "stopped") {
         transceiver.stop();
       }
     });
 
     // close local audio / video
-    this.mainPc.getSenders().forEach(function (sender) {
-      if (sender && sender.track) {
-        sender.track.stop();
-      };
-    });
+    if (closeSenders) {
+      this.mainPc.getSenders().forEach(function (sender) {
+        if (sender && sender.track) {
+          sender.track.stop();
+        };
+      });
+    }
 
     // close peer connection
     this.mainPc.close();
