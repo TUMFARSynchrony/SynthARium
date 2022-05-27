@@ -169,16 +169,17 @@ class Connection(AsyncIOEventEmitter):
     async def stop_outgoing_stream(self, stream_id: str):
         """TODO document"""
         if stream_id not in self._sub_connections:
-            raise KeyError(
-                f"Invalid stream id - no SubConnection with id: {stream_id}."
-            )
+            return False
 
-        sub_connection = self._sub_connections.pop(stream_id)
+        sub_connection = self._sub_connections[stream_id]
         await sub_connection.stop()
+        return True
 
     async def _handle_closed_subconnection(self, subconnection_id: str):
         """TODO document"""
+        print("[Connection] Remove sub connection", subconnection_id)
         self._sub_connections.pop(subconnection_id)
+        print("[Connection] Sub connections after removing:", self._sub_connections)
 
     async def _handle_connection_answer_message(self, data):
         """TODO document - handle incoming CONNECTION_ANSWER messages."""
@@ -375,8 +376,8 @@ class SubConnection(AsyncIOEventEmitter):
         self._pc.on("connectionstatechange", f=self._on_connection_state_change)
 
         # Stop SubConnection if one of the tracks ends
-        audio_track.on("ended", self.stop)
-        video_track.on("ended", self.stop)
+        # audio_track.on("ended", self.stop)
+        # video_track.on("ended", self.stop)
 
     async def start(self):
         """TODO document"""
