@@ -313,11 +313,11 @@ class Connection(AsyncIOEventEmitter):
         print(f"[Connection] {track.kind} Track received")
         if track.kind == "audio":
             self._incoming_audio = AudioTrackHandler(track)
-            sender = self._main_pc.addTrack(self._incoming_audio)
+            sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
             self._incoming_video = VideoTrackHandler(track)
-            sender = self._main_pc.addTrack(self._incoming_video)
+            sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             # TODO error handling?
