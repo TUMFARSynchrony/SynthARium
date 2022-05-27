@@ -33,7 +33,7 @@ function App() {
     const sessionId = "bbbef1d7d0";
     const participantId = "aa798c85d5";
     // Could be in useState initiator, but then the connection is executed twice / six times if in StrictMode. 
-    const newConnection = new Connection(userType, sessionId, participantId)
+    const newConnection = new Connection(userType, sessionId, participantId, true)
     setConnection(newConnection)
     return () => {
       newConnection.stop()

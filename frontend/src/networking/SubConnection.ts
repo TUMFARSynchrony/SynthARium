@@ -10,8 +10,9 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
   private initialOffer: ConnectionOffer;
   private connection: Connection;
   private stopped: boolean;
+  private logging: boolean;
 
-  constructor(offer: ConnectionOffer, connection: Connection) {
+  constructor(offer: ConnectionOffer, connection: Connection, logging: boolean) {
     super(true, "SubConnectionEvents");
     this.id = offer.id;
     this.remoteStream = new MediaStream();
@@ -22,13 +23,14 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
     this.initialOffer = offer;
     this.connection = connection;
     this.stopped = false;
+    this.logging = logging;
 
     this.log("Initiating SubConnection");
 
     // register event listeners for pc
     this.pc.addEventListener(
       "icegatheringstatechange",
-      () => this.log(`icegatheringstatechange: ${this.pc.iceGatheringState}`),
+      () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
       false
     );
     this.pc.addEventListener(
@@ -50,6 +52,16 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
       }
       this.remoteStream.addTrack(e.track);
       this.emit("remoteStreamChange", this.remoteStream);
+
+      e.track.onended = () => {
+        this.log(`${e.track.kind} track ended`);
+      };
+      e.track.onmute = () => {
+        this.log(`${e.track.kind} track muted`);
+      };
+      e.track.onunmute = () => {
+        this.log(`${e.track.kind} track un-muted`);
+      };
     });
   }
 
@@ -87,24 +99,26 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
   }
 
   private handleSignalingStateChange() {
-    this.log(`signalingState: ${this.pc.signalingState}`);
+    this.log(`SignalingState: ${this.pc.signalingState}`);
     if (this.pc.signalingState === "closed") {
       this.stop();
     }
   }
 
   private handleIceConnectionStateChange() {
-    this.log(`iceConnectionState: ${this.pc.iceConnectionState}`);
+    this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
     if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {
       this.stop();
     }
   }
 
-  private log(message: string) {
-    console.log(`[SubConnection - ${this.id}] ${message}`);
+  private log(message: any, ...optionalParams: any[]): void {
+    if (this.logging) {
+      console.log("[Connection]", message, ...optionalParams);
+    }
   }
 
-  private logError(message: string) {
-    console.error(`[SubConnection - ${this.id}] ${message}`);
+  private logError(message: any, ...optionalParams: any[]): void {
+    console.error("[Connection]", message, ...optionalParams);
   }
 }

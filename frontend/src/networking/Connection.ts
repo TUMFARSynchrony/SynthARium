@@ -27,12 +27,17 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   private dc: RTCDataChannel;
 
   private subConnections: Map<string, SubConnection>;
+  private logging: boolean;
 
-
-  constructor(userType: "participant" | "experimenter", sessionId?: string, participantId?: string) {
+  constructor(
+    userType: "participant" | "experimenter",
+    sessionId?: string,
+    participantId?: string,
+    logging: boolean = false
+  ) {
     super(true, "ConnectionEvents");
     if (userType === "participant" && (!participantId || !sessionId)) {
-      throw new Error("[Connection] userType participant requires the participantId and sessionId to be defined.");
+      throw new Error("userType participant requires the participantId and sessionId to be defined.");
     }
     this.sessionId = sessionId;
     this.participantId = participantId;
@@ -40,6 +45,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
     this._remoteStream = new MediaStream();
+    this.logging = logging;
 
     this.api = new EventHandler();
     this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
@@ -75,9 +81,9 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     this.setState(ConnectionState.CONNECTING);
 
     // Add localStream to peer connection
-    console.log("[Connection] Stating -- Adding localStream:", this.localStream);
+    this.log("Stating -- Adding localStream:", this.localStream);
     this.localStream?.getTracks().forEach((track) => {
-      console.log("Adding track", track);
+      this.log("Adding track", track);
       this.mainPc.addTrack(track, this.localStream);
     });
 
@@ -94,7 +100,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     }
     this.setState(state ?? ConnectionState.CLOSED);
 
-    console.log("[Connection] Stopping");
+    this.log("Stopping");
 
     this.subConnections.forEach(sc => sc.stop());
 
@@ -122,12 +128,9 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
 
   public sendMessage(endpoint: string, data: any) {
     if (this._state !== ConnectionState.CONNECTED) {
-      throw Error(`[Connection] Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
+      throw Error(`Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
     }
-
-    console.groupCollapsed(`[Connection] Sending ${endpoint} message`);
-    console.log(data);
-    console.groupEnd();
+    this.logGroup(`Sending ${endpoint} message`, data, true);
 
     const message: Message = {
       type: endpoint,
@@ -151,7 +154,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     // register event listeners for pc
     this.mainPc.addEventListener(
       "icegatheringstatechange",
-      () => console.log(`[Connection] icegatheringstatechange: ${this.mainPc.iceGatheringState}`),
+      () => this.log(`IceGatheringStateChange: ${this.mainPc.iceGatheringState}`),
       false
     );
     this.mainPc.addEventListener(
@@ -167,12 +170,10 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
 
     // Receive audio / video
     this.mainPc.addEventListener("track", (e) => {
-      console.groupCollapsed(`[Connection] Received ${e.track.kind} track from remote`);
-      console.log(e);
-      console.groupEnd();
+      this.logGroup(`Received ${e.track.kind} track from remote`, e, true);
 
       if (e.track.kind !== "video" && e.track.kind !== "audio") {
-        console.error("[Connection] Received track with unknown kind:", e.track.kind);
+        this.logError("Received track with unknown kind:", e.track.kind);
         return;
       }
 
@@ -182,7 +183,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   }
 
   private handleIceConnectionStateChange() {
-    console.log(`[Connection] iceConnectionState: ${this.mainPc.iceConnectionState}`);
+    this.log(`IceConnectionState: ${this.mainPc.iceConnectionState}`);
     if (["disconnected", "closed"].includes(this.mainPc.iceConnectionState)) {
       this.stop();
       return;
@@ -193,7 +194,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   }
 
   private handleSignalingStateChange() {
-    console.log(`[Connection] signalingState: ${this.mainPc.signalingState}`);
+    this.log(`SignalingState: ${this.mainPc.signalingState}`);
     if (this.mainPc.signalingState === "closed") {
       this.stop();
     }
@@ -202,11 +203,11 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   private initDataChannel() {
     this.dc = this.mainPc.createDataChannel("API");
     this.dc.onclose = (_) => {
-      console.log("[Connection] datachannel onclose");
+      this.log("datachannel closed");
       this.stop();
     };
     this.dc.onopen = (_) => {
-      console.log("[Connection] datachannel onopen");
+      this.log("datachannel opened");
       this.setState(ConnectionState.CONNECTED);
     };
     this.dc.onmessage = this.handleDcMessage.bind(this);
@@ -217,14 +218,14 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     try {
       message = JSON.parse(e.data);
     } catch (error) {
-      console.error("[Connection] Failed to parse datachannel message received from the server.");
+      this.logError("Failed to parse datachannel message received from the server.");
       return;
     }
     if (!isValidMessage(message)) {
-      console.error("[Connection] Received invalid message.", message);
+      this.logError("Received invalid message.", message);
       return;
     }
-    console.log("[Connection] Received", message);
+    this.logGroup("DataChannel: received message", message, false);
     this.api.emit(message.type, message.data);
   }
 
@@ -270,7 +271,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
         user_type: "experimenter",
       };
     }
-    console.log("[Connection] Sending initial offer");
+    this.log("Sending initial offer");
 
     let response;
     try {
@@ -283,13 +284,13 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
         mode: "cors", // TODO for dev only
       });
     } catch (error) {
-      console.error("[Connection] Failed to connect to backend.", error.message);
+      this.logError("Failed to connect to backend.", error.message);
       this.setState(ConnectionState.FAILED);
       return;
     }
 
     if (!response.ok) {
-      console.error("[Connection] Failed to connect to backend. Response not ok");
+      this.logError("Failed to connect to backend. Response not ok");
       this.setState(ConnectionState.FAILED);
       return;
     }
@@ -297,14 +298,11 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
 
     const answer = await response.json();
     if (answer.type !== "SESSION_DESCRIPTION") {
-      console.log(
-        "[Connection] Received unexpected answer from backend. type:",
-        answer.type
-      );
+      this.log("Received unexpected answer from backend. type:", answer.type);
       return;
     }
 
-    console.log("[Connection] Received answer:", answer);
+    this.log("Received answer:", answer);
 
     const remoteDescription = answer.data;
     await this.mainPc.setRemoteDescription(remoteDescription);
@@ -312,19 +310,41 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
 
   private async handleConnectionOffer(data: any): Promise<void> {
     if (!isValidConnectionOffer(data)) {
-      console.error("[Connection] received invalid CONNECTION_OFFER.");
+      this.logError("Received invalid CONNECTION_OFFER.");
       return;
     }
-    const subConnection = new SubConnection(data, this);
+    const subConnection = new SubConnection(data, this, this.logging);
     this.subConnections.set(subConnection.id, subConnection);
     subConnection.on("remoteStreamChange", async (_) => {
       this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     subConnection.on("connectionClosed", async (id) => {
-      console.log("[Connection] Subconnection connectionClosed event emitted. Removing subConnection:", id);
+      this.log("SubConnection \"connectionClosed\" event emitted. Removing SubConnection:", id);
       this.subConnections.delete(id as string);
       this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     await subConnection.start();
+  }
+
+  private logGroup(message: any, contents: any, collapsed?: boolean): void {
+    if (this.logging) {
+      if (collapsed) {
+        console.groupCollapsed("[Connection]", message);
+      } else {
+        console.group("[Connection]", message);
+      }
+      console.log(contents);
+      console.groupEnd();
+    }
+  }
+
+  private log(message: any, ...optionalParams: any[]): void {
+    if (this.logging) {
+      console.log("[Connection]", message, ...optionalParams);
+    }
+  }
+
+  private logError(message: any, ...optionalParams: any[]): void {
+    console.error("[Connection]", message, ...optionalParams);
   }
 }
