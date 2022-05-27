@@ -33,7 +33,7 @@ export class EventHandler<T> {
 		}
 	}
 
-	public async trigger(event: string, data: any): Promise<void> {
+	public emit(event: string, data: any): Promise<void[]> {
 		const handlers = this.eventHandlers.get(event);
 
 		if (this.warnNoHandler && (!handlers || handlers.length === 0)) {
@@ -41,6 +41,6 @@ export class EventHandler<T> {
 			return;
 		}
 
-		await Promise.all(handlers.map(handler => handler(data)));
+		return Promise.all(handlers.map(handler => handler(data)));
 	}
 }

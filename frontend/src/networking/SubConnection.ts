@@ -49,7 +49,7 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
         return;
       }
       this.remoteStream.addTrack(e.track);
-      this.trigger("remoteStreamChange", this.remoteStream);
+      this.emit("remoteStreamChange", this.remoteStream);
     });
   }
 
@@ -83,7 +83,7 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
     });
 
     this.pc.close();
-    this.trigger("connectionClosed", this.id);
+    this.emit("connectionClosed", this.id);
   }
 
   private handleSignalingStateChange() {
