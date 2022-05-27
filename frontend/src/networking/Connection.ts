@@ -56,6 +56,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * @param participantId participant Id. Only required / used if userType === "participant".
    * @param logging Whether logging should be enabled. passed to {@link ConnectionBase}
    * 
+   * @throws Error if userType === "participant" and one of: participantId or sessionId are missing.  
    * @see Connection class description for details about the class.
    */
   constructor(
@@ -112,7 +113,9 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Start the connection.
-   * @param localStream optional
+   * @param localStream optional. {@link MediaStream} that is used as the participants stream.  
+   * @throws error if `this.userType` === participant and localStream is not given,
+   *   or if the connection {@link state} is not NEW.
    */
   public async start(localStream?: MediaStream) {
     if (!localStream && this.userType === "participant") {
