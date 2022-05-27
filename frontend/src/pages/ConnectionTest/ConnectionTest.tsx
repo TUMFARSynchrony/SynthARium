@@ -2,7 +2,8 @@ import * as React from "react";
 import { useRef, useEffect, useState } from "react";
 
 import "./ConnectionTest.css";
-import Connection, { ConnectionState } from "../../networking/Connection";
+import Connection from "../../networking/Connection";
+import ConnectionState from "../../networking/ConnectionState";
 
 
 const ConnectionTest = (props: {

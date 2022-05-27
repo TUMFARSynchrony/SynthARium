@@ -1,17 +1,12 @@
 import { BACKEND } from "../utils/constants";
+import ConnectionBase from "./ConnectionBase";
+import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
 import { isValidConnectionOffer, isValidMessage, Message } from "./MessageTypes";
 import SubConnection from "./SubConnection";
 
-export enum ConnectionState {
-  NEW,
-  CONNECTING,
-  CONNECTED,
-  CLOSED,
-  FAILED
-}
 
-export default class Connection extends EventHandler<ConnectionState | MediaStream | MediaStream[]> {
+export default class Connection extends ConnectionBase<ConnectionState | MediaStream | MediaStream[]> {
   readonly api: EventHandler<any>;
   readonly sessionId?: string;
   readonly participantId?: string;
@@ -27,7 +22,6 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   private dc: RTCDataChannel;
 
   private subConnections: Map<string, SubConnection>;
-  private logging: boolean;
 
   constructor(
     userType: "participant" | "experimenter",
@@ -35,7 +29,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     participantId?: string,
     logging: boolean = false
   ) {
-    super(true, "ConnectionEvents");
+    super(true, "Connection", logging);
     if (userType === "participant" && (!participantId || !sessionId)) {
       throw new Error("userType participant requires the participantId and sessionId to be defined.");
     }
@@ -45,7 +39,6 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
     this._remoteStream = new MediaStream();
-    this.logging = logging;
 
     this.api = new EventHandler();
     this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
@@ -319,32 +312,10 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
       this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     subConnection.on("connectionClosed", async (id) => {
-      this.log("SubConnection \"connectionClosed\" event emitted. Removing SubConnection:", id);
+      this.log("SubConnection \"connectionClosed\" event received. Removing SubConnection:", id);
       this.subConnections.delete(id as string);
       this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     await subConnection.start();
-  }
-
-  private logGroup(message: any, contents: any, collapsed?: boolean): void {
-    if (this.logging) {
-      if (collapsed) {
-        console.groupCollapsed("[Connection]", message);
-      } else {
-        console.group("[Connection]", message);
-      }
-      console.log(contents);
-      console.groupEnd();
-    }
-  }
-
-  private log(message: any, ...optionalParams: any[]): void {
-    if (this.logging) {
-      console.log("[Connection]", message, ...optionalParams);
-    }
-  }
-
-  private logError(message: any, ...optionalParams: any[]): void {
-    console.error("[Connection]", message, ...optionalParams);
   }
 }

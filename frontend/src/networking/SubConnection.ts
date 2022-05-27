@@ -1,8 +1,8 @@
 import Connection from "./Connection";
-import { EventHandler } from "./EventHandler";
+import ConnectionBase from "./ConnectionBase";
 import { ConnectionOffer } from "./MessageTypes";
 
-export default class SubConnection extends EventHandler<MediaStream | string> {
+export default class SubConnection extends ConnectionBase<MediaStream | string> {
   readonly id: string;
   readonly remoteStream: MediaStream;
 
@@ -10,10 +10,9 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
   private initialOffer: ConnectionOffer;
   private connection: Connection;
   private stopped: boolean;
-  private logging: boolean;
 
   constructor(offer: ConnectionOffer, connection: Connection, logging: boolean) {
-    super(true, "SubConnectionEvents");
+    super(true, `SubConnection - ${offer.id}`, logging);
     this.id = offer.id;
     this.remoteStream = new MediaStream();
     const config: any = {
@@ -110,15 +109,5 @@ export default class SubConnection extends EventHandler<MediaStream | string> {
     if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {
       this.stop();
     }
-  }
-
-  private log(message: any, ...optionalParams: any[]): void {
-    if (this.logging) {
-      console.log("[Connection]", message, ...optionalParams);
-    }
-  }
-
-  private logError(message: any, ...optionalParams: any[]): void {
-    console.error("[Connection]", message, ...optionalParams);
   }
 }
