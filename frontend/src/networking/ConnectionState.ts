@@ -1,3 +1,6 @@
+/**
+ * Enum for Connection state.
+ */
 enum ConnectionState {
 	NEW,
 	CONNECTING,

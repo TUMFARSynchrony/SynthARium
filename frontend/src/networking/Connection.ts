@@ -6,23 +6,58 @@ import { isValidConnectionOffer, isValidMessage, Message } from "./MessageTypes"
 import SubConnection from "./SubConnection";
 
 
+/**
+ * Class handling the connection with the backend.
+ * 
+ * Provides {@link EventHandler} events that can be used to detect changes.
+ * Provided Events:
+ * - `connectionStateChange`: emitted when the connection {@link state} changes. The event contains the current {@link ConnectionState}.
+ * - `remoteStreamChange`: emitted when {@link remoteStream} changes. The event contains {@link remoteStream}. 
+ *    Changes should be inplace, so replacing the previous data is not required.
+ * - `remotePeerStreamsChange`: emitted when {@link peerStreams} changes. The event contains {@link peerStreams}. 
+ *    Changes should be inplace, so replacing the previous data is not required.
+ * 
+ * To listen to incoming datachannel messages, use the {@link api} EventHandler.
+ *
+ * @see EventHandler
+ * @extends ConnectionBase
+ */
 export default class Connection extends ConnectionBase<ConnectionState | MediaStream | MediaStream[]> {
+
+  /**
+   * EventHandler for incoming messages over the datachannel.
+   * 
+   * @example ```js
+   * function handleSuccess() {...}
+   * function handleError() {...}
+   * // Register event handlers
+   * connection.api.on("SUCCESS", handleSuccess);
+   * connection.api.on("ERROR", handleError)
+   * ```
+   * @see EventHandler
+   */
   readonly api: EventHandler<any>;
   readonly sessionId?: string;
   readonly participantId?: string;
   readonly userType: "participant" | "experimenter";
 
-  // Private variables
   private _state: ConnectionState;
-
   private localStream: MediaStream;
   private _remoteStream: MediaStream;
-
-  private mainPc: RTCPeerConnection; // RTCPeerConnection | undefined
+  private mainPc: RTCPeerConnection;
   private dc: RTCDataChannel;
-
   private subConnections: Map<string, SubConnection>;
 
+  /**
+   * Initiate new Connection.
+   * 
+   * @param userType type of user this connection identify as.
+   * @param sessionId session Id. Only required / used if userType === "participant".
+   * @param participantId participant Id. Only required / used if userType === "participant".
+   * @param logging Whether logging should be enabled. passed to {@link ConnectionBase}
+   * 
+   * @see Connection class description for details about the class.
+   */
   constructor(
     userType: "participant" | "experimenter",
     sessionId?: string,
@@ -47,10 +82,18 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.initDataChannel();
   }
 
+  /**
+   * Get remote stream of this client. 
+   * 
+   * The remote stream is the stream received from the backend, based on the stream send from this client.
+   */
   public get remoteStream(): MediaStream {
     return this._remoteStream;
   }
 
+  /**
+   * Get the streams from other clients connected to the same experiment (peers).
+   */
   public get peerStreams(): MediaStream[] {
     const streams: MediaStream[] = [];
     this.subConnections.forEach(sc => {
@@ -59,10 +102,18 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     return streams;
   }
 
+  /**
+   * Get the state the experiment is currently in.
+   * @see ConnectionState
+   */
   public get state(): ConnectionState {
     return this._state;
   }
 
+  /**
+   * Start the connection.
+   * @param localStream optional
+   */
   public async start(localStream?: MediaStream) {
     if (!localStream && this.userType === "participant") {
       throw new Error("Connection.start(): localStream is required for user type participant.");
@@ -83,10 +134,24 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     await this.negotiate();
   }
 
+  /**
+   * Stop the connection.
+   * 
+   * Changes the state to CLOSED, closes datachannel and all streams and internal connections.
+   * 
+   * @fires `connectionStateChange` event
+   * @param closeSenders default true - If true, streams send by this connection (localstream) will be closed.
+   */
   public stop(closeSenders: boolean = true) {
     this.internalStop(undefined, closeSenders);
   }
 
+  /**
+   * Internal stop function with extended functionality. Intended for internal use only!
+   * @fires `connectionStateChange` event
+   * @param state default CLOSED - state the connection should set to
+   * @param closeSenders default true - If true, streams send by this connection (localstream) will be closed.
+   */
   private internalStop(state?: ConnectionState, closeSenders: boolean = true) {
     if ([ConnectionState.CLOSED, ConnectionState.FAILED].includes(this._state)) {
       return;
@@ -119,6 +184,15 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.mainPc.close();
   }
 
+  /**
+   * Construct and send a Message object to the backend using the datachannel.
+   * @param endpoint Backend API endpoint / message type. See link bellow for details. 
+   * @param data message data. See link bellow for details. 
+   * 
+   * @throws Error if the connection {@link state} is not CONNECTED.
+   * 
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
+   */
   public sendMessage(endpoint: string, data: any) {
     if (this._state !== ConnectionState.CONNECTED) {
       throw Error(`Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
@@ -133,11 +207,16 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.dc.send(stringified);
   }
 
+  /** 
+   * Update the connection state.
+   * @fires `connectionStateChange` event
+   */
   private setState(state: ConnectionState): void {
     this._state = state;
     this.emit("connectionStateChange", state);
   }
 
+  /** Initialize `this.mainPc` and add event listeners. */
   private initMainPeerConnection() {
     const config: any = {
       sdpSemantics: "unified-plan",
@@ -175,6 +254,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     });
   }
 
+  /** Handle the `iceconnectionstatechange` event on `this.mainPc`. */
   private handleIceConnectionStateChange() {
     this.log(`IceConnectionState: ${this.mainPc.iceConnectionState}`);
     if (["disconnected", "closed"].includes(this.mainPc.iceConnectionState)) {
@@ -186,6 +266,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     }
   }
 
+  /** Handle the `signalingstatechange` event on `this.mainPc`. */
   private handleSignalingStateChange() {
     this.log(`SignalingState: ${this.mainPc.signalingState}`);
     if (this.mainPc.signalingState === "closed") {
@@ -193,6 +274,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     }
   }
 
+  /** Initialize `this.dc` and add event listeners. */
   private initDataChannel() {
     this.dc = this.mainPc.createDataChannel("API");
     this.dc.onclose = (_) => {
@@ -206,6 +288,13 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.dc.onmessage = this.handleDcMessage.bind(this);
   }
 
+  /**
+   * Handle an incoming message on the datachannel. 
+   * @param e incoming {@link MessageEvent}
+   * 
+   * @fires event in `this.api`, if `e` contains valid Message (see link bellow).
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
+   */
   private handleDcMessage(e: MessageEvent<any>) {
     let message;
     try {
@@ -222,6 +311,11 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.api.emit(message.type, message.data);
   }
 
+  /**
+   * Negotiate the connection with the backend. 
+   * 
+   * Used to start the initial / main connection with the backend.
+   */
   private async negotiate() {
     const offer = await this.mainPc.createOffer({
       offerToReceiveVideo: true,
@@ -301,6 +395,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     await this.mainPc.setRemoteDescription(remoteDescription);
   }
 
+  /**
+   * Handle incoming CONNECTION_OFFER messages from the backend connection.
+   * 
+   * If the offer is valid, start a new SubConnection, add event listeners and store it in `this.subConnections`.
+   * @param data message data from the incoming message of type "CONNECTION_OFFER".
+   * 
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
+   */
   private async handleConnectionOffer(data: any): Promise<void> {
     if (!isValidConnectionOffer(data)) {
       this.logError("Received invalid CONNECTION_OFFER.");
