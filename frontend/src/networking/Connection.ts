@@ -316,6 +316,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
       return;
     }
     const subConnection = new SubConnection(data, this);
+    this.subConnections.set(subConnection.id, subConnection);
     subConnection.on("remoteStreamChange", async (_) => {
       this.emit("remotePeerStreamsChange", this.peerStreams);
     });
@@ -325,6 +326,5 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
       this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     await subConnection.start();
-    this.subConnections.set(subConnection.id, subConnection);
   }
 }
