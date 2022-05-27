@@ -325,6 +325,7 @@ function ReplaceConnection(props: {
 
 function Video(props: { title: string, srcObject: MediaStream, mutedAudio?: boolean; }): JSX.Element {
   const refVideo = useRef<HTMLVideoElement>(null);
+  const [info, setInfo] = useState("");
 
   const setSrcObj = (srcObj: MediaStream) => {
     if (refVideo.current && srcObj.active) {
@@ -346,10 +347,38 @@ function Video(props: { title: string, srcObject: MediaStream, mutedAudio?: bool
     };
   }, [props.srcObject]);
 
+  useEffect(() => {
+    // update info string containing the fps counter
+    const interval = setInterval(() => {
+      if (refVideo.current?.srcObject === null) return;
+
+      const videoTracks = props.srcObject.getVideoTracks();
+      if (videoTracks.length === 0) return;
+
+      const fps = videoTracks[0].getSettings().frameRate;
+      if (!fps) {
+        if (info !== "") {
+          setInfo("");
+        }
+        return;
+      }
+      const newInfo = `${fps.toFixed(3)} fps`;
+      if (info !== newInfo) {
+        setInfo(newInfo);
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [info, props.srcObject]);
+
+
   return (
     <div className={"videoWrapper"}>
       <p>{props.title}{props.srcObject.active ? "" : " [inactive]"}</p>
       <video ref={refVideo} autoPlay playsInline width={300}></video>
+      <div className="fpsCounter">{info}</div>
     </div>
   );
 }

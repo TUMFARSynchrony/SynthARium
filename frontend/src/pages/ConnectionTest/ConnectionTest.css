@@ -38,12 +38,21 @@ video {
 }
 
 .videoWrapper {
+	position: relative;
 	margin: 5px;
 	max-width: 50vw;
 }
 
 .videoWrapper>p {
 	margin: 5px;
+}
+
+.videoWrapper .fpsCounter {
+	color: rgb(0, 255, 0);
+	position: absolute;
+	font-size: 14px;
+	bottom: 8px;
+	right: 8px;
 }
 
 .ownStreams {
