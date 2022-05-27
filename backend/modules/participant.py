@@ -68,7 +68,7 @@ class Participant(User):
         experiment.add_participant(self)
 
         # Add API endpoints
-        self.on("CHAT", self._handle_chat)
+        self.on_message("CHAT", self._handle_chat)
 
     def __str__(self) -> str:
         """Get string representation of this participant.

@@ -68,19 +68,19 @@ class Experimenter(User):
         self._experiment = None
 
         # Add API endpoints
-        self.on("GET_SESSION_LIST", self._handle_get_session_list)
-        self.on("SAVE_SESSION", self._handle_save_session)
-        self.on("DELETE_SESSION", self._handle_delete_session)
-        self.on("CREATE_EXPERIMENT", self._handle_create_experiment)
-        self.on("JOIN_EXPERIMENT", self._handle_join_experiment)
-        self.on("START_EXPERIMENT", self._handle_start_experiment)
-        self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
-        self.on("ADD_NOTE", self._handle_add_note)
-        self.on("CHAT", self._handle_chat)
-        self.on("KICK_PARTICIPANT", self._handle_kick)
-        self.on("BAN_PARTICIPANT", self._handle_ban)
-        self.on("MUTE", self._handle_mute)
-        self.on("SET_FILTERS", self._handle_set_filters)
+        self.on_message("GET_SESSION_LIST", self._handle_get_session_list)
+        self.on_message("SAVE_SESSION", self._handle_save_session)
+        self.on_message("DELETE_SESSION", self._handle_delete_session)
+        self.on_message("CREATE_EXPERIMENT", self._handle_create_experiment)
+        self.on_message("JOIN_EXPERIMENT", self._handle_join_experiment)
+        self.on_message("START_EXPERIMENT", self._handle_start_experiment)
+        self.on_message("STOP_EXPERIMENT", self._handle_stop_experiment)
+        self.on_message("ADD_NOTE", self._handle_add_note)
+        self.on_message("CHAT", self._handle_chat)
+        self.on_message("KICK_PARTICIPANT", self._handle_kick)
+        self.on_message("BAN_PARTICIPANT", self._handle_ban)
+        self.on_message("MUTE", self._handle_mute)
+        self.on_message("SET_FILTERS", self._handle_set_filters)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
