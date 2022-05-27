@@ -22,12 +22,11 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
 
   private localStream: MediaStream;
   private _remoteStream: MediaStream;
-  private _peerStreams: Map<string, MediaStream>;
 
   private mainPc: RTCPeerConnection; // RTCPeerConnection | undefined
   private dc: RTCDataChannel;
 
-  private subConnections: SubConnection[];
+  private subConnections: Map<string, SubConnection>;
 
 
   constructor(userType: "participant" | "experimenter", sessionId?: string, participantId?: string) {
@@ -38,10 +37,9 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
     this.sessionId = sessionId;
     this.participantId = participantId;
     this.userType = userType;
-    this.subConnections = [];
+    this.subConnections = new Map();
     this._state = ConnectionState.NEW;
     this._remoteStream = new MediaStream();
-    this._peerStreams = new Map();
 
     this.api = new EventHandler();
     this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
@@ -55,7 +53,11 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
   }
 
   public get peerStreams(): MediaStream[] {
-    return Array.from(this._peerStreams, ([_, value]) => value);
+    const streams: MediaStream[] = [];
+    this.subConnections.forEach(sc => {
+      streams.push(sc.remoteStream);
+    });
+    return streams;
   }
 
   public get state(): ConnectionState {
@@ -137,7 +139,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
 
   private setState(state: ConnectionState): void {
     this._state = state;
-    this.trigger("connectionStateChange", state);
+    this.emit("connectionStateChange", state);
   }
 
   private initMainPeerConnection() {
@@ -175,7 +177,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
       }
 
       this._remoteStream.addTrack(e.track);
-      this.trigger("remoteStreamChange", this._remoteStream);
+      this.emit("remoteStreamChange", this._remoteStream);
     });
   }
 
@@ -223,7 +225,7 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
       return;
     }
     console.log("[Connection] Received", message);
-    this.api.trigger(message.type, message.data);
+    this.api.emit(message.type, message.data);
   }
 
   private async negotiate() {
@@ -314,16 +316,15 @@ export default class Connection extends EventHandler<ConnectionState | MediaStre
       return;
     }
     const subConnection = new SubConnection(data, this);
-    this._peerStreams.set(data.id, subConnection.remoteStream);
     subConnection.on("remoteStreamChange", async (_) => {
-      this.trigger("remotePeerStreamsChange", this.peerStreams);
+      this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     subConnection.on("connectionClosed", async (id) => {
-      console.log("[Connection] Subconnection connectionClosed event triggered. Removing subConnection:", id);
-      this._peerStreams.delete(id as string);
-      this.trigger("remotePeerStreamsChange", this.peerStreams);
+      console.log("[Connection] Subconnection connectionClosed event emitted. Removing subConnection:", id);
+      this.subConnections.delete(id as string);
+      this.emit("remotePeerStreamsChange", this.peerStreams);
     });
     await subConnection.start();
-    this.subConnections.push(subConnection);
+    this.subConnections.set(subConnection.id, subConnection);
   }
 }
