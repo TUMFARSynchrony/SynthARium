@@ -9,6 +9,7 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Callable, Any, Coroutine, Tuple
+from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
@@ -57,6 +58,8 @@ class User(ABC):
     _muted_audio: bool
     _connection: _connection.Connection
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
+    _user_events: AsyncIOEventEmitter
+    __disconnected: bool
 
     def __init__(self, id: str, muted_video: bool = False, muted_audio: bool = False):
         """Instantiate new User base class.
@@ -76,6 +79,8 @@ class User(ABC):
         self._muted_video = muted_video
         self._muted_audio = muted_audio
         self._handlers = {}
+        self._user_events = AsyncIOEventEmitter()
+        self.__disconnected = False
 
     @property
     def muted_video(self) -> bool:
@@ -86,6 +91,11 @@ class User(ABC):
     def muted_audio(self) -> bool:
         """TODO Document"""
         return self._muted_audio
+
+    @property
+    def user_events(self) -> AsyncIOEventEmitter:
+        """TODO Document"""
+        return self._user_events
 
     def set_connection(self, connection: _connection.Connection):
         """Set the connection of this user.
@@ -101,6 +111,9 @@ class User(ABC):
         self._connection.add_listener(
             "state_change", self._handle_connection_state_change
         )
+        self._connection.add_listener(
+            "state_change", self._handle_connection_state_change_user
+        )
 
     def send(self, message: MessageDict):
         """Send a custom_types.message.MessageDict to the connected client.
@@ -115,6 +128,7 @@ class User(ABC):
     async def disconnect(self):
         """Disconnect.  Closes the connection with the client."""
         await self._connection.stop()
+        self._handle_disconnect
 
     async def subscribe_to(self, user: User):
         """TODO document"""
@@ -125,9 +139,24 @@ class User(ABC):
         assert video_track is not None
         assert audio_track is not None
 
-        await self._connection.add_outgoing_stream(
+        subconnection_id = await self._connection.add_outgoing_stream(
             video_track.subscribe(), audio_track.subscribe()
         )
+
+        # Close subconnection when user disconnects
+        @user.user_events.on("disconnected")
+        async def _handle_disconnect():
+            print(
+                f"[User - {self.id}] handle disconnected event from {user}: remove",
+                subconnection_id,
+            )
+            self.user_events.remove_listener("disconnected", _remove_handler)
+            await self._connection.stop_outgoing_stream(subconnection_id)
+
+        # Remove event listener from user when self disconnects.
+        @self.user_events.on("disconnected")
+        def _remove_handler():
+            user.user_events.remove_listener("disconnected", _handle_disconnect)
 
     def get_incoming_stream(
         self,
@@ -219,6 +248,21 @@ class User(ABC):
         # TODO Implement mute on connection (when connection is finished)
 
         # TODO Notify user about mute
+
+    def _handle_disconnect(self):
+        """TODO document"""
+        if self.__disconnected:
+            return
+        self.__disconnected = True
+        print(f"[User - {self.id}] Disconnected")
+        self._user_events.emit("disconnected")
+        self.user_events.remove_all_listeners()
+
+    def _handle_connection_state_change_user(self, state: ConnectionState):
+        """TODO Document"""
+        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            self._handle_disconnect()
+            self._user_events.emit("disconnected")
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
