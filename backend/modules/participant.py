@@ -31,6 +31,16 @@ class Participant(User):
     Has access to a different set of API endpoints than other Users.  API endpoints for
     participants are defined here.
 
+    Methods
+    -------
+    get_summary()
+        Get custom_types.participant_summary.ParticipantSummaryDict for this Participant
+        .
+    kick(reason)
+        Kick the Participant.
+    ban(reason)
+        Ban the Participant.
+
     See Also
     --------
     participant_factory : Instantiate connection with a new Participant based on WebRTC
@@ -86,7 +96,7 @@ class Participant(User):
     def get_summary(self) -> ParticipantSummaryDict:
         return self._participant_data.as_summary_dict()
 
-    async def kick(self, reason: str):
+    async def kick(self, reason: str) -> None:
         """Kick the participant.
 
         Notify the participant about the kick with a `KICK_NOTIFICATION` message and
@@ -104,7 +114,7 @@ class Participant(User):
 
         await self.disconnect()
 
-    async def ban(self, reason: str):
+    async def ban(self, reason: str) -> None:
         """Ban the participant.
 
         Notify the participant about the ban with a `BAN_NOTIFICATION` message and
@@ -123,7 +133,16 @@ class Participant(User):
         await self.disconnect()
 
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
-        """TODO Document"""
+        """Handler for connection "state_change" event.
+
+        Implements the abstract `_handle_connection_state_change` function in
+        modules.user.User.
+
+        Parameters
+        ----------
+        state : modules.connection_state.ConnectionState
+            New state of the connection this Participant has with the client.
+        """
         print("[Participant] handle state change. State:", state)
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             print("[Participant] Removing self from experiment")

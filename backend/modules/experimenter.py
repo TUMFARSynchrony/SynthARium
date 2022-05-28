@@ -99,7 +99,16 @@ class Experimenter(User):
         return f"Experimenter(id={self.id}, experiment={experiment_id})"
 
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
-        """TODO Document"""
+        """Handler for connection "state_change" event.
+
+        Implements the abstract `_handle_connection_state_change` function in
+        modules.user.User.
+
+        Parameters
+        ----------
+        state : modules.connection_state.ConnectionState
+            New state of the connection this Experimenter has with the client.
+        """
         print("[Experimenter] handle state change. State:", state)
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             if self._experiment is not None:
@@ -111,8 +120,8 @@ class Experimenter(User):
         if state is ConnectionState.CONNECTED:
             await self._subscribe_to_participants_streams()
 
-    async def _subscribe_to_participants_streams(self):
-        """TODO document"""
+    async def _subscribe_to_participants_streams(self) -> None:
+        """Subscribe to all participants in `self._experiment`."""
         if self._experiment is not None:
             tasks = []
             for p in self._experiment.participants.values():

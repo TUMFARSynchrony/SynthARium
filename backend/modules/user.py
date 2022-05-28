@@ -24,7 +24,10 @@ import modules.connection as _connection
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     """User class representing a connected client.
 
-    Provides message handling logic for child classes.
+    Provides client connection and message handling logic for child classes.
+
+    Extends AsyncIOEventEmitter, providing the following events:
+    - "disconnected": emitted when the connection with the client closes.
 
     Attributes
     ----------
@@ -33,7 +36,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     Methods
     -------
-    on(endpoint, handler)
+    on_message(endpoint, handler)
         Register an `handler` function for incoming messages with type `endpoint`.
     handle_message(message)
         Handle incoming message from client.
@@ -43,15 +46,23 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         Send a custom_types.message.MessageDict to the connected client.
     disconnect()
         Closes the connection with the client.
-    subscribe_to()
-        TODO WIP document when implemented
-    set_muted()
-        TODO WIP document when implemented
+    subscribe_to(user)
+        Add incoming tracks from `user` to this User.
+    set_muted(video, audio)
+        Set the muted state for this user
+    get_summary()
+        Get summary of User for client
 
     See Also
     --------
     modules.participant.Participant : Participant implementation of User.
     modules.experimenter.Experimenter : Experimenter implementation of User.
+
+    Notes
+    -----
+    Messages received from the client are handled using the custom event handler in User
+    (add handler using: `on_message` and internally emit event using: `handle_message`).
+    Do not confuse this with the events the User provides using the AsyncIOEventEmitter.
     """
 
     id: str
@@ -61,7 +72,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __disconnected: bool
 
-    def __init__(self, id: str, muted_video: bool = False, muted_audio: bool = False):
+    def __init__(
+        self, id: str, muted_video: bool = False, muted_audio: bool = False
+    ) -> None:
         """Instantiate new User base class.
 
         Should only be called by child classes.
@@ -84,20 +97,34 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     @property
     def muted_video(self) -> bool:
-        """TODO Document"""
+        """bool indicating if the users video is muted."""
         return self._muted_video
 
     @property
     def muted_audio(self) -> bool:
-        """TODO Document"""
+        """bool indicating if the users audio is muted."""
         return self._muted_audio
 
     def get_summary(self) -> ParticipantSummaryDict | None:
-        """TODO document"""
-        print("USED USER get_summary")
+        """Get summary of User for client.
+
+        Base implementation returns None.  Should be implemented in classes extending
+        User to provide a summary.
+
+        Returns
+        -------
+        ParticipantSummaryDict | None
+            Summary of user.  Subclasses may override this function and return values
+            other than None.
+
+        See Also
+        --------
+        modules.participant.Participant.get_summary
+            Participant implementation for get_summary.
+        """
         return None
 
-    def set_connection(self, connection: _connection.Connection):
+    def set_connection(self, connection: _connection.Connection) -> None:
         """Set the connection of this user.
 
         This should only be used once before using this User.  See factory functions.
@@ -115,7 +142,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             "state_change", self._handle_connection_state_change_user
         )
 
-    def send(self, message: MessageDict):
+    def send(self, message: MessageDict) -> None:
         """Send a custom_types.message.MessageDict to the connected client.
 
         Parameters
@@ -125,13 +152,19 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
         self._connection.send(message)
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
         """Disconnect.  Closes the connection with the client."""
         await self._connection.stop()
         self._handle_disconnect
 
-    async def subscribe_to(self, user: User):
-        """TODO document"""
+    async def subscribe_to(self, user: User) -> None:
+        """Add incoming tracks from `user` to this User.
+
+        Parameters
+        ----------
+        user : modules.user.User
+            Source User this User should subscribe to.
+        """
         print(f"[User] {self.id} subscribing to {user.id}.")
         video_track, audio_track = user.get_incoming_stream()
 
@@ -162,7 +195,13 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     def get_incoming_stream(
         self,
     ) -> Tuple[VideoTrackHandler | None, AudioTrackHandler | None]:
-        """TODO document"""
+        """Get incoming video and audio tracks from this User.
+
+        Returns
+        -------
+        tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler or
+            None
+        """
         return (self._connection.incoming_video, self._connection.incoming_audio)
 
     def on_message(
@@ -225,7 +264,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             if response is not None:
                 self.send(response)
 
-    def set_muted(self, video: bool, audio: bool):
+    def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.
 
         Parameters
@@ -250,8 +289,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         # TODO Notify user about mute
 
-    def _handle_disconnect(self):
-        """TODO document"""
+    def _handle_disconnect(self) -> None:
+        """Handle this user disconnecting.
+
+        Emit "disconnected" event and remove all event listeners on user.
+        """
         if self.__disconnected:
             return
         self.__disconnected = True
@@ -259,12 +301,26 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self.emit("disconnected")
         self.remove_all_listeners()
 
-    def _handle_connection_state_change_user(self, state: ConnectionState):
-        """TODO Document"""
+    def _handle_connection_state_change_user(self, state: ConnectionState) -> None:
+        """Calls _handle_disconnect if state is CLOSED or FAILED.
+
+        Parameters
+        ----------
+        state : modules.connection_state.ConnectionState
+            New state of `self._connection`.
+        """
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             self._handle_disconnect()
-            self.emit("disconnected")
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        """Handler for connection "state_change" event.
+
+        Must be implemented in classes extending User.
+
+        Parameters
+        ----------
+        state : modules.connection_state.ConnectionState
+            New state of the connection this user has with the client.
+        """
         pass
