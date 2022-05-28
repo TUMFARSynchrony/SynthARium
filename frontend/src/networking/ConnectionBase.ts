@@ -10,7 +10,7 @@ import { ParticipantSummary } from "./MessageTypes";
 export default class ConnectionBase<T> extends EventHandler<T> {
 
   readonly logging: boolean;
-  protected participantSummary: ParticipantSummary | null;
+  protected _participantSummary: ParticipantSummary | null;
   private name: string;
 
   /**
@@ -23,7 +23,15 @@ export default class ConnectionBase<T> extends EventHandler<T> {
     super(warnNoHandler, `${name}#Event`);
     this.logging = logging;
     this.name = name;
-    this.participantSummary = null;
+    this._participantSummary = null;
+  }
+
+  /**
+   * Get participant summary for this connection.
+   * @returns null if no summary was provided, otherwise {@link ParticipantSummary}.
+   */
+  public get participantSummary(): ParticipantSummary | null {
+    return this._participantSummary;
   }
 
   /**

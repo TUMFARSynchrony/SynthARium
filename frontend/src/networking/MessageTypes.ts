@@ -45,3 +45,8 @@ export type ParticipantSummary = {
 		target: string,
 	}[];
 };
+
+export type PeerConnection = {
+	stream: MediaStream,
+	summary: ParticipantSummary | null;
+};

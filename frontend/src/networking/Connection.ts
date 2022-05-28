@@ -2,7 +2,7 @@ import { BACKEND } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
-import { isValidConnectionOffer, isValidMessage, Message, ParticipantSummary } from "./MessageTypes";
+import { isValidConnectionOffer, isValidMessage, Message, PeerConnection } from "./MessageTypes";
 import SubConnection from "./SubConnection";
 
 
@@ -93,15 +93,9 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   }
 
   /**
-   * Get the participant summary for this client.
-   * @returns null if no summary was provided, otherwise {@link ParticipantSummary} for this participant.
-   */
-  public get ownParticipantSummary(): ParticipantSummary | null {
-    return this.participantSummary;
-  }
-
-  /**
    * Get the streams from other clients connected to the same experiment (peers).
+   * @returns MediaStream array containing only the peer streams.
+   * @see peerConnections to get the peer streams and participant summaries. 
    */
   public get peerStreams(): MediaStream[] {
     const streams: MediaStream[] = [];
@@ -109,6 +103,22 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       streams.push(sc.remoteStream);
     });
     return streams;
+  }
+
+  /**
+   * Get information and streams from other clients connected to the same experiment (peers).
+   * @returns list of {@link PeerConnection}s
+   * @see peerStreams to get only the peer streams without the participant summary.
+   */
+  public get peerConnections(): PeerConnection[] {
+    const connections: PeerConnection[] = [];
+    this.subConnections.forEach(sc => {
+      connections.push({
+        stream: sc.remoteStream,
+        summary: sc.participantSummary
+      });
+    });
+    return connections;
   }
 
   /**
@@ -402,7 +412,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
     this.log("Received answer:", answer);
 
-    this.participantSummary = answer.participant_summary;
+    this._participantSummary = answer.participant_summary;
     const remoteDescription = answer.data;
     await this.mainPc.setRemoteDescription(remoteDescription);
   }
