@@ -13,6 +13,7 @@ export type ConnectionOffer = {
 		sdp: string;
 		type: string;
 	};
+	participant_summary: ParticipantSummary | null;
 };
 
 export function isValidConnectionOffer(data: any): data is ConnectionOffer {
@@ -21,5 +22,26 @@ export function isValidConnectionOffer(data: any): data is ConnectionOffer {
 		&& "offer" in data
 		&& "sdp" in data.offer
 		&& "type" in data.offer
+		&& "participant_summary" in data
 	);
 }
+
+export type ParticipantSummary = {
+	first_name: string,
+	last_name: string,
+	position: {
+		x: number,
+		y: number,
+		z: number,
+	};
+	size: {
+		width: number,
+		height: number,
+	};
+	chat: {
+		message: string,
+		time: number,
+		author: string,
+		target: string,
+	}[];
+};

@@ -2,7 +2,7 @@ import { BACKEND } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
-import { isValidConnectionOffer, isValidMessage, Message } from "./MessageTypes";
+import { isValidConnectionOffer, isValidMessage, Message, ParticipantSummary } from "./MessageTypes";
 import SubConnection from "./SubConnection";
 
 
@@ -90,6 +90,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    */
   public get remoteStream(): MediaStream {
     return this._remoteStream;
+  }
+
+  /**
+   * Get the participant summary for this client.
+   * @returns null if no summary was provided, otherwise {@link ParticipantSummary} for this participant.
+   */
+  public get ownParticipantSummary(): ParticipantSummary | null {
+    return this.participantSummary;
   }
 
   /**
@@ -394,6 +402,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
     this.log("Received answer:", answer);
 
+    this.participantSummary = answer.participant_summary;
     const remoteDescription = answer.data;
     await this.mainPc.setRemoteDescription(remoteDescription);
   }

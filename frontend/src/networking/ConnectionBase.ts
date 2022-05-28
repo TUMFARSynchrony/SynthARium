@@ -1,4 +1,5 @@
 import { EventHandler } from "./EventHandler";
+import { ParticipantSummary } from "./MessageTypes";
 
 
 /**
@@ -9,6 +10,7 @@ import { EventHandler } from "./EventHandler";
 export default class ConnectionBase<T> extends EventHandler<T> {
 
   readonly logging: boolean;
+  protected participantSummary: ParticipantSummary | null;
   private name: string;
 
   /**
@@ -21,6 +23,7 @@ export default class ConnectionBase<T> extends EventHandler<T> {
     super(warnNoHandler, `${name}#Event`);
     this.logging = logging;
     this.name = name;
+    this.participantSummary = null;
   }
 
   /**
