@@ -22,7 +22,6 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.initialOffer = offer;
     this.connection = connection;
     this.stopped = false;
-    this.logging = logging;
 
     this.log("Initiating SubConnection");
 

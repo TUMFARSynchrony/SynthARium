@@ -8,7 +8,7 @@ import { EventHandler } from "./EventHandler";
  */
 export default class ConnectionBase<T> extends EventHandler<T> {
 
-  protected logging: boolean;
+  readonly logging: boolean;
   private name: string;
 
   /**

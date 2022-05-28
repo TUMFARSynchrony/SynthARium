@@ -265,7 +265,7 @@ function ReplaceConnection(props: {
 
   const updateConnection = (userType: "participant" | "experimenter", sessionId: string, participantId: string) => {
     console.log(`%c[ReplaceConnection] Replaced connection with new parameters: ${userType}, ${sessionId}, ${participantId}`, "color:darkgreen");
-    const connection = new Connection(userType, sessionId, participantId);
+    const connection = new Connection(userType, sessionId, participantId, props.connection.logging);
     props.setConnection(connection);
   };
 
