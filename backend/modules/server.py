@@ -7,6 +7,7 @@ from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
 
+from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 
@@ -23,7 +24,9 @@ class Server:
             Optional[str],
             Optional[str],
         ],
-        Coroutine[Any, Any, RTCSessionDescription],
+        Coroutine[
+            Any, Any, tuple[RTCSessionDescription, ParticipantSummaryDict | None]
+        ],
     ]
 
     _hub_handle_offer: _HANDLER
@@ -212,7 +215,7 @@ class Server:
 
         # Pass request to handler function in hub.
         try:
-            response = await self._hub_handle_offer(
+            (offer, participant_summary) = await self._hub_handle_offer(
                 offer,
                 params["user_type"],
                 params.get("participant_id"),
@@ -226,11 +229,12 @@ class Server:
                 text=error.error_message_str,
             )
 
+        data: dict[str, str | object] = {"sdp": offer.sdp, "type": offer.type}
+        if participant_summary is not None:
+            data["participant_summary"] = participant_summary
+
         # Create response
-        answer = MessageDict(
-            type="SESSION_DESCRIPTION",
-            data={"sdp": response.sdp, "type": response.type},
-        )
+        answer = MessageDict(type="SESSION_DESCRIPTION", data=data)
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
     def get_index(self):
