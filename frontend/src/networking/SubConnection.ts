@@ -2,6 +2,14 @@ import Connection from "./Connection";
 import ConnectionBase from "./ConnectionBase";
 import { ConnectionOffer } from "./typing";
 
+/**
+ * SubConnection class used by {@link Connection} to get streams of other users from the backend.
+ * 
+ * Not intended for use outside of {@link Connection}.
+ * 
+ * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+ * @extends ConnectionBase
+ */
 export default class SubConnection extends ConnectionBase<MediaStream | string> {
   readonly id: string;
   readonly remoteStream: MediaStream;
@@ -11,6 +19,14 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   private connection: Connection;
   private stopped: boolean;
 
+  /**
+   * Initialize new SubConnection.
+   * @param offer ConnectionOffer received from the backend, with information on how to open the SubConnection.
+   * @param connection parent Connection, used to send data to the backend.
+   * @param logging Whether logging should be enabled.
+   * 
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+   */
   constructor(offer: ConnectionOffer, connection: Connection, logging: boolean) {
     super(true, `SubConnection - ${offer.id}`, logging);
     this.id = offer.id;
@@ -26,7 +42,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
 
     this.log("Initiating SubConnection");
 
-    // register event listeners for pc
+    // Register event listeners for peer connection (pc)
     this.pc.addEventListener(
       "icegatheringstatechange",
       () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
@@ -42,7 +58,8 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
       this.handleSignalingStateChange.bind(this),
       false
     );
-    // Receive audio / video
+
+    // handle incoming audio / video tracks
     this.pc.addEventListener("track", (e) => {
       this.log(`Received a ${e.track.kind}, track from remote`);
       if (e.track.kind !== "video" && e.track.kind !== "audio") {
@@ -52,6 +69,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
       this.remoteStream.addTrack(e.track);
       this.emit("remoteStreamChange", this.remoteStream);
 
+      // Debug logging - when track state changes
       e.track.onended = () => {
         this.log(`${e.track.kind} track ended`);
       };
@@ -64,6 +82,13 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     });
   }
 
+  /**
+   * Start the subconnection.
+   * 
+   * Create and send an Answer to the initial offer set in the constructor and send 
+   * it to the backend using the connection set in the constructor.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+   */
   public async start() {
     this.log("Starting SubConnection");
     await this.pc.setRemoteDescription(this.initialOffer.offer as RTCSessionDescriptionInit);
@@ -79,6 +104,14 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.connection.sendMessage("CONNECTION_ANSWER", connectionAnswer);
   }
 
+  /**
+   * Stop the SubConnection.
+   * 
+   * Stop all transceivers associated with this SubConnection and its peer connection. 
+   * 
+   * Multiple calls to this functions are ignored.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+   */
   public stop() {
     if (this.stopped) {
       return;

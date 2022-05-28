@@ -19,6 +19,7 @@ import SubConnection from "./SubConnection";
  * 
  * To listen to incoming datachannel messages, use the {@link api} EventHandler.
  *
+ * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
  * @see EventHandler
  * @extends ConnectionBase
  */
@@ -58,6 +59,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * 
    * @throws Error if userType === "participant" and one of: participantId or sessionId are missing.  
    * @see Connection class description for details about the class.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
    */
   constructor(
     userType: "participant" | "experimenter",
@@ -134,6 +136,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * @param localStream optional. {@link MediaStream} that is used as the participants stream.  
    * @throws error if `this.userType` === participant and localStream is not given,
    *   or if the connection {@link state} is not NEW.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
    */
   public async start(localStream?: MediaStream) {
     if (!localStream && this.userType === "participant") {
@@ -162,6 +165,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * 
    * @fires `connectionStateChange` event
    * @param closeSenders default true - If true, streams send by this connection (localstream) will be closed.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
    */
   public stop(closeSenders: boolean = true) {
     this.internalStop(undefined, closeSenders);
