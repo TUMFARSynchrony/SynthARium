@@ -2,7 +2,7 @@ import { BACKEND } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
-import { isValidConnectionOffer, isValidMessage, Message, PeerConnection } from "./MessageTypes";
+import { isValidConnectionOffer, isValidMessage, Message, ConnectedPeer } from "./MessageTypes";
 import SubConnection from "./SubConnection";
 
 
@@ -14,7 +14,7 @@ import SubConnection from "./SubConnection";
  * - `connectionStateChange`: emitted when the connection {@link state} changes. The event contains the current {@link ConnectionState}.
  * - `remoteStreamChange`: emitted when {@link remoteStream} changes. The event contains {@link remoteStream}. 
  *    Changes should be inplace, so replacing the previous data is not required.
- * - `peerConnectionsChange`: emitted when {@link peerConnections} changes. The event contains {@link peerConnections}. 
+ * - `connectedPeersChange`: emitted when {@link connectedPeers} changes. The event contains {@link connectedPeers}. 
  *    Changes should be inplace, so replacing the previous data is not required.
  * 
  * To listen to incoming datachannel messages, use the {@link api} EventHandler.
@@ -22,7 +22,7 @@ import SubConnection from "./SubConnection";
  * @see EventHandler
  * @extends ConnectionBase
  */
-export default class Connection extends ConnectionBase<ConnectionState | MediaStream | PeerConnection[]> {
+export default class Connection extends ConnectionBase<ConnectionState | MediaStream | ConnectedPeer[]> {
 
   /**
    * EventHandler for incoming messages over the datachannel.
@@ -95,7 +95,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   /**
    * Get the streams from other clients connected to the same experiment (peers).
    * @returns MediaStream array containing only the peer streams.
-   * @see peerConnections to get the peer streams and participant summaries. 
+   * @see connectedPeers to get the peer streams and participant summaries. 
    */
   public get peerStreams(): MediaStream[] {
     const streams: MediaStream[] = [];
@@ -107,18 +107,18 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Get information and streams from other clients connected to the same experiment (peers).
-   * @returns list of {@link PeerConnection}s
+   * @returns list of {@link ConnectedPeer}s
    * @see peerStreams to get only the peer streams without the participant summary.
    */
-  public get peerConnections(): PeerConnection[] {
-    const connections: PeerConnection[] = [];
+  public get connectedPeers(): ConnectedPeer[] {
+    const connectedPeers: ConnectedPeer[] = [];
     this.subConnections.forEach(sc => {
-      connections.push({
+      connectedPeers.push({
         stream: sc.remoteStream,
         summary: sc.participantSummary
       });
     });
-    return connections;
+    return connectedPeers;
   }
 
   /**
@@ -433,12 +433,12 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     const subConnection = new SubConnection(data, this, this.logging);
     this.subConnections.set(subConnection.id, subConnection);
     subConnection.on("remoteStreamChange", async (_) => {
-      this.emit("peerConnectionsChange", this.peerConnections);
+      this.emit("connectedPeersChange", this.connectedPeers);
     });
     subConnection.on("connectionClosed", async (id) => {
       this.log("SubConnection \"connectionClosed\" event received. Removing SubConnection:", id);
       this.subConnections.delete(id as string);
-      this.emit("peerConnectionsChange", this.peerConnections);
+      this.emit("connectedPeersChange", this.connectedPeers);
     });
     await subConnection.start();
   }

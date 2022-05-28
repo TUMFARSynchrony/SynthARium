@@ -46,7 +46,7 @@ export type ParticipantSummary = {
 	}[];
 };
 
-export type PeerConnection = {
+export type ConnectedPeer = {
 	stream: MediaStream,
 	summary: ParticipantSummary | null;
 };
