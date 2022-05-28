@@ -19,6 +19,7 @@ from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict, is_valid_messagedict
+from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection_messages import is_valid_connection_answer_dict
 from custom_types.connection_messages import (
     ConnectionOfferDict,
@@ -156,15 +157,20 @@ class Connection(AsyncIOEventEmitter):
         return self._incoming_video
 
     async def add_outgoing_stream(
-        self, video_track: MediaStreamTrack, audio_track: MediaStreamTrack
+        self,
+        video_track: MediaStreamTrack,
+        audio_track: MediaStreamTrack,
+        participant_summary: ParticipantSummaryDict | None,
     ) -> str:
         """TODO document"""
-        stream_id = generate_unique_id(list(self._sub_connections.keys()))
-        sc = SubConnection(stream_id, self, video_track, audio_track)
+        subconnection_id = generate_unique_id(list(self._sub_connections.keys()))
+        sc = SubConnection(
+            subconnection_id, self, video_track, audio_track, participant_summary
+        )
         sc.add_listener("connection_closed", self._handle_closed_subconnection)
         await sc.start()
-        self._sub_connections[stream_id] = sc
-        return stream_id
+        self._sub_connections[subconnection_id] = sc
+        return subconnection_id
 
     async def stop_outgoing_stream(self, stream_id: str):
         """TODO document"""
@@ -348,6 +354,7 @@ class SubConnection(AsyncIOEventEmitter):
 
     id: str
     connection: Connection
+    _participant_summary: ParticipantSummaryDict | None
     _pc: RTCPeerConnection
 
     _audio_track: MediaStreamTrack  # AudioStreamTrack ?
@@ -361,6 +368,7 @@ class SubConnection(AsyncIOEventEmitter):
         connection: Connection,
         video_track: MediaStreamTrack,
         audio_track: MediaStreamTrack,
+        participant_summary: ParticipantSummaryDict | None,
     ) -> None:
         """TODO document"""
         super().__init__()
@@ -369,6 +377,7 @@ class SubConnection(AsyncIOEventEmitter):
         self._audio_track = audio_track
         self._video_track = video_track
         self._closed = False
+        self._participant_summary = participant_summary
 
         self._pc = RTCPeerConnection()
         self._pc.addTrack(video_track)
@@ -387,7 +396,9 @@ class SubConnection(AsyncIOEventEmitter):
         offer = RTCSessionDescriptionDict(
             sdp=self._pc.localDescription.sdp, type=self._pc.localDescription.type  # type: ignore
         )
-        connection_offer = ConnectionOfferDict(id=self.id, offer=offer)
+        connection_offer = ConnectionOfferDict(
+            id=self.id, offer=offer, participant_summary=self._participant_summary
+        )
         message = MessageDict(type="CONNECTION_OFFER", data=connection_offer)
         self.connection.send(message)
 

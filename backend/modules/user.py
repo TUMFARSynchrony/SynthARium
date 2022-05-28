@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine, Tuple
 from pyee.asyncio import AsyncIOEventEmitter
 
+from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 
@@ -91,6 +92,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """TODO Document"""
         return self._muted_audio
 
+    def get_summary(self) -> ParticipantSummaryDict | None:
+        """TODO document"""
+        print("USED USER get_summary")
+        return None
+
     def set_connection(self, connection: _connection.Connection):
         """Set the connection of this user.
 
@@ -133,8 +139,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         assert video_track is not None
         assert audio_track is not None
 
+        participant_summary = user.get_summary()
         subconnection_id = await self._connection.add_outgoing_stream(
-            video_track.subscribe(), audio_track.subscribe()
+            video_track.subscribe(), audio_track.subscribe(), participant_summary
         )
 
         # Close subconnection when user disconnects

@@ -6,6 +6,8 @@ Use for type hints and static type checking without any overhead during runtime.
 from __future__ import annotations
 from typing import Any, Literal, TypedDict, get_args
 
+from custom_types.participant_summary import ParticipantSummaryDict
+
 import custom_types.util as util
 
 
@@ -14,6 +16,7 @@ class ConnectionOfferDict(TypedDict):
 
     id: str
     offer: RTCSessionDescriptionDict
+    participant_summary: ParticipantSummaryDict | None
 
 
 class RTCSessionDescriptionDict(TypedDict):

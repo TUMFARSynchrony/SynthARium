@@ -229,11 +229,7 @@ class Hub:
             )
 
         answer, _ = await _participant.participant_factory(
-            offer,
-            participant_id,
-            experiment,
-            participant.muted_video,
-            participant.muted_audio,
+            offer, participant_id, experiment, participant
         )
 
         return (answer, participant.as_summary_dict())

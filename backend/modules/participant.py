@@ -11,6 +11,7 @@ import asyncio
 from typing import Any
 from aiortc import RTCSessionDescription
 
+from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
@@ -20,6 +21,7 @@ import modules.experiment as _experiment
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
+from modules.data import ParticipantData
 from modules.user import User
 
 
@@ -36,13 +38,13 @@ class Participant(User):
     """
 
     _experiment: _experiment.Experiment
+    _participant_data: ParticipantData
 
     def __init__(
         self,
         id: str,
         experiment: _experiment.Experiment,
-        muted_video: bool,
-        muted_audio: bool,
+        participant_data: ParticipantData,
     ) -> None:
         """Instantiate new Participant instance.
 
@@ -52,18 +54,18 @@ class Participant(User):
             Unique identifier for Participant.  Must exist in experiment.
         experiment : modules.experiment.Experiment
             Experiment the participant is part of.
-        muted_video : bool
-            Whether the participants video should be muted.
-        muted_audio : bool
-            Whether the participants audio should be muted.
+        participant_data : modules.data.ParticipantData
+            Participant data this participant represents.
 
         See Also
         --------
         participant_factory : Instantiate connection with a new Participant based on
             WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
-        super(Participant, self).__init__(id, muted_video, muted_audio)
-
+        super(Participant, self).__init__(
+            id, participant_data.muted_video, participant_data.muted_audio
+        )
+        self._participant_data = participant_data
         self._experiment = experiment
         experiment.add_participant(self)
 
@@ -80,6 +82,9 @@ class Participant(User):
     def __repr__(self) -> str:
         """Get representation of this participant."""
         return f"Participant(id={self.id}, experiment={self._experiment.session.id})"
+
+    def get_summary(self) -> ParticipantSummaryDict:
+        return self._participant_data.as_summary_dict()
 
     async def kick(self, reason: str):
         """Kick the participant.
@@ -197,8 +202,7 @@ async def participant_factory(
     offer: RTCSessionDescription,
     id: str,
     experiment: _experiment.Experiment,
-    muted_video: bool,
-    muted_audio: bool,
+    participant_data: ParticipantData,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -223,7 +227,7 @@ async def participant_factory(
         WebRTC answer that should be send back to the client and Participant
         representing the client.
     """
-    participant = Participant(id, experiment, muted_video, muted_audio)
+    participant = Participant(id, experiment, participant_data)
     answer, connection = await connection_factory(offer, participant.handle_message)
     participant.set_connection(connection)
     return (answer, participant)
