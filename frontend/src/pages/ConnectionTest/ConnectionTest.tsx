@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import "./ConnectionTest.css";
 import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
-import { ConnectedPeer } from "../../networking/MessageTypes";
+import { ConnectedPeer } from "../../networking/typing";
 
 
 const ConnectionTest = (props: {

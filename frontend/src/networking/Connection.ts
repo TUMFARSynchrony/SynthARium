@@ -2,7 +2,7 @@ import { BACKEND } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
-import { isValidConnectionOffer, isValidMessage, Message, ConnectedPeer } from "./MessageTypes";
+import { isValidConnectionOffer, isValidMessage, Message, ConnectedPeer } from "./typing";
 import SubConnection from "./SubConnection";
 
 

@@ -1,6 +1,6 @@
 import Connection from "./Connection";
 import ConnectionBase from "./ConnectionBase";
-import { ConnectionOffer } from "./MessageTypes";
+import { ConnectionOffer } from "./typing";
 
 export default class SubConnection extends ConnectionBase<MediaStream | string> {
   readonly id: string;

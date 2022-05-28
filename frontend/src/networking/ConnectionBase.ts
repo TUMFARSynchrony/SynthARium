@@ -1,5 +1,5 @@
 import { EventHandler } from "./EventHandler";
-import { ParticipantSummary } from "./MessageTypes";
+import { ParticipantSummary } from "./typing";
 
 
 /**
