@@ -1,4 +1,4 @@
-import { BACKEND } from "../utils/constants";
+import { BACKEND, ENVIRONMENT } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
@@ -389,7 +389,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
           "Content-Type": "application/json",
         },
         method: "POST",
-        mode: "cors", // TODO for dev only
+        mode: ENVIRONMENT === "development" ? "cors" : undefined,
       });
     } catch (error) {
       this.logError("Failed to connect to backend.", error.message);
