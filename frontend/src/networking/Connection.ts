@@ -14,7 +14,7 @@ import SubConnection from "./SubConnection";
  * - `connectionStateChange`: emitted when the connection {@link state} changes. The event contains the current {@link ConnectionState}.
  * - `remoteStreamChange`: emitted when {@link remoteStream} changes. The event contains {@link remoteStream}. 
  *    Changes should be inplace, so replacing the previous data is not required.
- * - `remotePeerStreamsChange`: emitted when {@link peerStreams} changes. The event contains {@link peerStreams}. 
+ * - `peerConnectionsChange`: emitted when {@link peerConnections} changes. The event contains {@link peerConnections}. 
  *    Changes should be inplace, so replacing the previous data is not required.
  * 
  * To listen to incoming datachannel messages, use the {@link api} EventHandler.
@@ -22,14 +22,14 @@ import SubConnection from "./SubConnection";
  * @see EventHandler
  * @extends ConnectionBase
  */
-export default class Connection extends ConnectionBase<ConnectionState | MediaStream | MediaStream[]> {
+export default class Connection extends ConnectionBase<ConnectionState | MediaStream | PeerConnection[]> {
 
   /**
    * EventHandler for incoming messages over the datachannel.
    * 
    * @example ```js
-   * function handleSuccess() {...}
-   * function handleError() {...}
+   * function handleSuccess(data) {...}
+   * function handleError(data) {...}
    * // Register event handlers
    * connection.api.on("SUCCESS", handleSuccess);
    * connection.api.on("ERROR", handleError)
@@ -412,7 +412,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
     this.log("Received answer:", answer);
 
-    this._participantSummary = answer.participant_summary;
+    this._participantSummary = answer.data.participant_summary;
     const remoteDescription = answer.data;
     await this.mainPc.setRemoteDescription(remoteDescription);
   }
@@ -433,12 +433,12 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     const subConnection = new SubConnection(data, this, this.logging);
     this.subConnections.set(subConnection.id, subConnection);
     subConnection.on("remoteStreamChange", async (_) => {
-      this.emit("remotePeerStreamsChange", this.peerStreams);
+      this.emit("peerConnectionsChange", this.peerConnections);
     });
     subConnection.on("connectionClosed", async (id) => {
       this.log("SubConnection \"connectionClosed\" event received. Removing SubConnection:", id);
       this.subConnections.delete(id as string);
-      this.emit("remotePeerStreamsChange", this.peerStreams);
+      this.emit("peerConnectionsChange", this.peerConnections);
     });
     await subConnection.start();
   }

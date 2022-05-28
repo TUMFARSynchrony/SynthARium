@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import "./ConnectionTest.css";
 import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
+import { PeerConnection } from "../../networking/MessageTypes";
 
 
 const ConnectionTest = (props: {
@@ -15,7 +16,7 @@ const ConnectionTest = (props: {
   const [audioIsMuted, setAudioIsMuted] = useState(!props.localStream?.getAudioTracks()[0].enabled ?? false);
   const [videoIsMuted, setVideoIsMuted] = useState(!props.localStream?.getVideoTracks()[0].enabled ?? false);
   const [connectionState, setConnectionState] = useState(connection.state);
-  const [peerStreams, setPeerStreams] = useState<MediaStream[]>([]);
+  const [peerConnections, setPeerConnections] = useState<PeerConnection[]>([]);
 
   const streamChangeHandler = async (_: MediaStream) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -24,21 +25,23 @@ const ConnectionTest = (props: {
     console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
     setConnectionState(state);
   };
-  const peerStreamChangeHandler = async (streams: MediaStream[]) => {
-    console.log(`%cConnection peer streams change Handler: ${streams}`, "color:blue");
-    setPeerStreams(streams);
+  const peerStreamChangeHandler = async (connections: PeerConnection[]) => {
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
+    console.log(connections);
+    console.groupEnd();
+    setPeerConnections(connections);
   };
 
   // Register Connection event handlers 
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
-    connection.on("remotePeerStreamsChange", peerStreamChangeHandler);
+    connection.on("peerConnectionsChange", peerStreamChangeHandler);
     return () => {
       // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
-      connection.off("remotePeerStreamsChange", peerStreamChangeHandler);
+      connection.off("peerConnectionsChange", peerStreamChangeHandler);
     };
   }, [connection]);
 
@@ -74,6 +77,20 @@ const ConnectionTest = (props: {
     }
   };
 
+  const getVideoTitle = (connection: PeerConnection, index: number) => {
+    if (connection.summary !== null) {
+      return `${connection.summary.first_name} ${connection.summary.last_name}`;
+    }
+    return `Peer stream ${index + 1}`;
+  };
+
+  const getRemoteStreamTitle = () => {
+    if (connection.participantSummary !== null) {
+      return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
+    }
+    return "remote stream";
+  };
+
   return (
     <div className="ConnectionTestPageWrapper">
       <h1>ConnectionTest</h1>
@@ -85,7 +102,7 @@ const ConnectionTest = (props: {
       {connection.state === ConnectionState.NEW ? <ReplaceConnection connection={connection} setConnection={props.setConnection} /> : ""}
       <div className="ownStreams">
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} mutedAudio />
-        <Video title="remote stream" srcObject={connection.remoteStream} />
+        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} />
       </div>{props.localStream ?
         <>
           <button onClick={muteAudio}>{audioIsMuted ? "Unmute" : "Mute"} localStream Audio</button>
@@ -93,9 +110,9 @@ const ConnectionTest = (props: {
         </> : ""
       }
       <button onClick={() => console.log(connection)}>Print Debug</button>
-      <p><b>Peer Streams</b> ({peerStreams.length}):</p>
+      <p><b>Peer Connections</b> ({peerConnections.length}):</p>
       <div className="peerStreams">
-        {peerStreams.map((stream, i) => <Video title={`Peer stream ${i}`} srcObject={stream} key={i} />)}
+        {peerConnections.map((conn, i) => <Video title={getVideoTitle(conn, i)} srcObject={conn.stream} key={i} />)}
       </div>
       <ApiTests connection={connection} />
     </div>
