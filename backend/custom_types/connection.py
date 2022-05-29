@@ -20,8 +20,8 @@ class ConnectionOfferDict(TypedDict):
     ----------
     id : str
         Identifier of this offer.  Must be used in the
-        custom_types.connection_messages.ConnectionAnswerDict to identify the answer.
-    offer : custom_types.connection_messages.RTCSessionDescriptionDict
+        custom_types.connection.ConnectionAnswerDict to identify the answer.
+    offer : custom_types.connection.RTCSessionDescriptionDict
         WebRtc offer.
     participant_summary : custom_types.participant_summary.ParticipantSummaryDict or None
         Optional summary for the participant the subconnection is connected to.
@@ -46,7 +46,7 @@ class RTCSessionDescriptionDict(TypedDict):
     ----------
     sdp : str
         Session Description Protocol.
-    type : custom_types.connection_messages.RTC_SESSION_TYPES
+    type : custom_types.connection.RTC_SESSION_TYPES
         Type of the session description.
 
     See Also
@@ -65,7 +65,7 @@ RTC_SESSION_TYPES = Literal["offer", "pranswer", "answer", "rollback"]
 
 
 def is_valid_rtc_session_description_dict(data: Any) -> bool:
-    """Check if `data` is a valid custom_types.connection_messages.RTCSessionDescriptionDict.
+    """Check if `data` is a valid custom_types.connection.RTCSessionDescriptionDict.
 
     Parameters
     ----------
@@ -75,8 +75,7 @@ def is_valid_rtc_session_description_dict(data: Any) -> bool:
     Returns
     -------
     bool
-        True if `data` is a valid
-        custom_types.connection_messages.RTCSessionDescriptionDict.
+        True if `data` is a valid custom_types.connection.RTCSessionDescriptionDict.
     """
     # Check if all required and only required or optional keys exist in data
     if not util.check_valid_typeddict_keys(data, RTCSessionDescriptionDict):
@@ -91,9 +90,9 @@ class ConnectionAnswerDict(TypedDict):
     Attributes
     ----------
     id : str
-        Identifier of the original custom_types.connection_messages.ConnectionOfferDict
+        Identifier of the original custom_types.connection.ConnectionOfferDict
         / `CONNECTION_OFFER`.
-    answer : custom_types.connection_messages.RTCSessionDescriptionDict
+    answer : custom_types.connection.RTCSessionDescriptionDict
         WebRtc answer to the offer send before.
 
     See Also
@@ -109,7 +108,7 @@ class ConnectionAnswerDict(TypedDict):
 
 
 def is_valid_connection_answer_dict(data: Any) -> bool:
-    """Check if `data` is a valid custom_types.connection_messages.ConnectionAnswerDict.
+    """Check if `data` is a valid custom_types.connection.ConnectionAnswerDict.
 
     Parameters
     ----------
@@ -119,7 +118,7 @@ def is_valid_connection_answer_dict(data: Any) -> bool:
     Returns
     -------
     bool
-        True if `data` is a valid custom_types.connection_messages.ConnectionAnswerDict.
+        True if `data` is a valid custom_types.connection.ConnectionAnswerDict.
     """
     # Check if all required and only required or optional keys exist in data
     if not util.check_valid_typeddict_keys(data, ConnectionAnswerDict):
