@@ -1,5 +1,6 @@
 """Backend entry point for testing purposes."""
 
+# import logging
 from modules.data import SessionData
 from modules.config import Config
 from modules.hub import Hub
@@ -55,6 +56,12 @@ EXAMPLE_SESSION: SessionDict = {
 
 async def main():
     global hub, EXAMPLE_SESSION, session
+
+    # Uncomment bellow to get detailed logging from aiortc. You will need to install the
+    # logging library.
+
+    # logging.basicConfig(level=logging.DEBUG)
+    # print("logger set")
 
     try:
         config = Config()
