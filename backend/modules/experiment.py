@@ -44,7 +44,7 @@ class Experiment:
         """Experimenters currently connected to the Experiment."""
         return self._experimenters
 
-    def start(self):
+    async def start(self):
         """Start the experiment.
 
         If state is `WAITING`, save the current time in `session.start_time` and set
@@ -67,9 +67,9 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
-        self.send("all", end_message, secure_origin=True)
+        await self.send("all", end_message, secure_origin=True)
 
-    def stop(self):
+    async def stop(self):
         """Stop the experiment.
 
         If state is not already `ENDED`, save the current time in `session.end_time` and
@@ -92,9 +92,11 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
-        self.send("all", end_message, secure_origin=True)
+        await self.send("all", end_message, secure_origin=True)
 
-    def send(self, to: str, data: Any, exclude: str = "", secure_origin: bool = False):
+    async def send(
+        self, to: str, data: Any, exclude: str = "", secure_origin: bool = False
+    ):
         """Send data to a single or group of users.
 
         Select the correct target (group) according to the `to` parameter and send the
@@ -157,9 +159,9 @@ class Experiment:
         # Send data
         for user in targets:
             if exclude != user.id:
-                user.send(data)
+                await user.send(data)
 
-    def handle_chat_message(self, chat_message: ChatMessageDict):
+    async def handle_chat_message(self, chat_message: ChatMessageDict):
         """Log and send a chat message to `target` in `chat_message`.
 
         Parameters
@@ -197,7 +199,7 @@ class Experiment:
 
         # Send message
         msg_dict = MessageDict(type="CHAT", data=chat_message)
-        self.send(chat_message["target"], msg_dict)
+        await self.send(chat_message["target"], msg_dict)
 
     def add_participant(self, participant: _participant.Participant):
         """Add participant to experiment.

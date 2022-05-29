@@ -186,7 +186,7 @@ class Experimenter(User):
 
             # Notify all experimenters about the change
             message = MessageDict(type="CREATED_SESSION", data=session.asdict())
-            self._hub.send_to_experimenters(message)
+            await self._hub.send_to_experimenters(message)
             return
 
         # Update existing session
@@ -226,7 +226,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the change
         message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
-        self._hub.send_to_experimenters(message)
+        await self._hub.send_to_experimenters(message)
 
     async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
@@ -267,7 +267,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the change
         message = MessageDict(type="DELETED_SESSION", data=session_id)
-        self._hub.send_to_experimenters(message)
+        await self._hub.send_to_experimenters(message)
 
     async def _handle_create_experiment(
         self, data: SessionIdRequestDict | Any
@@ -310,7 +310,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the new experiment
         message = MessageDict(type="CREATED_EXPERIMENT", data=data)
-        self._hub.send_to_experimenters(message)
+        await self._hub.send_to_experimenters(message)
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
@@ -405,7 +405,7 @@ class Experimenter(User):
                 ),
             )
 
-        self._experiment.start()
+        await self._experiment.start()
 
         success = SuccessDict(
             type="START_EXPERIMENT", description="Successfully started experiment."
@@ -433,7 +433,7 @@ class Experimenter(User):
             the Experiment has already ended.
         """
         experiment = self._get_experiment_or_raise("Cannot stop experiment.")
-        experiment.stop()
+        await experiment.stop()
 
         success = SuccessDict(
             type="STOP_EXPERIMENT", description="Successfully stopped experiment."
@@ -515,7 +515,7 @@ class Experimenter(User):
             )
 
         experiment = self._get_experiment_or_raise("Cannot chat.")
-        experiment.handle_chat_message(data)
+        await experiment.handle_chat_message(data)
 
         success = SuccessDict(
             type="CHAT", description="Successfully send chat message."

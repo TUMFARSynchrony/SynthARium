@@ -110,7 +110,7 @@ class Participant(User):
         """
         kick_notification = KickNotificationDict(reason=reason)
         message = MessageDict(type="KICK_NOTIFICATION", data=kick_notification)
-        self.send(message)
+        await self.send(message)
 
         await self.disconnect()
 
@@ -128,7 +128,7 @@ class Participant(User):
         """
         ban_notification = KickNotificationDict(reason=reason)
         message = MessageDict(type="BAN_NOTIFICATION", data=ban_notification)
-        self.send(message)
+        await self.send(message)
 
         await self.disconnect()
 
@@ -209,7 +209,7 @@ class Participant(User):
                 description="Author of message must be participant ID.",
             )
 
-        self._experiment.handle_chat_message(data)
+        await self._experiment.handle_chat_message(data)
 
         success = SuccessDict(
             type="CHAT", description="Successfully send chat message."

@@ -268,7 +268,7 @@ class Hub:
         self.experiments[session_id] = experiment
         return experiment
 
-    def send_to_experimenters(self, data: MessageDict):
+    async def send_to_experimenters(self, data: MessageDict):
         """Send `data` to all connected experimenters.
 
         Can be used to inform experimenters about changes to sessions.
@@ -279,4 +279,4 @@ class Hub:
             Message for the experimenters.
         """
         for experimenter in self.experimenters:
-            experimenter.send(data)
+            await experimenter.send(data)

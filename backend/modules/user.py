@@ -142,7 +142,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             "state_change", self._handle_connection_state_change_user
         )
 
-    def send(self, message: MessageDict) -> None:
+    async def send(self, message: MessageDict) -> None:
         """Send a custom_types.message.MessageDict to the connected client.
 
         Parameters
@@ -150,7 +150,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         message : custom_types.message.MessageDict
             Message for the client.
         """
-        self._connection.send(message)
+        await self._connection.send(message)
 
     async def disconnect(self) -> None:
         """Disconnect.  Closes the connection with the client."""
@@ -262,7 +262,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 response = MessageDict(type="ERROR", data=err)
 
             if response is not None:
-                self.send(response)
+                await self.send(response)
 
     def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.

@@ -128,7 +128,7 @@ class Connection(AsyncIOEventEmitter):
         await self._main_pc.close()
         self.remove_all_listeners()
 
-    def send(self, data: MessageDict | dict) -> None:
+    async def send(self, data: MessageDict | dict) -> None:
         """Send `data` to peer over the datachannel.
 
         Parameters
@@ -137,10 +137,11 @@ class Connection(AsyncIOEventEmitter):
             Data that will be stringified and send to the peer.
         """
         if self._dc is None or self._dc.readyState != "open":
-            # TODO error handling
             print(
                 "[Connection] WARN: Not sending data because datachannel is not open."
             )
+            self._set_state(ConnectionState.FAILED)
+            await self.stop()
             return
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)
@@ -337,7 +338,7 @@ class Connection(AsyncIOEventEmitter):
                 description="Received message is not a valid Message object.",
             )
             response = MessageDict(type="ERROR", data=err)
-            self.send(response)
+            await self.send(response)
             return
 
         if message_dict["type"] == "CONNECTION_ANSWER":
@@ -495,7 +496,7 @@ class SubConnection(AsyncIOEventEmitter):
             id=self.id, offer=offer, participant_summary=self._participant_summary
         )
         message = MessageDict(type="CONNECTION_OFFER", data=connection_offer)
-        self.connection.send(message)
+        await self.connection.send(message)
 
     async def stop(self) -> None:
         """Stop the SubConnection and its associated tracks.
