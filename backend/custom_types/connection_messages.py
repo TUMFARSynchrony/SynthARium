@@ -12,7 +12,27 @@ import custom_types.util as util
 
 
 class ConnectionOfferDict(TypedDict):
-    """TODO Document"""
+    """TypedDict for sending a `CONNECTION_OFFER` message to the client.
+
+    This is used to offer the client a new subconnection.
+
+    Attributes
+    ----------
+    id : str
+        Identifier of this offer.  Must be used in the
+        custom_types.connection_messages.ConnectionAnswerDict to identify the answer.
+    offer : custom_types.connection_messages.RTCSessionDescriptionDict
+        WebRtc offer.
+    participant_summary : custom_types.participant_summary.ParticipantSummaryDict or None
+        Optional summary for the participant the subconnection is connected to.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#ConnectionOffer
+    Connection Protocol Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
+    """
 
     id: str
     offer: RTCSessionDescriptionDict
@@ -20,7 +40,22 @@ class ConnectionOfferDict(TypedDict):
 
 
 class RTCSessionDescriptionDict(TypedDict):
-    """TODO Document"""
+    """TypedDict representing a WebRtc session description.
+
+    Attributes
+    ----------
+    sdp : str
+        Session Description Protocol.
+    type : custom_types.connection_messages.RTC_SESSION_TYPES
+        Type of the session description.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#RTCSessionDescription
+    Connection Protocol Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
+    """
 
     sdp: str
     type: RTC_SESSION_TYPES
@@ -29,8 +64,20 @@ class RTCSessionDescriptionDict(TypedDict):
 RTC_SESSION_TYPES = Literal["offer", "pranswer", "answer", "rollback"]
 
 
-def is_valid_rtc_session_description_dict(data) -> bool:
-    """TODO Document"""
+def is_valid_rtc_session_description_dict(data: Any) -> bool:
+    """Check if `data` is a valid custom_types.connection_messages.RTCSessionDescriptionDict.
+
+    Parameters
+    ----------
+    data : Any
+        Data to perform check on.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid
+        custom_types.connection_messages.RTCSessionDescriptionDict.
+    """
     # Check if all required and only required or optional keys exist in data
     if not util.check_valid_typeddict_keys(data, RTCSessionDescriptionDict):
         return False
@@ -39,14 +86,41 @@ def is_valid_rtc_session_description_dict(data) -> bool:
 
 
 class ConnectionAnswerDict(TypedDict):
-    """TODO Document"""
+    """TypedDict for the client answer `CONNECTION_ANSWER` to `CONNECTION_OFFER`.
+
+    Attributes
+    ----------
+    id : str
+        Identifier of the original custom_types.connection_messages.ConnectionOfferDict
+        / `CONNECTION_OFFER`.
+    answer : custom_types.connection_messages.RTCSessionDescriptionDict
+        WebRtc answer to the offer send before.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#ConnectionAnswer
+    Connection Protocol Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
+    """
 
     id: str
-    answer: Any
+    answer: RTCSessionDescriptionDict
 
 
-def is_valid_connection_answer_dict(data) -> bool:
-    """TODO Document"""
+def is_valid_connection_answer_dict(data: Any) -> bool:
+    """Check if `data` is a valid custom_types.connection_messages.ConnectionAnswerDict.
+
+    Parameters
+    ----------
+    data : Any
+        Data to perform check on.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid custom_types.connection_messages.ConnectionAnswerDict.
+    """
     # Check if all required and only required or optional keys exist in data
     if not util.check_valid_typeddict_keys(data, ConnectionAnswerDict):
         return False
