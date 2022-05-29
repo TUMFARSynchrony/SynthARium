@@ -1,4 +1,4 @@
-"""Provide the `Connection` class."""
+"""Provide the `Connection` and `SubConnection` classes."""
 
 from __future__ import annotations
 from typing import Any, Callable, Coroutine, Tuple
@@ -98,7 +98,12 @@ class Connection(AsyncIOEventEmitter):
         pc.on("track", f=self._on_track)
 
     async def stop(self) -> None:
-        """Stop this connection.  Use for cleanup."""
+        """Stop this connection.
+
+        Stopps all incoming and outgoing streams and emits the `state_change` event.
+        When finished, it removes all event listeners from this Connection, as no more
+        events will be emitted.
+        """
         if self._stopped:
             return
         self._stopped = True
@@ -142,18 +147,30 @@ class Connection(AsyncIOEventEmitter):
         self._dc.send(stringified)
 
     @property
-    def state(self):
-        """TODO document"""
+    def state(self) -> ConnectionState:
+        """Get the modules.connection_state.ConnectionState the Connection is in."""
         return self._state
 
     @property
-    def incoming_audio(self):
-        """Get incoming audio track."""
+    def incoming_audio(self) -> AudioTrackHandler | None:
+        """Get incoming audio track.
+
+        Returns
+        -------
+        modules.track.AudioTrackHandler or None
+            None if no audio was received by client (yet), otherwise AudioTrackHandler.
+        """
         return self._incoming_audio
 
     @property
-    def incoming_video(self):
-        """Get incoming video track."""
+    def incoming_video(self) -> VideoTrackHandler | None:
+        """Get incoming video track.
+
+        Returns
+        -------
+        modules.track.VideoTrackHandler or None
+            None if no video was received by client (yet), otherwise VideoTrackHandler.
+        """
         return self._incoming_video
 
     async def add_outgoing_stream(
@@ -162,7 +179,28 @@ class Connection(AsyncIOEventEmitter):
         audio_track: MediaStreamTrack,
         participant_summary: ParticipantSummaryDict | None,
     ) -> str:
-        """TODO document"""
+        """Add a outgoing stream to this Connection.
+
+        Starts a new modules.connection.SubConnection with `video_track`, `audio_track`
+        and `participant_summary`.
+
+        Parameters
+        ----------
+        video_track : MediaStreamTrack
+            Video that will be used in the new SubConnection.
+        audio_track : MediaStreamTrack
+            Audio that will be used in the new SubConnection.
+        participant_summary : ParticipantSummaryDict or None
+            Optional participant summary that will be send to the client, informing it
+            about the details of the new stream.
+
+        Returns
+        -------
+        str
+            A new ID that identifies the new outgoing stream / SubConnection. It can be
+            used to close the stream / SubConnection again using
+            `stop_outgoing_stream()`.
+        """
         subconnection_id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(
             subconnection_id, self, video_track, audio_track, participant_summary
@@ -172,8 +210,24 @@ class Connection(AsyncIOEventEmitter):
         self._sub_connections[subconnection_id] = sc
         return subconnection_id
 
-    async def stop_outgoing_stream(self, stream_id: str):
-        """TODO document"""
+    async def stop_outgoing_stream(self, stream_id: str) -> bool:
+        """Stop the outgoing stream with `stream_id`.
+
+        Parameters
+        ----------
+        stream_id : str
+            ID of the outgoing stream / SubConnection that will be stopped.
+
+        Returns
+        -------
+        bool
+            True if a outgoing stream with `stream_id` was found and closed. Otherwise
+            False.
+
+        See Also
+        --------
+        add_outgoing_stream : add a new outgoing stream / SubConnection.
+        """
         if stream_id not in self._sub_connections:
             return False
 
@@ -181,14 +235,20 @@ class Connection(AsyncIOEventEmitter):
         await sub_connection.stop()
         return True
 
-    async def _handle_closed_subconnection(self, subconnection_id: str):
-        """TODO document"""
+    async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
+        """Remove a closed SubConnection from Connection."""
         print("[Connection] Remove sub connection", subconnection_id)
         self._sub_connections.pop(subconnection_id)
         print("[Connection] Sub connections after removing:", self._sub_connections)
 
-    async def _handle_connection_answer_message(self, data):
-        """TODO document - handle incoming CONNECTION_ANSWER messages."""
+    async def _handle_connection_answer_message(self, data) -> None:
+        """Handle incoming `CONNECTION_ANSWER` messages.
+
+        See Also
+        --------
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol :
+            Connection protocol wiki.
+        """
         print("[Connection] received CONNECTION_ANSWER.")
         if not is_valid_connection_answer_dict(data):
             # TODO error handling
@@ -213,7 +273,7 @@ class Connection(AsyncIOEventEmitter):
 
         await sc.handle_answer(answer_desc)
 
-    def _on_datachannel(self, channel: RTCDataChannel):
+    def _on_datachannel(self, channel: RTCDataChannel) -> None:
         """Handle new incoming datachannel.
 
         Parameters
@@ -228,13 +288,13 @@ class Connection(AsyncIOEventEmitter):
         self._dc.on("close", self._handle_datachannel_close)
         self._set_state(ConnectionState.CONNECTED)
 
-    async def _handle_datachannel_close(self):
-        """TODO document"""
+    async def _handle_datachannel_close(self) -> None:
+        """Handle the `close` event on datachannel."""
         print("[Connection] Datachannel closed")
         await self._check_if_closed()
 
-    async def _check_if_closed(self):
-        """TODO document"""
+    async def _check_if_closed(self) -> None:
+        """Check if this Connection is closed and should stop."""
         incoming_audio = self._incoming_audio
         incoming_video = self._incoming_video
         if (
@@ -246,8 +306,8 @@ class Connection(AsyncIOEventEmitter):
             print("[Connection] datachannel and all incoming tracks are closed")
             await self.stop()
 
-    async def _parse_and_handle_message(self, message: Any):
-        """Handle incoming datachannel message.
+    async def _parse_and_handle_message(self, message: Any) -> None:
+        """Parse, check and forward incoming datachannel message.
 
         Checks if message is a valid string containing a
         custom_types.message.MessageDict JSON object.  If contents are invalid, a error
@@ -300,7 +360,7 @@ class Connection(AsyncIOEventEmitter):
         self._set_state(state)
 
     def _set_state(self, state: ConnectionState):
-        """TODO document"""
+        """Set connection state and emit `state_change` event."""
         if self._state == state:
             return
 
@@ -337,10 +397,19 @@ class Connection(AsyncIOEventEmitter):
     def _listen_to_track_close(
         self, track: AudioTrackHandler | VideoTrackHandler, sender: RTCRtpSender
     ):
-        """TODO document"""
+        """Add a handler to the `ended` event on `track` that closes its transceiver.
+
+        Parameters
+        ----------
+        track : modules.track.AudioTrackHandler or modules.track.VideoTrackHandler
+            Track to listen to the `ended` event.
+        sender : aiortc.RTCRtpSender
+            Sender of the track.  Used to find the correct transceiver.
+        """
 
         @track.on("ended")
-        async def _close_audio_sender():
+        async def _close_transceiver():
+            """Find and close the correct transceiver for `sender`."""
             for transceiver in self._main_pc.getTransceivers():
                 if transceiver.sender is sender:
                     print("[Connection] Found transceiver, closing")
@@ -350,7 +419,12 @@ class Connection(AsyncIOEventEmitter):
 
 
 class SubConnection(AsyncIOEventEmitter):
-    """TODO document"""
+    """SubConnection used to send additional stream to a client.
+
+    Each SubConnection has a audio and video track -> one stream which they send to the
+    client.  For communication it used the datachannel of the parent
+    module.connection.Connection.
+    """
 
     id: str
     connection: Connection
@@ -370,7 +444,20 @@ class SubConnection(AsyncIOEventEmitter):
         audio_track: MediaStreamTrack,
         participant_summary: ParticipantSummaryDict | None,
     ) -> None:
-        """TODO document"""
+        """Initialize new SubConnection.
+
+        Parameters
+        ----------
+        id : str
+        connection : modules.connection.Connection
+            Parent connection, used for communication.
+        video_track : aiortc.MediaStreamTrack
+            Video track that will be send in this SubConnection.
+        audio_track : aiortc.MediaStreamTrack
+            Audio track that will be send in this SubConnection.
+        participant_summary : None or custom_types.participant_summary.ParticipantSummaryDict
+            Participant summary send to the client with the initial offer.
+        """
         super().__init__()
         self.id = id
         self.connection = connection
@@ -388,8 +475,16 @@ class SubConnection(AsyncIOEventEmitter):
         # audio_track.on("ended", self.stop)
         # video_track.on("ended", self.stop)
 
-    async def start(self):
-        """TODO document"""
+    async def start(self) -> None:
+        """Start the SubConnection.
+
+        Sends the initial `CONNECTION_OFFER` message to the client.
+
+        See Also
+        --------
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol :
+            Connection protocol wiki.
+        """
         offer = await self._pc.createOffer()
         await self._pc.setLocalDescription(offer)
 
@@ -402,10 +497,16 @@ class SubConnection(AsyncIOEventEmitter):
         message = MessageDict(type="CONNECTION_OFFER", data=connection_offer)
         self.connection.send(message)
 
-    async def stop(self):
-        """TODO document"""
+    async def stop(self) -> None:
+        """Stop the SubConnection and its associated tracks.
+
+        Emits a `connection_closed` event with the ID of this SubConnection.  When
+        finished, it removes all event listeners from this Connection, as no more events
+        will be emitted.
+        """
         if self._closed:
             return
+        self.emit("connection_closed", self.id)
 
         self._audio_track.stop()
         self._video_track.stop()
@@ -413,11 +514,16 @@ class SubConnection(AsyncIOEventEmitter):
         print(f"[SubConnection - {self.id}] Closing")
         self._closed = True
         await self._pc.close()
-        self.emit("connection_closed", self.id)
         self.remove_all_listeners()
 
     async def handle_answer(self, answer: RTCSessionDescription):
-        """TODO document"""
+        """Handle a `CONNECTION_ANSWER` message for this SubConnection.
+
+        Parameters
+        ----------
+        answer : aiortc.RTCSessionDescription
+            Answer to the initial offer by this SubConnection.
+        """
         await self._pc.setRemoteDescription(answer)
 
     async def _on_connection_state_change(self):
