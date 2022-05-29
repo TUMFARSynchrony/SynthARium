@@ -6,7 +6,9 @@ import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import { ConnectedPeer } from "../../networking/typing";
 
-
+/**
+ * Test page for testing the {@link Connection} & api.
+ */
 const ConnectionTest = (props: {
   localStream?: MediaStream,
   connection: Connection,
@@ -18,13 +20,18 @@ const ConnectionTest = (props: {
   const [connectionState, setConnectionState] = useState(connection.state);
   const [connectedPeers, setConnectedPeers] = useState<ConnectedPeer[]>([]);
 
+  /** Handle `remoteStreamChange` event of {@link Connection}. */
   const streamChangeHandler = async (_: MediaStream) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
+
+  /** Handle `connectionStateChange` event of {@link Connection}. */
   const stateChangeHandler = async (state: ConnectionState) => {
     console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
     setConnectionState(state);
   };
+
+  /** Handle `connectedPeersChange` event of {@link Connection}. */
   const connectedPeersChangeHandler = async (peers: ConnectedPeer[]) => {
     console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.log(peers);
@@ -77,6 +84,7 @@ const ConnectionTest = (props: {
     }
   };
 
+  /** Get the title displayed in a {@link Video} element for `peer`. */
   const getVideoTitle = (peer: ConnectedPeer, index: number) => {
     if (peer.summary !== null) {
       return `${peer.summary.first_name} ${peer.summary.last_name}`;
@@ -84,6 +92,7 @@ const ConnectionTest = (props: {
     return `Peer stream ${index + 1}`;
   };
 
+  /** Get the title displayed in a {@link Video} element for the remote stream of this client. */
   const getRemoteStreamTitle = () => {
     if (connection.participantSummary !== null) {
       return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
@@ -101,7 +110,7 @@ const ConnectionTest = (props: {
       <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
       {connection.state === ConnectionState.NEW ? <ReplaceConnection connection={connection} setConnection={props.setConnection} /> : ""}
       <div className="ownStreams">
-        <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} mutedAudio />
+        <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} ignoreAudio />
         <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} />
       </div>{props.localStream ?
         <>
@@ -109,7 +118,7 @@ const ConnectionTest = (props: {
           <button onClick={muteVideo}>{videoIsMuted ? "Unmute" : "Mute"} localStream Video</button>
         </> : ""
       }
-      <button onClick={() => console.log(connection)}>Print Debug</button>
+      <button onClick={() => console.log(connection)}>Log Connection</button>
       <p><b>Peer Connections</b> ({connectedPeers.length}):</p>
       <div className="peerStreams">
         {connectedPeers.map((peer, i) => <Video title={getVideoTitle(peer, i)} srcObject={peer.stream} key={i} />)}
@@ -121,7 +130,9 @@ const ConnectionTest = (props: {
 
 export default ConnectionTest;
 
-
+/**
+ * Component to send test requests to the backend API and display responses.
+ */
 function ApiTests(props: { connection: Connection; }): JSX.Element {
   const [responses, setResponses] = useState<{ endpoint: string, data: string; }[]>([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
@@ -131,12 +142,17 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
   const [mutedAudio, setMutedAudio] = useState(false);
 
   useEffect(() => {
-    const saveGenericApiResponse = async (endpoint: string, response_Data: any) => {
-      // Add message received by api to responses and reset highlightedResponse  
-      setResponses([{ endpoint: endpoint, data: response_Data }, ...responses]);
+    /**
+     * Save and display a messages from the backend
+     * @param endpoint endpoint to which `messageData` was send. Used as a title for this response.
+     * @param messageData data that should be displayed.
+     */
+    const saveGenericApiResponse = async (endpoint: string, messageData: any) => {
+      setResponses([{ endpoint: endpoint, data: messageData }, ...responses]);
       setHighlightedResponse(0);
     };
 
+    // Message listeners to messages from the backend.
     const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
     const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
@@ -144,6 +160,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
     const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
 
+    // Add listeners to connection
     props.connection.api.on("SESSION_LIST", handleSessionList);
     props.connection.api.on("SUCCESS", handleSuccess);
     props.connection.api.on("ERROR", handleError);
@@ -152,6 +169,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
 
     return () => {
+      // Remove listeners from connection
       props.connection.api.off("SESSION_LIST", handleSessionList);
       props.connection.api.off("SUCCESS", handleSuccess);
       props.connection.api.off("ERROR", handleError);
@@ -264,6 +282,9 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
   );
 }
 
+/**
+ * Component to display an readable, indented version of `json`.
+ */
 function PrettyJson(props: { json: any; }) {
   return (
     <div className="prettyJson">
@@ -272,6 +293,12 @@ function PrettyJson(props: { json: any; }) {
   );
 }
 
+/**
+ * Component with inputs to replace the current {@link Connection} with a new one. 
+ * Used to change session-, participant-ids or user type.
+ * 
+ * Do not use after the connection has been started.  
+ */
 function ReplaceConnection(props: {
   connection: Connection,
   setConnection: (connection: Connection) => void,
@@ -340,21 +367,28 @@ function ReplaceConnection(props: {
   );
 }
 
-function Video(props: { title: string, srcObject: MediaStream, mutedAudio?: boolean; }): JSX.Element {
+/**
+ * Component to display a video with a title.
+ * @param props.title title that is displayed above the video
+ * @param props.srcObject video and audio source
+ * @param props.ignoreAudio if true, audio tracks in `srcObject` will be ignored.
+ */
+function Video(props: { title: string, srcObject: MediaStream, ignoreAudio?: boolean; }): JSX.Element {
   const refVideo = useRef<HTMLVideoElement>(null);
   const [info, setInfo] = useState("");
 
-  const setSrcObj = (srcObj: MediaStream) => {
-    if (refVideo.current && srcObj.active) {
-      if (props.mutedAudio) {
-        refVideo.current.srcObject = new MediaStream(srcObj.getVideoTracks());
-      } else {
-        refVideo.current.srcObject = srcObj;
-      }
-    }
-  };
-
+  // Set source object for video tag
   useEffect(() => {
+    const setSrcObj = (srcObj: MediaStream) => {
+      if (refVideo.current && srcObj.active) {
+        if (props.ignoreAudio) {
+          refVideo.current.srcObject = new MediaStream(srcObj.getVideoTracks());
+        } else {
+          refVideo.current.srcObject = srcObj;
+        }
+      }
+    };
+
     setSrcObj(props.srcObject);
 
     const handler = () => setSrcObj(props.srcObject);
@@ -362,10 +396,11 @@ function Video(props: { title: string, srcObject: MediaStream, mutedAudio?: bool
     return () => {
       props.srcObject.removeEventListener("active", handler);
     };
-  }, [props.srcObject]);
+  }, [props.ignoreAudio, props.srcObject]);
 
+  // Update makeshift fps counter
   useEffect(() => {
-    // update info string containing the fps counter
+    /** Update info string containing the fps counter */
     const interval = setInterval(() => {
       if (refVideo.current?.srcObject === null) return;
 
@@ -389,7 +424,6 @@ function Video(props: { title: string, srcObject: MediaStream, mutedAudio?: bool
       clearInterval(interval);
     };
   }, [info, props.srcObject]);
-
 
   return (
     <div className={"videoWrapper"}>
