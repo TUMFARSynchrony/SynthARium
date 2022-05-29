@@ -7,7 +7,7 @@ import { ConnectionOffer } from "./typing";
  * 
  * Not intended for use outside of {@link Connection}.
  * 
- * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+ * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
  * @extends ConnectionBase
  */
 export default class SubConnection extends ConnectionBase<MediaStream | string> {
@@ -25,7 +25,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
    * @param connection parent Connection, used to send data to the backend.
    * @param logging Whether logging should be enabled.
    * 
-   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
   constructor(offer: ConnectionOffer, connection: Connection, logging: boolean) {
     super(true, `SubConnection - ${offer.id}`, logging);
@@ -87,7 +87,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
    * 
    * Create and send an Answer to the initial offer set in the constructor and send 
    * it to the backend using the connection set in the constructor.
-   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
   public async start() {
     this.log("Starting SubConnection");
@@ -110,7 +110,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
    * Stop all transceivers associated with this SubConnection and its peer connection. 
    * 
    * Multiple calls to this functions are ignored.
-   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Technical-Documentation for details about the connection protocol.
+   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
   public stop() {
     if (this.stopped) {
