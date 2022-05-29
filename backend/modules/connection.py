@@ -140,8 +140,7 @@ class Connection(AsyncIOEventEmitter):
             print(
                 "[Connection] WARN: Not sending data because datachannel is not open."
             )
-            self._set_state(ConnectionState.FAILED)
-            await self.stop()
+            await self._set_failed_state_and_close()
             return
         stringified = json.dumps(data)
         print("[Connection] Sending", stringified)
@@ -252,8 +251,8 @@ class Connection(AsyncIOEventEmitter):
         """
         print("[Connection] received CONNECTION_ANSWER.")
         if not is_valid_connection_answer_dict(data):
-            # TODO error handling
-            print("[Connection] received invalid CONNECTION_ANSWER.")
+            print("[Connection] Received invalid CONNECTION_ANSWER.")
+            await self._set_failed_state_and_close()
             return
 
         id = data["id"]
@@ -261,15 +260,18 @@ class Connection(AsyncIOEventEmitter):
 
         sc = self._sub_connections.get(id)
         if sc is None:
-            # TODO error handling
-            print(f"[Connection] no SubConnection found for ID: {id}.")
+            print(
+                "[Connection] Invalid CONNECTION_ANSWER: No SubConnection found for "
+                f"ID: {id}."
+            )
+            await self._set_failed_state_and_close()
             return
 
         try:
             answer_desc = RTCSessionDescription(sdp=answer["sdp"], type=answer["type"])
         except ValueError as err:
-            # TODO error handling
-            print("[Connection] Failed to parse CONNECTION_ANSWER,", err)
+            print("[Connection] Failed to parse CONNECTION_ANSWER:", err)
+            await self._set_failed_state_and_close()
             return
 
         await sc.handle_answer(answer_desc)
@@ -283,7 +285,6 @@ class Connection(AsyncIOEventEmitter):
             Incoming data channel.
         """
         print("[Connection] received datachannel")
-        # TODO check channel readyState
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
         self._dc.on("close", self._handle_datachannel_close)
@@ -369,6 +370,11 @@ class Connection(AsyncIOEventEmitter):
         self._state = state
         self.emit("state_change", state)
 
+    async def _set_failed_state_and_close(self) -> None:
+        """Sets the state to `FAILED` and closes the Connection."""
+        self._set_state(ConnectionState.FAILED)
+        await self.stop()
+
     def _on_track(self, track: MediaStreamTrack):
         """Handle incoming tracks.
 
@@ -376,8 +382,13 @@ class Connection(AsyncIOEventEmitter):
         ----------
         track : aiortc.MediaStreamTrack
             Incoming track.
+
+        Note
+        ----
+        This function can not be asynchronous, otherwise it will no longer function
+        correctly.
         """
-        print(f"[Connection] {track.kind} Track received")
+        print(f"[Connection] {track.kind} track received")
         if track.kind == "audio":
             self._incoming_audio = AudioTrackHandler(track)
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
@@ -387,11 +398,13 @@ class Connection(AsyncIOEventEmitter):
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
-            # TODO error handling?
-            print(f"[Connection] ERROR: unknown track kind {track.kind}.")
+            print(
+                f"[Connection] ERROR: unknown track kind {track.kind}. Ignoring track."
+            )
+            return
 
         @track.on("ended")
-        def on_ended():
+        def _on_ended():
             """Handles tracks ended event."""
             print("[Connection] Track ended:", track.kind)
 
