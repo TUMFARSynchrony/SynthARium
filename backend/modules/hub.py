@@ -58,7 +58,7 @@ class Hub:
         """Stop the hub, close all connection and stop the server."""
         print("[Hub] stopping")
         for experiment in self.experiments.values():
-            experiment.stop()
+            await experiment.stop()
         tasks = [self.server.stop()]
         for experimenter in self.experimenters:
             tasks.append(experimenter.disconnect())
