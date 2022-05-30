@@ -10,7 +10,8 @@ function WatchingRoom() {
       <div className="watchingRoomHeader">
         <Heading heading={"State: " + state} />
       </div>
-      <div className="sessionSpectating">
+      <div className="watchingRoomData">
+        {/* <WatchingRoomTabs /> */}
         <WatchingRoomTabs />
       </div>
     </div>

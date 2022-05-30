@@ -1,7 +1,7 @@
 import "./WatchingRoomTabs.css";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import Notes from "../Notes/Notes";
+import NotesTab from "../NotesTab/NotesTab";
 
 function WatchingRoomTabs() {
   return (
@@ -13,7 +13,7 @@ function WatchingRoomTabs() {
         </TabList>
 
         <TabPanel>
-          <Notes />
+          <NotesTab />
         </TabPanel>
         <TabPanel>
           <h2>Participants are here</h2>

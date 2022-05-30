@@ -37,3 +37,9 @@ export const INITIAL_PARTICIPANT_DATA = {
 };
 
 export const BACKEND = "http://127.0.0.1:8080";
+
+export const INITIAL_NOTE_DATA = {
+  time: 0,
+  speakers: [],
+  content: "",
+};
