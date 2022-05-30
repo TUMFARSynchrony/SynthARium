@@ -1,4 +1,9 @@
-"""Backend entry point for testing purposes."""
+"""Backend entry point for testing purposes.
+
+After starting the hub, the connection test experiment (session id: bbbef1d7d0) is
+automatically started.  The session ID and all Participant IDs will be printed for use
+with the Connection test page.
+"""
 
 # import logging
 from modules.data import SessionData
@@ -55,6 +60,12 @@ EXAMPLE_SESSION: SessionDict = {
 
 
 async def main():
+    """Start the hub and the connection test experiment
+
+    After starting the hub, the connection test experiment (session ID: bbbef1d7d0) is
+    automatically started.  The session ID and all Participant IDs will be printed for
+    use with the Connection test page.
+    """
     global hub, EXAMPLE_SESSION, session
 
     # Uncomment bellow to get detailed logging from aiortc. You will need to install the
@@ -106,7 +117,6 @@ async def stop():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop_policy().get_event_loop()
     try:
-        # asyncio.run(main())
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         print("Detected Keyboard Interrupt. Exiting...")
