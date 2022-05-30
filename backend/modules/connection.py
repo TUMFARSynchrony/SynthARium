@@ -33,6 +33,13 @@ class Connection(AsyncIOEventEmitter):
     Manages one or multiple WebRTC connections with the same client.  Provides interface
     unaffected by the number of actual connections.
 
+    Extends AsyncIOEventEmitter, providing the following events:
+    - `state_change` : modules.connection_state.ConnectionState
+        Emitted when the state of this connection changes.
+    - `tracks_complete` : tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler
+        Emitted when both tracks are received from the client and ready to be
+        distributed / subscribed to.
+
     Notes
     -----
     The sequence should be something like this:
@@ -403,6 +410,9 @@ class Connection(AsyncIOEventEmitter):
             )
             return
 
+        if self._incoming_audio is not None and self._incoming_video is not None:
+            self.emit("tracks_complete", (self._incoming_video, self._incoming_audio))
+
         @track.on("ended")
         def _on_ended():
             """Handles tracks ended event."""
@@ -438,6 +448,10 @@ class SubConnection(AsyncIOEventEmitter):
     Each SubConnection has a audio and video track -> one stream which they send to the
     client.  For communication it used the datachannel of the parent
     module.connection.Connection.
+
+    Extends AsyncIOEventEmitter, providing the following events:
+    - `connection_closed` : str
+        Emitted when this SubConnection closes.  Data is the ID of this SubConnection.
     """
 
     id: str
