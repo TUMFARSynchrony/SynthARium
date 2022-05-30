@@ -254,7 +254,6 @@ class Experiment:
             )
 
         await participant.kick(reason)
-        self._participants.pop(participant_id)
 
     async def ban_participant(self, participant_id: str, reason: str):
         """Ban a participant from this experiment.
@@ -273,7 +272,10 @@ class Experiment:
         ErrorDictException
             If `participant_id` is not known.
         """
-        participant_data = self.session.participants[participant_id]
+        print("[Experiment] ban_participant", participant_id, reason)
+
+        # Save ban in session data
+        participant_data = self.session.participants.get(participant_id)
         if participant_data is None:
             raise ErrorDictException(
                 code=404,
@@ -284,11 +286,10 @@ class Experiment:
                 ),
             )
 
-        # Notify and remove participant, if connected.
+        # Ban Participant, if connected.
         if participant_id in self._participants:
-            participant = self._participants["participant_id"]
+            participant = self._participants[participant_id]
             await participant.ban(reason)
-            self._participants.pop(participant_id)
 
         # Save banned state in session / participant data
         participant_data.banned = True
