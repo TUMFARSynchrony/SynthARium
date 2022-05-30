@@ -86,7 +86,7 @@ const ConnectionTest = (props: {
 
   /** Get the title displayed in a {@link Video} element for `peer`. */
   const getVideoTitle = (peer: ConnectedPeer, index: number) => {
-    if (peer.summary !== null) {
+    if (peer.summary) {
       return `${peer.summary.first_name} ${peer.summary.last_name}`;
     }
     return `Peer stream ${index + 1}`;
@@ -94,7 +94,7 @@ const ConnectionTest = (props: {
 
   /** Get the title displayed in a {@link Video} element for the remote stream of this client. */
   const getRemoteStreamTitle = () => {
-    if (connection.participantSummary !== null) {
+    if (connection.participantSummary) {
       return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
     }
     return "remote stream";
