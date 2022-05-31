@@ -1,0 +1,17 @@
+.joinedParticipantContainer {
+    display: flex;
+    text-align: left;
+    justify-content: space-between;
+    margin: 1em;
+    border:1px solid black;
+    max-width: 15em;
+    padding: 1em;
+    border-radius: 15px;
+    background-color: aliceblue;
+    width: fit-content;
+}
+
+.joinedParticipants {
+    overflow-y: scroll;
+    height: 65vh;
+}
