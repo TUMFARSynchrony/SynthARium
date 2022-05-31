@@ -11,8 +11,10 @@ function WatchingRoom() {
         <Heading heading={"State: " + state} />
       </div>
       <div className="watchingRoomData">
-        {/* <WatchingRoomTabs /> */}
-        <WatchingRoomTabs />
+        <div className="participantLiveStream"></div>
+        <div className="watchingRoomTabs">
+          <WatchingRoomTabs />
+        </div>
       </div>
     </div>
   );

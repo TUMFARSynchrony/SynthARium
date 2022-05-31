@@ -1,20 +1,25 @@
 .notesTabContainer {
-    display: flex;
-    flex-direction: column;
-    /* height: 100%; */
+  display: flex;
+  flex-direction: column;
+  /* height: 100%; */
 }
 
 .notes {
-    overflow-y: scroll;
-    height: 65vh;
+  overflow-y: scroll;
+  height: 65vh;
 }
 
 .notesEntering {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notesInputField {
+  width: 100%;
+  max-width: 100%;
 }
 
 .notesEnteringContainer {
-    /* justify-self: flex-end; */
-    margin-top: auto;
+  margin-top: auto;
 }

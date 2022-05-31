@@ -46,11 +46,13 @@ function NotesTab() {
         <div className="notesEnteringContainer">
           <hr className="separatorLine"></hr>
           <div className="notesEntering">
-            <TextField
-              placeholder={"Enter your notes here"}
-              value={noteContent}
-              onChange={(newContent) => onContentChange(newContent)}
-            />
+            <div className="notesInputField">
+              <TextField
+                placeholder={"Enter your notes here"}
+                value={noteContent}
+                onChange={(newContent) => onContentChange(newContent)}
+              />
+            </div>
             <Button
               name={"Send"}
               design={"secondary"}

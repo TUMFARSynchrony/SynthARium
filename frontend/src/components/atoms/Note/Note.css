@@ -1,14 +1,16 @@
 .noteContainer {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    margin: 1em;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin: 1em;
 }
 
 .noteContent {
-    border:1px solid black;
-    max-width: 15em;
-    padding: 1em;
-    border-radius: 15px;
-    background-color: aliceblue;
+  border: 1px solid black;
+  width: fit-content;
+  max-width: 60vh;
+  padding: 1em;
+  border-radius: 15px;
+  background-color: aliceblue;
+  overflow-wrap: break-word;
 }
