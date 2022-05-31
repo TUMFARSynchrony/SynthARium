@@ -2,7 +2,7 @@ import "./ParticipantsTab.css";
 import Heading from "../../atoms/Heading/Heading";
 import { getJoinedParticipants } from "../../../utils/mockServer";
 import { useState } from "react";
-import JoinedParticipant from "../../atoms/JoinedParticipant/JoinedParticipant";
+import JoinedParticipantCard from "../../atoms/JoinedParticipantCard/JoinedParticipantCard";
 
 function ParticipantsTab() {
   const [participants, setParticipants] = useState(getJoinedParticipants());
@@ -14,7 +14,7 @@ function ParticipantsTab() {
         {participants.length > 0
           ? participants.map((participantData, index) => {
               return (
-                <JoinedParticipant
+                <JoinedParticipantCard
                   participantData={participantData}
                   key={index}
                 />

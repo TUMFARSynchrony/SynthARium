@@ -1,6 +1,7 @@
-import Label from "../../atoms/Label/Label";
-import Button from "../../atoms/Button/Button";
-import InputTextField from "../../molecules/InputTextField/InputTextField";
+import Button from "../../components/atoms/Button/Button";
+import Label from "../../components/atoms/Label/Label";
+import InputTextField from "../../components/molecules/InputTextField/InputTextField";
+
 import "./JoinedParticipantModal.css";
 
 function JoinedParticipantModal({ participantData, showModal, setShowModal }) {

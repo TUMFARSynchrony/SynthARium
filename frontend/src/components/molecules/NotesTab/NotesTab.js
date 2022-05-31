@@ -2,7 +2,7 @@ import "./NotesTab.css";
 import Heading from "../../atoms/Heading/Heading";
 import { useState } from "react";
 import Note from "../../atoms/Note/Note";
-import TextField from "../../molecules/TextField/TextField";
+import TextField from "../TextField/TextField";
 import Button from "../../atoms/Button/Button";
 import { INITIAL_NOTE_DATA } from "../../../utils/constants";
 

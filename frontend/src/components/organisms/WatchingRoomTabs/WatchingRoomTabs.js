@@ -1,8 +1,8 @@
 import "./WatchingRoomTabs.css";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import NotesTab from "../NotesTab/NotesTab";
-import ParticipantsTab from "../ParticipantsTab/ParticipantsTab";
+import NotesTab from "../../molecules/NotesTab/NotesTab";
+import ParticipantsTab from "../../molecules/ParticipantsTab/ParticipantsTab";
 
 function WatchingRoomTabs() {
   return (

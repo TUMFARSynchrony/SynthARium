@@ -1,8 +1,8 @@
 import { useState } from "react";
-import JoinedParticipantModal from "../../modal/JoinedParticipantModal/JoinedParticipantModal";
+import JoinedParticipantModal from "../../../modals/JoinedParticipantModal/JoinedParticipantModal";
 import Button from "../Button/Button";
 import Label from "../Label/Label";
-import "./JoinedParticipant.css";
+import "./JoinedParticipantCard.css";
 
 function JoinedParticipant({ participantData }) {
   const [showModal, setShowModal] = useState(false);
