@@ -1,0 +1,71 @@
+{
+	"id": "b80fe9b467",
+	"title": "Example Session 3 (Planned state)",
+	"description": "Example session that has not jet started.",
+	"date": 1679504761425,
+	"time_limit": 900,
+	"record": true,
+	"participants": [
+		{
+			"id": "02c286da0c",
+			"first_name": "Max",
+			"last_name": "Mustermann",
+			"muted_video": false,
+			"muted_audio": false,
+			"filters": [],
+			"position": {
+				"x": 0,
+				"y": 10,
+				"z": 10
+			},
+			"size": {
+				"width": 100,
+				"height": 100
+			},
+			"chat": [],
+			"banned": false
+		},
+		{
+			"id": "d4e2bd065c",
+			"first_name": "Erika",
+			"last_name": "Mustermann",
+			"muted_video": false,
+			"muted_audio": false,
+			"filters": [],
+			"position": {
+				"x": 0,
+				"y": 150,
+				"z": 200
+			},
+			"size": {
+				"width": 100,
+				"height": 100
+			},
+			"chat": [],
+			"banned": false
+		},
+		{
+			"id": "998707e73f",
+			"first_name": "Bob",
+			"last_name": "Builder",
+			"muted_video": false,
+			"muted_audio": false,
+			"filters": [],
+			"position": {
+				"x": 0,
+				"y": 300,
+				"z": 250
+			},
+			"size": {
+				"width": 100,
+				"height": 100
+			},
+			"chat": [],
+			"banned": false
+		}
+	],
+	"start_time": 0,
+	"end_time": 0,
+	"notes": [],
+	"log": []
+}

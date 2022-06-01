@@ -1,0 +1,90 @@
+{
+    "id": "bbbef1d7d0",
+    "title": "CONNECTION TEST SESSION",
+    "date": 1650380763073,
+    "record": false,
+    "time_limit": 300,
+    "description": "Test session for testing backend - frontend communication.",
+    "end_time": 1653219452105,
+    "start_time": 1653219440350,
+    "notes": [],
+    "participants": [
+        {
+            "id": "aa798c85d5",
+            "first_name": "Max",
+            "last_name": "Mustermann",
+            "banned": false,
+            "size": {
+                "width": 300,
+                "height": 300
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "filters": []
+        },
+        {
+            "id": "bb5ad8f231",
+            "first_name": "Erika",
+            "last_name": "Mustermann",
+            "banned": false,
+            "size": {
+                "width": 300,
+                "height": 300
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 350,
+                "y": 0,
+                "z": 1
+            },
+            "chat": [],
+            "filters": []
+        },
+        {
+            "id": "ccceb2406d",
+            "first_name": "Jeff",
+            "last_name": "Roberts",
+            "banned": false,
+            "size": {
+                "width": 300,
+                "height": 300
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 100,
+                "y": 270,
+                "z": 30
+            },
+            "chat": [],
+            "filters": []
+        },
+        {
+            "id": "dd1882e48b",
+            "first_name": "Tegan",
+            "last_name": "Dalton",
+            "banned": false,
+            "size": {
+                "width": 300,
+                "height": 300
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 400,
+                "y": 270,
+                "z": 35
+            },
+            "chat": [],
+            "filters": []
+        }
+    ],
+    "log": []
+}
