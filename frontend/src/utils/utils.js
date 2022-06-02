@@ -8,7 +8,7 @@ export const getRandomColor = () => {
 };
 
 export const filterListByIndex = (list, index) => {
-  let filteredList = list.filter((obj, i) => {
+  let filteredList = list.filter((_, i) => {
     return i !== index;
   });
 

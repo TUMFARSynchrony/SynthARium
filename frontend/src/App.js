@@ -1,21 +1,28 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ExperimentRoom from "./pages/ExperimentRoom/ExperimentRoom";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
-import { useEffect, useState } from "react";
-import { getLocalStream } from "./utils/utils";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import ConnectionState from "./networking/ConnectionState";
+import { getSessionsList } from "./features/sessionsList";
+import { deleteSession } from "./features/sessionsList";
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getLocalStream } from "./utils/utils";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 function App() {
-  const [sessionsList, setSessionsList] = useState(null);
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
+
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const dispatch = useDispatch();
 
   const streamChangeHandler = async (_) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -104,11 +111,11 @@ function App() {
   };
 
   const handleSessionList = (data) => {
-    setSessionsList(data);
+    dispatch(getSessionsList(data));
   };
 
   const handleDeletedSession = (data) => {
-    console.log("data", data);
+    dispatch(deleteSession(data));
   };
 
   return (
@@ -119,12 +126,7 @@ function App() {
             <Route
               exact
               path="/"
-              element={
-                <SessionOverview
-                  sessionsList={sessionsList}
-                  onDeleteSession={onDeleteSession}
-                />
-              }
+              element={<SessionOverview onDeleteSession={onDeleteSession} />}
             />
             <Route
               exact

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import "./SessionOverview.css";
@@ -7,11 +8,12 @@ import SessionPreview from "../../components/organisms/SessionPreview/SessionPre
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
-function SessionOverview({ sessionsList, onDeleteSession }) {
+function SessionOverview({ onDeleteSession }) {
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+
   const [selectedSession, setSelectedSession] = useState(
-    sessionsList.length !== 0 ? sessionsList[0] : {}
+    sessionsList.length !== 0 ? sessionsList[0] : null
   );
-  console.log("SESSION OVERVIEW selectedSession", selectedSession.id);
 
   const handleClick = (session) => {
     setSelectedSession(session);
@@ -48,11 +50,14 @@ function SessionOverview({ sessionsList, onDeleteSession }) {
           )}
         </div>
         <>
-          {sessionsList.length > 0 && (
+          {selectedSession ? (
             <SessionPreview
-              sessionInformation={selectedSession}
+              selectedSession={selectedSession}
+              setSelectedSession={setSelectedSession}
               onDeleteSession={onDeleteSession}
             />
+          ) : (
+            <h2>No session selected.</h2>
           )}
         </>
       </div>
