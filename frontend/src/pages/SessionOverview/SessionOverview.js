@@ -8,11 +8,10 @@ import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
 function SessionOverview({ sessionsList, onDeleteSession }) {
-  var sessionCards = sessionsList;
-
   const [selectedSession, setSelectedSession] = useState(
-    sessionCards?.length !== 0 ? sessionCards[0] : {}
+    sessionsList.length !== 0 ? sessionsList[0] : {}
   );
+  console.log("SESSION OVERVIEW selectedSession", selectedSession.id);
 
   const handleClick = (session) => {
     setSelectedSession(session);
@@ -31,8 +30,8 @@ function SessionOverview({ sessionsList, onDeleteSession }) {
               initialData: INITIAL_SESSION_DATA,
             }}
           />
-          {sessionCards?.length !== 0 ? (
-            sessionCards?.map((session, index) => {
+          {sessionsList?.length !== 0 ? (
+            sessionsList?.map((session, index) => {
               return (
                 <SessionCard
                   title={session.title}
@@ -49,7 +48,7 @@ function SessionOverview({ sessionsList, onDeleteSession }) {
           )}
         </div>
         <>
-          {sessionCards.length > 0 && (
+          {sessionsList.length > 0 && (
             <SessionPreview
               sessionInformation={selectedSession}
               onDeleteSession={onDeleteSession}
