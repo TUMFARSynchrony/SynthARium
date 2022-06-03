@@ -23,15 +23,18 @@ import { useForm } from "react-hook-form";
 function SessionForm({ onSendSessionToBackend }) {
   const location = useLocation();
   const { register, handleSubmit } = useForm();
+  const [sessionData, setSessionData] = useState(
+    location?.state?.initialData ? location.state.initialData : []
+  );
 
   const participantShapesObject = getShapesFromParticipants(
-    location.state.initialData.participants
+    sessionData.participants ? sessionData.participants : []
   );
 
   const [participantList, setParticipantList] = useState(
-    location.state.initialData.participants
+    sessionData.participants ? sessionData.participants : []
   );
-  const [sessionData, setSessionData] = useState(location.state.initialData);
+
   const [participantShapes, setParticipantShapes] = useState(
     participantShapesObject.shapesArray
   );
@@ -93,7 +96,6 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
-    console.log("handleSessionDataChange");
     let newObject = {};
     newObject[objKey] = newObj;
     setSessionData((sessionData) => ({
@@ -107,23 +109,26 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
-    let newParticipantList = [];
-    newParticipantList = participantList.forEach((participant, index) => {
+    let newParticipantList = participantList;
+
+    newParticipantList.forEach((participant, index) => {
       participant.position.x = participantGroups[index].x;
       participant.position.y = participantGroups[index].y;
       participant.size.width = participantGroups[index].width;
       participant.size.height = participantGroups[index].height;
     });
-    setParticipantList(newParticipantList);
+
+    console.log("newParticipantList", newParticipantList);
+
+    setParticipantList([...newParticipantList]);
 
     let newSessionData = { ...sessionData };
-    newSessionData.participants = participantList;
+    newSessionData.participants = newParticipantList;
 
     newSessionData.time_limit *= 60000;
-    setSessionData(newSessionData);
 
-    console.log(newSessionData);
     onSendSessionToBackend({ ...newSessionData });
+    setSessionData(newSessionData);
   };
 
   return (
@@ -191,7 +196,7 @@ function SessionForm({ onSendSessionToBackend }) {
                 handleSessionDataChange("record", !sessionData.record)
               }
               register={register}
-              required={true}
+              required={false}
               label={"record"}
             />
             <hr className="separatorLine"></hr>
@@ -199,7 +204,7 @@ function SessionForm({ onSendSessionToBackend }) {
             <div className="participantCheckboxes"></div>
             <div className="sessionFormParticipants">
               <div className="scrollableParticipants">
-                {participantList.map((participant, index) => {
+                {participantList?.map((participant, index) => {
                   return (
                     <ParticipantData
                       onDeleteParticipant={() => onDeleteParticipant(index)}

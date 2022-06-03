@@ -22,10 +22,11 @@ export const INITIAL_PARTICIPANT_DATA = {
   id: "",
   first_name: "",
   last_name: "",
-  link: "",
   muted_audio: true,
   muted_video: true,
+  banned: false,
   filters: [],
+  chat: [],
   position: {
     x: 0,
     y: 0,
@@ -43,4 +44,4 @@ export const BACKEND = "http://127.0.0.1:8080";
  * Environment of the client. Set by CreateReactApp depending on how you start it.
  * @type {("development" | "test" | "production")}
  */
-export const ENVIRONMENT = process.env.NODE_ENV // "development", "test" or "production"
+export const ENVIRONMENT = process.env.NODE_ENV; // "development", "test" or "production"

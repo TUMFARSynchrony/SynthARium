@@ -7,14 +7,17 @@ import SessionForm from "./pages/SessionForm/SessionForm";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import ConnectionState from "./networking/ConnectionState";
-import { getSessionsList } from "./features/sessionsList";
+import {
+  createSession,
+  getSessionsList,
+  updateSession,
+} from "./features/sessionsList";
 import { deleteSession } from "./features/sessionsList";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getLocalStream } from "./utils/utils";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -85,10 +88,15 @@ function App() {
 
     connection.api.on("SESSION_LIST", handleSessionList);
     connection.api.on("DELETED_SESSION", handleDeletedSession);
+    connection.api.on("CREATED_SESSION", handleUpdatedSession);
+    connection.api.on("UPDATED_SESSION", handleUpdatedSession);
+    connection.api.on("CREATED_SESSION", handleCreatedSession);
 
     return () => {
       connection.api.off("SESSION_LIST", handleSessionList);
       connection.api.off("DELETED_SESSION", handleDeletedSession);
+      connection.api.off("UPDATED_SESSION", handleUpdatedSession);
+      connection.api.off("CREATED_SESSION", handleCreatedSession);
     };
   }, [connection]);
 
@@ -116,6 +124,14 @@ function App() {
 
   const handleDeletedSession = (data) => {
     dispatch(deleteSession(data));
+  };
+
+  const handleUpdatedSession = (data) => {
+    dispatch(updateSession(data));
+  };
+
+  const handleCreatedSession = (data) => {
+    dispatch(createSession(data));
   };
 
   return (

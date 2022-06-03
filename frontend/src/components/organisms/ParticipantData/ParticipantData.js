@@ -14,26 +14,19 @@ function ParticipantData({
   index,
   first_name,
   last_name,
-  link,
   muted_audio,
   muted_video,
   parameters,
   showParticipantInput,
   setShowParticipantInput,
+  link,
 }) {
   const { register, handleSubmit } = useForm();
 
-  const handleChange = (
-    first_name,
-    last_name,
-    link,
-    muted_audio,
-    muted_video
-  ) => {
+  const handleChange = (first_name, last_name, muted_audio, muted_video) => {
     onChange(index, {
       first_name,
       last_name,
-      link,
       muted_audio,
       muted_video,
     });
@@ -85,7 +78,6 @@ function ParticipantData({
                   handleChange(
                     newFirstName,
                     last_name,
-                    link,
                     muted_audio,
                     muted_video
                   )
@@ -102,7 +94,6 @@ function ParticipantData({
                   handleChange(
                     first_name,
                     newLastName,
-                    link,
                     muted_audio,
                     muted_video
                   )
@@ -116,17 +107,8 @@ function ParticipantData({
                 value={link}
                 placeholder={"Save session to generate link."}
                 readonly={true}
-                onChange={(newLink) =>
-                  handleChange(
-                    first_name,
-                    last_name,
-                    newLink,
-                    muted_audio,
-                    muted_video
-                  )
-                }
                 register={register}
-                label={"last_name"}
+                label={"link"}
                 required={false}
               />
               <div className="participantMuteCheckbox">
@@ -138,7 +120,6 @@ function ParticipantData({
                     handleChange(
                       first_name,
                       last_name,
-                      link,
                       !muted_audio,
                       muted_video
                     )
@@ -155,7 +136,6 @@ function ParticipantData({
                     handleChange(
                       first_name,
                       last_name,
-                      link,
                       muted_audio,
                       !muted_video
                     )
