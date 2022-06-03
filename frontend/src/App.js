@@ -148,7 +148,7 @@ function App() {
   };
 
   const handleError = (data) => {
-    toast.error("Something went wrong! " + data);
+    toast.error(data.description);
   };
 
   return (
