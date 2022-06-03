@@ -131,6 +131,48 @@ function SessionForm({ onSendSessionToBackend }) {
     setSessionData(newSessionData);
   };
 
+  const addRandomSessionData = () => {
+    let newSessionData = {
+      id: "",
+      title: "Hello World",
+      description: "Randomly created session",
+      date: 1655460000000,
+      time_limit: 180,
+      record: true,
+      participants: [
+        {
+          id: "",
+          first_name: "Max",
+          last_name: "Mustermann",
+          muted_audio: true,
+          muted_video: true,
+          banned: false,
+          filters: [],
+          chat: [],
+          position: {
+            x: 10,
+            y: 10,
+            z: 0,
+          },
+          size: {
+            width: 100,
+            height: 100,
+          },
+        },
+      ],
+      start_time: 0,
+      end_time: 0,
+      notes: [],
+      log: "",
+    };
+
+    setSessionData(newSessionData);
+    setParticipantList(newSessionData.participants);
+    let shapes = getShapesFromParticipants(newSessionData.participants);
+    setParticipantShapes(shapes.shapesArray);
+    setParticipantGroups(shapes.groupArray);
+  };
+
   return (
     <div className="sessionFormContainer">
       {showSessionDataForm && (
@@ -239,6 +281,10 @@ function SessionForm({ onSendSessionToBackend }) {
               onClick={handleSubmit(onSaveSession)}
             />
             <LinkButton name="Start" to="/watchingRoom" />
+            <Button
+              name="Random session data"
+              onClick={() => addRandomSessionData()}
+            />
           </div>
         </div>
       )}
