@@ -304,15 +304,17 @@ class Connection(AsyncIOEventEmitter):
 
     async def _check_if_closed(self) -> None:
         """Check if this Connection is closed and should stop."""
-        incoming_audio = self._incoming_audio
-        incoming_video = self._incoming_video
         if (
-            self._dc is not None
-            and self._dc.readyState == "closed"
-            and (incoming_audio is not None and incoming_audio.readyState == "ended")
-            and (incoming_video is not None and incoming_video.readyState == "ended")
+            self._incoming_audio is not None
+            and self._incoming_video is not None
+            and self._incoming_audio.readyState == "ended"
+            and self._incoming_video.readyState == "ended"
         ):
-            print("[Connection] datachannel and all incoming tracks are closed")
+            print("[Connection] All incoming tracks are closed -> stop connection")
+            await self.stop()
+
+        if self._dc is not None and self._dc.readyState == "closed":
+            print("[Connection] datachannel closed -> stop connection")
             await self.stop()
 
     async def _parse_and_handle_message(self, message: Any) -> None:
