@@ -18,6 +18,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getLocalStream } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -88,15 +90,19 @@ function App() {
 
     connection.api.on("SESSION_LIST", handleSessionList);
     connection.api.on("DELETED_SESSION", handleDeletedSession);
-    connection.api.on("CREATED_SESSION", handleUpdatedSession);
+    connection.api.on("CREATED_SESSION", handleCreatedSession);
     connection.api.on("UPDATED_SESSION", handleUpdatedSession);
     connection.api.on("CREATED_SESSION", handleCreatedSession);
+    connection.api.on("SUCCESS", handleSuccess);
+    connection.api.on("ERROR", handleError);
 
     return () => {
       connection.api.off("SESSION_LIST", handleSessionList);
       connection.api.off("DELETED_SESSION", handleDeletedSession);
       connection.api.off("UPDATED_SESSION", handleUpdatedSession);
       connection.api.off("CREATED_SESSION", handleCreatedSession);
+      connection.api.off("SUCCESS", handleSuccess);
+      connection.api.off("ERROR", handleError);
     };
   }, [connection]);
 
@@ -123,19 +129,31 @@ function App() {
   };
 
   const handleDeletedSession = (data) => {
+    toast.success("Successfully deleted session with ID " + data);
     dispatch(deleteSession(data));
   };
 
   const handleUpdatedSession = (data) => {
+    toast.success("Successfully updated session" + data.title);
     dispatch(updateSession(data));
   };
 
   const handleCreatedSession = (data) => {
+    toast.success("Successfully created session" + data.title);
     dispatch(createSession(data));
+  };
+
+  const handleSuccess = (data) => {
+    toast.success("SUCCESS: " + data);
+  };
+
+  const handleError = (data) => {
+    toast.error("Something went wrong! " + data);
   };
 
   return (
     <div className="App">
+      <ToastContainer />
       {sessionsList ? (
         <Router>
           <Routes>
