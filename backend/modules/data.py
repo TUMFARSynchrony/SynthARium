@@ -401,7 +401,7 @@ class SessionData:
             Also occurs if a duplicate participant ID was found.
         """
         # Data checks.
-        if session_dict["id"] is not self.id:
+        if session_dict["id"] != self.id:
             raise ValueError("Session.update can not change the ID of a Session")
 
         if self._has_unknown_participant_ids(session_dict):
