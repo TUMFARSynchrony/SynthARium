@@ -21,10 +21,12 @@
   display: grid;
   column-gap: 50px;
   grid-template-columns: 60% 1fr;
+  align-items: start;
 }
 
 .participantLiveStream {
   width: auto;
   border: 15px solid green;
   padding: 50px;
+  aspect-ratio: 16/9;
 }
