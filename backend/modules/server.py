@@ -6,12 +6,14 @@ from typing import Any, Callable, Coroutine, Literal, Optional
 from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
+from ssl import SSLContext
 
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 
 from modules.exceptions import ErrorDictException
+from modules.config import Config
 
 
 class Server:
@@ -32,12 +34,9 @@ class Server:
     _hub_handle_offer: _HANDLER
     _app: web.Application
     _runner: web.AppRunner
-    _host: str
-    _port: int
+    _config: Config
 
-    def __init__(
-        self, hub_handle_offer: _HANDLER, host: str, port: int, use_cors=False
-    ):
+    def __init__(self, hub_handle_offer: _HANDLER, config: Config):
         """Instantiate new Server instance.
 
         Parameters
@@ -52,8 +51,7 @@ class Server:
             If true, cors will be enabled for *.  Should only be used for development.
         """
         self._hub_handle_offer = hub_handle_offer
-        self._host = host
-        self._port = port
+        self._config = config
 
         self._app = web.Application()
         self._app.on_shutdown.append(self._shutdown)
@@ -61,7 +59,7 @@ class Server:
         routes.append(self._app.router.add_get("/", self.get_hello_world))
         routes.append(self._app.router.add_post("/offer", self.handle_offer))
 
-        if not use_cors:
+        if config.environment != "dev":
             return
 
         # Using cors is only intended for development, when the client is not hosted by
@@ -84,12 +82,22 @@ class Server:
 
     async def start(self):
         """Start the server."""
-        print(f"[Server] Starting server on http://{self._host}:{self._port}")
+        ssl_context = self._get_ssl_context()
+        protocol = "http" if ssl_context is None else "https"
+        print(
+            "[Server] Starting server on "
+            f"{protocol}://{self._config.host}:{self._config.port}"
+        )
         # Set up aiohttp - like run_app, but non-blocking
         # (Source: https://stackoverflow.com/a/53465910)
         self._runner = web.AppRunner(self._app)
         await self._runner.setup()
-        site = web.TCPSite(self._runner, host=self._host, port=self._port)
+        site = web.TCPSite(
+            self._runner,
+            host=self._config.host,
+            port=self._config.port,
+            ssl_context=ssl_context,
+        )
         await site.start()
 
     async def _shutdown(self, app: web.Application):
@@ -109,6 +117,22 @@ class Server:
             content_type="application/json",
             text=json.dumps({"text": "Hello World", "timestamp": str(datetime.now())}),
         )
+
+    def _get_ssl_context(self) -> None | SSLContext:
+        """Get ssl context if `ssl_cert` and `ssl_key` are defined in config.
+
+        Returns
+        -------
+        None or ssl.SSLContext
+            If `self._config.ssl_cert` or `self._config.ssl_key` is None, return None.
+            Otherwise load and return SSLContext.
+        """
+        if self._config.ssl_cert is None or self._config.ssl_key is None:
+            return None
+        print("[Server] Load SSL Context")
+        ssl_context = SSLContext()
+        ssl_context.load_cert_chain(self._config.ssl_cert, self._config.ssl_key)
+        return ssl_context
 
     async def _parse_offer_request(self, request: web.Request) -> dict:
         """Parse a request made to the `/offer` endpoint.

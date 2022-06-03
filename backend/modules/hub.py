@@ -46,9 +46,7 @@ class Hub:
         self.experiments = {}
         self.config = config
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = _server.Server(
-            self.handle_offer, config.host, config.port, config.environment == "dev"
-        )
+        self.server = _server.Server(self.handle_offer, config)
 
     async def start(self):
         """Start the hub.  Starts the server."""
