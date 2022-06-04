@@ -36,7 +36,7 @@ export const INITIAL_PARTICIPANT_DATA = {
   },
 };
 
-export const BACKEND = "http://127.0.0.1:8080";
+export const BACKEND = process.env.REACT_APP_BACKEND;
 
 /**
  * Environment of the client. Set by CreateReactApp depending on how you start it.
