@@ -29,6 +29,8 @@ Most browsers only allow access to media devices (webcam, microphone, ...) if th
 Place the certificate and private key in `backend/certificate` and make sure `ssl_cert` and `ssl_key` in `config.json` are set correctly.
 Then set `https` to `true` and start the server.
 
+Make sure to update the server address if the frontend dev server is used. See [frontend readme](./../frontend/README.md#configuring-the-development-server).
+
 ### Acquiring a SSL Certificates
 
 If you want to conduct an experiment, you need to get a thrusted SSL Certificate. One way to get free SSL certificates is [Let's Encrypt](https://letsencrypt.org/).
