@@ -14,6 +14,7 @@ class Config:
     host: str
     port: int
     environment: Literal["dev", "prod"]
+    https: bool
     ssl_cert: str | None
     ssl_key: str | None
 
@@ -35,6 +36,7 @@ class Config:
             "host": str,
             "port": int,
             "environment": str,  # Literal not supported here, check afterwards.
+            "https": bool,
         }
         for key in data_types:
             if key not in config:
@@ -54,18 +56,24 @@ class Config:
         self.host = config["host"]
         self.port = config["port"]
         self.environment = config["environment"]
+        self.https = config["https"]
 
-        # parse ssl_cert and ssl_key and check if the files exist
+        # parse ssl_cert and ssl_key
         self.ssl_cert = config.get("ssl_cert")
         if self.ssl_cert is not None:
             self.ssl_cert = join(BACKEND_DIR, self.ssl_cert)
-            if not exists(self.ssl_cert):
-                print(f"[Config] Did not find ssl_cert file: {self.ssl_cert}.")
-                raise FileNotFoundError(f"{self.ssl_cert} not found")
 
         self.ssl_key = config.get("ssl_key")
         if self.ssl_key is not None:
             self.ssl_key = join(BACKEND_DIR, config["ssl_key"])
+
+        # Check ssl_cert and ssl_key if https is true
+        if self.https:
+            if self.ssl_cert is None or self.ssl_key is None:
+                raise ValueError("ssl_cert and ssl_key are required for https.")
+            if not exists(self.ssl_cert):
+                print(f"[Config] Did not find ssl_cert file: {self.ssl_cert}.")
+                raise FileNotFoundError(f"{self.ssl_cert} not found")
             if not exists(self.ssl_key):
                 print(f"[Config] Did not find ssl_key file: {self.ssl_key}.")
                 raise FileNotFoundError(f"{self.ssl_key} not found")

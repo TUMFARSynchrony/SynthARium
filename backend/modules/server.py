@@ -127,7 +127,11 @@ class Server:
             If `self._config.ssl_cert` or `self._config.ssl_key` is None, return None.
             Otherwise load and return SSLContext.
         """
-        if self._config.ssl_cert is None or self._config.ssl_key is None:
+        if (
+            not self._config.https
+            or self._config.ssl_cert is None
+            or self._config.ssl_key is None
+        ):
             return None
         print("[Server] Load SSL Context")
         ssl_context = SSLContext()
