@@ -92,7 +92,6 @@ function App() {
     connection.api.on("DELETED_SESSION", handleDeletedSession);
     connection.api.on("CREATED_SESSION", handleCreatedSession);
     connection.api.on("UPDATED_SESSION", handleUpdatedSession);
-    connection.api.on("CREATED_SESSION", handleCreatedSession);
     connection.api.on("SUCCESS", handleSuccess);
     connection.api.on("ERROR", handleError);
 
