@@ -5,11 +5,10 @@ Provides: `SessionData`, `ParticipantData`, `PositionData` and `SizeData`.
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 
-
+from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.position import PositionDict
 from custom_types.size import SizeDict
 from custom_types.participant import ParticipantDict
@@ -259,6 +258,22 @@ class ParticipantData(_BaseDataClass):
             "filters": self.filters,
         }
 
+    def as_summary_dict(self) -> ParticipantSummaryDict:
+        """Get non-sensitive key information from ParticipantData as dictionary.
+
+        Returns
+        -------
+        custom_types.participant_summary.ParticipantSummaryDict
+            ParticipantSummaryDict with some of the data in this ParticipantData.
+        """
+        return {
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "size": self.size.asdict(),
+            "position": self.position.asdict(),
+            "chat": self.chat,
+        }
+
 
 @dataclass(slots=True)
 class SessionData:
@@ -386,7 +401,7 @@ class SessionData:
             Also occurs if a duplicate participant ID was found.
         """
         # Data checks.
-        if session_dict["id"] is not self.id:
+        if session_dict["id"] != self.id:
             raise ValueError("Session.update can not change the ID of a Session")
 
         if self._has_unknown_participant_ids(session_dict):

@@ -15,11 +15,9 @@ from custom_types.filters import BasicFilterDict
 
 
 class ParticipantDict(TypedDict):
-    """TypedDict for api messages.  All messages send should be a MessageDict.
+    """TypedDict representing an participant.
 
-    The `MessageDict` is used to send and receive messages and identify the contents of
-    a message via `type`.  The content of a message can be anything, e.g. an ErrorDict,
-    Session Data, ...
+    Contains sensitive information that should not be send to non-experimenter clients.
 
     Attributes
     ----------
@@ -47,6 +45,9 @@ class ParticipantDict(TypedDict):
 
     See Also
     --------
+    ParticipantSummaryDict :
+        custom_types.participant_summary.ParticipantSummaryDict used to send a summary
+        of a participant to the client.
     Data Types Wiki :
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#Participant
     """

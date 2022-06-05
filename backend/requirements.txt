@@ -1,3 +1,6 @@
 aiortc
 aiohttp
+pyee
 aiohttp_cors # dev only
+Pillow 
+av

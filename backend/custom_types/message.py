@@ -11,7 +11,7 @@ import custom_types.util as util
 
 
 class MessageDict(TypedDict):
-    """TypedDict for api messages.  All messages send should be a MessageDict.
+    """TypedDict for api messages.  All messages sent should be a MessageDict.
 
     The `MessageDict` is used to send and receive messages and identify the contents of
     a message via `type`.  The content of a message can be anything, e.g. an ErrorDict,
@@ -38,6 +38,8 @@ MESSAGE_TYPES = Literal[
     "SUCCESS",
     "ERROR",
     "SESSION_DESCRIPTION",
+    "CONNECTION_OFFER",
+    "CONNECTION_ANSWER",
     "SAVE_SESSION",
     "CREATED_SESSION",
     "UPDATED_SESSION",

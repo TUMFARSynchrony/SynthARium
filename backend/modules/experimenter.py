@@ -7,6 +7,7 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+import asyncio
 from typing import Any
 from aiortc import RTCSessionDescription
 
@@ -24,6 +25,7 @@ from custom_types.session_id_request import (
     is_valid_session_id_request,
 )
 
+from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
@@ -61,24 +63,72 @@ class Experimenter(User):
         experimenter_factory : Instantiate connection with a new Experimenter based on
             WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
         """
-        super().__init__(id)
+        super(Experimenter, self).__init__(id)
         self._hub = hub
         self._experiment = None
 
         # Add API endpoints
-        self.on("GET_SESSION_LIST", self._handle_get_session_list)
-        self.on("SAVE_SESSION", self._handle_save_session)
-        self.on("DELETE_SESSION", self._handle_delete_session)
-        self.on("CREATE_EXPERIMENT", self._handle_create_experiment)
-        self.on("JOIN_EXPERIMENT", self._handle_join_experiment)
-        self.on("START_EXPERIMENT", self._handle_start_experiment)
-        self.on("STOP_EXPERIMENT", self._handle_stop_experiment)
-        self.on("ADD_NOTE", self._handle_add_note)
-        self.on("CHAT", self._handle_chat)
-        self.on("KICK_PARTICIPANT", self._handle_kick)
-        self.on("BAN_PARTICIPANT", self._handle_ban)
-        self.on("MUTE", self._handle_mute)
-        self.on("SET_FILTERS", self._handle_set_filters)
+        self.on_message("GET_SESSION_LIST", self._handle_get_session_list)
+        self.on_message("SAVE_SESSION", self._handle_save_session)
+        self.on_message("DELETE_SESSION", self._handle_delete_session)
+        self.on_message("CREATE_EXPERIMENT", self._handle_create_experiment)
+        self.on_message("JOIN_EXPERIMENT", self._handle_join_experiment)
+        self.on_message("START_EXPERIMENT", self._handle_start_experiment)
+        self.on_message("STOP_EXPERIMENT", self._handle_stop_experiment)
+        self.on_message("ADD_NOTE", self._handle_add_note)
+        self.on_message("CHAT", self._handle_chat)
+        self.on_message("KICK_PARTICIPANT", self._handle_kick)
+        self.on_message("BAN_PARTICIPANT", self._handle_ban)
+        self.on_message("MUTE", self._handle_mute)
+        self.on_message("SET_FILTERS", self._handle_set_filters)
+
+    def __str__(self) -> str:
+        """Get string representation of this experimenter.
+
+        Currently returns value of `__repr__`.
+        """
+        return self.__repr__()
+
+    def __repr__(self) -> str:
+        """Get representation of this experimenter."""
+        if self._experiment is None:
+            experiment_id = "None"
+        else:
+            experiment_id = self._experiment.session.id
+
+        return f"Experimenter(id={self.id}, experiment={experiment_id})"
+
+    async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        """Handler for connection "state_change" event.
+
+        Implements the abstract `_handle_connection_state_change` function in
+        modules.user.User.
+
+        Parameters
+        ----------
+        state : modules.connection_state.ConnectionState
+            New state of the connection this Experimenter has with the client.
+        """
+        print("[Experimenter] handle state change. State:", state)
+        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            if self._experiment is not None:
+                print("[Experimenter] Removing self from experiment")
+                self._experiment.remove_experimenter(self)
+            print("[Experimenter] Removing self from hub")
+            self._hub.remove_experimenter(self)
+
+        if state is ConnectionState.CONNECTED:
+            await self._subscribe_to_participants_streams()
+
+    async def _subscribe_to_participants_streams(self) -> None:
+        """Subscribe to all participants in `self._experiment`."""
+        if self._experiment is not None:
+            tasks = []
+            for p in self._experiment.participants.values():
+                if p is self:
+                    continue
+                tasks.append(self.subscribe_to(p))
+            await asyncio.gather(*tasks)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -136,7 +186,7 @@ class Experimenter(User):
 
             # Notify all experimenters about the change
             message = MessageDict(type="CREATED_SESSION", data=session.asdict())
-            self._hub.send_to_experimenters(message)
+            await self._hub.send_to_experimenters(message)
             return
 
         # Update existing session
@@ -176,7 +226,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the change
         message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
-        self._hub.send_to_experimenters(message)
+        await self._hub.send_to_experimenters(message)
 
     async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
@@ -217,7 +267,7 @@ class Experimenter(User):
 
         # Notify all experimenters about the change
         message = MessageDict(type="DELETED_SESSION", data=session_id)
-        self._hub.send_to_experimenters(message)
+        await self._hub.send_to_experimenters(message)
 
     async def _handle_create_experiment(
         self, data: SessionIdRequestDict | Any
@@ -260,7 +310,10 @@ class Experimenter(User):
 
         # Notify all experimenters about the new experiment
         message = MessageDict(type="CREATED_EXPERIMENT", data=data)
-        self._hub.send_to_experimenters(message)
+        await self._hub.send_to_experimenters(message)
+
+        # Subscribe to participants in experiment
+        await self._subscribe_to_participants_streams()
 
         # Notify caller that he joined the experiment
         success = SuccessDict(
@@ -314,6 +367,9 @@ class Experimenter(User):
         self._experiment = experiment
         self._experiment.add_experimenter(self)
 
+        # Subscribe to participants in experiment
+        await self._subscribe_to_participants_streams()
+
         success = SuccessDict(
             type="JOIN_EXPERIMENT", description="Successfully joined experiment."
         )
@@ -349,7 +405,7 @@ class Experimenter(User):
                 ),
             )
 
-        self._experiment.start()
+        await self._experiment.start()
 
         success = SuccessDict(
             type="START_EXPERIMENT", description="Successfully started experiment."
@@ -377,7 +433,7 @@ class Experimenter(User):
             the Experiment has already ended.
         """
         experiment = self._get_experiment_or_raise("Cannot stop experiment.")
-        experiment.stop()
+        await experiment.stop()
 
         success = SuccessDict(
             type="STOP_EXPERIMENT", description="Successfully stopped experiment."
@@ -459,7 +515,7 @@ class Experimenter(User):
             )
 
         experiment = self._get_experiment_or_raise("Cannot chat.")
-        experiment.handle_chat_message(data)
+        await experiment.handle_chat_message(data)
 
         success = SuccessDict(
             type="CHAT", description="Successfully send chat message."

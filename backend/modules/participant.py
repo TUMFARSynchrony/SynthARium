@@ -7,17 +7,21 @@ modules.connection.Connection.
 """
 
 from __future__ import annotations
+import asyncio
 from typing import Any
 from aiortc import RTCSessionDescription
 
+from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
 import modules.experiment as _experiment
+from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
+from modules.data import ParticipantData
 from modules.user import User
 
 
@@ -27,6 +31,16 @@ class Participant(User):
     Has access to a different set of API endpoints than other Users.  API endpoints for
     participants are defined here.
 
+    Methods
+    -------
+    get_summary()
+        Get custom_types.participant_summary.ParticipantSummaryDict for this Participant
+        .
+    kick(reason)
+        Kick the Participant.
+    ban(reason)
+        Ban the Participant.
+
     See Also
     --------
     participant_factory : Instantiate connection with a new Participant based on WebRTC
@@ -34,15 +48,13 @@ class Participant(User):
     """
 
     _experiment: _experiment.Experiment
-    _muted_video: bool
-    _muted_audio: bool
+    _participant_data: ParticipantData
 
     def __init__(
         self,
         id: str,
         experiment: _experiment.Experiment,
-        muted_video: bool,
-        muted_audio: bool,
+        participant_data: ParticipantData,
     ) -> None:
         """Instantiate new Participant instance.
 
@@ -52,43 +64,39 @@ class Participant(User):
             Unique identifier for Participant.  Must exist in experiment.
         experiment : modules.experiment.Experiment
             Experiment the participant is part of.
+        participant_data : modules.data.ParticipantData
+            Participant data this participant represents.
 
         See Also
         --------
-        experimenter_factory : Instantiate connection with a new Experimenter based on
-            WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
+        participant_factory : Instantiate connection with a new Participant based on
+            WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
-        super().__init__(id)
-
+        super(Participant, self).__init__(
+            id, participant_data.muted_video, participant_data.muted_audio
+        )
+        self._participant_data = participant_data
         self._experiment = experiment
-        self._muted_video = muted_video
-        self._muted_audio = muted_audio
         experiment.add_participant(self)
 
         # Add API endpoints
-        self.on("CHAT", self._handle_chat)
+        self.on_message("CHAT", self._handle_chat)
 
-    def set_muted(self, video: bool, audio: bool):
-        """Set the muted state for this participant.
+    def __str__(self) -> str:
+        """Get string representation of this participant.
 
-        Parameters
-        ----------
-        video : bool
-            Whether the participants video should be muted.
-        audio : bool
-            Whether the participants audio should be muted.
+        Currently returns value of `__repr__`.
         """
-        if self._muted_video == video and self._muted_audio == audio:
-            return
+        return self.__repr__()
 
-        self._muted_video = video
-        self._muted_audio = audio
+    def __repr__(self) -> str:
+        """Get representation of this participant."""
+        return f"Participant(id={self.id}, experiment={self._experiment.session.id})"
 
-        # TODO Implement mute on connection (when connection is finished)
+    def get_summary(self) -> ParticipantSummaryDict:
+        return self._participant_data.as_summary_dict()
 
-        # TODO Notify user about mute
-
-    async def kick(self, reason: str):
+    async def kick(self, reason: str) -> None:
         """Kick the participant.
 
         Notify the participant about the kick with a `KICK_NOTIFICATION` message and
@@ -102,11 +110,11 @@ class Participant(User):
         """
         kick_notification = KickNotificationDict(reason=reason)
         message = MessageDict(type="KICK_NOTIFICATION", data=kick_notification)
-        self.send(message)
+        await self.send(message)
 
         await self.disconnect()
 
-    async def ban(self, reason: str):
+    async def ban(self, reason: str) -> None:
         """Ban the participant.
 
         Notify the participant about the ban with a `BAN_NOTIFICATION` message and
@@ -120,9 +128,41 @@ class Participant(User):
         """
         ban_notification = KickNotificationDict(reason=reason)
         message = MessageDict(type="BAN_NOTIFICATION", data=ban_notification)
-        self.send(message)
+        await self.send(message)
 
         await self.disconnect()
+
+    async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        """Handler for connection "state_change" event.
+
+        Implements the abstract `_handle_connection_state_change` function in
+        modules.user.User.
+
+        Parameters
+        ----------
+        state : modules.connection_state.ConnectionState
+            New state of the connection this Participant has with the client.
+        """
+        print("[Participant] handle state change. State:", state)
+        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            print("[Participant] Removing self from experiment")
+            self._experiment.remove_participant(self)
+            return
+
+        if state is ConnectionState.CONNECTED:
+            tasks = []
+            # Add stream to all experimenters
+            for e in self._experiment.experimenters:
+                tasks.append(e.subscribe_to(self))
+
+            # Add stream to all participants and all participants streams to self
+            for p in self._experiment.participants.values():
+                if p is self:
+                    continue
+                tasks.append(self.subscribe_to(p))
+                tasks.append(p.subscribe_to(self))
+
+            await asyncio.gather(*tasks)
 
     async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
         """Handle requests with type `CHAT`.
@@ -169,7 +209,7 @@ class Participant(User):
                 description="Author of message must be participant ID.",
             )
 
-        self._experiment.handle_chat_message(data)
+        await self._experiment.handle_chat_message(data)
 
         success = SuccessDict(
             type="CHAT", description="Successfully send chat message."
@@ -181,8 +221,7 @@ async def participant_factory(
     offer: RTCSessionDescription,
     id: str,
     experiment: _experiment.Experiment,
-    muted_video: bool,
-    muted_audio: bool,
+    participant_data: ParticipantData,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -207,7 +246,7 @@ async def participant_factory(
         WebRTC answer that should be send back to the client and Participant
         representing the client.
     """
-    participant = Participant(id, experiment, muted_video, muted_audio)
+    participant = Participant(id, experiment, participant_data)
     answer, connection = await connection_factory(offer, participant.handle_message)
     participant.set_connection(connection)
     return (answer, participant)

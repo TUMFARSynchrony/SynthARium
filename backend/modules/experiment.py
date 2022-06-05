@@ -34,7 +34,17 @@ class Experiment:
         self._experimenters = []
         self._participants = {}
 
-    def start(self):
+    @property
+    def participants(self):
+        """Participants currently connected to the Experiment."""
+        return self._participants
+
+    @property
+    def experimenters(self):
+        """Experimenters currently connected to the Experiment."""
+        return self._experimenters
+
+    async def start(self):
         """Start the experiment.
 
         If state is `WAITING`, save the current time in `session.start_time` and set
@@ -57,9 +67,9 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
-        self.send("all", end_message, secure_origin=True)
+        await self.send("all", end_message, secure_origin=True)
 
-    def stop(self):
+    async def stop(self):
         """Stop the experiment.
 
         If state is not already `ENDED`, save the current time in `session.end_time` and
@@ -82,9 +92,11 @@ class Experiment:
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
-        self.send("all", end_message, secure_origin=True)
+        await self.send("all", end_message, secure_origin=True)
 
-    def send(self, to: str, data: Any, exclude: str = "", secure_origin: bool = False):
+    async def send(
+        self, to: str, data: Any, exclude: str = "", secure_origin: bool = False
+    ):
         """Send data to a single or group of users.
 
         Select the correct target (group) according to the `to` parameter and send the
@@ -147,9 +159,9 @@ class Experiment:
         # Send data
         for user in targets:
             if exclude != user.id:
-                user.send(data)
+                await user.send(data)
 
-    def handle_chat_message(self, chat_message: ChatMessageDict):
+    async def handle_chat_message(self, chat_message: ChatMessageDict):
         """Log and send a chat message to `target` in `chat_message`.
 
         Parameters
@@ -187,7 +199,7 @@ class Experiment:
 
         # Send message
         msg_dict = MessageDict(type="CHAT", data=chat_message)
-        self.send(chat_message["target"], msg_dict)
+        await self.send(chat_message["target"], msg_dict)
 
     def add_participant(self, participant: _participant.Participant):
         """Add participant to experiment.
@@ -198,6 +210,20 @@ class Experiment:
             Participant joining the experiment.
         """
         self._participants[participant.id] = participant
+
+    def remove_participant(self, participant: _participant.Participant):
+        """Remove an participant from this experiment.
+
+        Parameters
+        ----------
+        participant : modules.participant.Participant
+            Participant leaving the experiment.
+        """
+        self._participants.pop(participant.id)
+        print(
+            "[Experiment] Participants in experiment:",
+            list(self._participants.values()),
+        )
 
     async def kick_participant(self, participant_id: str, reason: str):
         """Kick a participant from this experiment.
@@ -228,7 +254,6 @@ class Experiment:
             )
 
         await participant.kick(reason)
-        self._participants.pop(participant_id)
 
     async def ban_participant(self, participant_id: str, reason: str):
         """Ban a participant from this experiment.
@@ -247,7 +272,10 @@ class Experiment:
         ErrorDictException
             If `participant_id` is not known.
         """
-        participant_data = self.session.participants[participant_id]
+        print("[Experiment] ban_participant", participant_id, reason)
+
+        # Save ban in session data
+        participant_data = self.session.participants.get(participant_id)
         if participant_data is None:
             raise ErrorDictException(
                 code=404,
@@ -258,11 +286,10 @@ class Experiment:
                 ),
             )
 
-        # Notify and remove participant, if connected.
+        # Ban Participant, if connected.
         if participant_id in self._participants:
-            participant = self._participants["participant_id"]
+            participant = self._participants[participant_id]
             await participant.ban(reason)
-            self._participants.pop(participant_id)
 
         # Save banned state in session / participant data
         participant_data.banned = True
@@ -292,3 +319,19 @@ class Experiment:
             Experimenter joining the experiment.
         """
         self._experimenters.append(experimenter)
+
+    def remove_experimenter(self, experimenter: _experimenter.Experimenter):
+        """Remove an experimenter from this experiment.
+
+        Parameters
+        ----------
+        experimenter : modules.experimenter.Experimenter
+            Experimenter leaving the experiment.
+
+        Raises
+        ------
+        ValueError
+            If the given `experimenter` is not part of this experiment.
+        """
+        self._experimenters.remove(experimenter)
+        print("[Experiment] Experimenters in experiment:", self._experimenters)
