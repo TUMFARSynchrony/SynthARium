@@ -6,8 +6,8 @@ with the Connection test page.
 """
 
 # import logging
+from modules.exceptions import HubException
 from modules.data import SessionData
-from modules.config import Config
 from modules.hub import Hub
 import asyncio
 
@@ -75,13 +75,11 @@ async def main():
     # print("logger set")
 
     try:
-        config = Config()
-    except ValueError as err:
-        print("ERROR: Failed to load config:", err)
-        print("Aborting start. Please fix error above.")
+        hub = Hub()
+    except HubException as err:
+        print("Failed to start hub. Error:", err)
         return
 
-    hub = Hub(config)
     await hub.start()
 
     # Create new Session

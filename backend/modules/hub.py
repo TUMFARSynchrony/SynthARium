@@ -10,7 +10,7 @@ from custom_types.participant_summary import ParticipantSummaryDict
 from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
-from modules.exceptions import ErrorDictException
+from modules.exceptions import ErrorDictException, HubException
 
 import modules.server as _server
 import modules.experiment as _experiment
@@ -33,20 +33,28 @@ class Hub:
     server: _server.Server
     config: Config
 
-    def __init__(self, config: Config):
-        """Instantiate new Hub instance.
+    def __init__(self):
+        """Parse config and instantiate new Hub instance.
 
-        Parameters
-        ----------
-        config : modules.config.Config
-            Configuration for the hub.
+        Raises
+        ------
+        HubException
+            If the hub was unable to be initialized.  See log for details.
         """
+        try:
+            self.config = Config()
+        except ValueError as err:
+            print("ERROR: Failed to load config:", err)
+            raise HubException(err)
+        except FileNotFoundError as err:
+            print("ERROR: Failed to load config:", err)
+            raise HubException(err)
+
         print("[Hub] Initializing Hub")
         self.experimenters = []
         self.experiments = {}
-        self.config = config
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = _server.Server(self.handle_offer, config)
+        self.server = _server.Server(self.handle_offer, self.config)
 
     async def start(self):
         """Start the hub.  Starts the server."""
