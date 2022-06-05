@@ -3,6 +3,7 @@
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
+import logging
 
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -32,6 +33,7 @@ class Hub:
     session_manager: _sm.SessionManager
     server: _server.Server
     config: Config
+    _logger: logging.Logger
 
     def __init__(self):
         """Parse config and instantiate new Hub instance.
@@ -41,16 +43,27 @@ class Hub:
         HubException
             If the hub was unable to be initialized.  See log for details.
         """
+        logging.basicConfig(
+            level=logging.DEBUG, format="%(levelname)s:%(name)s: %(message)s"
+        )
+        self._logger = logging.getLogger("Hub")
+        self._logger.debug("Initializing Hub")
+
+        logging.getLogger("aiohttp").setLevel(logging.WARNING)
+        logging.getLogger("aioice").setLevel(logging.WARNING)
+        logging.getLogger("aiortc").setLevel(logging.WARNING)
+        logging.getLogger("PIL").setLevel(logging.WARNING)
+
         try:
             self.config = Config()
         except ValueError as err:
-            print("ERROR: Failed to load config:", err)
+            self._logger.error(f"Failed to load config: {err}")
             raise HubException(err)
         except FileNotFoundError as err:
-            print("ERROR: Failed to load config:", err)
+            self._logger.error(f"Failed to load config: {err}")
             raise HubException(err)
+        self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
-        print("[Hub] Initializing Hub")
         self.experimenters = []
         self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
@@ -62,7 +75,7 @@ class Hub:
 
     async def stop(self):
         """Stop the hub, close all connection and stop the server."""
-        print("[Hub] stopping")
+        self._logger.info("Stopping Hub")
         for experiment in self.experiments.values():
             await experiment.stop()
         tasks = [self.server.stop()]
@@ -182,21 +195,21 @@ class Hub:
         this function will raise the exception with a fitting error message.
         """
         if participant_id is None:
-            print("[Hub] WARNING: Missing participant_id in offer handler")
+            self._logger.warning("Missing participant_id in offer handler")
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Missing participant_id."
             )
 
         if session_id is None:
-            print("[Hub] WARNING: Missing session_id in offer handler")
+            self._logger.warning("Missing session_id in offer handler")
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Missing session_id."
             )
 
         if session_id not in self.experiments:
-            print(
-                f"[Hub] WARNING: No experiment for session ID {session_id} found.",
-                f"Participant {participant_id} failed to join",
+            self._logger.warning(
+                f"No experiment for session ID {session_id} found. "
+                f"Participant {participant_id} failed to join"
             )
             raise ErrorDictException(
                 code=400, type="UNKNOWN_SESSION", description="Session not found."
@@ -205,9 +218,8 @@ class Hub:
         experiment = self.experiments[session_id]
         participant = experiment.session.participants.get(participant_id)
         if participant is None:
-            print(
-                f"[Hub] WARNING: participant {participant_id} not found in session:",
-                session_id,
+            self._logger.warning(
+                f"Participant {participant_id} not found in session: {session_id}"
             )
             raise ErrorDictException(
                 code=400,

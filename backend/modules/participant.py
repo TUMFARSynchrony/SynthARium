@@ -8,6 +8,7 @@ modules.connection.Connection.
 
 from __future__ import annotations
 import asyncio
+import logging
 from typing import Any
 from aiortc import RTCSessionDescription
 
@@ -75,6 +76,7 @@ class Participant(User):
         super(Participant, self).__init__(
             id, participant_data.muted_video, participant_data.muted_audio
         )
+        self._logger = logging.getLogger(f"Participant-{id}")
         self._participant_data = participant_data
         self._experiment = experiment
         experiment.add_participant(self)
@@ -143,9 +145,9 @@ class Participant(User):
         state : modules.connection_state.ConnectionState
             New state of the connection this Participant has with the client.
         """
-        print("[Participant] handle state change. State:", state)
+        self._logger.debug(f"Handle state change. State: {state}")
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
-            print("[Participant] Removing self from experiment")
+            self._logger.debug("Removing self from experiment")
             self._experiment.remove_participant(self)
             return
 
@@ -247,6 +249,8 @@ async def participant_factory(
         representing the client.
     """
     participant = Participant(id, experiment, participant_data)
-    answer, connection = await connection_factory(offer, participant.handle_message)
+    answer, connection = await connection_factory(
+        offer, participant.handle_message, f"P-{id}"
+    )
     participant.set_connection(connection)
     return (answer, participant)

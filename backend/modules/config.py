@@ -72,13 +72,9 @@ class Config:
             if self.ssl_cert is None or self.ssl_key is None:
                 raise ValueError("ssl_cert and ssl_key are required for https.")
             if not exists(self.ssl_cert):
-                print(f"[Config] Did not find ssl_cert file: {self.ssl_cert}.")
-                raise FileNotFoundError(f"{self.ssl_cert} not found")
+                raise FileNotFoundError(f"Did not find ssl_cert file: {self.ssl_cert}")
             if not exists(self.ssl_key):
-                print(f"[Config] Did not find ssl_key file: {self.ssl_key}.")
-                raise FileNotFoundError(f"{self.ssl_key} not found")
-
-        print(f"[Config] successfully loaded config: {str(self)}")
+                raise FileNotFoundError(f"Did not find ssl_key file: {self.ssl_key}")
 
     def __str__(self) -> str:
         """Get string representation of parameters in this Config.

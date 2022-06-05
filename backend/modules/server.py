@@ -1,5 +1,6 @@
 """Provides the `Server` class, which serves the frontend and other endpoints."""
 
+import logging
 import aiohttp_cors
 import json
 from typing import Any, Callable, Coroutine, Literal, Optional
@@ -31,6 +32,7 @@ class Server:
         ],
     ]
 
+    _logger: logging.Logger
     _hub_handle_offer: _HANDLER
     _app: web.Application
     _runner: web.AppRunner
@@ -50,6 +52,7 @@ class Server:
         use_cors : bool, default False
             If true, cors will be enabled for *.  Should only be used for development.
         """
+        self._logger = logging.getLogger("Server")
         self._hub_handle_offer = hub_handle_offer
         self._config = config
 
@@ -64,7 +67,7 @@ class Server:
 
         # Using cors is only intended for development, when the client is not hosted by
         # this server but a separate development server.
-        print("[Server] WARNING: Using CORS. Only use for development!")
+        self._logger.info("Using CORS. Only use for development!")
 
         cors = aiohttp_cors.setup(self._app)  # type: ignore
         for route in routes:
@@ -84,9 +87,8 @@ class Server:
         """Start the server."""
         ssl_context = self._get_ssl_context()
         protocol = "http" if ssl_context is None else "https"
-        print(
-            "[Server] Starting server on "
-            f"{protocol}://{self._config.host}:{self._config.port}"
+        self._logger.info(
+            f"Starting server on {protocol}://{self._config.host}:{self._config.port}"
         )
         # Set up aiohttp - like run_app, but non-blocking
         # (Source: https://stackoverflow.com/a/53465910)
@@ -106,13 +108,13 @@ class Server:
 
     async def stop(self):
         """Stop the server."""
-        print("[Server] Server stopping")
+        self._logger.info("Stopping Server")
         await self._app.shutdown()
         await self._app.cleanup()
 
     async def get_hello_world(self, request: web.Request) -> web.StreamResponse:
         """Placeholder for testing if the server is accessible"""
-        print("[Server] Get hello world")
+        self._logger.info(f"Received hello world request from {request.remote}")
         return web.Response(
             content_type="application/json",
             text=json.dumps({"text": "Hello World", "timestamp": str(datetime.now())}),
@@ -133,7 +135,7 @@ class Server:
             or self._config.ssl_key is None
         ):
             return None
-        print("[Server] Load SSL Context")
+        self._logger.debug("Load SSL Context")
         ssl_context = SSLContext()
         ssl_context.load_cert_chain(self._config.ssl_cert, self._config.ssl_key)
         return ssl_context
@@ -212,12 +214,12 @@ class Server:
         aiohttp.web.StreamResponse
             Response to request from client.
         """
-        print(f"[Server] Handle offer from {request.host}")
+        self._logger.info(f"Received offer from {request.remote}")
         # Check and parse request.
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
-            print("[Server] Failed to parse offer.")
+            self._logger.warning("Failed to parse request.")
             return web.Response(
                 content_type="application/json",
                 status=error.code,
@@ -230,6 +232,7 @@ class Server:
             offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
         except ValueError:
             error_description = "Failed to parse offer."
+            self._logger.warning(error_description)
             error = ErrorDict(
                 code=400, type="INVALID_REQUEST", description=error_description
             )
@@ -250,6 +253,9 @@ class Server:
                 params.get("session_id"),
             )
         except ErrorDictException as error:
+            self._logger.warning(
+                f"Hub raised ErrorDictException during handling of offer. {error}"
+            )
             return web.Response(
                 content_type="application/json",
                 status=error.code,

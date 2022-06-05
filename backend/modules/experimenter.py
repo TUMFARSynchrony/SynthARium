@@ -8,6 +8,7 @@ modules.connection.Connection.
 
 from __future__ import annotations
 import asyncio
+import logging
 from typing import Any
 from aiortc import RTCSessionDescription
 
@@ -64,6 +65,7 @@ class Experimenter(User):
             WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
         """
         super(Experimenter, self).__init__(id)
+        self._logger = logging.getLogger(f"Experimenter-{id}")
         self._hub = hub
         self._experiment = None
 
@@ -109,12 +111,12 @@ class Experimenter(User):
         state : modules.connection_state.ConnectionState
             New state of the connection this Experimenter has with the client.
         """
-        print("[Experimenter] handle state change. State:", state)
+        self._logger.debug(f"Handle state change. State: {state}")
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             if self._experiment is not None:
-                print("[Experimenter] Removing self from experiment")
+                self._logger.debug("Removing self from Experiment")
                 self._experiment.remove_experimenter(self)
-            print("[Experimenter] Removing self from hub")
+            self._logger.debug("Removing self from Hub")
             self._hub.remove_experimenter(self)
 
         if state is ConnectionState.CONNECTED:
@@ -740,6 +742,8 @@ async def experimenter_factory(
         representing the client.
     """
     experimenter = Experimenter(id, hub)
-    answer, connection = await connection_factory(offer, experimenter.handle_message)
+    answer, connection = await connection_factory(
+        offer, experimenter.handle_message, f"E-{id}"
+    )
     experimenter.set_connection(connection)
     return (answer, experimenter)
