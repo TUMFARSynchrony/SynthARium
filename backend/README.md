@@ -29,7 +29,7 @@ Most browsers only allow access to media devices (webcam, microphone, ...) if th
 Place the certificate and private key in `backend/certificate` and make sure `ssl_cert` and `ssl_key` in `config.json` are set correctly.
 Then set `https` to `true` and start the server.
 
-Make sure to update the server address if the frontend dev server is used. See [frontend readme](./../frontend/README.md#configuring-the-development-server).
+In case the frontend dev server is used, make sure to update the backend server address there. See [frontend readme](./../frontend/README.md#configuring-the-development-server).
 
 ### Acquiring a SSL Certificates
 
