@@ -41,7 +41,7 @@ function SessionOverview({ onDeleteSession }) {
                   date={session.date}
                   description={session.description}
                   onClick={() => handleClick(session)}
-                  selected={session.title === selectedSession?.title}
+                  selected={session.id === selectedSession?.id}
                 />
               );
             })
