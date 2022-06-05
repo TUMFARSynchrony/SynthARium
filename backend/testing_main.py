@@ -68,12 +68,6 @@ async def main():
     """
     global hub, EXAMPLE_SESSION, session
 
-    # Uncomment bellow to get detailed logging from aiortc. You will need to install the
-    # logging library.
-
-    # logging.basicConfig(level=logging.DEBUG)
-    # print("logger set")
-
     try:
         hub = Hub()
     except HubException as err:

@@ -1,6 +1,9 @@
 """Provide utility functions for type checking."""
 
+import logging
 from typing import Any, Type, TypedDict
+
+logger = logging.getLogger("TypesUtil")
 
 
 def check_valid_typeddict_keys(data: Any, type: Type[TypedDict]) -> bool:
@@ -59,15 +62,15 @@ def check_dict(data: dict, required_keys: list[str], optional_keys: list[str]):
     # Check if required keys exist in data
     for key in required_keys:
         if key not in data:
-            print("[check_dict] missing key:", key)
+            logger.debug(f"Missing key: {key}")
             return False
 
     # Check that only required & optional keys exist in data
     for key in data:
         if key not in required_keys and key not in optional_keys:
-            print(
-                f"[check_dict] non allowed key: {key}. Required keys:",
-                f"{required_keys}, optional keys: {optional_keys}.",
+            logger.debug(
+                f"Non allowed key: {key}. Required keys: {required_keys}, "
+                f"optional keys: {optional_keys}."
             )
             return False
 

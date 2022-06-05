@@ -1,4 +1,5 @@
 """Provide the `Experiment` class."""
+import logging
 import time
 from typing import Any
 
@@ -15,6 +16,7 @@ import modules.participant as _participant
 class Experiment:
     """Experiment representing a running session."""
 
+    _logger: logging.Logger
     _state: ExperimentState
     session: SessionData
     _experimenters: list[_experimenter.Experimenter]
@@ -29,6 +31,7 @@ class Experiment:
             SessionData this experiment is based on. Will modify the session during
             execution.
         """
+        self._logger = logging.getLogger(f"Experiment-{session.id}")
         self._state = ExperimentState.WAITING
         self.session = session
         self._experimenters = []
@@ -210,6 +213,9 @@ class Experiment:
             Participant joining the experiment.
         """
         self._participants[participant.id] = participant
+        self._logger.debug(
+            f"Participants connected to experiment: {list(self._participants.values())}"
+        )
 
     def remove_participant(self, participant: _participant.Participant):
         """Remove an participant from this experiment.
@@ -220,9 +226,8 @@ class Experiment:
             Participant leaving the experiment.
         """
         self._participants.pop(participant.id)
-        print(
-            "[Experiment] Participants in experiment:",
-            list(self._participants.values()),
+        self._logger.debug(
+            f"Participants connected to experiment: {list(self._participants.values())}"
         )
 
     async def kick_participant(self, participant_id: str, reason: str):
@@ -253,6 +258,7 @@ class Experiment:
                 ),
             )
 
+        self._logger.debug(f"Kick participant {participant_id}, reason: {reason}")
         await participant.kick(reason)
 
     async def ban_participant(self, participant_id: str, reason: str):
@@ -272,7 +278,6 @@ class Experiment:
         ErrorDictException
             If `participant_id` is not known.
         """
-        print("[Experiment] ban_participant", participant_id, reason)
 
         # Save ban in session data
         participant_data = self.session.participants.get(participant_id)
@@ -285,6 +290,8 @@ class Experiment:
                     "found."
                 ),
             )
+
+        self._logger.debug(f"Ban participant {participant_id}, reason: {reason}")
 
         # Ban Participant, if connected.
         if participant_id in self._participants:
@@ -319,6 +326,9 @@ class Experiment:
             Experimenter joining the experiment.
         """
         self._experimenters.append(experimenter)
+        self._logger.debug(
+            f"Experimenters connected to experiment: {self._experimenters}"
+        )
 
     def remove_experimenter(self, experimenter: _experimenter.Experimenter):
         """Remove an experimenter from this experiment.
@@ -334,4 +344,6 @@ class Experiment:
             If the given `experimenter` is not part of this experiment.
         """
         self._experimenters.remove(experimenter)
-        print("[Experiment] Experimenters in experiment:", self._experimenters)
+        self._logger.debug(
+            f"Experimenters connected to experiment: {self._experimenters}"
+        )

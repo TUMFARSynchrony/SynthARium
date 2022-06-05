@@ -1,6 +1,9 @@
 """Provide `ConnectionState` class and `parse_connection_state` function."""
 
+import logging
 from enum import Enum
+
+logger = logging.getLogger("ConnectionState")
 
 
 class ConnectionState(Enum):
@@ -51,5 +54,5 @@ def parse_connection_state(state: str) -> ConnectionState:
         case "failed":
             return ConnectionState.FAILED
         case _:
-            print("Failed to parse connection state: Unknown state:", state)
+            logger.debug(f"parse_connection_state failed: Unknown state: {state}")
             raise ValueError(f"Unknown connection state: {state}.")
