@@ -11,6 +11,7 @@ import {
   filterListByIndex,
   getRandomColor,
   getParticipantDimensions,
+  formatDate,
 } from "../../utils/utils";
 import TextField from "../../components/molecules/TextField/TextField";
 
@@ -103,8 +104,8 @@ function SessionForm({ onSendSessionToBackend }) {
       id: "",
       title: "Hello World",
       description: "Randomly created session",
-      date: "2018-06-07T00:00",
-      time_limit: 180,
+      date: new Date().getTime(),
+      time_limit: 10800000,
       record: true,
       participants: [
         {
@@ -171,7 +172,6 @@ function SessionForm({ onSendSessionToBackend }) {
               <InputTextField
                 title="Time Limit (in minutes)"
                 value={sessionData.time_limit}
-                placeholder={"Input time limit in MINUTES"}
                 inputType={"number"}
                 onChange={(newTimeLimit) =>
                   handleSessionDataChange("time_limit", newTimeLimit)
@@ -182,7 +182,7 @@ function SessionForm({ onSendSessionToBackend }) {
               ></InputTextField>
               <InputDateField
                 title="Date"
-                value={sessionData.date}
+                value={sessionData.date ? formatDate(sessionData.date) : ""}
                 onChange={(newDate) =>
                   handleSessionDataChange(
                     "date",
