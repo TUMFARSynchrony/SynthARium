@@ -12,13 +12,8 @@ function ParticipantData({
   onDeleteParticipant,
   onChange,
   index,
-  id,
+  participantData,
   sessionId,
-  first_name,
-  last_name,
-  muted_audio,
-  muted_video,
-  parameters,
   showParticipantInput,
   setShowParticipantInput,
 }) {
@@ -42,7 +37,7 @@ function ParticipantData({
       <InputTextField
         title="Participant Name"
         placeholder={"Enter the information"}
-        value={[first_name, last_name]
+        value={[participantData.first_name, participantData.last_name]
           .filter((str) => str.length > 0)
           .join(" ")}
         readonly={true}
@@ -73,14 +68,14 @@ function ParticipantData({
 
               <InputTextField
                 title="First Name"
-                value={first_name}
+                value={participantData.first_name}
                 placeholder={"Name of participant"}
                 onChange={(newFirstName) =>
                   handleChange(
                     newFirstName,
-                    last_name,
-                    muted_audio,
-                    muted_video
+                    participantData.last_name,
+                    participantData.muted_audio,
+                    participantData.muted_video
                   )
                 }
                 register={register}
@@ -89,14 +84,14 @@ function ParticipantData({
               />
               <InputTextField
                 title="Last Name"
-                value={last_name}
+                value={participantData.last_name}
                 placeholder={"Name of participant"}
                 onChange={(newLastName) =>
                   handleChange(
-                    first_name,
+                    participantData.first_name,
                     newLastName,
-                    muted_audio,
-                    muted_video
+                    participantData.muted_audio,
+                    participantData.muted_video
                   )
                 }
                 register={register}
@@ -106,11 +101,10 @@ function ParticipantData({
               <InputTextField
                 title="Link"
                 value={
-                  id.length > 0
-                    ? `https:://experimental-hub/experimentRoom/userId=${id}&sessionId=${sessionId}`
-                    : null
+                  participantData.id.length > 0
+                    ? `https:://experimental-hub/experimentRoom/userId=${participantData.id}&sessionId=${sessionId}`
+                    : "Save session to generate link."
                 }
-                placeholder={"Save session to generate link."}
                 readonly={true}
                 register={register}
                 label={"link"}
@@ -119,14 +113,14 @@ function ParticipantData({
               <div className="participantMuteCheckbox">
                 <Checkbox
                   title="Mute Audio"
-                  value={muted_audio}
-                  checked={muted_audio}
+                  value={participantData.muted_audio}
+                  checked={participantData.muted_audio}
                   onChange={() =>
                     handleChange(
-                      first_name,
-                      last_name,
-                      !muted_audio,
-                      muted_video
+                      participantData.first_name,
+                      participantData.last_name,
+                      !participantData.muted_audio,
+                      participantData.muted_video
                     )
                   }
                   register={register}
@@ -135,14 +129,14 @@ function ParticipantData({
                 />
                 <Checkbox
                   title="Mute Video"
-                  value={muted_video}
-                  checked={muted_video}
+                  value={participantData.muted_video}
+                  checked={participantData.muted_video}
                   onChange={() =>
                     handleChange(
-                      first_name,
-                      last_name,
-                      muted_audio,
-                      !muted_video
+                      participantData.first_name,
+                      participantData.last_name,
+                      participantData.muted_audio,
+                      !participantData.muted_video
                     )
                   }
                   register={register}
@@ -153,16 +147,16 @@ function ParticipantData({
               <Heading heading={"Current video position and size:"} />
               <div className="participantVideoSize">
                 <div className="participantPosition">
-                  <Label title={"x: "} /> {parameters.x}
+                  <Label title={"x: "} /> {participantData.position.x}
                 </div>
                 <div className="participantPosition">
-                  <Label title={"y: "} /> {parameters.y}
+                  <Label title={"y: "} /> {participantData.position.y}
                 </div>
                 <div className="participantPosition">
-                  <Label title={"Width: "} /> {parameters.width}
+                  <Label title={"Width: "} /> {participantData.size.width}
                 </div>
                 <div className="participantPosition">
-                  <Label title={"Height: "} /> {parameters.height}
+                  <Label title={"Height: "} /> {participantData.size.height}
                 </div>
               </div>
               <Button

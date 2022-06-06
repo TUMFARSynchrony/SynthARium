@@ -28,13 +28,13 @@ export const INITIAL_PARTICIPANT_DATA = {
   filters: [],
   chat: [],
   position: {
-    x: 0,
-    y: 0,
+    x: 10,
+    y: 10,
     z: 0,
   },
   size: {
-    width: 0,
-    height: 0,
+    width: 100,
+    height: 100,
   },
 };
 

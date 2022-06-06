@@ -18,24 +18,25 @@ import "./SessionForm.css";
 import { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addParticipant,
+  changeParticipant,
+  changeTimeLimit,
+  changeValue,
+  deleteParticipant,
+  initializeSession,
+} from "../../features/openSession";
 
 function SessionForm({ onSendSessionToBackend }) {
-  // const location = useLocation();
-
+  const dispatch = useDispatch();
   let openSession = useSelector((state) => state.openSession.value);
   const { register, handleSubmit } = useForm();
   const [sessionData, setSessionData] = useState(openSession);
-  // const [sessionData, setSessionData] = useState(location.state.initialData);
 
   useEffect(() => {
     setSessionData(openSession);
   }, [openSession]);
-
-  const [participantList, setParticipantList] = useState(
-    sessionData.participants ? sessionData.participants : []
-  );
 
   const [participantDimensions, setParticipantDimensions] = useState(
     getParticipantDimensions(
@@ -47,14 +48,14 @@ function SessionForm({ onSendSessionToBackend }) {
   const [showParticipantInput, setShowParticipantInput] = useState(false);
 
   const onDeleteParticipant = (index) => {
-    setParticipantList(filterListByIndex(participantList, index));
+    dispatch(deleteParticipant({ index: index }));
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
   };
 
   const onAddParticipant = () => {
     setShowParticipantInput(true);
-    const newParticipantList = [...participantList, INITIAL_PARTICIPANT_DATA];
-    setParticipantList(newParticipantList);
+
+    dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
 
     const newParticipantDimensions = [
       ...participantDimensions,
@@ -72,13 +73,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const handleParticipantChange = (index, participant) => {
-    let newParticipantList = [...participantList];
-    newParticipantList[index] = {
-      ...newParticipantList[index],
-      ...participant,
-    };
-
-    setParticipantList(newParticipantList);
+    dispatch(changeParticipant({ participant: participant, index: index }));
 
     let newParticipantDimensions = [...participantDimensions];
     newParticipantDimensions[index].shapes = {
@@ -90,12 +85,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
-    let newObject = {};
-    newObject[objKey] = newObj;
-    setSessionData((sessionData) => ({
-      ...sessionData,
-      ...newObject,
-    }));
+    dispatch(changeValue({ objKey: objKey, objValue: newObj }));
   };
 
   const onShowSessionFormModal = () => {
@@ -103,26 +93,9 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
-    let newParticipantList = [...participantList];
-    console.log("onSaveSession participantList", newParticipantList);
+    dispatch(changeTimeLimit());
 
-    newParticipantList.forEach((participant, index) => {
-      participant.position.x = participantDimensions[index].groups.x;
-      participant.position.y = participantDimensions[index].groups.y;
-      participant.size.width = participantDimensions[index].groups.width;
-      participant.size.height = participantDimensions[index].groups.height;
-    });
-
-    console.log("newParticipantList", newParticipantList);
-
-    setParticipantList([...newParticipantList]);
-
-    let newSessionData = { ...sessionData };
-    newSessionData.participants = newParticipantList;
-
-    newSessionData.time_limit *= 60000;
-
-    onSendSessionToBackend({ ...newSessionData }, setSessionData);
+    onSendSessionToBackend(sessionData, setSessionData);
   };
 
   const addRandomSessionData = () => {
@@ -160,14 +133,10 @@ function SessionForm({ onSendSessionToBackend }) {
       log: "",
     };
 
-    setSessionData(newSessionData);
-    setParticipantList(newSessionData.participants);
+    dispatch(initializeSession(newSessionData));
     let dimensions = getParticipantDimensions(newSessionData.participants);
     setParticipantDimensions(dimensions);
   };
-
-  console.log("sessionData", sessionData);
-  console.log("participantList", participantList);
 
   return (
     <div className="sessionFormContainer">
@@ -242,20 +211,15 @@ function SessionForm({ onSendSessionToBackend }) {
             <div className="participantCheckboxes"></div>
             <div className="sessionFormParticipants">
               <div className="scrollableParticipants">
-                {participantList?.map((participant, index) => {
+                {openSession.participants.map((participant, index) => {
                   return (
                     <ParticipantData
                       onDeleteParticipant={() => onDeleteParticipant(index)}
                       key={index}
                       index={index}
-                      id={participant.id}
+                      participantData={participant}
                       sessionId={sessionData.id}
                       onChange={handleParticipantChange}
-                      first_name={participant.first_name}
-                      last_name={participant.last_name}
-                      muted_audio={participant.muted_audio}
-                      muted_video={participant.muted_video}
-                      parameters={participantDimensions[index].groups}
                       showParticipantInput={showParticipantInput}
                       setShowParticipantInput={setShowParticipantInput}
                     />

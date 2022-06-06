@@ -2,9 +2,12 @@ import { Stage, Layer, Text } from "react-konva";
 import { useState } from "react";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
 import { CANVAS_SIZE } from "../../../utils/constants";
+import { useDispatch } from "react-redux";
+import { changeParticipantDimensions } from "../../../features/openSession";
 
 function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
   const [selectedShape, setSelectShape] = useState(null);
+  const dispatch = useDispatch();
 
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -36,6 +39,20 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
                     const dimensions = participantDimensions.slice();
                     dimensions[index].groups = newAttrs;
                     setParticipantDimensions(dimensions);
+
+                    dispatch(
+                      changeParticipantDimensions({
+                        index: index,
+                        position: {
+                          x: newAttrs.x,
+                          y: newAttrs.y,
+                        },
+                        size: {
+                          width: newAttrs.width,
+                          height: newAttrs.height,
+                        },
+                      })
+                    );
                   }}
                 />
               );
