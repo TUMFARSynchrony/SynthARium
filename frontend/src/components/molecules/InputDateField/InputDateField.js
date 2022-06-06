@@ -10,6 +10,7 @@ function InputDateField({
   register,
   label,
   required,
+  value,
 }) {
   return (
     <div className="inputDateFieldContainer">
@@ -22,6 +23,7 @@ function InputDateField({
         register={register}
         label={label}
         required={required}
+        value={value}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { integerToDateTime } from "../../../utils/utils";
+import { formatDate, integerToDateTime } from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
@@ -23,12 +23,15 @@ function SessionPreview({
     let copiedSession = { ...selectedSession };
     copiedSession.id = "";
     copiedSession.time_limit = copiedSession.time_limit / 60000;
+    copiedSession.date = formatDate(copiedSession.date);
+    console.log("copiedSession.date", copiedSession.date);
     dispatch(initializeSession(copiedSession));
   };
 
   const onEditSession = () => {
     let editSession = { ...selectedSession };
     editSession.time_limit = editSession.time_limit / 60000;
+    editSession.date = formatDate(editSession.date);
     dispatch(initializeSession(editSession));
   };
 

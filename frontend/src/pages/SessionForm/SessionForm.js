@@ -103,7 +103,7 @@ function SessionForm({ onSendSessionToBackend }) {
       id: "",
       title: "Hello World",
       description: "Randomly created session",
-      date: new Date().toLocaleString(),
+      date: "2018-06-07T00:00",
       time_limit: 180,
       record: true,
       participants: [
