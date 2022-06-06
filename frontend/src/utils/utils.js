@@ -103,3 +103,11 @@ export const formatDate = (date) => {
 
   return `${yyyy}-${mm}-${dd}T${hh}:${mins}`;
 };
+
+export const sortArray = (array) => {
+  array.sort(function (a, b) {
+    return new Date(a.date) - new Date(b.date);
+  });
+
+  return array;
+};
