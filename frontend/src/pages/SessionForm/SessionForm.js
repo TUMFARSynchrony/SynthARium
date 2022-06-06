@@ -10,7 +10,7 @@ import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
 import {
   filterListByIndex,
   getRandomColor,
-  getShapesFromParticipants,
+  getParticipantDimensions,
 } from "../../utils/utils";
 import TextField from "../../components/molecules/TextField/TextField";
 
@@ -19,36 +19,36 @@ import { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 
 function SessionForm({ onSendSessionToBackend }) {
+  // const location = useLocation();
+
   let openSession = useSelector((state) => state.openSession.value);
   const { register, handleSubmit } = useForm();
   const [sessionData, setSessionData] = useState(openSession);
+  // const [sessionData, setSessionData] = useState(location.state.initialData);
+
   useEffect(() => {
     setSessionData(openSession);
   }, [openSession]);
-
-  const participantShapesObject = getShapesFromParticipants(
-    sessionData.participants ? sessionData.participants : []
-  );
 
   const [participantList, setParticipantList] = useState(
     sessionData.participants ? sessionData.participants : []
   );
 
-  const [participantShapes, setParticipantShapes] = useState(
-    participantShapesObject.shapesArray
+  const [participantDimensions, setParticipantDimensions] = useState(
+    getParticipantDimensions(
+      sessionData.participants ? sessionData.participants : []
+    )
   );
-  const [participantGroups, setParticipantGroups] = useState(
-    participantShapesObject.groupArray
-  );
+
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [showParticipantInput, setShowParticipantInput] = useState(false);
 
   const onDeleteParticipant = (index) => {
     setParticipantList(filterListByIndex(participantList, index));
-    setParticipantShapes(filterListByIndex(participantShapes, index));
-    setParticipantGroups(filterListByIndex(participantGroups, index));
+    setParticipantDimensions(filterListByIndex(participantDimensions, index));
   };
 
   const onAddParticipant = () => {
@@ -56,26 +56,19 @@ function SessionForm({ onSendSessionToBackend }) {
     const newParticipantList = [...participantList, INITIAL_PARTICIPANT_DATA];
     setParticipantList(newParticipantList);
 
-    const newParticipantShapes = [
-      ...participantShapes,
+    const newParticipantDimensions = [
+      ...participantDimensions,
       {
-        x: 0,
-        y: 0,
-        fill: getRandomColor(),
+        shapes: {
+          x: 0,
+          y: 0,
+          fill: getRandomColor(),
+        },
+        groups: { x: 10, y: 10, width: 100, height: 100 },
       },
     ];
-    setParticipantShapes(newParticipantShapes);
 
-    const newPartcipantGroup = [
-      ...participantGroups,
-      {
-        x: 10,
-        y: 10,
-        width: 100,
-        height: 100,
-      },
-    ];
-    setParticipantGroups(newPartcipantGroup);
+    setParticipantDimensions(newParticipantDimensions);
   };
 
   const handleParticipantChange = (index, participant) => {
@@ -87,13 +80,13 @@ function SessionForm({ onSendSessionToBackend }) {
 
     setParticipantList(newParticipantList);
 
-    let newParticipantShapes = [...participantShapes];
-    newParticipantShapes[index] = {
-      ...participantShapes[index],
+    let newParticipantDimensions = [...participantDimensions];
+    newParticipantDimensions[index].shapes = {
+      ...newParticipantDimensions[index].shapes,
       first_name: participant.first_name,
       last_name: participant.last_name,
     };
-    setParticipantShapes(newParticipantShapes);
+    setParticipantDimensions(newParticipantDimensions);
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
@@ -111,13 +104,13 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onSaveSession = () => {
     let newParticipantList = [...participantList];
-    console.log("onSaveSession participantList", participantList);
+    console.log("onSaveSession participantList", newParticipantList);
 
     newParticipantList.forEach((participant, index) => {
-      participant.position.x = participantGroups[index].x;
-      participant.position.y = participantGroups[index].y;
-      participant.size.width = participantGroups[index].width;
-      participant.size.height = participantGroups[index].height;
+      participant.position.x = participantDimensions[index].groups.x;
+      participant.position.y = participantDimensions[index].groups.y;
+      participant.size.width = participantDimensions[index].groups.width;
+      participant.size.height = participantDimensions[index].groups.height;
     });
 
     console.log("newParticipantList", newParticipantList);
@@ -169,10 +162,12 @@ function SessionForm({ onSendSessionToBackend }) {
 
     setSessionData(newSessionData);
     setParticipantList(newSessionData.participants);
-    let shapes = getShapesFromParticipants(newSessionData.participants);
-    setParticipantShapes(shapes.shapesArray);
-    setParticipantGroups(shapes.groupArray);
+    let dimensions = getParticipantDimensions(newSessionData.participants);
+    setParticipantDimensions(dimensions);
   };
+
+  console.log("sessionData", sessionData);
+  console.log("participantList", participantList);
 
   return (
     <div className="sessionFormContainer">
@@ -259,7 +254,7 @@ function SessionForm({ onSendSessionToBackend }) {
                       link={participant.link}
                       muted_audio={participant.muted_audio}
                       muted_video={participant.muted_video}
-                      parameters={participantGroups[index]}
+                      parameters={participantDimensions[index].groups}
                       showParticipantInput={showParticipantInput}
                       setShowParticipantInput={setShowParticipantInput}
                     />
@@ -294,9 +289,8 @@ function SessionForm({ onSendSessionToBackend }) {
       />
       <div className="sessionFormCanvas">
         <DragAndDrop
-          participantShapes={participantShapes}
-          participantGroups={participantGroups}
-          setParticipantGroups={setParticipantGroups}
+          participantDimensions={participantDimensions}
+          setParticipantDimensions={setParticipantDimensions}
         />
       </div>
     </div>

@@ -60,25 +60,26 @@ export const getLocalStream = async () => {
   }
 };
 
-export const getShapesFromParticipants = (participants) => {
-  const shapesArray = [];
-  let groupArray = [];
+export const getParticipantDimensions = (participants) => {
+  let dimensions = [];
 
   participants.forEach((participant, _) => {
-    shapesArray.push({
-      x: 0,
-      y: 0,
-      fill: getRandomColor(),
-      first_name: participant.first_name,
-      last_name: participant.last_name,
-    });
-    groupArray.push({
-      x: participant.position.x,
-      y: participant.position.y,
-      width: participant.size.width,
-      height: participant.size.height,
+    dimensions.push({
+      shapes: {
+        x: 0,
+        y: 0,
+        fill: getRandomColor(),
+        first_name: participant.first_name,
+        last_name: participant.last_name,
+      },
+      groups: {
+        x: participant.position.x,
+        y: participant.position.y,
+        width: participant.size.width,
+        height: participant.size.height,
+      },
     });
   });
 
-  return { shapesArray: shapesArray, groupArray: groupArray };
+  return dimensions;
 };
