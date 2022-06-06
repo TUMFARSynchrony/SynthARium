@@ -22,12 +22,14 @@ function SessionPreview({
   const onCopySession = () => {
     let copiedSession = { ...selectedSession };
     copiedSession.id = "";
-
+    copiedSession.time_limit = copiedSession.time_limit / 60000;
     dispatch(initializeSession(copiedSession));
   };
 
   const onEditSession = () => {
-    dispatch(initializeSession(selectedSession));
+    let editSession = { ...selectedSession };
+    editSession.time_limit = editSession.time_limit / 60000;
+    dispatch(initializeSession(editSession));
   };
 
   return (
