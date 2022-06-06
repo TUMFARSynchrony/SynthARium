@@ -91,4 +91,4 @@ class Config:
 
         Format: "Config(host: <host>, port: <port>, environment: <environment>.)"
         """
-        return f"Config({self.__str__})"
+        return f"Config({str(self)})"

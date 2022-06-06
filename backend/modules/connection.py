@@ -110,6 +110,16 @@ class Connection(AsyncIOEventEmitter):
         pc.on("connectionstatechange", f=self._on_connection_state_change)
         pc.on("track", f=self._on_track)
 
+    def __str__(self) -> str:
+        """Get string representation of this Connection."""
+        return f"state={self._state}"
+
+    def __repr__(self) -> str:
+        """Get representation of this Connection obj."""
+        return (
+            f"Connection({str(self)}, logger_name=Connection-{self._log_name_suffix})"
+        )
+
     async def stop(self) -> None:
         """Stop this connection.
 
@@ -150,7 +160,7 @@ class Connection(AsyncIOEventEmitter):
             Data that will be stringified and send to the peer.
         """
         if self._dc is None or self._dc.readyState != "open":
-            self._logger.warning("Not sending data because datachannel is not open.")
+            self._logger.warning("Can not send data because datachannel is not open")
             await self._set_failed_state_and_close()
             return
         stringified = json.dumps(data)

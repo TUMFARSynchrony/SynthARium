@@ -142,6 +142,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         modules.participant.Participant : Participant implementation of User.
         modules.experimenter.Experimenter : Experimenter implementation of User.
         """
+        self._logger.debug(f"Added Connection: {repr(connection)}")
         self._connection = connection
         self._connection.add_listener(
             "state_change", self._handle_connection_state_change
@@ -287,6 +288,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             try:
                 response = await handler(message["data"])
             except ErrorDictException as err:
+                self._logger.info(f"Failed to handle {endpoint} message")
                 response = err.error_message
             except Exception as err:
                 self._logger.error(f"INTERNAL SERVER ERROR: {err}")

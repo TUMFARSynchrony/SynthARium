@@ -36,6 +36,15 @@ class Experiment:
         self.session = session
         self._experimenters = []
         self._participants = {}
+        self._logger.info(f"Experiment created: {self}")
+
+    def __str__(self) -> str:
+        """Get string representation of this Experiment."""
+        return f"session={self.session.id}, title={self.session.title}"
+
+    def __repr__(self) -> str:
+        """Get representation of this Experiment obj."""
+        return f"Experiment({str(self)})"
 
     @property
     def participants(self):
@@ -66,7 +75,9 @@ class Experiment:
             )
 
         self._state = ExperimentState.RUNNING
-        self.session.start_time = round(time.time() * 1000)
+        timestamp = round(time.time() * 1000)
+        self._logger.info(f"Experiment started. Start time: {timestamp}")
+        self.session.start_time = timestamp
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
@@ -91,7 +102,9 @@ class Experiment:
             )
 
         self._state = ExperimentState.ENDED
-        self.session.end_time = round(time.time() * 1000)
+        timestamp = round(time.time() * 1000)
+        self._logger.info(f"Experiment ended. End time: {timestamp}")
+        self.session.end_time = timestamp
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})

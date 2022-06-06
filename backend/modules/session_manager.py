@@ -160,6 +160,7 @@ class SessionManager:
         session_dict["id"] = session_id
 
         session = SessionData(self._handle_session_update, session_dict)
+        self._logger.info(f"New session created: {str(session)}")
         self._sessions[session_id] = session
         self._write(session.asdict())
         return session
@@ -196,7 +197,7 @@ class SessionManager:
 
         # TODO check if the session obj is used in an experiment.
 
-        self._logger.debug(f"Deleting session with ID: {id}")
+        self._logger.info(f"Deleting session with ID: {id}")
         self._delete_file(f"{id}.json")
         return self._sessions.pop(id, None) != None
 
@@ -264,8 +265,10 @@ class SessionManager:
             self._sessions[session_dict["id"]] = session_obj
 
         # Create sessions for files with missing session IDs
-        titles = [session.get("title") for session in sessions_with_missing_ids]
-        self._logger.debug(f"Generating ids for: {titles}")
+        if len(sessions_with_missing_ids) > 0:
+            titles = [session.get("title") for session in sessions_with_missing_ids]
+            self._logger.debug(f"Generating ids for: {titles}")
+
         for session_dict in sessions_with_missing_ids:
             session_obj = self.create_session(session_dict)
 

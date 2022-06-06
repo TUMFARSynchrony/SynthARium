@@ -89,11 +89,15 @@ class Participant(User):
 
         Currently returns value of `__repr__`.
         """
-        return self.__repr__()
+        return (
+            f"id={self.id}, first_name={self._participant_data.first_name}, last_name="
+            f"{self._participant_data.last_name}, experiment="
+            f"{self._experiment.session.id}"
+        )
 
     def __repr__(self) -> str:
         """Get representation of this participant."""
-        return f"Participant(id={self.id}, experiment={self._experiment.session.id})"
+        return f"Participant({str(self)})"
 
     def get_summary(self) -> ParticipantSummaryDict:
         return self._participant_data.as_summary_dict()
@@ -152,6 +156,7 @@ class Participant(User):
             return
 
         if state is ConnectionState.CONNECTED:
+            self._logger.info(f"Participant connected. {self}")
             tasks = []
             # Add stream to all experimenters
             for e in self._experiment.experimenters:
