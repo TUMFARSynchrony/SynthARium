@@ -12,6 +12,8 @@ function ParticipantData({
   onDeleteParticipant,
   onChange,
   index,
+  id,
+  sessionId,
   first_name,
   last_name,
   muted_audio,
@@ -19,7 +21,6 @@ function ParticipantData({
   parameters,
   showParticipantInput,
   setShowParticipantInput,
-  link,
 }) {
   const { register, handleSubmit } = useForm();
 
@@ -104,7 +105,11 @@ function ParticipantData({
               />
               <InputTextField
                 title="Link"
-                value={link}
+                value={
+                  id.length > 0
+                    ? `https:://experimental-hub/experimentRoom/userId=${id}&sessionId=${sessionId}`
+                    : null
+                }
                 placeholder={"Save session to generate link."}
                 readonly={true}
                 register={register}

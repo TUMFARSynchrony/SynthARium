@@ -248,10 +248,11 @@ function SessionForm({ onSendSessionToBackend }) {
                       onDeleteParticipant={() => onDeleteParticipant(index)}
                       key={index}
                       index={index}
+                      id={participant.id}
+                      sessionId={sessionData.id}
                       onChange={handleParticipantChange}
                       first_name={participant.first_name}
                       last_name={participant.last_name}
-                      link={participant.link}
                       muted_audio={participant.muted_audio}
                       muted_video={participant.muted_video}
                       parameters={participantDimensions[index].groups}
