@@ -6,10 +6,12 @@ import reportWebVitals from "./reportWebVitals";
 import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import sessionsListReducer from "./features/sessionsList";
+import openSessionReducer from "./features/openSession";
 
 const store = configureStore({
   reducer: {
     sessionsList: sessionsListReducer,
+    openSession: openSessionReducer,
   },
 });
 

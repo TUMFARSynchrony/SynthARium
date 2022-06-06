@@ -15,17 +15,18 @@ import {
 import TextField from "../../components/molecules/TextField/TextField";
 
 import "./SessionForm.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 
 function SessionForm({ onSendSessionToBackend }) {
-  const location = useLocation();
+  let openSession = useSelector((state) => state.openSession.value);
   const { register, handleSubmit } = useForm();
-  const [sessionData, setSessionData] = useState(
-    location?.state?.initialData ? location.state.initialData : []
-  );
+  const [sessionData, setSessionData] = useState(openSession);
+  useEffect(() => {
+    setSessionData(openSession);
+  }, [openSession]);
 
   const participantShapesObject = getShapesFromParticipants(
     sessionData.participants ? sessionData.participants : []
@@ -109,7 +110,8 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
-    let newParticipantList = participantList;
+    let newParticipantList = [...participantList];
+    console.log("onSaveSession participantList", participantList);
 
     newParticipantList.forEach((participant, index) => {
       participant.position.x = participantGroups[index].x;
@@ -127,8 +129,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
     newSessionData.time_limit *= 60000;
 
-    onSendSessionToBackend({ ...newSessionData });
-    setSessionData(newSessionData);
+    onSendSessionToBackend({ ...newSessionData }, setSessionData);
   };
 
   const addRandomSessionData = () => {
@@ -136,7 +137,7 @@ function SessionForm({ onSendSessionToBackend }) {
       id: "",
       title: "Hello World",
       description: "Randomly created session",
-      date: 1655460000000,
+      date: new Date().toLocaleString(),
       time_limit: 180,
       record: true,
       participants: [
@@ -275,11 +276,7 @@ function SessionForm({ onSendSessionToBackend }) {
           </div>
 
           <div className="sessionFormButtons">
-            <LinkButton
-              name="Save"
-              to="/"
-              onClick={handleSubmit(onSaveSession)}
-            />
+            <Button name="Save" onClick={handleSubmit(onSaveSession)} />
             <LinkButton name="Start" to="/watchingRoom" />
             <Button
               name="Random session data"

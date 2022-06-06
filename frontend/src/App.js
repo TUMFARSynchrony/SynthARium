@@ -20,6 +20,7 @@ import { getLocalStream } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { saveSession } from "./features/openSession";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -119,7 +120,7 @@ function App() {
     });
   };
 
-  const onSendSessionToBackend = (session) => {
+  const onSendSessionToBackend = (session, setSessionData) => {
     connection.sendMessage("SAVE_SESSION", session);
   };
 
@@ -133,13 +134,15 @@ function App() {
   };
 
   const handleUpdatedSession = (data) => {
-    toast.success("Successfully updated session" + data.title);
+    toast.success("Successfully updated session " + data.title);
     dispatch(updateSession(data));
+    dispatch(saveSession(data));
   };
 
   const handleCreatedSession = (data) => {
-    toast.success("Successfully created session" + data.title);
+    toast.success("Successfully created session " + data.title);
     dispatch(createSession(data));
+    dispatch(saveSession(data));
   };
 
   const handleSuccess = (data) => {

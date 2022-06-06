@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { initializeSession } from "../../features/openSession";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import "./SessionOverview.css";
@@ -9,6 +11,7 @@ import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 
 function SessionOverview({ onDeleteSession }) {
+  const dispatch = useDispatch();
   const sessionsList = useSelector((state) => state.sessionsList.value);
 
   const [selectedSession, setSelectedSession] = useState(
@@ -17,6 +20,10 @@ function SessionOverview({ onDeleteSession }) {
 
   const handleClick = (session) => {
     setSelectedSession(session);
+  };
+
+  const onCreateNewSession = () => {
+    dispatch(initializeSession(INITIAL_SESSION_DATA));
   };
 
   return (
@@ -31,6 +38,7 @@ function SessionOverview({ onDeleteSession }) {
             state={{
               initialData: INITIAL_SESSION_DATA,
             }}
+            onClick={() => onCreateNewSession()}
           />
           {sessionsList?.length !== 0 ? (
             sessionsList?.map((session, index) => {
