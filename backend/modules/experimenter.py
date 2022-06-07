@@ -89,16 +89,11 @@ class Experimenter(User):
 
         Currently returns value of `__repr__`.
         """
-        return self.__repr__()
+        return f"id={self.id}, experiment={str(self._experiment)}"
 
     def __repr__(self) -> str:
         """Get representation of this experimenter."""
-        if self._experiment is None:
-            experiment_id = "None"
-        else:
-            experiment_id = self._experiment.session.id
-
-        return f"Experimenter(id={self.id}, experiment={experiment_id})"
+        return f"Experimenter({str(self)})"
 
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:
         """Handler for connection "state_change" event.
@@ -120,6 +115,7 @@ class Experimenter(User):
             self._hub.remove_experimenter(self)
 
         if state is ConnectionState.CONNECTED:
+            self._logger.info(f"Experimenter connected. {str(self)}")
             await self._subscribe_to_participants_streams()
 
     async def _subscribe_to_participants_streams(self) -> None:

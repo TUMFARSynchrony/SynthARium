@@ -227,6 +227,7 @@ class Experiment:
         """
         self._participants[participant.id] = participant
         self._logger.debug(
+            f"{repr(participant)} joined Experiment. "
             f"Participants connected to experiment: {list(self._participants.values())}"
         )
 
@@ -240,6 +241,7 @@ class Experiment:
         """
         self._participants.pop(participant.id)
         self._logger.debug(
+            f"{repr(participant)} left Experiment. "
             f"Participants connected to experiment: {list(self._participants.values())}"
         )
 
@@ -339,6 +341,7 @@ class Experiment:
             Experimenter joining the experiment.
         """
         self._experimenters.append(experimenter)
+        self._logger.info(f"Experimenter ({str(experimenter)}) joined Experiment")
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"
         )
@@ -357,6 +360,7 @@ class Experiment:
             If the given `experimenter` is not part of this experiment.
         """
         self._experimenters.remove(experimenter)
+        self._logger.info(f"Experimenter ({str(experimenter)}) left Experiment")
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"
         )

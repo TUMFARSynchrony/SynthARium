@@ -288,7 +288,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             try:
                 response = await handler(message["data"])
             except ErrorDictException as err:
-                self._logger.info(f"Failed to handle {endpoint} message")
+                self._logger.info(
+                    f"Failed to handle {endpoint} message. {err.description}"
+                )
                 response = err.error_message
             except Exception as err:
                 self._logger.error(f"INTERNAL SERVER ERROR: {err}")
