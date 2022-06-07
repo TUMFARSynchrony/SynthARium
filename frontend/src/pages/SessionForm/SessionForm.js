@@ -96,7 +96,6 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onSaveSession = () => {
     dispatch(changeTimeLimit());
-
     onSendSessionToBackend(sessionData, setSessionData);
   };
 
