@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { initializeSession } from "../../features/openSession";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import "./SessionOverview.css";
@@ -49,7 +50,10 @@ function SessionOverview({ onDeleteSession }) {
 
           <hr className="separatorLine"></hr>
           <Button
-            name="Show/Close past sessions"
+            name={
+              showPastSessions ? "Hide past sessions" : "Show past sessions"
+            }
+            icon={showPastSessions ? <FaAngleUp /> : <FaAngleDown />}
             design={"secondary"}
             onClick={() => onShowPastSessions()}
           />
