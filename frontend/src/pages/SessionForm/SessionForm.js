@@ -33,7 +33,7 @@ function SessionForm({ onSendSessionToBackend }) {
   let openSession = useSelector((state) => state.openSession.value);
   const { register, handleSubmit } = useForm();
   const [sessionData, setSessionData] = useState(openSession);
-  const [timeLimit, setTimeLimit] = useState(0);
+  const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
 
   useEffect(() => {
     setSessionData(openSession);
@@ -95,7 +95,6 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
-    console.log("sessionData", sessionData);
     onSendSessionToBackend(sessionData, setSessionData);
   };
 
@@ -140,7 +139,6 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
-  console.log("SessionData", sessionData);
   return (
     <div className="sessionFormContainer">
       {showSessionDataForm && (

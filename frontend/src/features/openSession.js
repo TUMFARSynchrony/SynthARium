@@ -55,7 +55,6 @@ export const openSessionSlice = createSlice({
 
     deleteParticipant: (state, { payload }) => {
       const newSessionData = { ...state.value };
-      console.log("");
       const newParticipantArray = filterListByIndex(
         newSessionData.participants,
         payload.index
