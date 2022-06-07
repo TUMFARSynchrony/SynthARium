@@ -111,3 +111,20 @@ export const sortArray = (array) => {
 
   return array;
 };
+
+export const getPastAndFutureSessions = (sessionsList) => {
+  let pastSessions = [];
+  let futureSessions = [];
+
+  let today = new Date().getTime();
+
+  sessionsList.forEach((session, _) => {
+    if (session.date < today) {
+      pastSessions.push(session);
+    } else {
+      futureSessions.push(session);
+    }
+  });
+
+  return { past: pastSessions, future: futureSessions };
+};

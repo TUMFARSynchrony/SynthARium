@@ -9,14 +9,19 @@ import NavigationBar from "../../components/organisms/NavigationBar/NavigationBa
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
+import { getPastAndFutureSessions } from "../../utils/utils";
+import Button from "../../components/atoms/Button/Button";
 
 function SessionOverview({ onDeleteSession }) {
   const dispatch = useDispatch();
   const sessionsList = useSelector((state) => state.sessionsList.value);
+  const { past, future } = getPastAndFutureSessions(sessionsList);
 
   const [selectedSession, setSelectedSession] = useState(
     sessionsList.length !== 0 ? sessionsList[0] : null
   );
+
+  const [showPastSessions, setShowPastSessions] = useState(false);
 
   const handleClick = (session) => {
     setSelectedSession(session);
@@ -24,6 +29,10 @@ function SessionOverview({ onDeleteSession }) {
 
   const onCreateNewSession = () => {
     dispatch(initializeSession(INITIAL_SESSION_DATA));
+  };
+
+  const onShowPastSessions = () => {
+    setShowPastSessions(!showPastSessions);
   };
 
   return (
@@ -40,8 +49,31 @@ function SessionOverview({ onDeleteSession }) {
             }}
             onClick={() => onCreateNewSession()}
           />
-          {sessionsList?.length !== 0 ? (
-            sessionsList?.map((session, index) => {
+
+          <hr className="separatorLine"></hr>
+          <Button
+            name="Show/Close past sessions"
+            design={"secondary"}
+            onClick={() => onShowPastSessions()}
+          />
+          {showPastSessions &&
+            past.length > 0 &&
+            past.map((session, index) => {
+              return (
+                <SessionCard
+                  title={session.title}
+                  key={index}
+                  date={session.date}
+                  description={session.description}
+                  onClick={() => handleClick(session)}
+                  selected={session.id === selectedSession?.id}
+                />
+              );
+            })}
+          <hr className="separatorLine"></hr>
+
+          {future.length !== 0 ? (
+            future.map((session, index) => {
               return (
                 <SessionCard
                   title={session.title}
