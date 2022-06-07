@@ -41,8 +41,6 @@ function App() {
     );
 
     setConnectionState(state);
-    if (state === "CONNECTED") {
-    }
   };
 
   // Register Connection event handlers
