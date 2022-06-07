@@ -74,12 +74,6 @@ export const openSessionSlice = createSlice({
       newSessionData.participants = newParticipantArray;
       state.value = newSessionData;
     },
-
-    changeTimeLimit: (state, { _ }) => {
-      const newSessionData = { ...state.value };
-      newSessionData["time_limit"] = state.value.time_limit * 60000;
-      state.value = newSessionData;
-    },
   },
 });
 
@@ -91,7 +85,6 @@ export const {
   changeParticipant,
   deleteParticipant,
   changeParticipantDimensions,
-  changeTimeLimit,
 } = openSessionSlice.actions;
 
 export default openSessionSlice.reducer;

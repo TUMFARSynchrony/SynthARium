@@ -10,7 +10,6 @@ function InputField({
   register,
   required,
   label,
-  max,
   min,
 }) {
   return (
@@ -23,7 +22,6 @@ function InputField({
       placeholder={placeholder}
       readOnly={readonly}
       checked={checked}
-      max={max}
       min={min}
     ></input>
   );

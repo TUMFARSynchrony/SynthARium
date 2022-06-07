@@ -23,7 +23,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addParticipant,
   changeParticipant,
-  changeTimeLimit,
   changeValue,
   deleteParticipant,
   initializeSession,
@@ -34,6 +33,7 @@ function SessionForm({ onSendSessionToBackend }) {
   let openSession = useSelector((state) => state.openSession.value);
   const { register, handleSubmit } = useForm();
   const [sessionData, setSessionData] = useState(openSession);
+  const [timeLimit, setTimeLimit] = useState(0);
 
   useEffect(() => {
     setSessionData(openSession);
@@ -95,7 +95,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
-    dispatch(changeTimeLimit());
+    console.log("sessionData", sessionData);
     onSendSessionToBackend(sessionData, setSessionData);
   };
 
@@ -105,7 +105,7 @@ function SessionForm({ onSendSessionToBackend }) {
       title: "Hello World",
       description: "Randomly created session",
       date: new Date().getTime(),
-      time_limit: 10800000,
+      time_limit: 3600000,
       record: true,
       participants: [
         {
@@ -134,11 +134,13 @@ function SessionForm({ onSendSessionToBackend }) {
       log: "",
     };
 
+    setTimeLimit(newSessionData.time_limit / 60000);
     dispatch(initializeSession(newSessionData));
     let dimensions = getParticipantDimensions(newSessionData.participants);
     setParticipantDimensions(dimensions);
   };
 
+  console.log("SessionData", sessionData);
   return (
     <div className="sessionFormContainer">
       {showSessionDataForm && (
@@ -155,8 +157,7 @@ function SessionForm({ onSendSessionToBackend }) {
               register={register}
               required={true}
               label={"title"}
-            ></InputTextField>
-
+            />
             <TextField
               title="Description"
               value={sessionData.description}
@@ -167,19 +168,20 @@ function SessionForm({ onSendSessionToBackend }) {
               register={register}
               required={true}
               label={"description"}
-            ></TextField>
+            />
             <div className="timeInput">
               <InputTextField
                 title="Time Limit (in minutes)"
-                value={sessionData.time_limit}
+                value={timeLimit}
                 inputType={"number"}
-                onChange={(newTimeLimit) =>
-                  handleSessionDataChange("time_limit", newTimeLimit)
-                }
+                onChange={(newTimeLimit) => {
+                  setTimeLimit(newTimeLimit);
+                  handleSessionDataChange("time_limit", newTimeLimit * 60000);
+                }}
                 register={register}
                 required={true}
                 label={"time_limit"}
-              ></InputTextField>
+              />
               <InputDateField
                 title="Date"
                 value={sessionData.date ? formatDate(sessionData.date) : ""}
@@ -192,7 +194,7 @@ function SessionForm({ onSendSessionToBackend }) {
                 register={register}
                 required={true}
                 label={"date"}
-              ></InputDateField>
+              />
             </div>
 
             <Checkbox
