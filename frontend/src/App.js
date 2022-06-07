@@ -85,7 +85,7 @@ function App() {
       window.removeEventListener("beforeunload", closeConnection);
       closeConnection();
     };
-  }, [connection]);
+  }, []);
 
   useEffect(() => {
     if (!connection) {
