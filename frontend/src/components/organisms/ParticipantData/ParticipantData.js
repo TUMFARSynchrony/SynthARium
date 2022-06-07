@@ -8,6 +8,7 @@ import Label from "../../atoms/Label/Label";
 import { useForm } from "react-hook-form";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
+import { useState } from "react";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -19,6 +20,11 @@ function ParticipantData({
   setShowParticipantInput,
 }) {
   const { register, handleSubmit } = useForm();
+  const [requiredParticipantData, setRequiredParticipantData] = useState({
+    first_name: undefined,
+    last_name: undefined,
+  });
+
   const handleChange = (first_name, last_name, muted_audio, muted_video) => {
     onChange(index, {
       first_name,
@@ -35,7 +41,7 @@ function ParticipantData({
   const onCloseModalWithoutData = () => {
     setShowParticipantInput(!showParticipantInput);
     onDeleteParticipant();
-    toast.warning("Participant deleted since no data was provided.");
+    toast.warning("Participant deleted since required data was not provided.");
   };
 
   return (
@@ -77,14 +83,18 @@ function ParticipantData({
                 title="First Name"
                 value={participantData.first_name}
                 placeholder={"Name of participant"}
-                onChange={(newFirstName) =>
+                onChange={(newFirstName) => {
+                  setRequiredParticipantData({
+                    ...requiredParticipantData,
+                    first_name: newFirstName,
+                  });
                   handleChange(
                     newFirstName,
                     participantData.last_name,
                     participantData.muted_audio,
                     participantData.muted_video
-                  )
-                }
+                  );
+                }}
                 register={register}
                 label={"first_name"}
                 required={true}
@@ -93,14 +103,18 @@ function ParticipantData({
                 title="Last Name"
                 value={participantData.last_name}
                 placeholder={"Name of participant"}
-                onChange={(newLastName) =>
+                onChange={(newLastName) => {
+                  setRequiredParticipantData({
+                    ...requiredParticipantData,
+                    last_name: newLastName,
+                  });
                   handleChange(
                     participantData.first_name,
                     newLastName,
                     participantData.muted_audio,
                     participantData.muted_video
-                  )
-                }
+                  );
+                }}
                 register={register}
                 label={"last_name"}
                 required={true}
@@ -174,7 +188,12 @@ function ParticipantData({
               <Button
                 name="Back"
                 design={"negative"}
-                onClick={onCloseModalWithoutData}
+                onClick={() => {
+                  requiredParticipantData.first_name &&
+                  requiredParticipantData.last_name
+                    ? onAddAdditionalInformation()
+                    : onCloseModalWithoutData();
+                }}
               />
             </div>
           </div>
