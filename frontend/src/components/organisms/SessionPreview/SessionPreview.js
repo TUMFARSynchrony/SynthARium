@@ -49,29 +49,23 @@ function SessionPreview({
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
       <>
         <div className="sessionPreviewButtons">
+          <Button
+            name={"DELETE"}
+            design={"negative"}
+            onClick={() => deleteSession()}
+          />
           <LinkButton
             name={"COPY"}
             to="/sessionForm"
-            state={{
-              initialData: selectedSession,
-            }}
             onClick={() => onCopySession()}
           />
           <LinkButton
             name={"EDIT"}
             to="/sessionForm"
-            state={{
-              initialData: selectedSession,
-            }}
             onClick={() => onEditSession()}
           />
           <LinkButton name={"START"} to="/watchingRoom" />
         </div>
-        <Button
-          name={"DELETE"}
-          design={"negative"}
-          onClick={() => deleteSession()}
-        />
       </>
     </div>
   );

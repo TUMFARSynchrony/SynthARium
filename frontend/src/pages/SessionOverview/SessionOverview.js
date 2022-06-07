@@ -44,9 +44,6 @@ function SessionOverview({ onDeleteSession }) {
           <LinkButton
             name="CREATE NEW SESSION"
             to="/sessionForm"
-            state={{
-              initialData: INITIAL_SESSION_DATA,
-            }}
             onClick={() => onCreateNewSession()}
           />
 
