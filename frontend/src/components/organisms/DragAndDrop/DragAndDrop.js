@@ -46,6 +46,7 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
                         position: {
                           x: newAttrs.x,
                           y: newAttrs.y,
+                          z: 0,
                         },
                         size: {
                           width: newAttrs.width,
