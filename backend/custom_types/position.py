@@ -13,11 +13,11 @@ class PositionDict(TypedDict):
 
     Attributes
     ----------
-    x : int
+    x : int or float
         X coordinate.
-    y : int
+    y : int or float
         Y coordinate.
-    z : int
+    z : int or float
         Z coordinate.
 
     See Also
@@ -26,9 +26,9 @@ class PositionDict(TypedDict):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#Participant
     """
 
-    x: int
-    y: int
-    z: int
+    x: int | float
+    y: int | float
+    z: int | float
 
 
 def is_valid_position(data) -> bool:
@@ -49,7 +49,7 @@ def is_valid_position(data) -> bool:
     """
     return (
         util.check_valid_typeddict_keys(data, PositionDict)
-        and isinstance(data["x"], int)
-        and isinstance(data["y"], int)
-        and isinstance(data["z"], int)
+        and (isinstance(data["x"], int) or isinstance(data["x"], float))
+        and (isinstance(data["y"], int) or isinstance(data["y"], float))
+        and (isinstance(data["z"], int) or isinstance(data["z"], float))
     )

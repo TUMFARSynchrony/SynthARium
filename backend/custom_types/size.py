@@ -13,9 +13,9 @@ class SizeDict(TypedDict):
 
     Attributes
     ----------
-    width : int
+    width : int or float
         Width of the stream.
-    height : int
+    height : int or float
         Height of the stream.
 
     See Also
@@ -24,8 +24,8 @@ class SizeDict(TypedDict):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#participant
     """
 
-    width: int
-    height: int
+    width: int | float
+    height: int | float
 
 
 def is_valid_size(data) -> bool:
@@ -46,6 +46,6 @@ def is_valid_size(data) -> bool:
     """
     return (
         util.check_valid_typeddict_keys(data, SizeDict)
-        and isinstance(data["width"], int)
-        and isinstance(data["height"], int)
+        and (isinstance(data["width"], int) or isinstance(data["width"], float))
+        and (isinstance(data["height"], int) or isinstance(data["height"], float))
     )
