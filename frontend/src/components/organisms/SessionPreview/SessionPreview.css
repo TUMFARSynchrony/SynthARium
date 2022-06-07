@@ -2,9 +2,9 @@
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   transition: 0.3s;
   border-top: 3px solid hsl(212, 86%, 64%);
-  border-radius: 0.5em;
-  padding: 2em;
-  margin: 1em;
+  border-radius: 4px;
+  padding: 2rem;
+  margin: 1rem;
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -26,7 +26,7 @@
   line-height: 2;
   color: hsl(229, 6%, 66%);
   text-align: center;
-  margin: 2em;
+  margin: 2rem;
   overflow: auto;
 }
 

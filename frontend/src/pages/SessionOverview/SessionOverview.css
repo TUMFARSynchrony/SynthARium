@@ -1,21 +1,21 @@
 .sessionOverviewHeadline {
-    padding-top: 1em;
-    padding-bottom: 2em;
-    margin: 0;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  margin: 0;
 }
 
 .sessionOverviewContainer {
-    display: flex;
+  display: flex;
 }
 
 .sessionOverviewCards {
-    margin-left: 2em;
-    border-right: 6px solid hsl(212, 86%, 64%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  margin-left: 2rem;
+  border-right: 6px solid hsl(212, 86%, 64%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sessionOverviewCreateNewSession {
-    margin-bottom: 2em;
+  margin-bottom: 2rem;
 }

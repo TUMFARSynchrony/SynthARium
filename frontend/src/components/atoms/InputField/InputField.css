@@ -1,17 +1,17 @@
 .inputField {
-    background-color: #f8f8f8;
-    font-size: 15px;
-    padding: 12px 20px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    color: rgb(95, 95, 95);
+  background-color: #f8f8f8;
+  font-size: 15px;
+  padding: 1.2rem 2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: rgb(95, 95, 95);
 }
 
 [type="checkbox"] {
-    width: 1.4em;
-    height: 1.4em;
-    border: 1px solid #aaa;
-    background: #FFF;
-    border-radius: .2em;
-    margin-left: 1em;
+  width: 1.4em;
+  height: 1.4em;
+  border: 1px solid #aaa;
+  background: #fff;
+  border-radius: 4px;
+  margin-left: 1rem;
 }

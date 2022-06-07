@@ -2,9 +2,9 @@
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   transition: 0.3s;
   border-top: 3px solid hsl(212, 86%, 64%);
-  border-radius: 0.5em;
-  padding: 2em;
-  margin: 1em;
+  border-radius: 4px;
+  padding: 2rem;
+  margin: 1rem;
   width: 50vh;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .sessionCardHeaderDate {
-  padding-left: 2em;
+  padding-left: 2rem;
   text-align: right;
 }
 
