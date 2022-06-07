@@ -19,7 +19,6 @@ import { useEffect, useState } from "react";
 import { getLocalStream } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { saveSession } from "./features/openSession";
 
 function App() {

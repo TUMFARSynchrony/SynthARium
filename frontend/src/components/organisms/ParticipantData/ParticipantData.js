@@ -7,6 +7,9 @@ import Label from "../../atoms/Label/Label";
 
 import { useForm } from "react-hook-form";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { deleteParticipant } from "../../../features/openSession";
+import { ToastContainer, toast } from "react-toastify";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -18,7 +21,7 @@ function ParticipantData({
   setShowParticipantInput,
 }) {
   const { register, handleSubmit } = useForm();
-
+  const dispatch = useDispatch();
   const handleChange = (first_name, last_name, muted_audio, muted_video) => {
     onChange(index, {
       first_name,
@@ -32,8 +35,15 @@ function ParticipantData({
     setShowParticipantInput(!showParticipantInput);
   };
 
+  const onCloseModalWithoutData = () => {
+    setShowParticipantInput(!showParticipantInput);
+    onDeleteParticipant();
+    toast.warning("Participant deleted since no data was provided.");
+  };
+
   return (
     <div className="participantDataContainer">
+      <ToastContainer />
       <InputTextField
         title="Participant Name"
         placeholder={"Enter the information"}
@@ -163,6 +173,11 @@ function ParticipantData({
                 name="Save"
                 design={"secondary"}
                 onClick={handleSubmit(onAddAdditionalInformation)}
+              />
+              <Button
+                name="Back"
+                design={"negative"}
+                onClick={onCloseModalWithoutData}
               />
             </div>
           </div>
