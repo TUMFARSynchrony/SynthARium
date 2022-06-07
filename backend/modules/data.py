@@ -58,8 +58,8 @@ class SizeData(_BaseDataClass):
 
     Attributes
     ----------
-    width : int
-    height : int
+    width : int or float
+    height : int or float
 
     Methods
     -------
@@ -72,8 +72,8 @@ class SizeData(_BaseDataClass):
     generated automatically by dataclasses.dataclass.
     """
 
-    width: int
-    height: int
+    width: int | float
+    height: int | float
 
     def asdict(self) -> SizeDict:
         """Get SizeData as dictionary.
@@ -98,11 +98,11 @@ class PositionData(_BaseDataClass):
 
     Attributes
     ----------
-    x : int
+    x : int or float
         x-coordinate
-    y : int
+    y : int or float
         y-coordinate
-    z : int
+    z : int or float
         z-coordinate
 
     Methods
@@ -116,9 +116,9 @@ class PositionData(_BaseDataClass):
     generated automatically by dataclasses.dataclass.
     """
 
-    x: int
-    y: int
-    z: int
+    x: int | float
+    y: int | float
+    z: int | float
 
     def asdict(self) -> PositionDict:
         """Get PositionData as dictionary.
