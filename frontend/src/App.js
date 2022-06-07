@@ -71,15 +71,21 @@ function App() {
   }, [localStream, connection]);
 
   useEffect(() => {
+    const closeConnection = () => {
+      connection?.stop();
+    };
+
     const userType = "experimenter";
     const newConnection = new Connection(userType, "", "", true);
     setConnection(newConnection);
 
     newConnection.start();
+    window.addEventListener("beforeunload", closeConnection);
     return () => {
-      newConnection.stop();
+      window.removeEventListener("beforeunload", closeConnection);
+      closeConnection();
     };
-  }, [localStream]);
+  }, [connection]);
 
   useEffect(() => {
     if (!connection) {
