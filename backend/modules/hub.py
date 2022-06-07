@@ -11,7 +11,7 @@ from custom_types.participant_summary import ParticipantSummaryDict
 from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
-from modules.exceptions import ErrorDictException, HubException
+from modules.exceptions import ErrorDictException
 
 import modules.server as _server
 import modules.experiment as _experiment
@@ -40,28 +40,30 @@ class Hub:
 
         Raises
         ------
-        HubException
-            If the hub was unable to be initialized.  See log for details.
+        ValueError
+            If a key in `backend/config.json` is missing or has the wrong type.
+        FileNotFoundError
+            If one of the files refereed to by ssl_cert, ssl_key or logging_file is not
+            found.
         """
+        self.config = Config()
+
+        # Setup logging
         logging.basicConfig(
-            level=logging.DEBUG, format="%(levelname)s:%(name)s: %(message)s"
+            level=logging.getLevelName(self.config.logging_level),
+            format="%(levelname)s:%(name)s: %(message)s",
+            filename=self.config.logging_file,
         )
         self._logger = logging.getLogger("Hub")
         self._logger.debug("Initializing Hub")
 
-        logging.getLogger("aiohttp").setLevel(logging.WARNING)
-        logging.getLogger("aioice").setLevel(logging.WARNING)
-        logging.getLogger("aiortc").setLevel(logging.WARNING)
-        logging.getLogger("PIL").setLevel(logging.WARNING)
+        # Set logging level for libraries
+        library_log_level = logging.getLevelName(self.config.library_logging_level)
+        logging.getLogger("aiohttp").setLevel(library_log_level)
+        logging.getLogger("aioice").setLevel(library_log_level)
+        logging.getLogger("aiortc").setLevel(library_log_level)
+        logging.getLogger("PIL").setLevel(library_log_level)
 
-        try:
-            self.config = Config()
-        except ValueError as err:
-            self._logger.error(f"Failed to load config: {err}")
-            raise HubException(err)
-        except FileNotFoundError as err:
-            self._logger.error(f"Failed to load config: {err}")
-            raise HubException(err)
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
         self.experimenters = []

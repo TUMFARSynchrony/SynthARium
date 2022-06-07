@@ -1,6 +1,5 @@
 """Backend entry point"""
 
-from modules.exceptions import HubException
 from modules.hub import Hub
 import asyncio
 
@@ -17,7 +16,7 @@ async def main():
 
     try:
         _hub = Hub()
-    except HubException as err:
+    except (ValueError, FileNotFoundError) as err:
         print("Failed to start hub. Error:", err)
         return
 

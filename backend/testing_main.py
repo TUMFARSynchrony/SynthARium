@@ -6,7 +6,6 @@ with the Connection test page.
 """
 
 # import logging
-from modules.exceptions import HubException
 from modules.data import SessionData
 from modules.hub import Hub
 import asyncio
@@ -70,7 +69,7 @@ async def main():
 
     try:
         hub = Hub()
-    except HubException as err:
+    except (ValueError, FileNotFoundError) as err:
         print("Failed to start hub. Error:", err)
         return
 

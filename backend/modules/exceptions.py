@@ -6,10 +6,6 @@ from custom_types.error import ErrorDict, ERROR_TYPES
 from custom_types.message import MessageDict
 
 
-class HubException(Exception):
-    pass
-
-
 class ErrorDictException(Exception):
     """Exception used to pass an ErrorDict.
 
