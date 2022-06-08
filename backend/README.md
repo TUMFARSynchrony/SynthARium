@@ -21,6 +21,9 @@ The backend can be configured using the `backend/config.json`.
 -   `https` - bool : Weather the backend should use https
 -   `ssl_cert` - str : path to ssl certificate. Only used if https is true
 -   `ssl_key` - str : path to ssl private key. Only used if https is true
+-   `log` - str : Logging level for Hub. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `INFO`
+-   `log_file` - null | str : If given, the logger will write the log into the file instead of the console
+-   `log_sub_libraries` - str : Logging level for sub libraries. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`
 
 ## Using a SSL Certificate
 

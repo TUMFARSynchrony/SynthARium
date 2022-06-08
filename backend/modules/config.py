@@ -103,7 +103,8 @@ class Config:
         """
         return (
             f"host: {self.host}, port: {self.port}, environment: {self.environment}, "
-            f"ssl_cert: {self.ssl_cert}, ssl_key: {self.ssl_key}."
+            f"ssl_cert: {self.ssl_cert}, ssl_key: {self.ssl_key}, log={self.log}, log_s"
+            f"ub_libraries={self.log_sub_libraries}, log_file={self.log_file}."
         )
 
     def __repr__(self) -> str:
