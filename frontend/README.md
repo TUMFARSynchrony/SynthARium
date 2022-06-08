@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Using HTTPS
 
-To use HTTPS instead of just http, set `HTTPS=true` in `frontend/.env` and restart the frontend dev server.
+To use HTTPS instead of just http, set `HTTPS=true` in `frontend/.env` and restart the frontend dev server if already running.
 A custom certificate can also be defined there.
 
 Most browsers will require that requests send to the backend are also HTTPS, if HTTPS is enabled.

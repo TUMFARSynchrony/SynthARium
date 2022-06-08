@@ -33,13 +33,13 @@ In case the frontend dev server is used, make sure to update the backend server 
 
 ### Acquiring a SSL Certificates
 
-If you want to conduct an experiment, you need to get a thrusted SSL Certificate. One way to get free SSL certificates is [Let's Encrypt](https://letsencrypt.org/).
+If you want to conduct an experiment, you need to get a trusted SSL Certificate. One way to get free SSL certificates is [Let's Encrypt](https://letsencrypt.org/).
 
 ### Using a Self Signed Certificate
 
 For development and testing purposes, self signed certificates can be used. **Don't use self signed certificates for production!**
 
-A bash script using openssl to generate a self signed certificate can be found at: `backend/certificate/generate_certificate.sh`.
+A bash script using openssl to generate a self signed certificate can be found at: `backend/certificate/generate_certificate.sh`. You can check if openssl is installed using: `openssl version`.
 
 In case openssl is not an option, take a look at [Generating self-signed certificates on Windows](https://medium.com/the-new-control-plane/generating-self-signed-certificates-on-windows-7812a600c2d8).
 
