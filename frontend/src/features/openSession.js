@@ -49,6 +49,7 @@ export const openSessionSlice = createSlice({
         ...payload.participant,
       };
 
+      console.log("payload.participant", payload.participant);
       newSessionData.participants = newParticipantArray;
       state.value = newSessionData;
     },

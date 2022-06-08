@@ -4,51 +4,6 @@
   justify-content: left;
 }
 
-.participantMuteCheckbox {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
-.additionalParticipantInfoContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.6);
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.additionalParticipantInfo {
-  border-radius: 6px;
-  width: fit-content;
-  height: fit-content;
-  background-color: white;
-}
-
-.additionalParticipantInfoCard {
-  margin: 1rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.participantVideoSize {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-}
-
-.participantPosition > label {
-  font-weight: 600;
-}
-
-.additionalParticipantInfoCard > h2 {
-  margin-bottom: 0.5rem;
-}
-
 .participantButtons {
   display: flex;
   justify-content: center;
