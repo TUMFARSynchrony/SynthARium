@@ -18,9 +18,9 @@ class Config:
     ssl_cert: str | None
     ssl_key: str | None
 
-    logging_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
-    logging_file: str | None
-    library_logging_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+    log: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+    log_file: str | None
+    log_sub_libraries: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 
     def __init__(self):
         """Load config from `backend/config.json`.
@@ -41,8 +41,8 @@ class Config:
             "port": int,
             "environment": str,  # Literal not supported here, check afterwards.
             "https": bool,
-            "logging_level": str,
-            "library_logging_level": str,
+            "log": str,
+            "log_sub_libraries": str,
         }
         for key in data_types:
             if key not in config:
@@ -59,26 +59,24 @@ class Config:
             raise ValueError("'environment' must be 'dev' or 'prod' in config.json.")
 
         valid_log_levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
-        if config["logging_level"] not in valid_log_levels:
-            raise ValueError(f'"logging_level" must be one of: {valid_log_levels}')
+        if config["log"] not in valid_log_levels:
+            raise ValueError(f'"log" must be one of: {valid_log_levels}')
 
-        if config["library_logging_level"] not in valid_log_levels:
-            raise ValueError(
-                f'"library_logging_level" must be one of: {valid_log_levels}'
-            )
+        if config["log_sub_libraries"] not in valid_log_levels:
+            raise ValueError(f'"log_sub_libraries" must be one of: {valid_log_levels}')
 
         # Load config into this class.
         self.host = config["host"]
         self.port = config["port"]
         self.environment = config["environment"]
         self.https = config["https"]
-        self.logging_level = config["logging_level"]
-        self.library_logging_level = config["library_logging_level"]
+        self.log = config["log"]
+        self.log_sub_libraries = config["log_sub_libraries"]
 
-        # Parse logging_file
-        self.logging_file = config.get("logging_file")
-        if self.logging_file is not None:
-            self.logging_file = join(BACKEND_DIR, self.logging_file)
+        # Parse log_file
+        self.log_file = config.get("log_file")
+        if self.log_file is not None:
+            self.log_file = join(BACKEND_DIR, self.log_file)
 
         # Parse ssl_cert and ssl_key
         self.ssl_cert = config.get("ssl_cert")

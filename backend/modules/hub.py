@@ -50,15 +50,15 @@ class Hub:
 
         # Setup logging
         logging.basicConfig(
-            level=logging.getLevelName(self.config.logging_level),
+            level=logging.getLevelName(self.config.log),
             format="%(levelname)s:%(name)s: %(message)s",
-            filename=self.config.logging_file,
+            filename=self.config.log_file,
         )
         self._logger = logging.getLogger("Hub")
         self._logger.debug("Initializing Hub")
 
         # Set logging level for libraries
-        library_log_level = logging.getLevelName(self.config.library_logging_level)
+        library_log_level = logging.getLevelName(self.config.log_sub_libraries)
         logging.getLogger("aiohttp").setLevel(library_log_level)
         logging.getLogger("aioice").setLevel(library_log_level)
         logging.getLogger("aiortc").setLevel(library_log_level)

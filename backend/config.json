@@ -2,9 +2,9 @@
 	"host": "127.0.0.1",
 	"port": 8080,
 	"environment": "dev",
-	"logging_level": "DEBUG",
-	"logging_file": null,
-	"library_logging_level": "WARNING",
+	"log": "DEBUG",
+	"log_file": null,
+	"log_sub_libraries": "WARNING",
 	"https": false,
 	"ssl_cert": "./certificate/cert.crt",
 	"ssl_key": "./certificate/key.key"
