@@ -23,7 +23,22 @@ The backend can be configured using the `backend/config.json`.
 -   `ssl_key` - str : path to ssl private key. Only used if https is true
 -   `log` - str : Logging level for Hub. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `INFO`
 -   `log_file` - null | str : If given, the logger will write the log into the file instead of the console
--   `log_sub_libraries` - str : Logging level for sub libraries. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`
+-   `log_sub_libraries` - str : Logging level for sub libraries. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`. Using `INFO` or `DEBUG` may lead to a strong increase in output.
+
+### Logging overview
+
+The following logging levels are available for `log` and `log_sub_libraries` in the [configuration](#configuration):
+
+| Logger output | `DEBUG` | `INFO` | `WARNING` | `ERROR` | `CRITICAL` |
+| ------------- | :-----: | :----: | :-------: | :-----: | :--------: |
+| debug         |    x    |   -    |     -     |    -    |     -      |
+| info          |    x    |   x    |     -     |    -    |     -      |
+| warning       |    x    |   x    |     x     |    -    |     -      |
+| error         |    x    |   x    |     x     |    x    |     -      |
+| critical      |    x    |   x    |     x     |    x    |     x      |
+
+-   If the logger is set to `INFO`, information with the debug level is ignored and only important events are logged, possibly with less detail.
+-   If the logger is set to `DEBUG` everything is logged. This also includes additional information that can be helpful in debugging.
 
 ## Using a SSL Certificate
 
