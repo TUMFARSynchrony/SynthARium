@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 import json
-
+import logging
 import os
 from os.path import isfile, join
 
@@ -33,6 +33,7 @@ class SessionManager:
         Delete the session with `id`.
     """
 
+    _logger: logging.Logger
     _sessions: dict[str, SessionData]
     _session_dir: str
 
@@ -46,7 +47,8 @@ class SessionManager:
         session_dir : str
             Directory of session data JSONs relative to the backend folder.
         """
-        print("[SessionManager] Initiating SessionManager")
+        self._logger = logging.getLogger("SessionManager")
+        self._logger.debug("Initiating SessionManager")
         self._sessions = {}
         self._session_dir = join(BACKEND_DIR, session_dir)
         self._read_files_from_drive()
@@ -158,6 +160,7 @@ class SessionManager:
         session_dict["id"] = session_id
 
         session = SessionData(self._handle_session_update, session_dict)
+        self._logger.info(f"New session created: {str(session)}")
         self._sessions[session_id] = session
         self._write(session.asdict())
         return session
@@ -182,9 +185,9 @@ class SessionManager:
             If there is no session with `id`.
         """
         if id not in self._sessions:
-            print(
-                f"[SessionManager] Cannot delete session with id {id}, no ",
-                "session with this id was found.",
+            self._logger.warning(
+                f"[SessionManager] Cannot delete session, no session with this ID: {id}"
+                " found"
             )
             raise ErrorDictException(
                 code=404,
@@ -194,7 +197,7 @@ class SessionManager:
 
         # TODO check if the session obj is used in an experiment.
 
-        print("[SessionManager] Deleting session. ID:", id)
+        self._logger.info(f"Deleting session with ID: {id}")
         self._delete_file(f"{id}.json")
         return self._sessions.pop(id, None) != None
 
@@ -212,13 +215,17 @@ class SessionManager:
         """
         # TODO further error handling in this function
         if session_id is None:
-            print("[SessionManager] ERROR: Cannot update session without id")
+            self._logger.error("Cannot handle session update without ID")
             return
 
         if session_id not in self._sessions:
-            print("[SessionManager] ERROR: Cannot update unknown session", session_id)
+            self._logger.error(
+                f"Cannot handle session update for unknown session ID: {session_id}"
+            )
+            self._logger.debug(f"Known sessions: {list(self._sessions.keys())}")
             return
 
+        self._logger.debug(f"Handle session update: {session_id}")
         session = self._sessions[session_id]
         self._write(session.asdict())
 
@@ -230,16 +237,13 @@ class SessionManager:
     def _read_files_from_drive(self):
         """Read sessions saved on the drive, save in `self._sessions`."""
         filenames = self._get_filenames()
-        print(f"[SessionManager] Found {len(filenames)} files: {filenames}")
+        self._logger.debug(f"Found {len(filenames)} files: {filenames}")
 
         sessions_with_missing_ids: list[SessionDict] = []
         for file in filenames:
             session_dict: SessionDict = self._read(file)
             if not is_valid_session(session_dict, True):
-                print(
-                    f"[SessionManager] ERROR invalid session file: {file}. Ignoring",
-                    "file.",
-                )
+                self._logger.error(f"Invalid session file: {file}. Ignoring file")
                 continue
 
             if session_dict["id"] == "":
@@ -248,20 +252,23 @@ class SessionManager:
                 continue
 
             if session_dict["id"] in self._sessions:
-                print(
-                    "[SessionManager] ERROR: Session ID duplicate:",
-                    f"{session_dict['id']}. Ignoring file: {file}.",
+                self._logger.error(
+                    f"Session ID duplicate: {session_dict['id']}. Ignoring file: {file}"
                 )
                 continue
 
             try:
                 session_obj = SessionData(self._handle_session_update, session_dict)
             except ErrorDictException:
-                print(f"[SessionManager] ERROR: Participant ID duplicate in: {file}.")
+                self._logger.error(f"Participant ID duplicate in: {file}.")
                 continue
             self._sessions[session_dict["id"]] = session_obj
 
         # Create sessions for files with missing session IDs
+        if len(sessions_with_missing_ids) > 0:
+            titles = [session.get("title") for session in sessions_with_missing_ids]
+            self._logger.debug(f"Generating ids for: {titles}")
+
         for session_dict in sessions_with_missing_ids:
             session_obj = self.create_session(session_dict)
 
@@ -296,7 +303,7 @@ class SessionManager:
             directory.
         """
         if session_dict["id"] == "":
-            print("[SessionManager] ERROR: Cannot save session without ID.")
+            self._logger.error("Cannot save session without ID")
             return
 
         filename = f"{session_dict['id']}.json"
@@ -316,4 +323,4 @@ class SessionManager:
         if os.path.exists(path):
             os.remove(path)
         else:
-            print("[SessionManager] Cant delete file, file not found.", path)
+            self._logger.warning(f"Cant delete file, file not found. Path: {path}")

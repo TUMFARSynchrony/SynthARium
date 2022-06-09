@@ -11,6 +11,7 @@ from aiortc import (
 )
 from pyee.asyncio import AsyncIOEventEmitter
 import asyncio
+import logging
 import json
 
 from modules.tracks import AudioTrackHandler, VideoTrackHandler
@@ -56,6 +57,7 @@ class Connection(AsyncIOEventEmitter):
     connection_factory : use to create new Connection and answer for an WebRTC offer.
     """
 
+    _log_name_suffix: str
     _stopped: bool
     _state: ConnectionState
     _main_pc: RTCPeerConnection
@@ -63,13 +65,13 @@ class Connection(AsyncIOEventEmitter):
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
     _incoming_audio: AudioTrackHandler | None
     _incoming_video: VideoTrackHandler | None
-
     _sub_connections: dict[str, SubConnection]
 
     def __init__(
         self,
         pc: RTCPeerConnection,
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
+        log_name_suffix: str,
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -83,6 +85,8 @@ class Connection(AsyncIOEventEmitter):
         message_handler : function (custom_typed.message.MessageDict) -> None
             Handler for incoming messages over the datachannel.  Incoming messages will
             be parsed and type checked (only top level, not including contents of data).
+        log_name_suffix : str
+            Suffix for logger.  Format: Connection-<log_name_suffix>.
 
         See Also
         --------
@@ -90,7 +94,9 @@ class Connection(AsyncIOEventEmitter):
             offer.
         """
         super().__init__()
+        self._logger = logging.getLogger(f"Connection-{log_name_suffix}")
         self._stopped = False
+        self._log_name_suffix = log_name_suffix
         self._sub_connections = {}
         self._state = ConnectionState.NEW
         self._main_pc = pc
@@ -104,6 +110,16 @@ class Connection(AsyncIOEventEmitter):
         pc.on("connectionstatechange", f=self._on_connection_state_change)
         pc.on("track", f=self._on_track)
 
+    def __str__(self) -> str:
+        """Get string representation of this Connection."""
+        return f"state={self._state}"
+
+    def __repr__(self) -> str:
+        """Get representation of this Connection obj."""
+        return (
+            f"Connection({str(self)}, logger_name=Connection-{self._log_name_suffix})"
+        )
+
     async def stop(self) -> None:
         """Stop this connection.
 
@@ -114,7 +130,7 @@ class Connection(AsyncIOEventEmitter):
         if self._stopped:
             return
         self._stopped = True
-        print("[Connection] Stopping")
+        self._logger.debug("Stopping Connection")
 
         if self._state not in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             self._set_state(ConnectionState.CLOSED)
@@ -144,13 +160,11 @@ class Connection(AsyncIOEventEmitter):
             Data that will be stringified and send to the peer.
         """
         if self._dc is None or self._dc.readyState != "open":
-            print(
-                "[Connection] WARN: Not sending data because datachannel is not open."
-            )
+            self._logger.warning("Can not send data because datachannel is not open")
             await self._set_failed_state_and_close()
             return
         stringified = json.dumps(data)
-        print("[Connection] Sending", stringified)
+        self._logger.debug(f"Sending data: {stringified}")
         self._dc.send(stringified)
 
     @property
@@ -210,7 +224,12 @@ class Connection(AsyncIOEventEmitter):
         """
         subconnection_id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(
-            subconnection_id, self, video_track, audio_track, participant_summary
+            subconnection_id,
+            self,
+            video_track,
+            audio_track,
+            participant_summary,
+            self._log_name_suffix,
         )
         sc.add_listener("connection_closed", self._handle_closed_subconnection)
         await sc.start()
@@ -244,9 +263,9 @@ class Connection(AsyncIOEventEmitter):
 
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
-        print("[Connection] Remove sub connection", subconnection_id)
+        self._logger.debug(f"Remove sub connection {subconnection_id}")
         self._sub_connections.pop(subconnection_id)
-        print("[Connection] Sub connections after removing:", self._sub_connections)
+        self._logger.debug(f"SubConnections after removing: {self._sub_connections}")
 
     async def _handle_connection_answer_message(self, data) -> None:
         """Handle incoming `CONNECTION_ANSWER` messages.
@@ -256,9 +275,9 @@ class Connection(AsyncIOEventEmitter):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol :
             Connection protocol wiki.
         """
-        print("[Connection] received CONNECTION_ANSWER.")
+        self._logger.debug("Received CONNECTION_ANSWER")
         if not is_valid_connection_answer_dict(data):
-            print("[Connection] Received invalid CONNECTION_ANSWER.")
+            self._logger.warning("Received invalid CONNECTION_ANSWER")
             await self._set_failed_state_and_close()
             return
 
@@ -267,9 +286,8 @@ class Connection(AsyncIOEventEmitter):
 
         sc = self._sub_connections.get(id)
         if sc is None:
-            print(
-                "[Connection] Invalid CONNECTION_ANSWER: No SubConnection found for "
-                f"ID: {id}."
+            self._logger.warning(
+                f"Invalid CONNECTION_ANSWER: No SubConnection found for ID: {id}"
             )
             await self._set_failed_state_and_close()
             return
@@ -277,7 +295,7 @@ class Connection(AsyncIOEventEmitter):
         try:
             answer_desc = RTCSessionDescription(sdp=answer["sdp"], type=answer["type"])
         except ValueError as err:
-            print("[Connection] Failed to parse CONNECTION_ANSWER:", err)
+            self._logger.warning(f"Failed to parse CONNECTION_ANSWER: {err}")
             await self._set_failed_state_and_close()
             return
 
@@ -291,7 +309,7 @@ class Connection(AsyncIOEventEmitter):
         channel : aiortc.RTCDataChannel
             Incoming data channel.
         """
-        print("[Connection] received datachannel")
+        self._logger.debug("Received datachannel")
         self._dc = channel
         self._dc.on("message", self._parse_and_handle_message)
         self._dc.on("close", self._handle_datachannel_close)
@@ -299,7 +317,7 @@ class Connection(AsyncIOEventEmitter):
 
     async def _handle_datachannel_close(self) -> None:
         """Handle the `close` event on datachannel."""
-        print("[Connection] Datachannel closed")
+        self._logger.debug("Datachannel closed")
         await self._check_if_closed()
 
     async def _check_if_closed(self) -> None:
@@ -310,11 +328,11 @@ class Connection(AsyncIOEventEmitter):
             and self._incoming_audio.readyState == "ended"
             and self._incoming_video.readyState == "ended"
         ):
-            print("[Connection] All incoming tracks are closed -> stop connection")
+            self._logger.debug("All incoming tracks are closed -> stop connection")
             await self.stop()
 
         if self._dc is not None and self._dc.readyState == "closed":
-            print("[Connection] datachannel closed -> stop connection")
+            self._logger.debug("Datachannel closed -> stop connection")
             await self.stop()
 
     async def _parse_and_handle_message(self, message: Any) -> None:
@@ -335,13 +353,14 @@ class Connection(AsyncIOEventEmitter):
         try:
             message_dict = json.loads(message)
         except Exception as err:
-            print("[Connection] Failed to parse message.", err)
+            self._logger.warning(f"Failed to parse message. Error: {err}")
             # Send error response in following if statement.
             message_dict = None
 
         # Handle invalid message type
         if message_dict is None or not is_valid_messagedict(message_dict):
-            print("[Connection] Received message with invalid type.", message)
+            self._logger.info(f"Received invalid message.")
+            self._logger.debug(f"Invalid message: {message}")
             err = ErrorDict(
                 type="INVALID_REQUEST",
                 code=400,
@@ -360,13 +379,13 @@ class Connection(AsyncIOEventEmitter):
 
     def _on_connection_state_change(self):
         """Handle connection state change for `_main_pc`."""
-        print(
-            f"[Connection] Peer Connection state change:", self._main_pc.connectionState
+        self._logger.debug(
+            f"Peer Connection state change: {self._main_pc.connectionState}"
         )
         state = parse_connection_state(self._main_pc.connectionState)
         if state == ConnectionState.CONNECTED and self._dc is None:
             # Connection is established, but dc is not yet open.
-            print("[Connection] Established connection, waiting for datachannel.")
+            self._logger.debug("Established connection, waiting for datachannel")
             return
         self._set_state(state)
 
@@ -375,7 +394,7 @@ class Connection(AsyncIOEventEmitter):
         if self._state == state:
             return
 
-        print(f"[Connection] connection state is: {state}")
+        self._logger.debug(f"Connection state is: {state}")
         self._state = state
         self.emit("state_change", state)
 
@@ -397,7 +416,7 @@ class Connection(AsyncIOEventEmitter):
         This function can not be asynchronous, otherwise it will no longer function
         correctly.
         """
-        print(f"[Connection] {track.kind} track received")
+        self._logger.debug(f"{track.kind} track received")
         if track.kind == "audio":
             self._incoming_audio = AudioTrackHandler(track)
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
@@ -407,9 +426,7 @@ class Connection(AsyncIOEventEmitter):
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
-            print(
-                f"[Connection] ERROR: unknown track kind {track.kind}. Ignoring track."
-            )
+            self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
             return
 
         if self._incoming_audio is not None and self._incoming_video is not None:
@@ -418,7 +435,7 @@ class Connection(AsyncIOEventEmitter):
         @track.on("ended")
         def _on_ended():
             """Handles tracks ended event."""
-            print("[Connection] Track ended:", track.kind)
+            self._logger.debug(f"{track.kind} track ended")
 
     def _listen_to_track_close(
         self, track: AudioTrackHandler | VideoTrackHandler, sender: RTCRtpSender
@@ -438,7 +455,7 @@ class Connection(AsyncIOEventEmitter):
             """Find and close the correct transceiver for `sender`."""
             for transceiver in self._main_pc.getTransceivers():
                 if transceiver.sender is sender:
-                    print("[Connection] Found transceiver, closing")
+                    self._logger.debug("Found transceiver, closing")
                     await transceiver.stop()
                     break
             await self._check_if_closed()
@@ -465,6 +482,7 @@ class SubConnection(AsyncIOEventEmitter):
     _video_track: MediaStreamTrack  # VideoStreamTrack ?
 
     _closed: bool
+    _logger: logging.Logger
 
     def __init__(
         self,
@@ -473,6 +491,7 @@ class SubConnection(AsyncIOEventEmitter):
         video_track: MediaStreamTrack,
         audio_track: MediaStreamTrack,
         participant_summary: ParticipantSummaryDict | None,
+        log_name_suffix: str,
     ) -> None:
         """Initialize new SubConnection.
 
@@ -489,6 +508,7 @@ class SubConnection(AsyncIOEventEmitter):
             Participant summary send to the client with the initial offer.
         """
         super().__init__()
+        self._logger = logging.getLogger(f"SubConnection-{log_name_suffix}")
         self.id = id
         self.connection = connection
         self._audio_track = audio_track
@@ -541,7 +561,7 @@ class SubConnection(AsyncIOEventEmitter):
         self._audio_track.stop()
         self._video_track.stop()
 
-        print(f"[SubConnection - {self.id}] Closing")
+        self._logger.debug("Closing SubConnection")
         self._closed = True
         await self._pc.close()
         self.remove_all_listeners()
@@ -558,10 +578,7 @@ class SubConnection(AsyncIOEventEmitter):
 
     async def _on_connection_state_change(self):
         """Handle connection state change."""
-        print(
-            f"[SubConnection - {self.id}] Peer Connection state change:",
-            self._pc.connectionState,
-        )
+        self._logger.debug(f"Peer Connection state change: {self._pc.connectionState}")
         if self._pc.connectionState in ["closed", "failed"]:
             await self.stop()
 
@@ -569,6 +586,7 @@ class SubConnection(AsyncIOEventEmitter):
 async def connection_factory(
     offer: RTCSessionDescription,
     message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
+    log_name_suffix: str,
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -579,6 +597,8 @@ async def connection_factory(
     message_handler : function (message: custom_types.message.MessageDict) -> None
         Message handler for Connection.  Connection will pass parsed MessageDicts to
         this handler.
+    log_name_suffix : str
+        Suffix for logger used in Connection.  Format: Connection-<log_name_suffix>.
 
     Returns
     -------
@@ -586,7 +606,7 @@ async def connection_factory(
         WebRTC answer that should be send back to the client and a Connection.
     """
     pc = RTCPeerConnection()
-    connection = Connection(pc, message_handler)
+    connection = Connection(pc, message_handler, log_name_suffix)
 
     # handle offer
     await pc.setRemoteDescription(offer)

@@ -7,6 +7,8 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 """
 
 from __future__ import annotations
+import logging
+import traceback
 from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine, Tuple
 from pyee.asyncio import AsyncIOEventEmitter
@@ -70,6 +72,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     """
 
     id: str
+    _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
     _connection: _connection.Connection
@@ -93,6 +96,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             Whether the users audio should be muted.
         """
         super().__init__()
+        self._logger = logging.getLogger(f"User-{id}")
         self.id = id
         self._muted_video = muted_video
         self._muted_audio = muted_audio
@@ -138,6 +142,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         modules.participant.Participant : Participant implementation of User.
         modules.experimenter.Experimenter : Experimenter implementation of User.
         """
+        self._logger.debug(f"Added Connection: {repr(connection)}")
         self._connection = connection
         self._connection.add_listener(
             "state_change", self._handle_connection_state_change
@@ -173,7 +178,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         user : modules.user.User
             Source User this User should subscribe to.
         """
-        print(f"[User] {self.id} subscribing to {user.id}.")
+        self._logger.debug(f"Subscribing to {user.id}")
         video_track, audio_track = user.get_incoming_stream()
 
         # Video and audio tracks already exist, subscribe now
@@ -213,9 +218,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         # Close subconnection when user disconnects
         @user.on("disconnected")
         async def _handle_disconnect(_):
-            print(
-                f"[User - {self.id}] handle disconnected event from {user}: remove",
-                subconnection_id,
+            self._logger.debug(
+                f"Handle disconnected event from {user}: remove subconnection_id: "
+                f"{subconnection_id}"
             )
             self.remove_listener("disconnected", _remove_handler)
             await self._connection.stop_outgoing_stream(subconnection_id)
@@ -274,19 +279,22 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         handler_functions = self._handlers.get(endpoint, None)
 
         if handler_functions is None:
-            print(f"[User] No handler for {endpoint} found.")
+            self._logger.warning(f"No handler for {endpoint} found")
             return
 
-        print(
-            f"[User] Received {endpoint}. Calling {len(handler_functions)} handler(s)."
-        )
+        self._logger.info(f"Received {endpoint}")
+        self._logger.debug(f"Calling {len(handler_functions)} handler(s)")
         for handler in handler_functions:
             try:
                 response = await handler(message["data"])
             except ErrorDictException as err:
+                self._logger.info(
+                    f"Failed to handle {endpoint} message. {err.description}"
+                )
                 response = err.error_message
             except Exception as err:
-                print("[User] INTERNAL SERVER ERROR:", err)
+                self._logger.error(f"INTERNAL SERVER ERROR: {err}")
+                self._logger.error(traceback.format_exc())
                 err = ErrorDict(
                     type="INTERNAL_SERVER_ERROR",
                     code=500,
@@ -326,7 +334,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         if self.__disconnected:
             return
         self.__disconnected = True
-        print(f"[User - {self.id}] Disconnected")
+        self._logger.info("Disconnected")
         self.emit("disconnected", self)
         self.remove_all_listeners()
 

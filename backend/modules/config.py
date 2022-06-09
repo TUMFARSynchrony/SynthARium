@@ -18,6 +18,10 @@ class Config:
     ssl_cert: str | None
     ssl_key: str | None
 
+    log: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+    log_file: str | None
+    log_dependencies: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+
     def __init__(self):
         """Load config from `backend/config.json`.
 
@@ -37,6 +41,8 @@ class Config:
             "port": int,
             "environment": str,  # Literal not supported here, check afterwards.
             "https": bool,
+            "log": str,
+            "log_dependencies": str,
         }
         for key in data_types:
             if key not in config:
@@ -52,13 +58,27 @@ class Config:
         if config["environment"] not in ["dev", "prod"]:
             raise ValueError("'environment' must be 'dev' or 'prod' in config.json.")
 
+        valid_log_levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+        if config["log"] not in valid_log_levels:
+            raise ValueError(f'"log" must be one of: {valid_log_levels}')
+
+        if config["log_dependencies"] not in valid_log_levels:
+            raise ValueError(f'"log_dependencies" must be one of: {valid_log_levels}')
+
         # Load config into this class.
         self.host = config["host"]
         self.port = config["port"]
         self.environment = config["environment"]
         self.https = config["https"]
+        self.log = config["log"]
+        self.log_dependencies = config["log_dependencies"]
 
-        # parse ssl_cert and ssl_key
+        # Parse log_file
+        self.log_file = config.get("log_file")
+        if self.log_file is not None:
+            self.log_file = join(BACKEND_DIR, self.log_file)
+
+        # Parse ssl_cert and ssl_key
         self.ssl_cert = config.get("ssl_cert")
         if self.ssl_cert is not None:
             self.ssl_cert = join(BACKEND_DIR, self.ssl_cert)
@@ -72,13 +92,9 @@ class Config:
             if self.ssl_cert is None or self.ssl_key is None:
                 raise ValueError("ssl_cert and ssl_key are required for https.")
             if not exists(self.ssl_cert):
-                print(f"[Config] Did not find ssl_cert file: {self.ssl_cert}.")
-                raise FileNotFoundError(f"{self.ssl_cert} not found")
+                raise FileNotFoundError(f"Did not find ssl_cert file: {self.ssl_cert}")
             if not exists(self.ssl_key):
-                print(f"[Config] Did not find ssl_key file: {self.ssl_key}.")
-                raise FileNotFoundError(f"{self.ssl_key} not found")
-
-        print(f"[Config] successfully loaded config: {str(self)}")
+                raise FileNotFoundError(f"Did not find ssl_key file: {self.ssl_key}")
 
     def __str__(self) -> str:
         """Get string representation of parameters in this Config.
@@ -87,7 +103,8 @@ class Config:
         """
         return (
             f"host: {self.host}, port: {self.port}, environment: {self.environment}, "
-            f"ssl_cert: {self.ssl_cert}, ssl_key: {self.ssl_key}."
+            f"ssl_cert: {self.ssl_cert}, ssl_key: {self.ssl_key}, log={self.log}, log_"
+            f"dependencies={self.log_dependencies}, log_file={self.log_file}."
         )
 
     def __repr__(self) -> str:
@@ -95,4 +112,4 @@ class Config:
 
         Format: "Config(host: <host>, port: <port>, environment: <environment>.)"
         """
-        return f"Config({self.__str__})"
+        return f"Config({str(self)})"

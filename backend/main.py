@@ -1,6 +1,5 @@
 """Backend entry point"""
 
-from modules.config import Config
 from modules.hub import Hub
 import asyncio
 
@@ -10,19 +9,17 @@ _hub: Hub
 async def main():
     """Entry point for experiment Hub.
 
-    Creates a modules.config.Config and modules.hub.Hub.  Then waits for ever.
+    Creates a modules.hub.Hub.  Then waits for ever.
     Close with KeyboardInterrupt.
     """
     global _hub
 
     try:
-        config = Config()
-    except ValueError as err:
-        print("ERROR: Failed to load config:", err)
-        print("Aborting start. Please fix error above.")
+        _hub = Hub()
+    except (ValueError, FileNotFoundError) as err:
+        print("Failed to start hub. Error:", err)
         return
 
-    _hub = Hub(config)
     await _hub.start()
 
     # Run forever

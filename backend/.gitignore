@@ -1,2 +1,11 @@
+# Python
 *.pyc
 __pycache__
+
+# Logging
+*.log
+
+# Certificates
+*.key
+*.crt
+*.pem

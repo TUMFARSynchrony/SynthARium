@@ -3,6 +3,7 @@
 from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
+import logging
 
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -32,21 +33,43 @@ class Hub:
     session_manager: _sm.SessionManager
     server: _server.Server
     config: Config
+    _logger: logging.Logger
 
-    def __init__(self, config: Config):
-        """Instantiate new Hub instance.
+    def __init__(self):
+        """Parse config and instantiate new Hub instance.
 
-        Parameters
-        ----------
-        config : modules.config.Config
-            Configuration for the hub.
+        Raises
+        ------
+        ValueError
+            If a key in `backend/config.json` is missing or has the wrong type.
+        FileNotFoundError
+            If one of the files refereed to by ssl_cert, ssl_key or logging_file is not
+            found.
         """
-        print("[Hub] Initializing Hub")
+        self.config = Config()
+
+        # Setup logging
+        logging.basicConfig(
+            level=logging.getLevelName(self.config.log),
+            format="%(levelname)s:%(name)s: %(message)s",
+            filename=self.config.log_file,
+        )
+        self._logger = logging.getLogger("Hub")
+        self._logger.debug("Initializing Hub")
+
+        # Set logging level for libraries
+        dependencies_log_level = logging.getLevelName(self.config.log_dependencies)
+        logging.getLogger("aiohttp").setLevel(dependencies_log_level)
+        logging.getLogger("aioice").setLevel(dependencies_log_level)
+        logging.getLogger("aiortc").setLevel(dependencies_log_level)
+        logging.getLogger("PIL").setLevel(dependencies_log_level)
+
+        self._logger.debug(f"Successfully loaded config: {str(self.config)}")
+
         self.experimenters = []
         self.experiments = {}
-        self.config = config
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = _server.Server(self.handle_offer, config)
+        self.server = _server.Server(self.handle_offer, self.config)
 
     async def start(self):
         """Start the hub.  Starts the server."""
@@ -54,7 +77,7 @@ class Hub:
 
     async def stop(self):
         """Stop the hub, close all connection and stop the server."""
-        print("[Hub] stopping")
+        self._logger.info("Stopping Hub")
         for experiment in self.experiments.values():
             await experiment.stop()
         tasks = [self.server.stop()]
@@ -174,21 +197,21 @@ class Hub:
         this function will raise the exception with a fitting error message.
         """
         if participant_id is None:
-            print("[Hub] WARNING: Missing participant_id in offer handler")
+            self._logger.warning("Missing participant_id in offer handler")
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Missing participant_id."
             )
 
         if session_id is None:
-            print("[Hub] WARNING: Missing session_id in offer handler")
+            self._logger.warning("Missing session_id in offer handler")
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Missing session_id."
             )
 
         if session_id not in self.experiments:
-            print(
-                f"[Hub] WARNING: No experiment for session ID {session_id} found.",
-                f"Participant {participant_id} failed to join",
+            self._logger.warning(
+                f"No experiment for session ID {session_id} found. "
+                f"Participant {participant_id} failed to join"
             )
             raise ErrorDictException(
                 code=400, type="UNKNOWN_SESSION", description="Session not found."
@@ -197,9 +220,8 @@ class Hub:
         experiment = self.experiments[session_id]
         participant = experiment.session.participants.get(participant_id)
         if participant is None:
-            print(
-                f"[Hub] WARNING: participant {participant_id} not found in session:",
-                session_id,
+            self._logger.warning(
+                f"Participant {participant_id} not found in session: {session_id}"
             )
             raise ErrorDictException(
                 code=400,
