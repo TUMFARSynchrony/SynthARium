@@ -23,11 +23,11 @@ The backend can be configured using the `backend/config.json`.
 -   `ssl_key` - str : path to ssl private key. Only used if https is true
 -   `log` - str : Logging level for Hub. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `INFO`
 -   `log_file` - null | str : If given, the logger will write the log into the file instead of the console
--   `log_sub_libraries` - str : Logging level for sub libraries. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`. Using `INFO` or `DEBUG` may lead to a strong increase in output.
+-   `log_dependencies` - str : Logging level for project 3rd party dependencies (see [requirements.txt](./requirements.txt)). Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`. Using `INFO` or `DEBUG` may lead to a strong increase in output.
 
 ### Logging overview
 
-The following logging levels are available for `log` and `log_sub_libraries` in the [configuration](#configuration):
+The following logging levels are available for `log` and `log_dependencies` in the [configuration](#configuration):
 
 | Logger output | `DEBUG` | `INFO` | `WARNING` | `ERROR` | `CRITICAL` |
 | ------------- | :-----: | :----: | :-------: | :-----: | :--------: |

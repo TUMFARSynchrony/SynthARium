@@ -4,7 +4,7 @@
 	"environment": "dev",
 	"log": "DEBUG",
 	"log_file": null,
-	"log_sub_libraries": "WARNING",
+	"log_dependencies": "WARNING",
 	"https": false,
 	"ssl_cert": "./certificate/cert.crt",
 	"ssl_key": "./certificate/key.key"

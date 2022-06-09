@@ -20,7 +20,7 @@ class Config:
 
     log: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
     log_file: str | None
-    log_sub_libraries: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+    log_dependencies: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 
     def __init__(self):
         """Load config from `backend/config.json`.
@@ -42,7 +42,7 @@ class Config:
             "environment": str,  # Literal not supported here, check afterwards.
             "https": bool,
             "log": str,
-            "log_sub_libraries": str,
+            "log_dependencies": str,
         }
         for key in data_types:
             if key not in config:
@@ -62,8 +62,8 @@ class Config:
         if config["log"] not in valid_log_levels:
             raise ValueError(f'"log" must be one of: {valid_log_levels}')
 
-        if config["log_sub_libraries"] not in valid_log_levels:
-            raise ValueError(f'"log_sub_libraries" must be one of: {valid_log_levels}')
+        if config["log_dependencies"] not in valid_log_levels:
+            raise ValueError(f'"log_dependencies" must be one of: {valid_log_levels}')
 
         # Load config into this class.
         self.host = config["host"]
@@ -71,7 +71,7 @@ class Config:
         self.environment = config["environment"]
         self.https = config["https"]
         self.log = config["log"]
-        self.log_sub_libraries = config["log_sub_libraries"]
+        self.log_dependencies = config["log_dependencies"]
 
         # Parse log_file
         self.log_file = config.get("log_file")
@@ -103,8 +103,8 @@ class Config:
         """
         return (
             f"host: {self.host}, port: {self.port}, environment: {self.environment}, "
-            f"ssl_cert: {self.ssl_cert}, ssl_key: {self.ssl_key}, log={self.log}, log_s"
-            f"ub_libraries={self.log_sub_libraries}, log_file={self.log_file}."
+            f"ssl_cert: {self.ssl_cert}, ssl_key: {self.ssl_key}, log={self.log}, log_"
+            f"dependencies={self.log_dependencies}, log_file={self.log_file}."
         )
 
     def __repr__(self) -> str:

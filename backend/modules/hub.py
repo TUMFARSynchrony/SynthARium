@@ -58,11 +58,11 @@ class Hub:
         self._logger.debug("Initializing Hub")
 
         # Set logging level for libraries
-        library_log_level = logging.getLevelName(self.config.log_sub_libraries)
-        logging.getLogger("aiohttp").setLevel(library_log_level)
-        logging.getLogger("aioice").setLevel(library_log_level)
-        logging.getLogger("aiortc").setLevel(library_log_level)
-        logging.getLogger("PIL").setLevel(library_log_level)
+        dependencies_log_level = logging.getLevelName(self.config.log_dependencies)
+        logging.getLogger("aiohttp").setLevel(dependencies_log_level)
+        logging.getLogger("aioice").setLevel(dependencies_log_level)
+        logging.getLogger("aiortc").setLevel(dependencies_log_level)
+        logging.getLogger("PIL").setLevel(dependencies_log_level)
 
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
