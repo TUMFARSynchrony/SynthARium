@@ -10,8 +10,14 @@ function WatchingRoom() {
       <div className="watchingRoomHeader">
         <Heading heading={"State: " + state} />
       </div>
-      <div className="watchingRoomData">
-        <div className="participantLiveStream"></div>
+      <div className="watchingRoom">
+        <div className="participantLivestream">
+          <div className="livestream"></div>
+          <hr className="separatorLine"></hr>
+          <div className="applieadFilters">
+            Filters applied on all participants
+          </div>
+        </div>
         <div className="watchingRoomTabs">
           <WatchingRoomTabs />
         </div>

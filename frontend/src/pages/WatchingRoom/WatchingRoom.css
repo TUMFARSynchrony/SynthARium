@@ -17,7 +17,7 @@
   margin-left: 0.5em;
 }
 
-.watchingRoomData {
+.watchingRoom {
   display: grid;
   column-gap: 50px;
   grid-template-columns: 60% 1fr;
@@ -25,8 +25,19 @@
 }
 
 .participantLiveStream {
-  width: auto;
+  display: grid;
+  grid-template-rows: 60% 1fr;
+}
+
+.livestream {
   border: 15px solid green;
-  padding: 50px;
+  padding: 1rem;
+  height: 60vh;
+  width: auto;
   aspect-ratio: 16/9;
+}
+
+.applieadFilters {
+  margin-top: 1rem;
+  border: 1px solid black;
 }
