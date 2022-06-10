@@ -5,6 +5,7 @@ import "./WatchingRoom.css";
 
 function WatchingRoom() {
   const [state, setState] = useState("WAITING");
+
   return (
     <div className="watchingRoomContainer">
       <div className="watchingRoomHeader">

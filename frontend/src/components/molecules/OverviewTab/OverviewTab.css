@@ -1,0 +1,10 @@
+.sessionInformation {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.sessionDuration {
+  display: flex;
+  flex-direction: column;
+}
