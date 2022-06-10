@@ -8,14 +8,11 @@ import SessionForm from "./pages/SessionForm/SessionForm";
 import { useEffect, useState } from "react";
 import { getLocalStream } from "./utils/utils";
 import Connection from "./networking/Connection";
+import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
-
-  const requireLocalStream = window.location.pathname === "/experimentRoom";
-  const sessionId = "example_session_id_1";
-  const participantId = "example_user_id";
 
   useEffect(() => {
     const asyncStreamHelper = async () => {
@@ -23,37 +20,26 @@ function App() {
       if (stream) {
         setLocalStream(stream);
       }
-      return stream;
     };
 
-    asyncStreamHelper();
-  }, []);
+    // request local stream if requireLocalStream and localStream was not yet requested. 
+    if (connection?.userType === "participant" && !localStream) {
+      asyncStreamHelper();
+    }
+  }, [localStream, connection]);
 
   useEffect(() => {
-    if (connection !== null) {
-      // Return if connection was already established
-      return;
+    const userType = "participant" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
+    const sessionId = "bbbef1d7d0";
+    const participantId = "aa798c85d5";
+    // Could be in useState initiator, but then the connection is executed twice / six times if in StrictMode. 
+    const newConnection = new Connection(userType, sessionId, participantId, true)
+    setConnection(newConnection)
+    return () => {
+      newConnection.stop()
     }
+  }, [])
 
-    let newConnection;
-    if (requireLocalStream && localStream) {
-      // We are a participant
-      newConnection = new Connection(
-        messageHandler,
-        localStream,
-        sessionId,
-        participantId
-      );
-    } else if (!requireLocalStream) {
-      // We are a experimenter
-      newConnection = new Connection(messageHandler);
-    } else {
-      return;
-    }
-
-    setConnection(newConnection);
-    newConnection.start();
-  }, [connection, localStream, requireLocalStream]);
 
   return (
     <div className="App">
@@ -68,6 +54,9 @@ function App() {
           <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
           <Route exact path="/watchingRoom" element={<WatchingRoom />} />
           <Route exact path="/sessionForm" element={<SessionForm />} />
+          <Route exact path="/connectionTest" element={
+            connection ? <ConnectionTest localStream={localStream} connection={connection} setConnection={setConnection} /> : "loading"}
+          />
         </Routes>
       </Router>
     </div>
@@ -75,7 +64,3 @@ function App() {
 }
 
 export default App;
-
-function messageHandler(message) {
-  console.log("messageHandler received:", message);
-}

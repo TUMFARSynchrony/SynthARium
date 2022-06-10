@@ -1,14 +1,46 @@
 """Backend entry point"""
 
+from modules.hub import Hub
+import asyncio
 
-def main():
-    """TODO document"""
-    pass
+_hub: Hub
+
+
+async def main():
+    """Entry point for experiment Hub.
+
+    Creates a modules.hub.Hub.  Then waits for ever.
+    Close with KeyboardInterrupt.
+    """
+    global _hub
+
+    try:
+        _hub = Hub()
+    except (ValueError, FileNotFoundError) as err:
+        print("Failed to start hub. Error:", err)
+        return
+
+    await _hub.start()
+
+    # Run forever
+    await asyncio.Event().wait()
+
+
+async def stop():
+    """Stop the experiment hub"""
+    global _hub
+    await _hub.stop()
+    exit()
 
 
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop_policy().get_event_loop()
     try:
-        main()
+        # asyncio.run(main())
+        loop.run_until_complete(main())
     except KeyboardInterrupt:
         print("Detected Keyboard Interrupt. Exiting...")
-        exit()
+        loop.run_until_complete(stop())
+    finally:
+        loop.stop()
+        print("Program finished.")

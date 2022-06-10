@@ -2,9 +2,28 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app, npx create-react-app my-app)
 
+## Using HTTPS
+
+To use HTTPS instead of just http, set `HTTPS=true` in `frontend/.env` and restart the frontend dev server if already running.
+A custom certificate can also be defined there.
+
+Most browsers will require that requests send to the backend are also HTTPS, if HTTPS is enabled.
+See [backend readme](./../backend/README.md#using-a-ssl-certificate) for details on how to enable HTTPS for the backend.
+
+## Configuring the Development Server
+
+In `frontend/.env`:
+
+-   `REACT_APP_BACKEND`: address of the backend server
+-   `HTTPS`: If true, the frontend dev server will use HTTPS. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
+-   `SSL_CRT_FILE`: Optional path to SSL certificate file. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
+-   `SSL_KEY_FILE`: Optional path to SSL certificate private key file. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
+
 ## Available Scripts
 
 In the project directory, you can run:
+
+### `npm install`
 
 ### `npm start`
 
