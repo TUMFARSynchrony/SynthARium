@@ -1,4 +1,3 @@
-import "./WatchingRoomTabs.css";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import NotesTab from "../../molecules/NotesTab/NotesTab";
@@ -7,7 +6,7 @@ import OverviewTab from "../../molecules/OverviewTab/OverviewTab";
 
 function WatchingRoomTabs() {
   return (
-    <div className="watchingRoomTabsContainer">
+    <>
       <Tabs>
         <TabList>
           <Tab>Overview</Tab>
@@ -25,7 +24,7 @@ function WatchingRoomTabs() {
           <ParticipantsTab />
         </TabPanel>
       </Tabs>
-    </div>
+    </>
   );
 }
 
