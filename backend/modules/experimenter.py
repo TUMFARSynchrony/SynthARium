@@ -107,13 +107,6 @@ class Experimenter(User):
             New state of the connection this Experimenter has with the client.
         """
         self._logger.debug(f"Handle state change. State: {state}")
-        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
-            if self._experiment is not None:
-                self._logger.debug("Removing self from Experiment")
-                self._experiment.remove_experimenter(self)
-            self._logger.debug("Removing self from Hub")
-            self._hub.remove_experimenter(self)
-
         if state is ConnectionState.CONNECTED:
             self._logger.info(f"Experimenter connected. {str(self)}")
             await self._subscribe_to_participants_streams()

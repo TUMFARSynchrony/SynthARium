@@ -230,6 +230,7 @@ class Experiment:
             f"{repr(participant)} joined Experiment. "
             f"Participants connected to experiment: {list(self._participants.values())}"
         )
+        participant.add_listener("disconnected", self.remove_participant)
 
     def remove_participant(self, participant: _participant.Participant):
         """Remove an participant from this experiment.
@@ -345,6 +346,7 @@ class Experiment:
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"
         )
+        experimenter.add_listener("disconnected", self.remove_experimenter)
 
     def remove_experimenter(self, experimenter: _experimenter.Experimenter):
         """Remove an experimenter from this experiment.
