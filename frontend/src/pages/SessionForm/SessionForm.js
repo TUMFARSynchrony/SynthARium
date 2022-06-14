@@ -91,8 +91,7 @@ function SessionForm({ onSendSessionToBackend }) {
     setShowSessionDataForm(!showSessionDataForm);
   };
 
-  const onSaveSession = (e) => {
-    e.preventDefault();
+  const onSaveSession = () => {
     if (!checkValidSession(sessionData)) {
       toast.error("Failed to save session since required fields are missing!");
       return;
@@ -229,7 +228,7 @@ function SessionForm({ onSendSessionToBackend }) {
           </div>
 
           <div className="sessionFormButtons">
-            <Button name="Save" onClick={(e) => onSaveSession(e)} />
+            <Button name="Save" onClick={() => onSaveSession()} />
             <LinkButton name="Start" to="/watchingRoom" />
             <Button
               name="Random session data"
