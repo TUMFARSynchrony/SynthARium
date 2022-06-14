@@ -7,93 +7,87 @@ import ParticipantData from "../../components/organisms/ParticipantData/Particip
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import Heading from "../../components/atoms/Heading/Heading";
 import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
-
-import "./SessionForm.css";
-import { useState } from "react";
 import {
   filterListByIndex,
   getRandomColor,
-  getShapesFromParticipants,
+  getParticipantDimensions,
+  formatDate,
 } from "../../utils/utils";
 import TextField from "../../components/molecules/TextField/TextField";
+
+import "./SessionForm.css";
+import { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addParticipant,
+  changeParticipant,
+  changeValue,
+  deleteParticipant,
+  initializeSession,
+} from "../../features/openSession";
 
-function SessionForm() {
-  const location = useLocation();
-  const participantShapesObject = getShapesFromParticipants(
-    location.state.initialData.participants
+function SessionForm({ onSendSessionToBackend }) {
+  const dispatch = useDispatch();
+  let openSession = useSelector((state) => state.openSession.value);
+  const { register, handleSubmit } = useForm();
+  const [sessionData, setSessionData] = useState(openSession);
+  const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
+
+  useEffect(() => {
+    setSessionData(openSession);
+  }, [openSession]);
+
+  const [participantDimensions, setParticipantDimensions] = useState(
+    getParticipantDimensions(
+      sessionData.participants ? sessionData.participants : []
+    )
   );
 
-  const [participantList, setParticipantList] = useState(
-    location.state.initialData.participants
-  );
-  const [sessionData, setSessionData] = useState(location.state.initialData);
-  const [participantShapes, setParticipantShapes] = useState(
-    participantShapesObject.shapesArray
-  );
-  const [participantGroups, setParticipantGroups] = useState(
-    participantShapesObject.groupArray
-  );
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
+  const [showParticipantInput, setShowParticipantInput] = useState(false);
 
   const onDeleteParticipant = (index) => {
-    setParticipantList(filterListByIndex(participantList, index));
-    setParticipantShapes(filterListByIndex(participantShapes, index));
-    setParticipantGroups(filterListByIndex(participantGroups, index));
+    dispatch(deleteParticipant({ index: index }));
+    setParticipantDimensions(filterListByIndex(participantDimensions, index));
   };
 
   const onAddParticipant = () => {
-    const newParticipantList = [...participantList, INITIAL_PARTICIPANT_DATA];
-    setParticipantList(newParticipantList);
+    setShowParticipantInput(true);
 
-    const newParticipantShapes = [
-      ...participantShapes,
+    dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
+
+    const newParticipantDimensions = [
+      ...participantDimensions,
       {
-        x: 0,
-        y: 0,
-        fill: getRandomColor(),
+        shapes: {
+          x: 0,
+          y: 0,
+          fill: getRandomColor(),
+          z: 0,
+        },
+        groups: { x: 10, y: 10, z: 0, width: 300, height: 300 },
       },
     ];
-    setParticipantShapes(newParticipantShapes);
 
-    const newPartcipantGroup = [
-      ...participantGroups,
-      {
-        x: 10,
-        y: 10,
-        width: 100,
-        height: 100,
-      },
-    ];
-    setParticipantGroups(newPartcipantGroup);
+    setParticipantDimensions(newParticipantDimensions);
   };
 
   const handleParticipantChange = (index, participant) => {
-    let newParticipantList = [...participantList];
-    newParticipantList[index] = {
-      ...newParticipantList[index],
-      ...participant,
-    };
+    dispatch(changeParticipant({ participant: participant, index: index }));
 
-    setParticipantList(newParticipantList);
-
-    let newParticipantShapes = [...participantShapes];
-    newParticipantShapes[index] = {
-      ...participantShapes[index],
+    let newParticipantDimensions = [...participantDimensions];
+    newParticipantDimensions[index].shapes = {
+      ...newParticipantDimensions[index].shapes,
       first_name: participant.first_name,
       last_name: participant.last_name,
     };
-    setParticipantShapes(newParticipantShapes);
+    setParticipantDimensions(newParticipantDimensions);
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
-    let newObject = {};
-    newObject[objKey] = newObj;
-    setSessionData((sessionData) => ({
-      ...sessionData,
-      ...newObject,
-    }));
+    dispatch(changeValue({ objKey: objKey, objValue: newObj }));
   };
 
   const onShowSessionFormModal = () => {
@@ -101,21 +95,48 @@ function SessionForm() {
   };
 
   const onSaveSession = () => {
-    let newParticipantList = [];
-    newParticipantList = participantList.forEach((participant, index) => {
-      participant.position.x = participantGroups[index].x;
-      participant.position.y = participantGroups[index].y;
-      participant.size.width = participantGroups[index].width;
-      participant.size.height = participantGroups[index].height;
-    });
-    setParticipantList(newParticipantList);
+    onSendSessionToBackend(sessionData, setSessionData);
+  };
 
-    let newSessionData = { ...sessionData };
-    newSessionData.participants = participantList;
-    newSessionData.time_limit *= 60000;
-    setSessionData(newSessionData);
+  const addRandomSessionData = () => {
+    let newSessionData = {
+      id: "",
+      title: "Hello World",
+      description: "Randomly created session",
+      date: new Date().getTime(),
+      time_limit: 3600000,
+      record: true,
+      participants: [
+        {
+          id: "",
+          first_name: "Max",
+          last_name: "Mustermann",
+          muted_audio: true,
+          muted_video: true,
+          banned: false,
+          filters: [],
+          chat: [],
+          position: {
+            x: 10,
+            y: 10,
+            z: 0,
+          },
+          size: {
+            width: 300,
+            height: 300,
+          },
+        },
+      ],
+      start_time: 0,
+      end_time: 0,
+      notes: [],
+      log: "",
+    };
 
-    return sessionData;
+    setTimeLimit(newSessionData.time_limit / 60000);
+    dispatch(initializeSession(newSessionData));
+    let dimensions = getParticipantDimensions(newSessionData.participants);
+    setParticipantDimensions(dimensions);
   };
 
   return (
@@ -131,7 +152,10 @@ function SessionForm() {
               onChange={(newTitle) =>
                 handleSessionDataChange("title", newTitle)
               }
-            ></InputTextField>
+              register={register}
+              required={true}
+              label={"title"}
+            />
             <TextField
               title="Description"
               value={sessionData.description}
@@ -139,27 +163,36 @@ function SessionForm() {
               onChange={(newDescription) =>
                 handleSessionDataChange("description", newDescription)
               }
-            ></TextField>
+              register={register}
+              required={true}
+              label={"description"}
+            />
             <div className="timeInput">
               <InputTextField
                 title="Time Limit (in minutes)"
-                value={sessionData.time_limit}
-                placeholder={"Input time limit in MINUTES"}
+                value={timeLimit}
                 inputType={"number"}
-                onChange={(newTimeLimit) =>
-                  handleSessionDataChange("time_limit", newTimeLimit)
-                }
-              ></InputTextField>
+                onChange={(newTimeLimit) => {
+                  setTimeLimit(newTimeLimit);
+                  handleSessionDataChange("time_limit", newTimeLimit * 60000);
+                }}
+                register={register}
+                required={true}
+                label={"time_limit"}
+              />
               <InputDateField
                 title="Date"
-                value={sessionData.date}
+                value={sessionData.date ? formatDate(sessionData.date) : ""}
                 onChange={(newDate) =>
                   handleSessionDataChange(
                     "date",
                     newDate ? new Date(newDate).getTime() : 0
                   )
                 }
-              ></InputDateField>
+                register={register}
+                required={true}
+                label={"date"}
+              />
             </div>
 
             <Checkbox
@@ -169,29 +202,26 @@ function SessionForm() {
               onChange={() =>
                 handleSessionDataChange("record", !sessionData.record)
               }
+              register={register}
+              required={false}
+              label={"record"}
             />
             <hr className="separatorLine"></hr>
             <Heading heading={"Participants"} />
             <div className="participantCheckboxes"></div>
             <div className="sessionFormParticipants">
               <div className="scrollableParticipants">
-                {participantList.map((participant, index) => {
+                {openSession.participants.map((participant, index) => {
                   return (
                     <ParticipantData
                       onDeleteParticipant={() => onDeleteParticipant(index)}
                       key={index}
                       index={index}
-                      onChange={handleParticipantChange}
-                      first_name={participant.first_name}
-                      last_name={participant.last_name}
-                      link={participant.link}
-                      muted={participant.muted}
-                      parameters={participantGroups[index]}
-                      showModal={
-                        location.state.initialData.participants.length > 0
-                          ? false
-                          : true
-                      }
+                      participantData={participant}
+                      sessionId={sessionData.id}
+                      showParticipantInput={showParticipantInput}
+                      setShowParticipantInput={setShowParticipantInput}
+                      handleParticipantChange={handleParticipantChange}
                     />
                   );
                 })}
@@ -206,8 +236,12 @@ function SessionForm() {
           </div>
 
           <div className="sessionFormButtons">
-            <LinkButton name="Save" to="/" onClick={() => onSaveSession()} />
+            <Button name="Save" onClick={handleSubmit(onSaveSession)} />
             <LinkButton name="Start" to="/watchingRoom" />
+            <Button
+              name="Random session data"
+              onClick={() => addRandomSessionData()}
+            />
           </div>
         </div>
       )}
@@ -220,9 +254,8 @@ function SessionForm() {
       />
       <div className="sessionFormCanvas">
         <DragAndDrop
-          participantShapes={participantShapes}
-          participantGroups={participantGroups}
-          setParticipantGroups={setParticipantGroups}
+          participantDimensions={participantDimensions}
+          setParticipantDimensions={setParticipantDimensions}
         />
       </div>
     </div>

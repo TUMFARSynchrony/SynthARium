@@ -22,17 +22,19 @@ export const INITIAL_PARTICIPANT_DATA = {
   id: "",
   first_name: "",
   last_name: "",
-  link: "",
-  muted: true,
+  muted_audio: true,
+  muted_video: true,
+  banned: false,
   filters: [],
+  chat: [],
   position: {
-    x: 0,
-    y: 0,
+    x: 10,
+    y: 10,
     z: 0,
   },
   size: {
-    width: 0,
-    height: 0,
+    width: 300,
+    height: 300,
   },
 };
 
@@ -42,4 +44,4 @@ export const BACKEND = process.env.REACT_APP_BACKEND;
  * Environment of the client. Set by CreateReactApp depending on how you start it.
  * @type {("development" | "test" | "production")}
  */
-export const ENVIRONMENT = process.env.NODE_ENV // "development", "test" or "production"
+export const ENVIRONMENT = process.env.NODE_ENV; // "development", "test" or "production"

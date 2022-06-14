@@ -7,9 +7,14 @@ function InputField({
   readonly,
   onChange,
   checked,
+  register,
+  required,
+  label,
+  min,
 }) {
   return (
     <input
+      {...register(label, { required })}
       type={inputType}
       className={"inputField " + inputType}
       value={value}
@@ -17,6 +22,8 @@ function InputField({
       placeholder={placeholder}
       readOnly={readonly}
       checked={checked}
+      min={min}
+      required={required}
     ></input>
   );
 }
