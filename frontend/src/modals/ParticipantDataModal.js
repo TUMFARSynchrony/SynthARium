@@ -163,7 +163,6 @@ function ParticipantDataModal({
           </div>
           <Button
             name="Save"
-            design={"secondary"}
             onClick={() => handleSubmit(onSaveParticipantData())}
           />
           <Button
