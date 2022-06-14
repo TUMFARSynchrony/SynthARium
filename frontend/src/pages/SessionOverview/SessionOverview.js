@@ -40,6 +40,12 @@ function SessionOverview({ onDeleteSession }) {
     <>
       <NavigationBar />
       <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
+      <div className="sessionOverviewDescription">
+        Create a new session to create your own experimental design template.
+        You can hold these sessions for each experiment you would like to
+        connect a new participant/set of participants to (link to wiki
+        forexperimental workflow).
+      </div>
       <div className="sessionOverviewContainer">
         <div className="sessionOverviewCards">
           <LinkButton

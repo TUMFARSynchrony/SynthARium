@@ -1,7 +1,12 @@
 .sessionOverviewHeadline {
   padding-top: 1rem;
-  padding-bottom: 2rem;
   margin: 0;
+}
+
+.sessionOverviewDescription {
+  margin-top: 1rem;
+  text-decoration: none;
+  margin-bottom: 3rem;
 }
 
 .sessionOverviewContainer {
