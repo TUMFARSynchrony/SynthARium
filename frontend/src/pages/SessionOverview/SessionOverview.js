@@ -12,6 +12,7 @@ import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 import { getPastAndFutureSessions } from "../../utils/utils";
 import Button from "../../components/atoms/Button/Button";
+import Label from "../../components/atoms/Label/Label";
 
 function SessionOverview({ onDeleteSession }) {
   const dispatch = useDispatch();
@@ -53,6 +54,8 @@ function SessionOverview({ onDeleteSession }) {
             to="/sessionForm"
             onClick={() => onCreateNewSession()}
           />
+
+          <Label title={"Upcoming sessions:"} />
           {future.length !== 0 ? (
             future.map((session, index) => {
               return (
