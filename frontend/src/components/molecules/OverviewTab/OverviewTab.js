@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { integerToDateTime } from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
@@ -27,13 +28,13 @@ function OverviewTab() {
           <div>
             <Label title={"Starting time: "} />
             {sessionData.start_time > 0
-              ? sessionData.start_time
+              ? integerToDateTime(sessionData.start_time)
               : "Not started yet"}
           </div>
           <div>
             <Label title={"Ending time: "} />{" "}
             {sessionData.end_time > 0
-              ? sessionData.start_time
+              ? integerToDateTime(sessionData.start_time)
               : "Not ended yet"}
           </div>
         </div>
