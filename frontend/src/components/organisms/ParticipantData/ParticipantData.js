@@ -2,9 +2,8 @@ import Button from "../../atoms/Button/Button";
 import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
 
-import { useForm } from "react-hook-form";
 import { FaRegTrashAlt } from "react-icons/fa";
-import ParticipantDataModal from "../../../modals/ParticipantDataModal";
+import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -15,7 +14,6 @@ function ParticipantData({
   setShowParticipantInput,
   handleParticipantChange,
 }) {
-  const { register } = useForm();
   const onAddAdditionalInformation = () => {
     setShowParticipantInput(!showParticipantInput);
   };
@@ -29,9 +27,6 @@ function ParticipantData({
           .filter((str) => str.length > 0)
           .join(" ")}
         readonly={true}
-        register={register}
-        label={"name"}
-        required={false}
       />
       <div className="participantButtons">
         <Button

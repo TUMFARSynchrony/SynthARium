@@ -123,7 +123,7 @@ function App() {
     });
   };
 
-  const onSendSessionToBackend = (session, setSessionData) => {
+  const onSendSessionToBackend = (session) => {
     connection.sendMessage("SAVE_SESSION", session);
   };
 

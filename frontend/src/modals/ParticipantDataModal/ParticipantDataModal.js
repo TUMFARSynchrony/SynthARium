@@ -1,12 +1,11 @@
 import "./ParticipantDataModal.css";
 
-import { useForm } from "react-hook-form";
 import { ToastContainer, toast } from "react-toastify";
-import Heading from "../components/atoms/Heading/Heading";
-import InputTextField from "../components/molecules/InputTextField/InputTextField";
-import Checkbox from "../components/molecules/Checkbox/Checkbox";
-import Label from "../components/atoms/Label/Label";
-import Button from "../components/atoms/Button/Button";
+import Heading from "../../components/atoms/Heading/Heading";
+import InputTextField from "../../components/molecules/InputTextField/InputTextField";
+import Checkbox from "../../components/molecules/Checkbox/Checkbox";
+import Label from "../../components/atoms/Label/Label";
+import Button from "../../components/atoms/Button/Button";
 import { useState } from "react";
 
 function ParticipantDataModal({
@@ -18,7 +17,6 @@ function ParticipantDataModal({
   handleParticipantChange,
   onDeleteParticipant,
 }) {
-  const { register, handleSubmit } = useForm();
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
 
   const handleChange = (objKey, objValue) => {
@@ -95,8 +93,6 @@ function ParticipantDataModal({
             onChange={(newFirstName) => {
               handleChange("first_name", newFirstName);
             }}
-            register={register}
-            label={"first_name"}
             required={true}
           />
           <InputTextField
@@ -106,8 +102,6 @@ function ParticipantDataModal({
             onChange={(newLastName) => {
               handleChange("last_name", newLastName);
             }}
-            register={register}
-            label={"last_name"}
             required={true}
           />
           <InputTextField
@@ -118,8 +112,6 @@ function ParticipantDataModal({
                 : "Save session to generate link."
             }
             readonly={true}
-            register={register}
-            label={"link"}
             required={false}
           />
           <div className="participantMuteCheckbox">
@@ -130,8 +122,6 @@ function ParticipantDataModal({
               onChange={() =>
                 handleChange("muted_audio", !participantCopy.muted_audio)
               }
-              register={register}
-              label={"muted_audio"}
               required={false}
             />
             <Checkbox
@@ -141,8 +131,6 @@ function ParticipantDataModal({
               onChange={() =>
                 handleChange("muted_video", !participantCopy.muted_video)
               }
-              register={register}
-              label={"muted_video"}
               required={false}
             />
           </div>
@@ -161,10 +149,7 @@ function ParticipantDataModal({
               <Label title={"Height: "} /> {participantCopy.size.height}
             </div>
           </div>
-          <Button
-            name="Save"
-            onClick={() => handleSubmit(onSaveParticipantData())}
-          />
+          <Button name="Save" onClick={() => onSaveParticipantData()} />
           <Button
             name="Back"
             design={"negative"}
