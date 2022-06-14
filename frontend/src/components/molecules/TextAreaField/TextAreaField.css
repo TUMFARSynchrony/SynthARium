@@ -12,3 +12,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+textarea:invalid {
+  border: 2px dashed rgb(255, 171, 171);
+}

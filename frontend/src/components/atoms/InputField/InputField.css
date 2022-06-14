@@ -15,3 +15,7 @@
   border-radius: 4px;
   margin-left: 1rem;
 }
+
+input:invalid {
+  border: 2px dashed rgb(255, 171, 171);
+}

@@ -71,6 +71,9 @@ function ParticipantDataModal({
 
   const onSaveParticipantData = () => {
     if (participantCopy.first_name === "" || participantCopy.last_name === "") {
+      toast.error(
+        "Failed to save participant since required fields are missing!"
+      );
       return;
     }
 
@@ -83,7 +86,7 @@ function ParticipantDataModal({
       <ToastContainer />
 
       <div className="additionalParticipantInfo">
-        <form className="additionalParticipantInfoCard">
+        <div className="additionalParticipantInfoCard">
           <Heading heading={"General information:"} />
 
           <InputTextField
@@ -157,7 +160,7 @@ function ParticipantDataModal({
               onCloseModalWithoutData();
             }}
           />
-        </form>
+        </div>
       </div>
     </div>
   );

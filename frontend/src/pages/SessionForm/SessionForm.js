@@ -27,6 +27,7 @@ import {
   deleteParticipant,
   initializeSession,
 } from "../../features/openSession";
+import { toast } from "react-toastify";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useDispatch();
@@ -95,6 +96,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onSaveSession = () => {
     if (!checkValidSession(sessionData)) {
+      toast.error("Failed to save session since required fields are missing!");
       return;
     }
     onSendSessionToBackend(sessionData);
@@ -141,7 +143,6 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
-  console.log("sessionData", sessionData);
   return (
     <form className="sessionFormContainer">
       {showSessionDataForm && (
@@ -176,6 +177,7 @@ function SessionForm({ onSendSessionToBackend }) {
                   handleSessionDataChange("time_limit", newTimeLimit * 60000);
                 }}
                 required={true}
+                min={1}
               />
               <InputDateField
                 title="Date"
