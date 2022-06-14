@@ -47,7 +47,22 @@ function SessionOverview({ onDeleteSession }) {
             to="/sessionForm"
             onClick={() => onCreateNewSession()}
           />
-
+          {future.length !== 0 ? (
+            future.map((session, index) => {
+              return (
+                <SessionCard
+                  title={session.title}
+                  key={index}
+                  date={session.date}
+                  description={session.description}
+                  onClick={() => handleClick(session)}
+                  selected={session.id === selectedSession?.id}
+                />
+              );
+            })
+          ) : (
+            <>No active sessions found.</>
+          )}
           <hr className="separatorLine"></hr>
           <Button
             name={
@@ -72,23 +87,6 @@ function SessionOverview({ onDeleteSession }) {
               );
             })}
           <hr className="separatorLine"></hr>
-
-          {future.length !== 0 ? (
-            future.map((session, index) => {
-              return (
-                <SessionCard
-                  title={session.title}
-                  key={index}
-                  date={session.date}
-                  description={session.description}
-                  onClick={() => handleClick(session)}
-                  selected={session.id === selectedSession?.id}
-                />
-              );
-            })
-          ) : (
-            <>No active sessions found.</>
-          )}
         </div>
         <>
           {selectedSession ? (
