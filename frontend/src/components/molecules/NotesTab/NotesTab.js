@@ -19,11 +19,10 @@ function NotesTab() {
       return;
     }
 
-    let newNote = {
-      ...INITIAL_NOTE_DATA,
-      content: noteContent,
-      date: Date.now(),
-    };
+    let newNote = Object.create(INITIAL_NOTE_DATA);
+    newNote["content"] = noteContent;
+    newNote["date"] = Date.now();
+
     let newNoteArray = [...notes, newNote];
 
     setNotes(newNoteArray);
