@@ -1,4 +1,4 @@
-import { integerToDateTime } from "../../../utils/utils";
+import { integerToDateTime, isFutureSession } from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
@@ -58,16 +58,21 @@ function SessionPreview({
             to="/sessionForm"
             onClick={() => onCopySession()}
           />
-          <LinkButton
-            name={"EDIT"}
-            to="/sessionForm"
-            onClick={() => onEditSession()}
-          />
-          <LinkButton
-            name={"START"}
-            to="/watchingRoom"
-            onClick={() => onCreateExperiment()}
-          />
+
+          {isFutureSession(selectedSession) && (
+            <>
+              <LinkButton
+                name={"EDIT"}
+                to="/sessionForm"
+                onClick={() => onEditSession()}
+              />
+              <LinkButton
+                name={"START"}
+                to="/watchingRoom"
+                onClick={() => onCreateExperiment()}
+              />
+            </>
+          )}
         </div>
       </>
     </div>

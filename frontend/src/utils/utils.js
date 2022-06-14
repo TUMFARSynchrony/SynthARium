@@ -138,3 +138,9 @@ export const checkValidSession = (sessionData) => {
     sessionData.date !== 0
   );
 };
+
+export const isFutureSession = (sessionData) => {
+  let today = new Date().getTime();
+
+  return today < sessionData.date;
+};
