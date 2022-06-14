@@ -4,7 +4,7 @@ import Button from "../Button/Button";
 import Label from "../Label/Label";
 import "./JoinedParticipantCard.css";
 
-function JoinedParticipant({ participantData }) {
+function JoinedParticipant({ participantData, sessionId }) {
   const [showModal, setShowModal] = useState(false);
 
   const onClick = () => {
@@ -26,6 +26,7 @@ function JoinedParticipant({ participantData }) {
           participantData={participantData}
           showModal={showModal}
           setShowModal={setShowModal}
+          sessionId={sessionId}
         />
       )}
     </div>

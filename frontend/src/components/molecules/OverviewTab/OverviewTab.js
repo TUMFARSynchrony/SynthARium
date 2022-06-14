@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import Button from "../../atoms/Button/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
@@ -7,6 +8,7 @@ import "./OverviewTab.css";
 
 function OverviewTab() {
   const [message, setMessage] = useState("");
+  const sessionData = useSelector((state) => state.ongoingExperiment.value);
 
   const onEnterMessage = (newMessage) => {
     setMessage(newMessage);
@@ -20,13 +22,19 @@ function OverviewTab() {
         <h3>Session Information</h3>
         <div className="sessionDuration">
           <div>
-            <Label title={"Time Limit: "} /> 60mins
+            <Label title={"Time Limit: "} /> {sessionData.time_limit / 60000}
           </div>
           <div>
-            <Label title={"Starting time: "} /> Not started yet
+            <Label title={"Starting time: "} />
+            {sessionData.start_time > 0
+              ? sessionData.start_time
+              : "Not started yet"}
           </div>
           <div>
-            <Label title={"Ending time: "} /> Not ended yet
+            <Label title={"Ending time: "} />{" "}
+            {sessionData.end_time > 0
+              ? sessionData.start_time
+              : "Not ended yet"}
           </div>
         </div>
         <hr className="separatorLine"></hr>

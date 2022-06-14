@@ -7,12 +7,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import sessionsListReducer from "./features/sessionsList";
 import openSessionReducer from "./features/openSession";
+import ongoingExperimentReducer from "./features/ongoingExperiment";
 import "react-toastify/dist/ReactToastify.css";
 
 const store = configureStore({
   reducer: {
     sessionsList: sessionsListReducer,
     openSession: openSessionReducer,
+    ongoingExperiment: ongoingExperimentReducer,
   },
 });
 

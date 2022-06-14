@@ -4,7 +4,12 @@ import InputTextField from "../../components/molecules/InputTextField/InputTextF
 
 import "./JoinedParticipantModal.css";
 
-function JoinedParticipantModal({ participantData, showModal, setShowModal }) {
+function JoinedParticipantModal({
+  participantData,
+  showModal,
+  setShowModal,
+  sessionId,
+}) {
   return (
     <div className="joinedParticipantModalContainer">
       <div className="joinedParticipantModalData">
@@ -16,8 +21,8 @@ function JoinedParticipantModal({ participantData, showModal, setShowModal }) {
         <div className="joinedParticipantModalInfo">
           <InputTextField
             title="Link"
-            value={participantData.link}
             readonly={true}
+            value={`https:://experimental-hub/experimentRoom/userId=${participantData.id}&sessionId=${sessionId}`}
           />
           <div className="participantPosition">
             <Label title={"x: "} /> {participantData.position.x}

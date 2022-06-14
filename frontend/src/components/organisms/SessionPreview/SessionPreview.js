@@ -5,6 +5,7 @@ import "./SessionPreview.css";
 
 import { useDispatch } from "react-redux";
 import { initializeSession } from "../../../features/openSession";
+import { createExperiment } from "../../../features/ongoingExperiment";
 
 function SessionPreview({
   selectedSession,
@@ -27,6 +28,10 @@ function SessionPreview({
 
   const onEditSession = () => {
     dispatch(initializeSession(selectedSession));
+  };
+
+  const onCreateExperiment = () => {
+    dispatch(createExperiment(selectedSession));
   };
 
   return (
@@ -58,7 +63,11 @@ function SessionPreview({
             to="/sessionForm"
             onClick={() => onEditSession()}
           />
-          <LinkButton name={"START"} to="/watchingRoom" />
+          <LinkButton
+            name={"START"}
+            to="/watchingRoom"
+            onClick={() => onCreateExperiment()}
+          />
         </div>
       </>
     </div>
