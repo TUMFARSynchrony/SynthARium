@@ -1,22 +1,22 @@
 .headerContainer {
-    background-color: #f3f3f3;
-    display: flex;
-    height: 4.4em;
-    align-items: center;
-    border: 1px solid #e7e7e7;
+  background-color: #f3f3f3;
+  display: flex;
+  height: 4.4em;
+  align-items: center;
+  border: 1px solid #e7e7e7;
 }
 
 .pageNavigation {
-    color: #666;
-    padding: 1.4em;
-    font-size: 1.1em;
-    text-decoration: none;
+  color: #666;
+  padding: 1.4rem;
+  font-size: 1.1em;
+  text-decoration: none;
 }
 
 .pageNavigation:hover {
-    background-color: #ddd;
+  background-color: #ddd;
 }
 
 .active {
-    background-color: #ddd;
+  background-color: #ddd;
 }

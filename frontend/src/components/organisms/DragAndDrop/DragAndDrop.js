@@ -2,13 +2,12 @@ import { Stage, Layer, Text } from "react-konva";
 import { useState } from "react";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
 import { CANVAS_SIZE } from "../../../utils/constants";
+import { useDispatch } from "react-redux";
+import { changeParticipantDimensions } from "../../../features/openSession";
 
-function DragAndDrop({
-  participantShapes,
-  participantGroups,
-  setParticipantGroups,
-}) {
+function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
   const [selectedShape, setSelectShape] = useState(null);
+  const dispatch = useDispatch();
 
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -25,21 +24,36 @@ function DragAndDrop({
         onMouseDown={checkDeselect}
       >
         <Layer>
-          {participantShapes.length > 0 ? (
-            participantShapes.map((rect, index) => {
+          {participantDimensions.length > 0 ? (
+            participantDimensions.map((rect, index) => {
               return (
                 <Rectangle
                   key={index}
-                  shapeProps={rect}
-                  groupProps={participantGroups[index]}
+                  shapeProps={rect.shapes}
+                  groupProps={rect.groups}
                   isSelected={index === selectedShape}
                   onSelect={() => {
                     setSelectShape(index);
                   }}
                   onChange={(newAttrs) => {
-                    const groups = participantGroups.slice();
-                    groups[index] = newAttrs;
-                    setParticipantGroups(groups);
+                    const dimensions = participantDimensions.slice();
+                    dimensions[index].groups = newAttrs;
+                    setParticipantDimensions(dimensions);
+
+                    dispatch(
+                      changeParticipantDimensions({
+                        index: index,
+                        position: {
+                          x: newAttrs.x,
+                          y: newAttrs.y,
+                          z: 0,
+                        },
+                        size: {
+                          width: newAttrs.width,
+                          height: newAttrs.height,
+                        },
+                      })
+                    );
                   }}
                 />
               );

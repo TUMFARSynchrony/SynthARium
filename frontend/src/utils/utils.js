@@ -8,8 +8,16 @@ export const getRandomColor = () => {
 };
 
 export const filterListByIndex = (list, index) => {
-  let filteredList = list.filter((obj, i) => {
+  let filteredList = list.filter((_, i) => {
     return i !== index;
+  });
+
+  return filteredList;
+};
+
+export const filterListById = (list, id) => {
+  let filteredList = list.filter((obj) => {
+    return obj.id !== id;
   });
 
   return filteredList;
@@ -52,29 +60,71 @@ export const getLocalStream = async () => {
   }
 };
 
-export const getShapesFromParticipants = (participants) => {
-  const shapesArray = [];
-  let groupArray = [];
+export const getParticipantDimensions = (participants) => {
+  let dimensions = [];
 
   participants.forEach((participant, _) => {
-    shapesArray.push({
-      x: 0,
-      y: 0,
-      fill: getRandomColor(),
-      first_name: participant.first_name,
-      last_name: participant.last_name,
-    });
-    groupArray.push({
-      x: participant.position.x,
-      y: participant.position.y,
-      width: participant.size.width,
-      height: participant.size.height,
+    dimensions.push({
+      shapes: {
+        x: 0,
+        y: 0,
+        fill: getRandomColor(),
+        first_name: participant.first_name,
+        last_name: participant.last_name,
+      },
+      groups: {
+        x: participant.position.x,
+        y: participant.position.y,
+        width: participant.size.width,
+        height: participant.size.height,
+      },
     });
   });
 
-  console.log("shapesArray", shapesArray);
-  console.log("groupArray", groupArray);
-  console.log("participants", participants);
+  return dimensions;
+};
 
-  return { shapesArray: shapesArray, groupArray: groupArray };
+/*
+ * Correct format: YYYY-MM-DDTHH:MM, e.g. 2018-06-07T00:00
+ * date - Date input in form of an integer
+ */
+export const formatDate = (date) => {
+  date = new Date(date);
+
+  var dd = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+  var mm =
+    date.getMonth() + 1 < 10
+      ? "0" + (date.getMonth() + 1)
+      : date.getMonth() + 1;
+  var yyyy = date.getFullYear();
+  var mins =
+    date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+  var hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+
+  return `${yyyy}-${mm}-${dd}T${hh}:${mins}`;
+};
+
+export const sortArray = (array) => {
+  array.sort(function (a, b) {
+    return new Date(a.date) - new Date(b.date);
+  });
+
+  return array;
+};
+
+export const getPastAndFutureSessions = (sessionsList) => {
+  let pastSessions = [];
+  let futureSessions = [];
+
+  let today = new Date().getTime();
+
+  sessionsList.forEach((session, _) => {
+    if (session.date < today) {
+      pastSessions.push(session);
+    } else {
+      futureSessions.push(session);
+    }
+  });
+
+  return { past: pastSessions, future: futureSessions };
 };

@@ -9,6 +9,9 @@ function InputTextField({
   readonly,
   onChange,
   inputType,
+  register,
+  label,
+  required,
 }) {
   return (
     <div className="inputFieldContainer">
@@ -19,6 +22,9 @@ function InputTextField({
         onChange={onChange}
         placeholder={placeholder}
         readonly={readonly}
+        register={register}
+        label={label}
+        required={required}
       />
     </div>
   );

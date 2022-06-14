@@ -6,6 +6,10 @@ function PostProcessing() {
     <div>
       <NavigationBar />
       <h1>Post-Processing Room</h1>
+      <h3>
+        Under construction, this is the page you can analyze and visualize the
+        experiment data after conducting your experiment.
+      </h3>
     </div>
   );
 }

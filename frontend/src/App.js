@@ -1,18 +1,61 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ExperimentRoom from "./pages/ExperimentRoom/ExperimentRoom";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
-import { useEffect, useState } from "react";
-import { getLocalStream } from "./utils/utils";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
+import ConnectionState from "./networking/ConnectionState";
+import {
+  createSession,
+  getSessionsList,
+  updateSession,
+} from "./features/sessionsList";
+import { deleteSession } from "./features/sessionsList";
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getLocalStream } from "./utils/utils";
+import { useSelector, useDispatch } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
+import { saveSession } from "./features/openSession";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
+  const [connectionState, setConnectionState] = useState(null);
+
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const dispatch = useDispatch();
+
+  const streamChangeHandler = async (_) => {
+    console.log("%cRemote Stream Change Handler", "color:blue");
+  };
+
+  /** Handle `connectionStateChange` event of {@link Connection}. */
+  const stateChangeHandler = async (state) => {
+    console.log(
+      `%cConnection state change Handler: ${ConnectionState[state]}`,
+      "color:blue"
+    );
+
+    setConnectionState(state);
+  };
+
+  // Register Connection event handlers
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+
+    connection.on("remoteStreamChange", streamChangeHandler);
+    connection.on("connectionStateChange", stateChangeHandler);
+    return () => {
+      connection.off("remoteStreamChange", streamChangeHandler);
+      connection.off("connectionStateChange", stateChangeHandler);
+    };
+  }, [connection]);
 
   useEffect(() => {
     const asyncStreamHelper = async () => {
@@ -22,43 +65,142 @@ function App() {
       }
     };
 
-    // request local stream if requireLocalStream and localStream was not yet requested. 
     if (connection?.userType === "participant" && !localStream) {
       asyncStreamHelper();
     }
   }, [localStream, connection]);
 
   useEffect(() => {
-    const userType = "participant" // window.location.pathname === "/experimentRoom" ? "experimenter" : "participant";
-    const sessionId = "bbbef1d7d0";
-    const participantId = "aa798c85d5";
-    // Could be in useState initiator, but then the connection is executed twice / six times if in StrictMode. 
-    const newConnection = new Connection(userType, sessionId, participantId, true)
-    setConnection(newConnection)
-    return () => {
-      newConnection.stop()
-    }
-  }, [])
+    const closeConnection = () => {
+      connection?.stop();
+    };
 
+    const userType = "experimenter";
+    const newConnection = new Connection(userType, "", "", true);
+    setConnection(newConnection);
+
+    newConnection.start();
+    window.addEventListener("beforeunload", closeConnection);
+    return () => {
+      window.removeEventListener("beforeunload", closeConnection);
+      closeConnection();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+
+    connection.api.on("SESSION_LIST", handleSessionList);
+    connection.api.on("DELETED_SESSION", handleDeletedSession);
+    connection.api.on("CREATED_SESSION", handleCreatedSession);
+    connection.api.on("UPDATED_SESSION", handleUpdatedSession);
+    connection.api.on("SUCCESS", handleSuccess);
+    connection.api.on("ERROR", handleError);
+
+    return () => {
+      connection.api.off("SESSION_LIST", handleSessionList);
+      connection.api.off("DELETED_SESSION", handleDeletedSession);
+      connection.api.off("UPDATED_SESSION", handleUpdatedSession);
+      connection.api.off("CREATED_SESSION", handleCreatedSession);
+      connection.api.off("SUCCESS", handleSuccess);
+      connection.api.off("ERROR", handleError);
+    };
+  }, [connection]);
+
+  useEffect(() => {
+    if (!connection || connectionState !== ConnectionState.CONNECTED) {
+      return;
+    }
+
+    connection.sendMessage("GET_SESSION_LIST", {});
+  }, [connection, connectionState]);
+
+  const onDeleteSession = (sessionId) => {
+    connection.sendMessage("DELETE_SESSION", {
+      session_id: sessionId,
+    });
+  };
+
+  const onSendSessionToBackend = (session, setSessionData) => {
+    connection.sendMessage("SAVE_SESSION", session);
+  };
+
+  const handleSessionList = (data) => {
+    dispatch(getSessionsList(data));
+  };
+
+  const handleDeletedSession = (data) => {
+    toast.success("Successfully deleted session with ID " + data);
+    dispatch(deleteSession(data));
+  };
+
+  const handleUpdatedSession = (data) => {
+    toast.success("Successfully updated session " + data.title);
+    dispatch(updateSession(data));
+    dispatch(saveSession(data));
+  };
+
+  const handleCreatedSession = (data) => {
+    toast.success("Successfully created session " + data.title);
+    dispatch(createSession(data));
+    dispatch(saveSession(data));
+  };
+
+  const handleSuccess = (data) => {
+    toast.success("SUCCESS: " + data);
+  };
+
+  const handleError = (data) => {
+    toast.error(data.description);
+  };
 
   return (
     <div className="App">
-      <Router>
-        <Routes>
-          <Route exact path="/" element={<SessionOverview />} />
-          <Route
-            exact
-            path="/postProcessingRoom"
-            element={<PostProcessing />}
-          />
-          <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
-          <Route exact path="/watchingRoom" element={<WatchingRoom />} />
-          <Route exact path="/sessionForm" element={<SessionForm />} />
-          <Route exact path="/connectionTest" element={
-            connection ? <ConnectionTest localStream={localStream} connection={connection} setConnection={setConnection} /> : "loading"}
-          />
-        </Routes>
-      </Router>
+      <ToastContainer />
+      {sessionsList ? (
+        <Router>
+          <Routes>
+            <Route
+              exact
+              path="/"
+              element={<SessionOverview onDeleteSession={onDeleteSession} />}
+            />
+            <Route
+              exact
+              path="/postProcessingRoom"
+              element={<PostProcessing />}
+            />
+            <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
+            <Route exact path="/watchingRoom" element={<WatchingRoom />} />
+            <Route
+              exact
+              path="/sessionForm"
+              element={
+                <SessionForm onSendSessionToBackend={onSendSessionToBackend} />
+              }
+            />
+            <Route
+              exact
+              path="/connectionTest"
+              element={
+                connection ? (
+                  <ConnectionTest
+                    localStream={localStream}
+                    connection={connection}
+                    setConnection={setConnection}
+                  />
+                ) : (
+                  "loading"
+                )
+              }
+            />
+          </Routes>
+        </Router>
+      ) : (
+        <h1>Loading...</h1>
+      )}
     </div>
   );
 }
