@@ -2,7 +2,7 @@ import "./NotesTab.css";
 import Heading from "../../atoms/Heading/Heading";
 import { useState } from "react";
 import Note from "../../atoms/Note/Note";
-import TextField from "../TextField/TextField";
+import TextAreaField from "../TextAreaField/TextAreaField";
 import Button from "../../atoms/Button/Button";
 import { INITIAL_NOTE_DATA } from "../../../utils/constants";
 
@@ -46,7 +46,7 @@ function NotesTab() {
           <hr className="separatorLine"></hr>
           <div className="notesEntering">
             <div className="notesInputField">
-              <TextField
+              <TextAreaField
                 placeholder={"Enter your notes here"}
                 value={noteContent}
                 onChange={(newContent) => onContentChange(newContent)}

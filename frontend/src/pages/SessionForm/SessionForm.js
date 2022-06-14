@@ -14,7 +14,7 @@ import {
   formatDate,
   checkValidSession,
 } from "../../utils/utils";
-import TextField from "../../components/molecules/TextField/TextField";
+import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 
 import "./SessionForm.css";
 import { useEffect, useState } from "react";
@@ -157,7 +157,7 @@ function SessionForm({ onSendSessionToBackend }) {
               }
               required={true}
             />
-            <TextField
+            <TextAreaField
               title="Description"
               value={sessionData.description}
               placeholder={"Short description of the session"}

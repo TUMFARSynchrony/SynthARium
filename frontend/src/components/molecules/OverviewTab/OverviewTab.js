@@ -1,7 +1,7 @@
 import Button from "../../atoms/Button/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
-import TextField from "../TextField/TextField";
+import TextAreaField from "../TextAreaField/TextAreaField";
 import "./OverviewTab.css";
 
 function OverviewTab() {
@@ -26,7 +26,7 @@ function OverviewTab() {
       </div>
       <div className="sessionInformation">
         <h3>Send Message to all participants</h3>
-        <TextField placeholder={"Enter your message here"} />
+        <TextAreaField placeholder={"Enter your message here"} />
         <Button name={"Send"} design={"secondary"} />
       </div>
     </div>
