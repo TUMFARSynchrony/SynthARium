@@ -67,7 +67,7 @@ function SessionForm({ onSendSessionToBackend }) {
           fill: getRandomColor(),
           z: 0,
         },
-        groups: { x: 10, y: 10, z: 0, width: 100, height: 100 },
+        groups: { x: 10, y: 10, z: 0, width: 300, height: 300 },
       },
     ];
 
@@ -122,8 +122,8 @@ function SessionForm({ onSendSessionToBackend }) {
             z: 0,
           },
           size: {
-            width: 100,
-            height: 100,
+            width: 300,
+            height: 300,
           },
         },
       ],

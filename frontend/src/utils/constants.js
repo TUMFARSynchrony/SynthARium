@@ -33,8 +33,8 @@ export const INITIAL_PARTICIPANT_DATA = {
     z: 0,
   },
   size: {
-    width: 100,
-    height: 100,
+    width: 300,
+    height: 300,
   },
 };
 
