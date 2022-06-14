@@ -1,9 +1,12 @@
 """Provide data classes for session, participant, size and position data.
 
-Provides: `SessionData`, `ParticipantData`, `PositionData` and `SizeData`.
+Provides: `SessionData`, `ParticipantData`, `PositionData` and `SizeData` as well as
+factory functions for `SessionData`: `session_data_factory` and `ParticipantData`:
+`participant_data_factory`.
 """
 from dataclasses import dataclass, field
 from typing import Any, Callable
+from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
@@ -23,29 +26,41 @@ from custom_types.session import (
 
 
 @dataclass(slots=True)
-class _BaseDataClass:
+class _BaseDataClass(AsyncIOEventEmitter):
     """Base dataclass with update recognition and handling.
 
-    When data is changed, this class calls `on_update` passed in the constructor.
-
-    Used to save the data to the drive when changes are made.
+    When data is changed and `_emit_updates` is true, a `update` event is emitted with
+    self as data.
     """
 
-    _initialized: bool | None = field(repr=False, init=False)
-    _on_update: Callable[[], None] = field(repr=False, compare=False)
+    _emit_updates: bool | None = field(repr=False, init=False, default=False)
+    """If true, a `update` event is emitted on changes to class variables.
+
+    Only disable temporarily for bulk updates.
+    """
 
     def __post_init__(self):
-        """Set `_initialized` to true after initialization."""
-        self._initialized = True
+        """Initialize AsyncIOEventEmitter and set `_emit_updates` to true."""
+        super(_BaseDataClass, self).__init__()
+        self._emit_updates = True
 
     def __setattr__(self, _name: str, _value: Any) -> None:
-        """Recognize changes to variables in this class and call `on_update`."""
+        """Recognize changes to variables in this class and call `_emit_update_event`.
+
+        Ignores updates to private variables, including `_emit_updates` and private
+        variables in parent class.
+        """
         object.__setattr__(self, _name, _value)
+        if _name[0] != "_":
+            self._emit_update_event()
+
+    def _emit_update_event(self, _=None):
+        """Emit an `update` event if `_emit_updates` is true."""
         try:
-            # Signal a update if initialization was already finished
-            if self._initialized and _name != "_initialized":
-                self._on_update()
-        except AttributeError:
+            if self._emit_updates:
+                print("_emit_update_event", self)
+                self.emit("update", self)
+        except AttributeError as e:
             pass
 
 
@@ -160,6 +175,10 @@ class ParticipantData(_BaseDataClass):
     asdict()
         Get ParticipantData as dictionary.
 
+    See Also
+    --------
+    participant_data_factory : create ParticipantData based on a ParticipantDict.
+
     Note
     ----
     Special methods, such as __str__, __repr__ and equality checks are generated
@@ -179,7 +198,15 @@ class ParticipantData(_BaseDataClass):
     """Whether this participant is banned."""
 
     size: SizeData = field(repr=False)
-    """Size of participant on the canvas (frontend)."""
+    """Size of participant on the canvas (frontend).
+
+    Notes
+    -----
+    Replacing the size may break event listeners / emitters.  In case such functionality
+    is required in the future, the following must be ensured: when size is replaced,
+    this ParticipantData must listen and forward all SizeData "update" events.  Event
+    listeners from the previous SizeData should also be removed.
+    """
 
     muted_video: bool = field(repr=False)
     """Whether the participants' video is forcefully muted by the experimenter."""
@@ -188,7 +215,16 @@ class ParticipantData(_BaseDataClass):
     """Whether the participants' audio is forcefully muted by the experimenter."""
 
     position: PositionData = field(repr=False)
-    """Position of the participant on the canvas (frontend)."""
+    """Position of the participant on the canvas (frontend).
+
+    Notes
+    -----
+    Replacing the position may break event listeners / emitters.  In case such
+    functionality is required in the future, the following must be ensured: when
+    position is replaced, this ParticipantData must listen and forward all PositionData
+    "update" events.  Event listeners from the previous PositionData should also be
+    removed.
+    """
 
     chat: list[ChatMessageDict] = field(repr=False)
     """Chat log between participant and experimenter."""
@@ -196,46 +232,11 @@ class ParticipantData(_BaseDataClass):
     filters: list[BasicFilterDict] = field(repr=False)
     """Active filters for participant."""
 
-    def __init__(
-        self, _on_update: Callable[[], None], participant_dict: ParticipantDict
-    ):
-        """Initialize new ParticipantData.
-
-        Parameters
-        ----------
-        on_update : function () -> None
-            Function that informs the parent session when changes occur.
-        participant_dict : custom_types.participant.ParticipantDict
-            Participant data the ParticipantData represents.
-
-        Raises
-        ------
-        ValueError
-            If `id` in `participant_dict is an empty string`.
-        """
-        if participant_dict["id"] == "":
-            raise ValueError('Missing "id" in participant dict.')
-
-        # Save simple variables
-        self.id = participant_dict["id"]
-        self.first_name = participant_dict["first_name"]
-        self.last_name = participant_dict["last_name"]
-        self.banned = participant_dict["banned"]
-        self.muted_video = participant_dict["muted_video"]
-        self.muted_audio = participant_dict["muted_audio"]
-        self.chat = participant_dict["chat"]
-        self.filters = participant_dict["filters"]
-
-        # parse size and position
-        size = participant_dict["size"]
-        self.size = SizeData(_on_update, size["width"], size["width"])
-
-        pos = participant_dict["position"]
-        self.position = PositionData(_on_update, pos["x"], pos["y"], pos["z"])
-
-        # Setup variables for _BaseDataClass
-        self._on_update = _on_update
-        self._initialized = True
+    def __post_init__(self) -> None:
+        """Add event listener to size and position."""
+        super(ParticipantData, self).__post_init__()
+        self.size.add_listener("update", self._emit_update_event)
+        self.position.add_listener("update", self._emit_update_event)
 
     def asdict(self) -> ParticipantDict:
         """Get ParticipantData as dictionary.
@@ -275,8 +276,40 @@ class ParticipantData(_BaseDataClass):
         }
 
 
+def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantData:
+    """Create a ParticipantData object based on a ParticipantDict.
+
+    Parameters
+    ----------
+    participant_dict : custom_types.participant.ParticipantDict
+        Participant dictionary with the data for the resulting ParticipantData
+
+    Returns
+    -------
+    modules.data.ParticipantData
+        ParticipantData based on the data in `participant_dict`.
+    """
+    size = participant_dict["size"]
+    sizeData = SizeData(size["width"], size["width"])
+
+    pos = participant_dict["position"]
+    positionData = PositionData(pos["x"], pos["y"], pos["z"])
+    return ParticipantData(
+        participant_dict["id"],
+        participant_dict["first_name"],
+        participant_dict["last_name"],
+        participant_dict["banned"],
+        sizeData,
+        participant_dict["muted_video"],
+        participant_dict["muted_audio"],
+        positionData,
+        participant_dict["chat"],
+        participant_dict["filters"],
+    )
+
+
 @dataclass(slots=True)
-class SessionData:
+class SessionData(_BaseDataClass):
     """Session data with update handling.
 
     Will forward any updates to the SessionManager, making sure all changes are
@@ -302,6 +335,10 @@ class SessionData:
         Update the whole Session with the data in `session_dict`.
     asdict()
         Get SessionData as dictionary.
+
+    See Also
+    --------
+    session_data_factory : create SessionData based on a SessionDict.
 
     Note
     ----
@@ -333,13 +370,17 @@ class SessionData:
     participants: dict[str, ParticipantData] = field(repr=False)
     """Participants invited to this session.
 
+    Notes
+    -----
     Note that this is a dict, while the participants in custom_types.session.SessionDict
     are a list.
-    """
 
-    # Internal / private variables
-    _on_update: Callable[[str], None] = field(repr=False, compare=False)
-    _trigger_updates: bool | None = field(repr=False, init=False, compare=False)
+    Replacing or modifying this dict may break event listeners / emitters.  In case such
+    functionality is required in the future, the following must be ensured: when
+    participants changes, this SessionData must listen and forward all ParticipantData
+    "update" events.  When a participant is removed, event listeners must be removed as
+    well.
+    """
 
     # Variables with default values:
     log: Any = field(repr=False, default_factory=list)
@@ -351,35 +392,11 @@ class SessionData:
     start_time: int = field(repr=False, default=0)
     """Session start time in milliseconds since January 1, 1970, 00:00:00 (UTC)."""
 
-    def __init__(self, on_update: Callable[[str], None], session_dict: SessionDict):
-        """Initialize new SessionData.
-
-        Checks for duplicate participant IDs and generates missing participant IDs.
-
-        Parameters
-        ----------
-        on_update : function (session_id) -> None
-            Function that informs the session manager when changes occur.
-        session_dict : custom_types.session.SessionDict
-            Session data the session represents.
-
-        Raises
-        ------
-        ValueError
-            If `id` in `session_dict` is an empty string.
-        ErrorDictException
-            If a duplicate participant ID was found.
-        """
-        if has_duplicate_participant_ids(session_dict):
-            raise ErrorDictException(
-                type="DUPLICATE_ID",
-                code=400,
-                description="Duplicate participant ID found in session data.",
-            )
-
-        self._set_variables(session_dict, False)
-        self._on_update = on_update
-        self._trigger_updates = True
+    def __post_init__(self):
+        """Add event listener to participants."""
+        super(SessionData, self).__post_init__()
+        for participant in self.participants.values():
+            participant.add_listener("update", self._emit_update_event)
 
     def update(self, session_dict: SessionDict):
         """Update the whole Session with the data in `session_dict`.
@@ -419,6 +436,7 @@ class SessionData:
             )
 
         self._set_variables(session_dict)
+        self._emit_update_event()
 
     def asdict(self) -> SessionDict:
         """Get SessionData as dictionary.
@@ -452,7 +470,7 @@ class SessionData:
         return session_dict
 
     def _set_variables(
-        self, session_dict: SessionDict, final_trigger_updates_state: bool = True
+        self, session_dict: SessionDict, final_emit_updates_value: bool = True
     ) -> None:
         """Set the variables of this data to the contents of `session_dict`.
 
@@ -461,8 +479,8 @@ class SessionData:
         session_dict : custom_types.session.SessionDict
             Session dictionary containing the data that should be set / parsed into this
             SessionData.
-        final_trigger_updates_state : bool, default True
-            State `self._trigger_updates` should be in after this function.
+        final_emit_updates_value : bool, default True
+            Value `self._emit_updates` should have after this function.
 
         Raises
         ------
@@ -474,10 +492,11 @@ class SessionData:
         _handle_updates() :
             Handle updates in data. See for information about `self._trigger_updates`.
         """
+        print("_set_variables")
         if session_dict["id"] == "":
             raise ValueError('Missing "id" in session dict.')
 
-        self._trigger_updates = False
+        self._emit_updates = False
 
         # Save simple variables
         self.id = session_dict["id"]
@@ -491,36 +510,21 @@ class SessionData:
         self.end_time = session_dict["end_time"]
         self.start_time = session_dict["end_time"]
 
+        # Remove event listeners from current participants (before deleting them)
+        print("removing event listeners from old participants")
+        for old_participant in self.participants.values():
+            old_participant.remove_all_listeners()
+
         # Parse participants
         _generate_participant_ids(session_dict)
         self.participants = {}
+        print("Generating new participants:\n  -> ", session_dict["participants"])
         for participant_dict in session_dict["participants"]:
-            p = ParticipantData(self._handle_updates, participant_dict)
+            p = participant_data_factory(participant_dict)
+            p.add_listener("update", self._emit_update_event)
             self.participants[p.id] = p
 
-        self._trigger_updates = final_trigger_updates_state
-
-    def _handle_updates(self) -> None:
-        """Handle updates in data, notify SessionManager about changes in data.
-
-        Can be passed to modules.data.ParticipantData and other child data.
-
-        Only notify SessionManager if `self._trigger_updates`.  `self._trigger_updates`
-        can temporarily set to false to avoid sending multiple notifications when
-        changing multiple variables.  See e.g. `update()` function
-        """
-        if self._trigger_updates:
-            self._on_update(self.id)
-
-    def __setattr__(self, _name: str, _value: Any) -> None:
-        """Set attribute with `_name` to `_value` and trigger `self._on_update`."""
-        object.__setattr__(self, _name, _value)
-        try:
-            # Signal a update, unless changing internal variable
-            if _name != "_trigger_updates":
-                self._handle_updates()
-        except AttributeError:
-            pass
+        self._emit_updates = final_emit_updates_value
 
     def _has_unknown_participant_ids(self, session_dict: SessionDict) -> bool:
         """Check if `session_dict` has participant IDs not known to this Session.
@@ -544,6 +548,55 @@ class SessionData:
                 return True
 
         return False
+
+
+def session_data_factory(session_dict: SessionDict) -> SessionData:
+    """Create a SessionData object based on a SessionDict.
+
+    Parameters
+    ----------
+    session_dict : custom_types.session.SessionDict
+        Session dictionary with the data for the resulting SessionData
+
+    Returns
+    -------
+    modules.data.SessionData
+        SessionData based on the data in `session_dict`.
+
+    Raises
+    ------
+    ValueError
+        If `id` in `session_dict` is an empty string.
+    ErrorDictException
+        If a duplicate participant ID was found.
+    """
+    if session_dict["id"] == "":
+        raise ValueError('Missing "id" in session dict.')
+
+    if has_duplicate_participant_ids(session_dict):
+        raise ErrorDictException(
+            type="DUPLICATE_ID",
+            code=400,
+            description="Duplicate participant ID found in session data.",
+        )
+
+    _generate_participant_ids(session_dict)
+    participants = {}
+    for participant_dict in session_dict["participants"]:
+        p = participant_data_factory(participant_dict)
+        participants[p.id] = p
+
+    return SessionData(
+        session_dict["id"],
+        session_dict["title"],
+        session_dict["date"],
+        session_dict["record"],
+        session_dict["time_limit"],
+        session_dict["description"],
+        session_dict["notes"],
+        participants,
+        session_dict["log"],
+    )
 
 
 def _generate_participant_ids(session_dict: SessionDict) -> None:

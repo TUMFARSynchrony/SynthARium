@@ -10,7 +10,7 @@ from custom_types.session import SessionDict, is_valid_session
 
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
-from modules.data import SessionData
+from modules.data import SessionData, session_data_factory
 from modules import BACKEND_DIR
 
 
@@ -159,7 +159,8 @@ class SessionManager:
         session_id = self._generate_unique_session_id()
         session_dict["id"] = session_id
 
-        session = SessionData(self._handle_session_update, session_dict)
+        session = session_data_factory(session_dict)
+        session.add_listener("update", self._handle_session_update)
         self._logger.info(f"New session created: {str(session)}")
         self._sessions[session_id] = session
         self._write(session.asdict())
@@ -201,23 +202,20 @@ class SessionManager:
         self._delete_file(f"{id}.json")
         return self._sessions.pop(id, None) != None
 
-    def _handle_session_update(self, session_id: str):
+    def _handle_session_update(self, session_data: SessionData):
         """Update session data changes on the drive.
 
         Parameters
         ----------
-        session_id : str
-            ID of the session that was updated.
+        session_data : modules.data.SessionData
+            SessionData that was updated.
 
         Notes
         -----
         Use `SessionData.update()` to update a session, it will call this function.
+        This function does not change any SessionData.
         """
-        # TODO further error handling in this function
-        if session_id is None:
-            self._logger.error("Cannot handle session update without ID")
-            return
-
+        session_id = session_data.id
         if session_id not in self._sessions:
             self._logger.error(
                 f"Cannot handle session update for unknown session ID: {session_id}"
@@ -225,7 +223,7 @@ class SessionManager:
             self._logger.debug(f"Known sessions: {list(self._sessions.keys())}")
             return
 
-        self._logger.debug(f"Handle session update: {session_id}")
+        self._logger.debug(f"Handle session update: {session_data}")
         session = self._sessions[session_id]
         self._write(session.asdict())
 
@@ -258,10 +256,11 @@ class SessionManager:
                 continue
 
             try:
-                session_obj = SessionData(self._handle_session_update, session_dict)
+                session_obj = session_data_factory(session_dict)
             except ErrorDictException:
                 self._logger.error(f"Participant ID duplicate in: {file}.")
                 continue
+            session_obj.add_listener("update", self._handle_session_update)
             self._sessions[session_dict["id"]] = session_obj
 
         # Create sessions for files with missing session IDs
