@@ -72,6 +72,10 @@ function ParticipantDataModal({
   };
 
   const onSaveParticipantData = () => {
+    if (participantCopy.first_name === "" || participantCopy.last_name === "") {
+      return;
+    }
+
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };
@@ -81,7 +85,7 @@ function ParticipantDataModal({
       <ToastContainer />
 
       <div className="additionalParticipantInfo">
-        <div className="additionalParticipantInfoCard">
+        <form className="additionalParticipantInfoCard">
           <Heading heading={"General information:"} />
 
           <InputTextField
@@ -169,7 +173,7 @@ function ParticipantDataModal({
               onCloseModalWithoutData();
             }}
           />
-        </div>
+        </form>
       </div>
     </div>
   );

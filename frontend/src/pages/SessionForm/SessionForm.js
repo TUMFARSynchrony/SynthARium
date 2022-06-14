@@ -139,7 +139,6 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
-  // console.log("sessionData", sessionData);
   return (
     <div className="sessionFormContainer">
       {showSessionDataForm && (

@@ -23,6 +23,7 @@ function InputField({
       readOnly={readonly}
       checked={checked}
       min={min}
+      required={required}
     ></input>
   );
 }
