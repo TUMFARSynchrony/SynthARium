@@ -4,16 +4,20 @@ import "./ParticipantData.css";
 
 import { FaRegTrashAlt } from "react-icons/fa";
 import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
+import { useState } from "react";
 
 function ParticipantData({
   onDeleteParticipant,
   participantData,
   sessionId,
   index,
-  showParticipantInput,
-  setShowParticipantInput,
   handleParticipantChange,
 }) {
+  // I first name and last name of the participant are empty, then we have a newly created participant. The default value is then true.
+  const [showParticipantInput, setShowParticipantInput] = useState(
+    participantData.first_name === "" && participantData.last_name === ""
+  );
+
   const onAddAdditionalInformation = () => {
     setShowParticipantInput(!showParticipantInput);
   };

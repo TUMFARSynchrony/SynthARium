@@ -46,7 +46,6 @@ function SessionForm({ onSendSessionToBackend }) {
   );
 
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
-  const [showParticipantInput, setShowParticipantInput] = useState(false);
 
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant({ index: index }));
@@ -54,8 +53,6 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onAddParticipant = () => {
-    setShowParticipantInput(true);
-
     dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
 
     const newParticipantDimensions = [
@@ -104,11 +101,13 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const addRandomSessionData = () => {
+    const futureDate = new Date().setDate(new Date().getDate() + 7);
+
     let newSessionData = {
       id: "",
       title: "Hello World",
       description: "Randomly created session",
-      date: new Date().getTime(),
+      date: new Date(futureDate).getTime(),
       time_limit: 3600000,
       record: true,
       participants: [
@@ -145,7 +144,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   return (
-    <form className="sessionFormContainer">
+    <div className="sessionFormContainer">
       {showSessionDataForm && (
         <div className="sessionFormData">
           <div className="sessionForm">
@@ -215,8 +214,6 @@ function SessionForm({ onSendSessionToBackend }) {
                       index={index}
                       participantData={participant}
                       sessionId={sessionData.id}
-                      showParticipantInput={showParticipantInput}
-                      setShowParticipantInput={setShowParticipantInput}
                       handleParticipantChange={handleParticipantChange}
                     />
                   );
@@ -254,7 +251,7 @@ function SessionForm({ onSendSessionToBackend }) {
           setParticipantDimensions={setParticipantDimensions}
         />
       </div>
-    </form>
+    </div>
   );
 }
 
