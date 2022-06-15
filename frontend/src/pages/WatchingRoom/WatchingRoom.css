@@ -1,0 +1,43 @@
+.watchingRoomContainer {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.watchingRoomHeader {
+  background-color: hsl(212, 86%, 64%);
+}
+
+.watchingRoomHeader > h2 {
+  font-weight: 400;
+  font-size: xx-large;
+  color: white;
+  margin: 0;
+  text-align: left;
+  margin-left: 0.5rem;
+}
+
+.watchingRoom {
+  display: grid;
+  column-gap: 50px;
+  grid-template-columns: 60% 1fr;
+  align-items: start;
+}
+
+.participantLiveStream {
+  display: grid;
+  grid-template-rows: 60% 1fr;
+}
+
+.livestream {
+  border: 15px solid green;
+  padding: 1rem;
+  height: 60vh;
+  width: auto;
+  aspect-ratio: 16/9;
+}
+
+.applieadFilters {
+  margin-top: 1rem;
+  border: 1px solid black;
+}

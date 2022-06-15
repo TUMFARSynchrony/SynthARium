@@ -102,3 +102,73 @@ export function getSessionJson() {
 export function getEmptySessionJson() {
   return [];
 }
+
+export function getJoinedParticipants() {
+  return [
+    {
+      id: "9c93d486fe",
+      first_name: "Max",
+      last_name: "Mustermann",
+      muted_video: false,
+      muted_audio: false,
+      filters: [],
+      position: {
+        x: 0,
+        y: 10,
+        z: 10,
+      },
+      size: {
+        width: 100,
+        height: 100,
+      },
+      chat: [
+        {
+          message: "Welcome to todays experiment!",
+          time: 1650380763075,
+          author: "experimenter",
+          target: "participants",
+        },
+      ],
+      banned: false,
+    },
+    {
+      id: "2d1882e48b",
+      first_name: "Erika",
+      last_name: "Mustermann",
+      muted_video: false,
+      muted_audio: true,
+      filters: [],
+      position: {
+        x: 0,
+        y: 150,
+        z: 200,
+      },
+      size: {
+        width: 100,
+        height: 100,
+      },
+      chat: [
+        {
+          message: "Welcome to todays experiment!",
+          time: 1650380763075,
+          author: "experimenter",
+          target: "participants",
+        },
+        {
+          message:
+            "Hello Erika. Please enable your video camera to start the experiment.",
+          time: 1650380764175,
+          author: "experimenter",
+          target: "25a882669d",
+        },
+        {
+          message: "Hello, of course. It should work now.",
+          time: 1650380765075,
+          author: "25a882669d",
+          target: "experimenter",
+        },
+      ],
+      banned: false,
+    },
+  ];
+}

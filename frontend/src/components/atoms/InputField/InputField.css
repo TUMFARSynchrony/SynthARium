@@ -2,6 +2,7 @@
   background-color: #f8f8f8;
   font-size: 15px;
   padding: 1.2rem 2rem;
+  padding-left: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   color: rgb(95, 95, 95);
@@ -14,4 +15,8 @@
   background: #fff;
   border-radius: 4px;
   margin-left: 1rem;
+}
+
+input:invalid {
+  border: 2px dashed rgb(255, 171, 171);
 }

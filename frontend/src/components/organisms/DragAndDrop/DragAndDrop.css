@@ -1,0 +1,8 @@
+.stageContainer {
+  box-shadow: 1px 3px 6px 1px rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  background-color: whitesmoke;
+  aspect-ratio: 16/9;
+  margin: 0;
+  padding: 0;
+}

@@ -128,3 +128,19 @@ export const getPastAndFutureSessions = (sessionsList) => {
 
   return { past: pastSessions, future: futureSessions };
 };
+
+// Required: "title", "description", "date", "time_limit"
+export const checkValidSession = (sessionData) => {
+  return (
+    sessionData.title !== "" &&
+    sessionData.description !== "" &&
+    sessionData.time_limit !== 0 &&
+    sessionData.date !== 0
+  );
+};
+
+export const isFutureSession = (sessionData) => {
+  let today = new Date().getTime();
+
+  return today < sessionData.date;
+};

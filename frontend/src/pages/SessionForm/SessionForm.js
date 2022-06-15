@@ -12,13 +12,13 @@ import {
   getRandomColor,
   getParticipantDimensions,
   formatDate,
+  checkValidSession,
 } from "../../utils/utils";
-import TextField from "../../components/molecules/TextField/TextField";
+import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 
 import "./SessionForm.css";
 import { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
-import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addParticipant,
@@ -27,11 +27,11 @@ import {
   deleteParticipant,
   initializeSession,
 } from "../../features/openSession";
+import { toast } from "react-toastify";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useDispatch();
   let openSession = useSelector((state) => state.openSession.value);
-  const { register, handleSubmit } = useForm();
   const [sessionData, setSessionData] = useState(openSession);
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
 
@@ -46,7 +46,6 @@ function SessionForm({ onSendSessionToBackend }) {
   );
 
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
-  const [showParticipantInput, setShowParticipantInput] = useState(false);
 
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant({ index: index }));
@@ -54,8 +53,6 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onAddParticipant = () => {
-    setShowParticipantInput(true);
-
     dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
 
     const newParticipantDimensions = [
@@ -95,15 +92,21 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
-    onSendSessionToBackend(sessionData, setSessionData);
+    if (!checkValidSession(sessionData)) {
+      toast.error("Failed to save session since required fields are missing!");
+      return;
+    }
+    onSendSessionToBackend(sessionData);
   };
 
   const addRandomSessionData = () => {
+    const futureDate = new Date().setDate(new Date().getDate() + 7);
+
     let newSessionData = {
       id: "",
       title: "Hello World",
       description: "Randomly created session",
-      date: new Date().getTime(),
+      date: new Date(futureDate).getTime(),
       time_limit: 3600000,
       record: true,
       participants: [
@@ -152,20 +155,16 @@ function SessionForm({ onSendSessionToBackend }) {
               onChange={(newTitle) =>
                 handleSessionDataChange("title", newTitle)
               }
-              register={register}
               required={true}
-              label={"title"}
             />
-            <TextField
+            <TextAreaField
               title="Description"
               value={sessionData.description}
               placeholder={"Short description of the session"}
               onChange={(newDescription) =>
                 handleSessionDataChange("description", newDescription)
               }
-              register={register}
               required={true}
-              label={"description"}
             />
             <div className="timeInput">
               <InputTextField
@@ -176,9 +175,8 @@ function SessionForm({ onSendSessionToBackend }) {
                   setTimeLimit(newTimeLimit);
                   handleSessionDataChange("time_limit", newTimeLimit * 60000);
                 }}
-                register={register}
                 required={true}
-                label={"time_limit"}
+                min={1}
               />
               <InputDateField
                 title="Date"
@@ -189,9 +187,7 @@ function SessionForm({ onSendSessionToBackend }) {
                     newDate ? new Date(newDate).getTime() : 0
                   )
                 }
-                register={register}
                 required={true}
-                label={"date"}
               />
             </div>
 
@@ -202,9 +198,7 @@ function SessionForm({ onSendSessionToBackend }) {
               onChange={() =>
                 handleSessionDataChange("record", !sessionData.record)
               }
-              register={register}
               required={false}
-              label={"record"}
             />
             <hr className="separatorLine"></hr>
             <Heading heading={"Participants"} />
@@ -219,8 +213,6 @@ function SessionForm({ onSendSessionToBackend }) {
                       index={index}
                       participantData={participant}
                       sessionId={sessionData.id}
-                      showParticipantInput={showParticipantInput}
-                      setShowParticipantInput={setShowParticipantInput}
                       handleParticipantChange={handleParticipantChange}
                     />
                   );
@@ -236,7 +228,7 @@ function SessionForm({ onSendSessionToBackend }) {
           </div>
 
           <div className="sessionFormButtons">
-            <Button name="Save" onClick={handleSubmit(onSaveSession)} />
+            <Button name="Save" onClick={() => onSaveSession()} />
             <LinkButton name="Start" to="/watchingRoom" />
             <Button
               name="Random session data"

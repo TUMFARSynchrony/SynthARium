@@ -8,8 +8,6 @@ function InputDateField({
   placeholder,
   readonly,
   onChange,
-  register,
-  label,
   required,
   value,
 }) {
@@ -22,8 +20,6 @@ function InputDateField({
         placeholder={placeholder}
         readonly={readonly}
         onChange={onChange}
-        register={register}
-        label={label}
         required={required}
         value={value}
         min={today}

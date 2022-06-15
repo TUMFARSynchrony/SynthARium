@@ -1,10 +1,11 @@
-import { integerToDateTime } from "../../../utils/utils";
+import { integerToDateTime, isFutureSession } from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
 import { useDispatch } from "react-redux";
-import { initializeSession } from "../../../features/openSession";
+import { copySession, initializeSession } from "../../../features/openSession";
+import { createExperiment } from "../../../features/ongoingExperiment";
 
 function SessionPreview({
   selectedSession,
@@ -20,13 +21,15 @@ function SessionPreview({
   };
 
   const onCopySession = () => {
-    let copiedSession = { ...selectedSession };
-    copiedSession.id = "";
-    dispatch(initializeSession(copiedSession));
+    dispatch(copySession(selectedSession));
   };
 
   const onEditSession = () => {
     dispatch(initializeSession(selectedSession));
+  };
+
+  const onCreateExperiment = () => {
+    dispatch(createExperiment(selectedSession));
   };
 
   return (
@@ -53,12 +56,21 @@ function SessionPreview({
             to="/sessionForm"
             onClick={() => onCopySession()}
           />
-          <LinkButton
-            name={"EDIT"}
-            to="/sessionForm"
-            onClick={() => onEditSession()}
-          />
-          <LinkButton name={"START"} to="/watchingRoom" />
+
+          {isFutureSession(selectedSession) && (
+            <>
+              <LinkButton
+                name={"EDIT"}
+                to="/sessionForm"
+                onClick={() => onEditSession()}
+              />
+              <LinkButton
+                name={"START"}
+                to="/watchingRoom"
+                onClick={() => onCreateExperiment()}
+              />
+            </>
+          )}
         </div>
       </>
     </div>

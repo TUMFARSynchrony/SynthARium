@@ -20,7 +20,7 @@ function SessionOverview({ onDeleteSession }) {
   const { past, future } = getPastAndFutureSessions(sessionsList);
 
   const [selectedSession, setSelectedSession] = useState(
-    sessionsList.length !== 0 ? sessionsList[0] : null
+    future.length !== 0 ? future[0] : null
   );
 
   const [showPastSessions, setShowPastSessions] = useState(false);

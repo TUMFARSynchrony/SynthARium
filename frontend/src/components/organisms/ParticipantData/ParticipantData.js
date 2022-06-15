@@ -2,20 +2,22 @@ import Button from "../../atoms/Button/Button";
 import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
 
-import { useForm } from "react-hook-form";
 import { FaRegTrashAlt } from "react-icons/fa";
-import ParticipantDataModal from "../../../modals/ParticipantDataModal";
+import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
+import { useState } from "react";
 
 function ParticipantData({
   onDeleteParticipant,
   participantData,
   sessionId,
   index,
-  showParticipantInput,
-  setShowParticipantInput,
   handleParticipantChange,
 }) {
-  const { register } = useForm();
+  // I first name and last name of the participant are empty, then we have a newly created participant. The default value is then true.
+  const [showParticipantInput, setShowParticipantInput] = useState(
+    participantData.first_name === "" && participantData.last_name === ""
+  );
+
   const onAddAdditionalInformation = () => {
     setShowParticipantInput(!showParticipantInput);
   };
@@ -29,9 +31,6 @@ function ParticipantData({
           .filter((str) => str.length > 0)
           .join(" ")}
         readonly={true}
-        register={register}
-        label={"name"}
-        required={false}
       />
       <div className="participantButtons">
         <Button

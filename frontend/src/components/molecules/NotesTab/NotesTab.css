@@ -1,0 +1,25 @@
+.notesTabContainer {
+  display: flex;
+  flex-direction: column;
+  /* height: 100%; */
+}
+
+.notes {
+  overflow-y: scroll;
+  height: 65vh;
+}
+
+.notesEntering {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notesInputField {
+  width: 100%;
+  max-width: 100%;
+}
+
+.notesEnteringContainer {
+  margin-top: auto;
+}

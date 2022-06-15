@@ -12,6 +12,7 @@ function InputTextField({
   register,
   label,
   required,
+  min,
 }) {
   return (
     <div className="inputFieldContainer">
@@ -25,6 +26,7 @@ function InputTextField({
         register={register}
         label={label}
         required={required}
+        min={min}
       />
     </div>
   );
