@@ -1,6 +1,7 @@
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
+import { PARTICIPANT_HOST } from "../../utils/constants";
 
 import "./JoinedParticipantModal.css";
 
@@ -22,7 +23,7 @@ function JoinedParticipantModal({
           <InputTextField
             title="Link"
             readonly={true}
-            value={`https:://experimental-hub/experimentRoom/userId=${participantData.id}&sessionId=${sessionId}`}
+            value={`${PARTICIPANT_HOST}?participantId=${participantData.id}&sessionId=${sessionId}`}
           />
           <div className="participantPosition">
             <Label title={"x: "} /> {participantData.position.x}

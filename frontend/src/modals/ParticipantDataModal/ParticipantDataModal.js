@@ -7,6 +7,7 @@ import Checkbox from "../../components/molecules/Checkbox/Checkbox";
 import Label from "../../components/atoms/Label/Label";
 import Button from "../../components/atoms/Button/Button";
 import { useState } from "react";
+import { PARTICIPANT_HOST } from "../../utils/constants";
 
 function ParticipantDataModal({
   originalParticipant,
@@ -111,7 +112,7 @@ function ParticipantDataModal({
             title="Link"
             value={
               participantCopy.id.length > 0
-                ? `https:://experimental-hub/experimentRoom/userId=${participantCopy.id}&sessionId=${sessionId}`
+                ? `${PARTICIPANT_HOST}?participantId=${participantCopy.id}&sessionId=${sessionId}`
                 : "Save session to generate link."
             }
             readonly={true}

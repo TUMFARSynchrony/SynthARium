@@ -50,3 +50,5 @@ export const BACKEND = process.env.REACT_APP_BACKEND;
  * @type {("development" | "test" | "production")}
  */
 export const ENVIRONMENT = process.env.NODE_ENV; // "development", "test" or "production"
+
+export const PARTICIPANT_HOST = "https://localhost:3000/experimentRoom/";
