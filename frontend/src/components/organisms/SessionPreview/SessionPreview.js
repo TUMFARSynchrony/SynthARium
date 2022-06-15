@@ -4,7 +4,7 @@ import LinkButton from "../../atoms/LinkButton/LinkButton";
 import "./SessionPreview.css";
 
 import { useDispatch } from "react-redux";
-import { initializeSession } from "../../../features/openSession";
+import { copySession, initializeSession } from "../../../features/openSession";
 import { createExperiment } from "../../../features/ongoingExperiment";
 
 function SessionPreview({
@@ -21,9 +21,7 @@ function SessionPreview({
   };
 
   const onCopySession = () => {
-    let copiedSession = { ...selectedSession };
-    copiedSession.id = "";
-    dispatch(initializeSession(copiedSession));
+    dispatch(copySession(selectedSession));
   };
 
   const onEditSession = () => {

@@ -28,20 +28,20 @@ export const openSessionSlice = createSlice({
     },
 
     changeValue: (state, { payload }) => {
-      const newSessionData = { ...state.value };
+      let newSessionData = { ...state.value };
       newSessionData[payload.objKey] = payload.objValue;
       state.value = newSessionData;
     },
 
     addParticipant: (state, { payload }) => {
-      const newSessionData = { ...state.value };
-      const newParticipantArray = [...newSessionData.participants, payload];
+      let newSessionData = { ...state.value };
+      let newParticipantArray = [...newSessionData.participants, payload];
       newSessionData.participants = newParticipantArray;
       state.value = newSessionData;
     },
 
     changeParticipant: (state, { payload }) => {
-      const newSessionData = { ...state.value };
+      let newSessionData = { ...state.value };
 
       let newParticipantArray = [...newSessionData.participants];
       newParticipantArray[payload.index] = {
@@ -55,8 +55,8 @@ export const openSessionSlice = createSlice({
     },
 
     deleteParticipant: (state, { payload }) => {
-      const newSessionData = { ...state.value };
-      const newParticipantArray = filterListByIndex(
+      let newSessionData = { ...state.value };
+      let newParticipantArray = filterListByIndex(
         newSessionData.participants,
         payload.index
       );
@@ -65,13 +65,29 @@ export const openSessionSlice = createSlice({
     },
 
     changeParticipantDimensions: (state, { payload }) => {
-      const newSessionData = { ...state.value };
+      let newSessionData = { ...state.value };
 
       let newParticipantArray = [...newSessionData.participants];
       newParticipantArray[payload.index].position = payload.position;
       newParticipantArray[payload.index].size = payload.size;
 
       newSessionData.participants = newParticipantArray;
+      state.value = newSessionData;
+    },
+
+    copySession: (state, { payload }) => {
+      let participants = [...payload.participants];
+      participants = participants.map((p) => {
+        let newParticipant = { ...p };
+        newParticipant.id = "";
+        return newParticipant;
+      });
+
+      let newSessionData = { ...payload };
+      newSessionData.id = "";
+      newSessionData.participants = participants;
+      console.log("newSessionData", newSessionData);
+
       state.value = newSessionData;
     },
   },
@@ -85,6 +101,7 @@ export const {
   changeParticipant,
   deleteParticipant,
   changeParticipantDimensions,
+  copySession,
 } = openSessionSlice.actions;
 
 export default openSessionSlice.reducer;
