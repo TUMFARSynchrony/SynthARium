@@ -150,11 +150,6 @@ class Participant(User):
             New state of the connection this Participant has with the client.
         """
         self._logger.debug(f"Handle state change. State: {state}")
-        if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
-            self._logger.debug("Removing self from experiment")
-            self._experiment.remove_participant(self)
-            return
-
         if state is ConnectionState.CONNECTED:
             self._logger.info(f"Participant connected. {self}")
             tasks = []

@@ -154,6 +154,8 @@ class Hub:
             )
             self.experimenters.append(experimenter)
 
+            # Remove experimenter from hub when experimenter disconnects
+            experimenter.add_listener("disconnected", self.remove_experimenter)
         else:
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Invalid user_type."
@@ -218,8 +220,8 @@ class Hub:
             )
 
         experiment = self.experiments[session_id]
-        participant = experiment.session.participants.get(participant_id)
-        if participant is None:
+        participantData = experiment.session.participants.get(participant_id)
+        if participantData is None:
             self._logger.warning(
                 f"Participant {participant_id} not found in session: {session_id}"
             )
@@ -229,7 +231,7 @@ class Hub:
                 description="Participant not found in the given session.",
             )
 
-        if participant.banned:
+        if participantData.banned:
             raise ErrorDictException(
                 code=400,
                 type="BANNED_PARTICIPANT",
@@ -249,10 +251,10 @@ class Hub:
             )
 
         answer, _ = await _participant.participant_factory(
-            offer, participant_id, experiment, participant
+            offer, participant_id, experiment, participantData
         )
 
-        return (answer, participant.as_summary_dict())
+        return (answer, participantData.as_summary_dict())
 
     def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
