@@ -20,7 +20,7 @@ from custom_types.error import ErrorDict
 from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
-import modules.connection as _connection
+from modules.connection_interface import ConnectionInterface
 
 
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -75,7 +75,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
-    _connection: _connection.Connection
+    _connection: ConnectionInterface
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __disconnected: bool
 
@@ -132,7 +132,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
         return None
 
-    def set_connection(self, connection: _connection.Connection) -> None:
+    def set_connection(self, connection: ConnectionInterface) -> None:
         """Set the connection of this user.
 
         This should only be used once before using this User.  See factory functions.
