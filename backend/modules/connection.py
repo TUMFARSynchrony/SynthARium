@@ -14,6 +14,7 @@ import asyncio
 import logging
 import json
 
+from modules.connection_interface import ConnectionInterface
 from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.util import generate_unique_id
 from modules.connection_state import ConnectionState, parse_connection_state
@@ -28,11 +29,11 @@ from custom_types.connection import (
 )
 
 
-class Connection(AsyncIOEventEmitter):
-    """Connection with a single client.
+class Connection(ConnectionInterface):
+    """Connection with a single client using multiple sub-connections.
 
-    Manages one or multiple WebRTC connections with the same client.  Provides interface
-    unaffected by the number of actual connections.
+    Manages one or multiple WebRTC connections with the same client.  Implements
+    ConnectionInterface.
 
     Extends AsyncIOEventEmitter, providing the following events:
     - `state_change` : modules.connection_state.ConnectionState
@@ -459,6 +460,9 @@ class Connection(AsyncIOEventEmitter):
                     await transceiver.stop()
                     break
             await self._check_if_closed()
+
+
+ConnectionInterface.register(Connection)
 
 
 class SubConnection(AsyncIOEventEmitter):
