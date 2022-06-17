@@ -70,6 +70,8 @@ function App() {
 
     const sessionIdParam = searchParams.get("sessionId");
     const participantIdParam = searchParams.get("participantId");
+    console.log("sessionIdParam", sessionIdParam);
+    console.log("participantIdParam", participantIdParam);
 
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
@@ -94,7 +96,10 @@ function App() {
     setConnection(newConnection);
     if (userType === "participant") {
       asyncStreamHelper(newConnection);
+      return;
     }
+
+    newConnection.start();
 
     window.addEventListener("beforeunload", closeConnection);
 
@@ -115,6 +120,7 @@ function App() {
     connection.api.on("UPDATED_SESSION", handleUpdatedSession);
     connection.api.on("SUCCESS", handleSuccess);
     connection.api.on("ERROR", handleError);
+    connection.api.on("CREATED_EXPERIMENT", handleCreatedExperiment);
 
     return () => {
       connection.api.off("SESSION_LIST", handleSessionList);
@@ -123,6 +129,7 @@ function App() {
       connection.api.off("CREATED_SESSION", handleCreatedSession);
       connection.api.off("SUCCESS", handleSuccess);
       connection.api.off("ERROR", handleError);
+      connection.api.off("CREATED_EXPERIMENT", handleCreatedExperiment);
     };
   }, [connection]);
 
@@ -166,11 +173,19 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    toast.success("SUCCESS: " + data);
+    toast.success("SUCCESS: " + data.description);
   };
 
   const handleError = (data) => {
     toast.error(data.description);
+  };
+
+  const handleCreatedExperiment = (data) => {
+    toast.success("Successfully created experiment : " + data.session_id);
+  };
+
+  const onCreateExperiment = (sessionId) => {
+    connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
   };
 
   return (
@@ -181,7 +196,12 @@ function App() {
           <Route
             exact
             path="/"
-            element={<SessionOverview onDeleteSession={onDeleteSession} />}
+            element={
+              <SessionOverview
+                onDeleteSession={onDeleteSession}
+                onCreateExperiment={onCreateExperiment}
+              />
+            }
           />
           <Route
             exact

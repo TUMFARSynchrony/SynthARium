@@ -11,6 +11,7 @@ function SessionPreview({
   selectedSession,
   setSelectedSession,
   onDeleteSession,
+  onCreateExperiment,
 }) {
   const dispatch = useDispatch();
 
@@ -28,7 +29,8 @@ function SessionPreview({
     dispatch(initializeSession(selectedSession));
   };
 
-  const onCreateExperiment = () => {
+  const onStartSelectedSession = () => {
+    onCreateExperiment(selectedSession.id);
     dispatch(createExperiment(selectedSession));
   };
 
@@ -67,7 +69,7 @@ function SessionPreview({
               <LinkButton
                 name={"START"}
                 to="/watchingRoom"
-                onClick={() => onCreateExperiment()}
+                onClick={() => onStartSelectedSession()}
               />
             </>
           )}

@@ -14,7 +14,7 @@ import { getPastAndFutureSessions } from "../../utils/utils";
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
 
-function SessionOverview({ onDeleteSession }) {
+function SessionOverview({ onDeleteSession, onCreateExperiment }) {
   const dispatch = useDispatch();
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const { past, future } = getPastAndFutureSessions(sessionsList);
@@ -103,6 +103,7 @@ function SessionOverview({ onDeleteSession }) {
               selectedSession={selectedSession}
               setSelectedSession={setSelectedSession}
               onDeleteSession={onDeleteSession}
+              onCreateExperiment={onCreateExperiment}
             />
           ) : (
             <h2>No session selected.</h2>
