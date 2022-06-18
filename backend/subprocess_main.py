@@ -47,7 +47,7 @@ def parse_args() -> Tuple[RTCSessionDescription, str]:
 async def main() -> None:
     # TODO logging config
     logging.basicConfig(level=logging.DEBUG, filename="./subprocess.log")
-    dependencies_log_level = logging.DEBUG
+    dependencies_log_level = logging.INFO
     logging.getLogger("aiohttp").setLevel(dependencies_log_level)
     logging.getLogger("aioice").setLevel(dependencies_log_level)
     logging.getLogger("aiortc").setLevel(dependencies_log_level)
@@ -59,6 +59,7 @@ async def main() -> None:
 
     runner = ConnectionRunner()
     await runner.run(offer, log_name_suffix)
+    logging.debug(f"runner.run() returned")
 
 
 if __name__ == "__main__":

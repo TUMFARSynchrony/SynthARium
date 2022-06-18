@@ -5,6 +5,7 @@ import json
 import logging
 from os.path import join
 import sys
+import time
 from typing import Any, Callable, Coroutine, Tuple
 from aiortc import MediaStreamTrack, RTCSessionDescription
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
@@ -74,8 +75,8 @@ class ConnectionSubprocess(ConnectionInterface):
             "-o",
             f"{json.dumps(self._offer)}",
         ]
-        program_summary = program[:3] + [
-            program[3][:10] + ("..." if len(program[3]) >= 10 else "")
+        program_summary = program[:5] + [
+            program[5][:10] + ("..." if len(program[5]) >= 10 else "")
         ]
 
         self._logger.debug(f"Starting subprocess: {program_summary}")
@@ -92,16 +93,6 @@ class ConnectionSubprocess(ConnectionInterface):
             )
         )
 
-        # Wait for process exit
-        stdout, stderr = await self._process.communicate()
-        self._logger.debug(
-            f"Subprocess exited with returncode: {self._process.returncode}"
-        )
-        if stdout:
-            self._logger.debug(f"[stdout START]:\n {stdout.decode()}\n[stdout END]")
-        if stderr:
-            self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
-
     async def _wait_for_messages(self):
         """TODO document"""
         self._logger.debug("_wait_for_messages")
@@ -112,26 +103,29 @@ class ConnectionSubprocess(ConnectionInterface):
             self._logger.error("Failed to wait for messages, _process.stdout is None")
             return
 
-        # TODO
-        timeout = 1
-
         while True:
             async with self._running_lock:
                 if not self._running:
                     self._logger.debug(f"Return from _wait_for_messages, running=False")
                     return
 
+            self._logger.debug("_wait_for_messages -readline")
             try:
-                self._logger.debug(f"_wait_for_messages - wait for {timeout}s")
-                msg = await self._process.stdout.readline()
+                msg = await asyncio.wait_for(self._process.stdout.readline(), 5)
             except asyncio.TimeoutError:
                 self._logger.debug("_wait_for_messages - timeout")
+                await self.send("PING", round(time.time() * 1000))
                 continue
+
+            if len(msg) == 0:
+                self._logger.error("_wait_for_messages break, len(msg) == 0")
+                break
 
             try:
                 parsed = json.loads(msg)
             except (json.JSONDecodeError, TypeError) as e:
                 self._logger.error(f"Failed to parse message from subprocess: {e}")
+                self._logger.debug(f"Msg: {msg}, len: {len(msg)}")
                 continue
 
             self._logger.debug(f"Received: {parsed}")
@@ -148,7 +142,9 @@ class ConnectionSubprocess(ConnectionInterface):
 
     async def get_local_description(self) -> RTCSessionDescription:
         """TODO document"""
+        self._logger.debug("Wait for _local_description")
         await self._local_description_received.wait()
+        self._logger.debug("RETURN _local_description")
         assert self._local_description is not None
         return self._local_description
 
@@ -159,9 +155,23 @@ class ConnectionSubprocess(ConnectionInterface):
             self._process.terminate()
         async with self._running_lock:
             self._running = False
-        asyncio.gather(*self._tasks)
+        await asyncio.gather(*self._tasks)
+        await self._get_final_output()
 
-    def send(self, command, data):
+    async def _get_final_output(self):
+        if self._process is None:
+            return
+
+        stdout, stderr = await self._process.communicate()
+        self._logger.debug(
+            f"Subprocess exited with returncode: {self._process.returncode}"
+        )
+        if stdout:
+            self._logger.debug(f"[stdout START]:\n {stdout.decode()}\n[stdout END]")
+        if stderr:
+            self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
+
+    async def send(self, command, data):
         """Send to main process"""
         data = json.dumps({"command": command, "data": data})
         if self._process is None:
@@ -173,6 +183,7 @@ class ConnectionSubprocess(ConnectionInterface):
 
         self._logger.debug(f"Sending: {data}")
         self._process.stdin.write(data.encode("utf-8") + b"\n")
+        await self._process.stdin.drain()
 
     @property
     def state(self) -> ConnectionState:
@@ -218,6 +229,7 @@ async def connection_subprocess_factory(
     """TODO document"""
     # TODO change type of offer parameter to RTCSessionDescriptionDict
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore
+    print(offer_dict)
 
     connection = ConnectionSubprocess(offer_dict, message_handler, log_name_suffix)
 

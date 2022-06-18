@@ -1,6 +1,8 @@
 import asyncio
 import json
 import logging
+import sys
+import time
 from typing import Any, Callable, Coroutine
 from aiortc import RTCSessionDescription
 
@@ -35,15 +37,8 @@ class ConnectionRunner:
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self.send("SET_LOCAL_DESCRIPTION", {"sdp": answer.sdp, "type": answer.type})
-
-        self._tasks.append(
-            asyncio.create_task(
-                self._listen_for_messages(),
-                name="ConnectionRunner._listen_for_messages",
-            )
-        )
         logging.info("Wait for _stopped_event")
-        await self._stopped_event.wait()
+        await self._listen_for_messages()
 
     async def stop(self) -> None:
         logging.debug("Exiting")
@@ -55,16 +50,34 @@ class ConnectionRunner:
         logging.debug("Exit complete")
 
     async def _listen_for_messages(self):
-        val = ""
-        while val != "q":
+        msg = ""
+        while msg != "q":
             async with self._lock:
                 if not self._running:
                     return
-            val = input()
-            logging.info(f"_listen_for_messages Received {val}")
-            self.send("ECHO", val)
+            try:
+                msg = await asyncio.wait_for(self._read(), 5)
+            except asyncio.TimeoutError:
+                logging.debug("_listen_for_messages timeout.")
+                continue
+
+            try:
+                parsed = json.loads(msg)
+            except (json.JSONDecodeError, TypeError) as e:
+                logging.error(f"Failed to parse message from subprocess: {e}")
+                continue
+
+            logging.info(f"_listen_for_messages Received {parsed}")
+            if parsed["command"] == "PING":
+                t = round(time.time() * 1000)
+                self.send("ECHO", {"time": t, "diff": t - parsed["time"]})
+            else:
+                self.send("ECHO", parsed)
 
         logging.info("connection_subprocess finished")
+
+    async def _read(self):
+        return await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)
 
     async def _handle_state_change(self, state: ConnectionState) -> None:
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
@@ -78,3 +91,4 @@ class ConnectionRunner:
         data = json.dumps({"command": command, "data": data})
         logging.info(f"Sending: {data}")
         print(data)
+        sys.stdout.flush()
