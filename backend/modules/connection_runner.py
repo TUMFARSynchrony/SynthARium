@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import sys
-import time
 from typing import Any, Callable, Coroutine
 from aiortc import RTCSessionDescription
 
@@ -68,13 +67,14 @@ class ConnectionRunner:
                 continue
 
             logging.info(f"_listen_for_messages Received {parsed}")
-            if parsed["command"] == "PING":
-                t = round(time.time() * 1000)
-                self.send("ECHO", {"time": t, "diff": t - parsed["time"]})
-            else:
-                self.send("ECHO", parsed)
+            await self._handle_message(parsed)
 
         logging.info("connection_subprocess finished")
+
+    async def _handle_message(self, msg: dict):
+        match msg["command"]:
+            case "PING":
+                self.send("PONG", msg["data"])
 
     async def _read(self):
         return await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)

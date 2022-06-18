@@ -92,6 +92,23 @@ class ConnectionSubprocess(ConnectionInterface):
                 name="ConnectionSubprocess._wait_for_messages",
             )
         )
+        self._tasks.append(
+            asyncio.create_task(
+                self._ping(),
+                name="ConnectionSubprocess.ping",
+            ),
+        )
+
+    async def _ping(self):
+        await asyncio.sleep(10)
+        self._logger.info("Start PING loop")
+        while True:
+            async with self._running_lock:
+                if not self._running:
+                    self._logger.debug(f"Return from ping, running=False")
+                    return
+            await self.send("PING", time.time())
+            await asyncio.sleep(2)
 
     async def _wait_for_messages(self):
         """TODO document"""
@@ -114,7 +131,6 @@ class ConnectionSubprocess(ConnectionInterface):
                 msg = await asyncio.wait_for(self._process.stdout.readline(), 5)
             except asyncio.TimeoutError:
                 self._logger.debug("_wait_for_messages - timeout")
-                await self.send("PING", round(time.time() * 1000))
                 continue
 
             if len(msg) == 0:
@@ -139,6 +155,9 @@ class ConnectionSubprocess(ConnectionInterface):
                     msg["data"]["sdp"], msg["data"]["type"]
                 )
                 self._local_description_received.set()
+            case "PONG":
+                t = round((time.time() - msg["data"]) * 1000, 2)
+                self._logger.info(f"Ping time: {t}ms")
 
     async def get_local_description(self) -> RTCSessionDescription:
         """TODO document"""
