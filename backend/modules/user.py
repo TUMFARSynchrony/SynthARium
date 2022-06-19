@@ -165,7 +165,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def disconnect(self) -> None:
         """Disconnect.  Closes the connection with the client."""
         await self._connection.stop()
-        self._handle_disconnect
+        self._handle_disconnect()
 
     async def subscribe_to(self, user: User) -> None:
         """Add incoming tracks from `user` to this User.
