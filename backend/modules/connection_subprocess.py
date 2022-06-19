@@ -89,13 +89,17 @@ class ConnectionSubprocess(ConnectionInterface):
 
     async def stop(self) -> None:
         """TODO document"""
-        self._logger.debug("Stop ConnectionSubprocess")
-        if self._process is not None:
+        self._logger.debug("Stopping ConnectionSubprocess")
+        if self._process is not None and self._process.returncode is None:
             self._process.terminate()
         async with self._running_lock:
             self._running = False
-        await asyncio.gather(*self._tasks)
+        current_task = asyncio.current_task()
+        tasks = [t for t in self._tasks if t is not current_task]
+        await asyncio.gather(*tasks)
         await self._log_final_stdout_stderr()
+        self._set_state(ConnectionState.CLOSED)
+        self._logger.debug("Stop complete")
 
     async def send(self, data: MessageDict | dict) -> None:
         """TODO document"""
@@ -116,6 +120,15 @@ class ConnectionSubprocess(ConnectionInterface):
         """TODO document"""
         # TODO implement
         raise NotImplementedError()
+
+    def _set_state(self, state: ConnectionState):
+        """Set connection state and emit `state_change` event."""
+        if self._state == state:
+            return
+
+        self._logger.debug(f"ConnectionState is: {state}")
+        self._state = state
+        self.emit("state_change", state)
 
     async def _run(self) -> None:
         """TODO document"""

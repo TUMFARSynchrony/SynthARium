@@ -49,13 +49,12 @@ class ConnectionRunner:
 
     async def stop(self) -> None:
         """TODO document"""
-        logging.debug("Exiting")
+        logging.debug("Stopping")
         async with self._lock:
             self._running = False
         await asyncio.gather(*self._tasks)
-        logging.debug("Set _stopped_event")
         self._stopped_event.set()
-        logging.debug("Exit complete")
+        logging.debug("Stop complete")
 
     async def _listen_for_messages(self) -> None:
         """TODO document"""
@@ -97,6 +96,7 @@ class ConnectionRunner:
     async def _handle_state_change(self, state: ConnectionState) -> None:
         """TODO document"""
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
+            logging.debug(f"Stopping, because state is {state}")
             await self.stop()
 
     async def handle_api_message(self, message: MessageDict | Any) -> None:
