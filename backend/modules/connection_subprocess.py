@@ -112,10 +112,9 @@ class ConnectionSubprocess(ConnectionInterface):
         await self._send_command("STOP_SUBCONNECTION", subconnection_id)
         return True
 
-    def set_muted(self, video: bool, audio: bool) -> None:
+    async def set_muted(self, video: bool, audio: bool) -> None:
         """TODO document"""
-        # TODO implement
-        pass
+        await self._send_command("SET_MUTED", (video, audio))
 
     def _set_state(self, state: ConnectionState):
         """Set connection state and emit `state_change` event."""
@@ -264,6 +263,7 @@ class ConnectionSubprocess(ConnectionInterface):
         | float
         | dict
         | None
+        | tuple
         | ParticipantSummaryDict
         | ConnectionAnswerDict
         | MessageDict,

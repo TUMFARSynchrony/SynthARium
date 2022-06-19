@@ -262,7 +262,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             if response is not None:
                 await self.send(response)
 
-    def set_muted(self, video: bool, audio: bool) -> None:
+    async def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.
 
         Parameters
@@ -278,7 +278,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._muted_video = video
         self._muted_audio = audio
 
-        self._connection.set_muted(video, audio)
+        await self._connection.set_muted(video, audio)
 
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.

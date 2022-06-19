@@ -620,7 +620,7 @@ class Experimenter(User):
             )
 
         experiment = self._get_experiment_or_raise("Failed to mute participant.")
-        experiment.mute_participant(
+        await experiment.mute_participant(
             data["participant_id"], data["mute_video"], data["mute_audio"]
         )
 

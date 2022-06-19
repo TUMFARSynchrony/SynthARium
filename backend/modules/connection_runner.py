@@ -124,6 +124,14 @@ class ConnectionRunner:
                     )
                     return
                 await self._connection.stop_subconnection(data)
+            case "SET_MUTED":
+                if self._connection is None:
+                    logging.warning(
+                        f"Failed to set muted, connection not defined. Data: {data}"
+                    )
+                    return
+                video, audio = data
+                await self._connection.set_muted(video, audio)
 
     async def _read(self):
         """TODO document"""

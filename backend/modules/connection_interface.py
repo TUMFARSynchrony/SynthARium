@@ -81,6 +81,6 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_muted(self, video: bool, audio: bool) -> None:
+    async def set_muted(self, video: bool, audio: bool) -> None:
         """TODO document"""
         pass

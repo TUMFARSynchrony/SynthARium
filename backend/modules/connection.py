@@ -235,7 +235,7 @@ class Connection(ConnectionInterface):
         await sub_connection.stop()
         return True
 
-    def set_muted(self, video: bool, audio: bool) -> None:
+    async def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this connection.
 
         Parameters
