@@ -103,8 +103,7 @@ class ConnectionSubprocess(ConnectionInterface):
 
     async def send(self, data: MessageDict | dict) -> None:
         """TODO document"""
-        # TODO implement
-        raise NotImplementedError()
+        await self._send_command("SEND", data)
 
     async def add_outgoing_stream(
         self,
@@ -226,18 +225,23 @@ class ConnectionSubprocess(ConnectionInterface):
             await self._handle_process_message(parsed)
 
     async def _handle_process_message(self, msg: dict):
-        self._logger.debug(f"Received msg from subprocess: {msg}")
-        match msg["command"]:
+        data = msg["data"]
+        command = msg["command"]
+        self._logger.debug(f"Received {command} command from subprocess")
+
+        match command:
             case "SET_LOCAL_DESCRIPTION":
                 self._local_description = RTCSessionDescription(
-                    msg["data"]["sdp"], msg["data"]["type"]
+                    data["sdp"], data["type"]
                 )
                 self._local_description_received.set()
             case "PONG":
-                t = round((time.time() - msg["data"]) * 1000, 2)
+                t = round((time.time() - data) * 1000, 2)
                 self._logger.info(f"Subprocess ping time: {t}ms")
             case "STATE_CHANGE":
-                self._set_state(ConnectionState(msg["data"]))
+                self._set_state(ConnectionState(data))
+            case "API":
+                await self._message_handler(data)
 
     async def _log_final_stdout_stderr(self):
         if self._process is None:
@@ -253,7 +257,9 @@ class ConnectionSubprocess(ConnectionInterface):
         if stderr:
             self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
 
-    async def _send_command(self, command: str, data: str | int | float | dict) -> None:
+    async def _send_command(
+        self, command: str, data: str | int | float | dict | MessageDict
+    ) -> None:
         """Send command to subprocess"""
         data = json.dumps({"command": command, "data": data})
         if self._process is None:

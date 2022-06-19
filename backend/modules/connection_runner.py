@@ -37,7 +37,7 @@ class ConnectionRunner:
         """TODO document"""
         self._running = True
         answer, self._connection = await connection_factory(
-            offer, self.handle_api_message, log_name_suffix
+            offer, self._relay_api_message, log_name_suffix
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self._send_command(
@@ -80,14 +80,24 @@ class ConnectionRunner:
                 logging.error(f"Failed to parse message from main process: {e}")
                 continue
 
-            logging.info(f"Received command from main process: {parsed}")
             await self._handle_message(parsed)
 
     async def _handle_message(self, msg: dict):
         """TODO document"""
-        match msg["command"]:
+        data = msg["data"]
+        command = msg["command"]
+        logging.info(f"Received {command} command from main process")
+
+        match command:
             case "PING":
                 self._send_command("PONG", msg["data"])
+            case "SEND":
+                if self._connection is None:
+                    logging.warning(
+                        f"Failed to send data, connection not defined. Data: {data}"
+                    )
+                    return
+                await self._connection.send(data)
 
     async def _read(self):
         """TODO document"""
@@ -100,11 +110,14 @@ class ConnectionRunner:
             logging.debug(f"Stopping, because state is {state}")
             await self.stop()
 
-    async def handle_api_message(self, message: MessageDict | Any) -> None:
+    async def _relay_api_message(self, message: MessageDict | Any) -> None:
         """TODO document"""
+        self._send_command("API", message)
         pass
 
-    def _send_command(self, command: str, data: str | int | float | dict) -> None:
+    def _send_command(
+        self, command: str, data: str | int | float | dict | MessageDict
+    ) -> None:
         """Send to main process"""
         data = json.dumps({"command": command, "data": data})
         logging.info(f"Sending: {data}")
