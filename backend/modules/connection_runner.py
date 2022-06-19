@@ -95,6 +95,7 @@ class ConnectionRunner:
 
     async def _handle_state_change(self, state: ConnectionState) -> None:
         """TODO document"""
+        self._send_command("STATE_CHANGE", state.value)
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             logging.debug(f"Stopping, because state is {state}")
             await self.stop()

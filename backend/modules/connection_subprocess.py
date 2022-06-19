@@ -236,6 +236,8 @@ class ConnectionSubprocess(ConnectionInterface):
             case "PONG":
                 t = round((time.time() - msg["data"]) * 1000, 2)
                 self._logger.info(f"Subprocess ping time: {t}ms")
+            case "STATE_CHANGE":
+                self._set_state(ConnectionState(msg["data"]))
 
     async def _log_final_stdout_stderr(self):
         if self._process is None:
