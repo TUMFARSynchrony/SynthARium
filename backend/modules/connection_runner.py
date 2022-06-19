@@ -116,6 +116,14 @@ class ConnectionRunner:
                     )
                     return
                 await self._connection.handle_subscriber_answer(data)
+            case "STOP_SUBCONNECTION":
+                if self._connection is None:
+                    logging.warning(
+                        "Failed to stop subconnection, connection not defined. Data: "
+                        f"{data}"
+                    )
+                    return
+                await self._connection.stop_subconnection(data)
 
     async def _read(self):
         """TODO document"""

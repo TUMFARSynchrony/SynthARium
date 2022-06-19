@@ -109,8 +109,8 @@ class ConnectionSubprocess(ConnectionInterface):
 
     async def stop_subconnection(self, subconnection_id: str) -> bool:
         """TODO document"""
-        # TODO implement
-        raise NotImplementedError()
+        await self._send_command("STOP_SUBCONNECTION", subconnection_id)
+        return True
 
     def set_muted(self, video: bool, audio: bool) -> None:
         """TODO document"""
