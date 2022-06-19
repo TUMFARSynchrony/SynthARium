@@ -1,14 +1,14 @@
 """Provide the abstract `ConnectionInterface`."""
 
-from aiortc import MediaStreamTrack
+from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.connection_state import ConnectionState
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
 
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
+from custom_types.connection import ConnectionOfferDict, ConnectionAnswerDict
 
 
 class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -47,76 +47,40 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Get the modules.connection_state.ConnectionState the Connection is in."""
         pass
 
-    @property
     @abstractmethod
-    def incoming_audio(self) -> AudioTrackHandler | None:
-        """Get incoming audio track.
-
-        Returns
-        -------
-        modules.track.AudioTrackHandler or None
-            None if no audio was received by client (yet), otherwise AudioTrackHandler.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def incoming_video(self) -> VideoTrackHandler | None:
-        """Get incoming video track.
-
-        Returns
-        -------
-        modules.track.VideoTrackHandler or None
-            None if no video was received by client (yet), otherwise VideoTrackHandler.
-        """
+    async def create_subscriber_offer(
+        self, participant_summary: ParticipantSummaryDict | None
+    ) -> ConnectionOfferDict:
+        """TODO document"""
         pass
 
     @abstractmethod
-    async def add_outgoing_stream(
-        self,
-        video_track: MediaStreamTrack,
-        audio_track: MediaStreamTrack,
-        participant_summary: ParticipantSummaryDict | None,
-    ) -> str:
-        """Add an outgoing stream to Connection.
+    async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
+        """TODO document"""
+        pass
 
-        See implementation for details.
+    @abstractmethod
+    async def stop_subconnection(self, subconnection_id: str) -> bool:
+        """Stop the subconnection with `stream_id`.
 
         Parameters
         ----------
-        video_track : MediaStreamTrack
-            Video that will be used in the new SubConnection.
-        audio_track : MediaStreamTrack
-            Audio that will be used in the new SubConnection.
-        participant_summary : ParticipantSummaryDict or None
-            Optional participant summary that will be send to the client, informing it
-            about the details of the new stream.
-
-        Returns
-        -------
-        str
-            A new ID that identifies the new outgoing stream. It can be used to close
-            the stream again using `stop_outgoing_stream()`.
-        """
-        pass
-
-    @abstractmethod
-    async def stop_outgoing_stream(self, stream_id: str) -> bool:
-        """Stop the outgoing stream with `stream_id`.
-
-        Parameters
-        ----------
-        stream_id : str
-            ID of the outgoing stream that will be stopped.
+        subconnection_id : str
+            ID of the outgoing SubConnection that will be stopped.
 
         Returns
         -------
         bool
-            True if a outgoing stream with `stream_id` was found and closed. Otherwise
-            False.
+            True if a outgoing stream with `subconnection_id` was found and closed.
+            Otherwise False.
 
         See Also
         --------
-        add_outgoing_stream : add a new outgoing stream.
+        add_outgoing_stream : add a new outgoing SubConnection.
         """
+        pass
+
+    @abstractmethod
+    def set_muted(self, video: bool, audio: bool) -> None:
+        """TODO document"""
         pass

@@ -9,7 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
 from custom_types.error import ErrorDict
@@ -114,12 +114,12 @@ class Experimenter(User):
     async def _subscribe_to_participants_streams(self) -> None:
         """Subscribe to all participants in `self._experiment`."""
         if self._experiment is not None:
-            tasks = []
+            coros: list[Coroutine] = []
             for p in self._experiment.participants.values():
                 if p is self:
                     continue
-                tasks.append(self.subscribe_to(p))
-            await asyncio.gather(*tasks)
+                coros.append(p.add_subscriber(self))
+            await asyncio.gather(*coros)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
