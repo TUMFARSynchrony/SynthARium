@@ -1,23 +1,23 @@
 """TODO document"""
 
-import asyncio
-import json
-import logging
-from os.path import join
 import sys
 import time
+import json
+import logging
+import asyncio
+from os.path import join
+from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
-from aiortc import MediaStreamTrack, RTCSessionDescription
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from modules import BACKEND_DIR
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
 
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
 from custom_types.participant_summary import ParticipantSummaryDict
+from custom_types.connection import ConnectionOfferDict, ConnectionAnswerDict
 
 
 class ConnectionSubprocess(ConnectionInterface):
@@ -32,6 +32,7 @@ class ConnectionSubprocess(ConnectionInterface):
     _process: Process | None
     _state: ConnectionState
     _logger: logging.Logger
+    _subscriber_offers: asyncio.Queue
     _tasks: list[asyncio.Task]
 
     _local_description_received: asyncio.Event
@@ -54,6 +55,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
+        self._subscriber_offers = asyncio.Queue()
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
@@ -67,17 +69,17 @@ class ConnectionSubprocess(ConnectionInterface):
         """TODO document"""
         return self._state
 
-    @property
-    def incoming_audio(self) -> AudioTrackHandler | None:
+    async def create_subscriber_offer(
+        self, participant_summary: ParticipantSummaryDict | None
+    ) -> ConnectionOfferDict:
         """TODO document"""
-        # TODO implement
-        raise NotImplementedError()
+        await self._send_command("CREATE_OFFER", participant_summary)
+        offer = await self._subscriber_offers.get()
+        return offer
 
-    @property
-    def incoming_video(self) -> VideoTrackHandler | None:
+    async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
         """TODO document"""
-        # TODO implement
-        raise NotImplementedError()
+        await self._send_command("HANDLE_ANSWER", answer)
 
     async def get_local_description(self) -> RTCSessionDescription:
         """TODO document"""
@@ -105,20 +107,15 @@ class ConnectionSubprocess(ConnectionInterface):
         """TODO document"""
         await self._send_command("SEND", data)
 
-    async def add_outgoing_stream(
-        self,
-        video_track: MediaStreamTrack,
-        audio_track: MediaStreamTrack,
-        participant_summary: ParticipantSummaryDict | None,
-    ) -> str:
+    async def stop_subconnection(self, subconnection_id: str) -> bool:
         """TODO document"""
         # TODO implement
         raise NotImplementedError()
 
-    async def stop_outgoing_stream(self, stream_id: str) -> bool:
+    def set_muted(self, video: bool, audio: bool) -> None:
         """TODO document"""
         # TODO implement
-        raise NotImplementedError()
+        pass
 
     def _set_state(self, state: ConnectionState):
         """Set connection state and emit `state_change` event."""
@@ -242,6 +239,8 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._set_state(ConnectionState(data))
             case "API":
                 await self._message_handler(data)
+            case "SUBSCRIBER_OFFER":
+                await self._subscriber_offers.put(data)
 
     async def _log_final_stdout_stderr(self):
         if self._process is None:
@@ -258,7 +257,16 @@ class ConnectionSubprocess(ConnectionInterface):
             self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
 
     async def _send_command(
-        self, command: str, data: str | int | float | dict | MessageDict
+        self,
+        command: str,
+        data: str
+        | int
+        | float
+        | dict
+        | None
+        | ParticipantSummaryDict
+        | ConnectionAnswerDict
+        | MessageDict,
     ) -> None:
         """Send command to subprocess"""
         data = json.dumps({"command": command, "data": data})

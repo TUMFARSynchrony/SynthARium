@@ -7,6 +7,7 @@ from typing import Any
 from aiortc import RTCSessionDescription
 
 from custom_types.message import MessageDict
+from custom_types.connection import ConnectionOfferDict
 
 from modules.connection_state import ConnectionState
 from modules.connection import Connection, connection_factory
@@ -98,6 +99,23 @@ class ConnectionRunner:
                     )
                     return
                 await self._connection.send(data)
+            case "CREATE_OFFER":
+                if self._connection is None:
+                    logging.warning(
+                        "Failed create subscriber offer, connection not defined. Data: "
+                        f"{data}"
+                    )
+                    return
+                offer = await self._connection.create_subscriber_offer(data)
+                self._send_command("SUBSCRIBER_OFFER", offer)
+            case "HANDLE_ANSWER":
+                if self._connection is None:
+                    logging.warning(
+                        "Failed create handle subscriber answer, connection not defined"
+                        f". Data: {data}"
+                    )
+                    return
+                await self._connection.handle_subscriber_answer(data)
 
     async def _read(self):
         """TODO document"""
@@ -116,7 +134,9 @@ class ConnectionRunner:
         pass
 
     def _send_command(
-        self, command: str, data: str | int | float | dict | MessageDict
+        self,
+        command: str,
+        data: str | int | float | dict | MessageDict | ConnectionOfferDict,
     ) -> None:
         """Send to main process"""
         data = json.dumps({"command": command, "data": data})
