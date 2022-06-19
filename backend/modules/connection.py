@@ -186,8 +186,8 @@ class Connection(ConnectionInterface):
         subconnection_id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(
             subconnection_id,
-            self._incoming_video,
-            self._incoming_audio,
+            self._incoming_video.subscribe(),
+            self._incoming_audio.subscribe(),
             participant_summary,
             self._log_name_suffix,
         )
