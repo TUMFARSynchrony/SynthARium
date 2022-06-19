@@ -62,148 +62,6 @@ class ConnectionSubprocess(ConnectionInterface):
             asyncio.create_task(self._run(), name=f"ConnectionSubprocess.run")
         ]
 
-    async def _run(self) -> None:
-        """TODO document"""
-        self._logger.debug("Starting subprocess")
-
-        # Start subprocess
-        program = [
-            sys.executable,
-            join(BACKEND_DIR, "subprocess_main.py"),
-            "-l",
-            f"{self._log_name_suffix}",
-            "-o",
-            f"{json.dumps(self._offer)}",
-        ]
-        program_summary = program[:5] + [
-            program[5][:10] + ("..." if len(program[5]) >= 10 else "")
-        ]
-
-        self._logger.debug(f"Starting subprocess: {program_summary}")
-        self._process = await create_subprocess_exec(
-            *program, stdin=PIPE, stderr=PIPE, stdout=PIPE
-        )
-        self._logger.debug(f"Subprocess started. PID: {self._process.pid}")
-
-        # Create task listening for messages from subprocess
-        self._tasks.append(
-            asyncio.create_task(
-                self._wait_for_messages(),
-                name="ConnectionSubprocess._wait_for_messages",
-            )
-        )
-        self._tasks.append(
-            asyncio.create_task(
-                self._ping(),
-                name="ConnectionSubprocess.ping",
-            ),
-        )
-
-    async def _ping(self):
-        await asyncio.sleep(10)
-        self._logger.info("Start PING loop")
-        while True:
-            async with self._running_lock:
-                if not self._running:
-                    self._logger.debug(f"Return from ping, running=False")
-                    return
-            await self.send("PING", time.time())
-            await asyncio.sleep(2)
-
-    async def _wait_for_messages(self):
-        """TODO document"""
-        self._logger.debug("_wait_for_messages")
-        if self._process is None:
-            self._logger.error("Failed to wait for messages, _process is None")
-            return
-        if self._process.stdout is None:
-            self._logger.error("Failed to wait for messages, _process.stdout is None")
-            return
-
-        while True:
-            async with self._running_lock:
-                if not self._running:
-                    self._logger.debug(f"Return from _wait_for_messages, running=False")
-                    return
-
-            self._logger.debug("_wait_for_messages -readline")
-            try:
-                msg = await asyncio.wait_for(self._process.stdout.readline(), 5)
-            except asyncio.TimeoutError:
-                self._logger.debug("_wait_for_messages - timeout")
-                continue
-
-            if len(msg) == 0:
-                self._logger.error("_wait_for_messages break, len(msg) == 0")
-                break
-
-            try:
-                parsed = json.loads(msg)
-            except (json.JSONDecodeError, TypeError) as e:
-                self._logger.error(f"Failed to parse message from subprocess: {e}")
-                self._logger.debug(f"Msg: {msg}, len: {len(msg)}")
-                continue
-
-            self._logger.debug(f"Received: {parsed}")
-
-            await self.handle_process_message(parsed)
-
-    async def handle_process_message(self, msg: dict):
-        match msg["command"]:
-            case "SET_LOCAL_DESCRIPTION":
-                self._local_description = RTCSessionDescription(
-                    msg["data"]["sdp"], msg["data"]["type"]
-                )
-                self._local_description_received.set()
-            case "PONG":
-                t = round((time.time() - msg["data"]) * 1000, 2)
-                self._logger.info(f"Ping time: {t}ms")
-
-    async def get_local_description(self) -> RTCSessionDescription:
-        """TODO document"""
-        self._logger.debug("Wait for _local_description")
-        await self._local_description_received.wait()
-        self._logger.debug("RETURN _local_description")
-        assert self._local_description is not None
-        return self._local_description
-
-    async def stop(self) -> None:
-        """TODO document"""
-        self._logger.debug("STOP called in ConnectionSubprocess")
-        if self._process is not None:
-            self._process.terminate()
-        async with self._running_lock:
-            self._running = False
-        await asyncio.gather(*self._tasks)
-        await self._get_final_output()
-
-    async def _get_final_output(self):
-        if self._process is None:
-            return
-
-        stdout, stderr = await self._process.communicate()
-        self._logger.debug(
-            f"Subprocess exited with returncode: {self._process.returncode}"
-        )
-        if stdout:
-            self._logger.debug(f"[stdout START]:\n {stdout.decode()}\n[stdout END]")
-        if stderr:
-            self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
-
-    async def send(self, command, data):
-        """Send to main process"""
-        data = json.dumps({"command": command, "data": data})
-        if self._process is None:
-            self._logger.error(f"Failed send {data}, _process is None")
-            return
-        if self._process.stdin is None:
-            self._logger.error(f"Failed send {data}, _process.stdin is None")
-            return
-
-        self._logger.debug(f"Sending: {data}")
-        self._process.stdin.write(data.encode("utf-8") + b"\n")
-        await self._process.stdin.drain()
-
     @property
     def state(self) -> ConnectionState:
         """TODO document"""
@@ -217,6 +75,29 @@ class ConnectionSubprocess(ConnectionInterface):
 
     @property
     def incoming_video(self) -> VideoTrackHandler | None:
+        """TODO document"""
+        # TODO implement
+        raise NotImplementedError()
+
+    async def get_local_description(self) -> RTCSessionDescription:
+        """TODO document"""
+        self._logger.debug("Wait for local_description")
+        await self._local_description_received.wait()
+        self._logger.debug("Return local_description")
+        assert self._local_description is not None
+        return self._local_description
+
+    async def stop(self) -> None:
+        """TODO document"""
+        self._logger.debug("Stop ConnectionSubprocess")
+        if self._process is not None:
+            self._process.terminate()
+        async with self._running_lock:
+            self._running = False
+        await asyncio.gather(*self._tasks)
+        await self._log_final_stdout_stderr()
+
+    async def send(self, data: MessageDict | dict) -> None:
         """TODO document"""
         # TODO implement
         raise NotImplementedError()
@@ -235,6 +116,141 @@ class ConnectionSubprocess(ConnectionInterface):
         """TODO document"""
         # TODO implement
         raise NotImplementedError()
+
+    async def _run(self) -> None:
+        """TODO document"""
+        self._logger.debug("Starting subprocess")
+
+        # Start subprocess
+        program = [
+            sys.executable,
+            join(BACKEND_DIR, "subprocess_main.py"),
+            "-l",
+            f"{self._log_name_suffix}",
+            "-o",
+            f"{json.dumps(self._offer)}",
+        ]
+        program_summary = program[:5] + [
+            program[5][:10] + ("..." if len(program[5]) >= 10 else "")
+        ]
+
+        self._process = await create_subprocess_exec(
+            *program, stdin=PIPE, stderr=PIPE, stdout=PIPE
+        )
+        self._logger.debug(
+            f"Subprocess started. Program: {program_summary}, PID: {self._process.pid}"
+        )
+
+        # Create task listening for messages from subprocess
+        self._tasks.append(
+            asyncio.create_task(
+                self._wait_for_messages(),
+                name="ConnectionSubprocess._wait_for_messages",
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(
+                self._ping(),
+                name="ConnectionSubprocess.ping",
+            ),
+        )
+
+    async def _ping(self):
+        """Send PING message in interval, until self._running is False."""
+        await asyncio.sleep(10)
+        self._logger.debug("Start PING loop")
+        while True:
+            async with self._running_lock:
+                if not self._running:
+                    self._logger.debug(f"Return from ping, running=False")
+                    return
+            await self._send_command("PING", time.time())
+            await asyncio.sleep(2)
+
+    async def _wait_for_messages(self):
+        """TODO document"""
+        self._logger.debug("Listen for messages from subprocess")
+        if self._process is None:
+            self._logger.error(
+                "Failed to listen for messages from subprocess, _process is None"
+            )
+            return
+        if self._process.stdout is None:
+            self._logger.error(
+                "Failed to listen for messages from subprocess, _process.stdout is None"
+            )
+            return
+
+        while True:
+            async with self._running_lock:
+                if not self._running:
+                    self._logger.debug(
+                        "Stop listening for messages from subprocess, running is False"
+                    )
+                    return
+
+            self._logger.debug("_wait_for_messages - readline")
+            try:
+                msg = await asyncio.wait_for(self._process.stdout.readline(), 5)
+            except asyncio.TimeoutError:
+                self._logger.debug("_wait_for_messages - timeout")
+                continue
+
+            if len(msg) == 0:
+                self._logger.error(
+                    "Stop listening for messages from subprocess, len(msg) == 0"
+                )
+                await self.stop()
+                break
+
+            try:
+                parsed = json.loads(msg)
+            except (json.JSONDecodeError, TypeError) as e:
+                self._logger.debug(f"Msg: {msg}, len: {len(msg)}")
+                self._logger.error(f"Failed to parse message from subprocess: {e}")
+                continue
+
+            await self._handle_process_message(parsed)
+
+    async def _handle_process_message(self, msg: dict):
+        self._logger.debug(f"Received msg from subprocess: {msg}")
+        match msg["command"]:
+            case "SET_LOCAL_DESCRIPTION":
+                self._local_description = RTCSessionDescription(
+                    msg["data"]["sdp"], msg["data"]["type"]
+                )
+                self._local_description_received.set()
+            case "PONG":
+                t = round((time.time() - msg["data"]) * 1000, 2)
+                self._logger.info(f"Subprocess ping time: {t}ms")
+
+    async def _log_final_stdout_stderr(self):
+        if self._process is None:
+            return
+
+        self._logger.debug(f"Wait for final stdout and stderr from subprocess")
+        stdout, stderr = await self._process.communicate()
+        self._logger.debug(
+            f"Subprocess exited with returncode: {self._process.returncode}"
+        )
+        if stdout:
+            self._logger.debug(f"[stdout START]:\n {stdout.decode()}\n[stdout END]")
+        if stderr:
+            self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
+
+    async def _send_command(self, command: str, data: str | int | float | dict) -> None:
+        """Send command to subprocess"""
+        data = json.dumps({"command": command, "data": data})
+        if self._process is None:
+            self._logger.error(f"Failed send {data}, _process is None")
+            return
+        if self._process.stdin is None:
+            self._logger.error(f"Failed send {data}, _process.stdin is None")
+            return
+
+        self._logger.debug(f"Sending: {data}")
+        self._process.stdin.write(data.encode("utf-8") + b"\n")
+        await self._process.stdin.drain()
 
 
 ConnectionInterface.register(ConnectionSubprocess)
