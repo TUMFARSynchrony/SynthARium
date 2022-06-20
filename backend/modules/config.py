@@ -22,6 +22,10 @@ class Config:
     log_file: str | None
     log_dependencies: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 
+    ping_subprocesses: float
+    experimenter_multiprocessing: bool
+    participant_multiprocessing: bool
+
     def __init__(self):
         """Load config from `backend/config.json`.
 
@@ -44,6 +48,8 @@ class Config:
             "log": str,
             "log_dependencies": str,
             "ping_subprocesses": float,
+            "experimenter_multiprocessing": bool,
+            "participant_multiprocessing": bool,
         }
         for key in data_types:
             if key not in config:
@@ -74,6 +80,8 @@ class Config:
         self.log = config["log"]
         self.log_dependencies = config["log_dependencies"]
         self.ping_subprocesses = config["ping_subprocesses"]
+        self.experimenter_multiprocessing = config["experimenter_multiprocessing"]
+        self.participant_multiprocessing = config["participant_multiprocessing"]
 
         # Parse log_file
         self.log_file = config.get("log_file")
@@ -104,7 +112,9 @@ class Config:
             f"host={self.host}, port={self.port}, environment={self.environment}, "
             f"https={self.https}, ssl_cert={self.ssl_cert}, ssl_key={self.ssl_key}, "
             f"log={self.log}, log_dependencies={self.log_dependencies}, log_file="
-            f"{self.log_file}, ping_subprocesses={self.ping_subprocesses}."
+            f"{self.log_file}, ping_subprocesses={self.ping_subprocesses},"
+            f"experimenter_multiprocessing={self.experimenter_multiprocessing}, "
+            f"participant_multiprocessing={self.participant_multiprocessing}."
         )
 
     def __repr__(self) -> str:

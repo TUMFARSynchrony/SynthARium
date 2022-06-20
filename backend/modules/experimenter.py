@@ -28,6 +28,7 @@ from custom_types.session_id_request import (
 
 from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
+from modules.connection_subprocess import connection_subprocess_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
 import modules.experiment as _experiment
@@ -731,8 +732,16 @@ async def experimenter_factory(
         representing the client.
     """
     experimenter = Experimenter(id, hub)
-    answer, connection = await connection_factory(
-        offer, experimenter.handle_message, f"E-{id}"
-    )
+    log_name_suffix = f"E-{id}"
+
+    if hub.config.experimenter_multiprocessing:
+        answer, connection = await connection_subprocess_factory(
+            offer, experimenter.handle_message, log_name_suffix, hub.config
+        )
+    else:
+        answer, connection = await connection_factory(
+            offer, experimenter.handle_message, log_name_suffix
+        )
+
     experimenter.set_connection(connection)
     return (answer, experimenter)
