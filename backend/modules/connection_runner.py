@@ -63,7 +63,7 @@ class ConnectionRunner:
         )
 
         await self._listen_for_messages()
-        self._logger.info("ConnectionRunner exiting")
+        self._logger.debug("ConnectionRunner exiting")
 
     async def stop(self) -> None:
         """TODO document"""
@@ -97,7 +97,7 @@ class ConnectionRunner:
         """TODO document"""
         data = msg["data"]
         command = msg["command"]
-        self._logger.debug(f"Received {command} command from main process")
+        # self._logger.debug(f"Received {command} command from main process")
 
         if self._connection is None:
             self._logger.warning(
@@ -120,6 +120,8 @@ class ConnectionRunner:
             case "SET_MUTED":
                 video, audio = data
                 await self._connection.set_muted(video, audio)
+            case _:
+                self._logger.error(f"Unrecognized command from main process: {command}")
 
     async def _read(self):
         """TODO document"""

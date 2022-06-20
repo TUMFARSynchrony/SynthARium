@@ -146,6 +146,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = await create_subprocess_exec(
             *program, stdin=PIPE, stderr=PIPE, stdout=PIPE
         )
+        self._logger = logging.getLogger(f"ConnectionSubprocess-{self._process.pid}")
         self._logger.debug(
             f"Subprocess started. Program: {program_summary}, PID: {self._process.pid}"
         )
@@ -171,14 +172,12 @@ class ConnectionSubprocess(ConnectionInterface):
         while True:
             async with self._running_lock:
                 if not self._running:
-                    self._logger.debug(f"Return from ping, running=False")
                     return
             await self._send_command("PING", time.time())
             await asyncio.sleep(2)
 
     async def _wait_for_messages(self):
         """TODO document"""
-        self._logger.debug("Listen for messages from subprocess")
         if self._process is None:
             self._logger.error(
                 "Failed to listen for messages from subprocess, _process is None"
@@ -193,12 +192,8 @@ class ConnectionSubprocess(ConnectionInterface):
         while True:
             async with self._running_lock:
                 if not self._running:
-                    self._logger.debug(
-                        "Stop listening for messages from subprocess, running is False"
-                    )
                     return
 
-            self._logger.debug("_wait_for_messages - readline")
             try:
                 msg = await self._process.stdout.readline()
             except ValueError:
@@ -224,7 +219,7 @@ class ConnectionSubprocess(ConnectionInterface):
     async def _handle_process_message(self, msg: dict):
         data = msg["data"]
         command = msg["command"]
-        self._logger.debug(f"Received {command} command from subprocess")
+        # self._logger.debug(f"Received {command} command from subprocess")
 
         match command:
             case "SET_LOCAL_DESCRIPTION":
@@ -234,7 +229,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._local_description_received.set()
             case "PONG":
                 t = round((time.time() - data) * 1000, 2)
-                self._logger.info(f"Subprocess ping time: {t}ms")
+                self._logger.debug(f"Subprocess ping time: {t}ms")
             case "STATE_CHANGE":
                 self._set_state(ConnectionState(data))
             case "API":
@@ -243,6 +238,8 @@ class ConnectionSubprocess(ConnectionInterface):
                 await self._subscriber_offers.put(data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)
+            case _:
+                self._logger.error(f"Unrecognized command from main process: {command}")
 
     async def _log_final_stdout_stderr(self):
         if self._process is None:
@@ -280,7 +277,6 @@ class ConnectionSubprocess(ConnectionInterface):
             self._logger.error(f"Failed send {data}, _process.stdin is None")
             return
 
-        self._logger.debug(f"Sending: {data}")
         self._process.stdin.write(data.encode("utf-8") + b"\n")
         await self._process.stdin.drain()
 

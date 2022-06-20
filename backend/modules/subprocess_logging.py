@@ -20,7 +20,7 @@ class SubprocessLoggingHandler(logging.StreamHandler):
     def emit(self, record: logging.LogRecord):
         """TODO Document"""
         data = {
-            "name": f"[{self._pid}]{record.name}",
+            "name": f"{record.name}[{self._pid}]",
             "levelname": record.levelname,
             "levelno": record.levelno,
             "msg": record.getMessage(),
