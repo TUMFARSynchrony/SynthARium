@@ -120,7 +120,6 @@ function App() {
     connection.api.on("UPDATED_SESSION", handleUpdatedSession);
     connection.api.on("SUCCESS", handleSuccess);
     connection.api.on("ERROR", handleError);
-    connection.api.on("CREATED_EXPERIMENT", handleCreatedExperiment);
 
     return () => {
       connection.api.off("SESSION_LIST", handleSessionList);
@@ -129,7 +128,6 @@ function App() {
       connection.api.off("CREATED_SESSION", handleCreatedSession);
       connection.api.off("SUCCESS", handleSuccess);
       connection.api.off("ERROR", handleError);
-      connection.api.off("CREATED_EXPERIMENT", handleCreatedExperiment);
     };
   }, [connection]);
 
@@ -178,10 +176,6 @@ function App() {
 
   const handleError = (data) => {
     toast.error(data.description);
-  };
-
-  const handleCreatedExperiment = (data) => {
-    toast.success("Successfully created experiment : " + data.session_id);
   };
 
   const onCreateExperiment = (sessionId) => {
