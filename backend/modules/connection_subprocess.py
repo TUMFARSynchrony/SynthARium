@@ -200,9 +200,9 @@ class ConnectionSubprocess(ConnectionInterface):
 
             self._logger.debug("_wait_for_messages - readline")
             try:
-                msg = await asyncio.wait_for(self._process.stdout.readline(), 5)
-            except asyncio.TimeoutError:
-                self._logger.debug("_wait_for_messages - timeout")
+                msg = await self._process.stdout.readline()
+            except ValueError:
+                self._logger.error("readline() failed, message was to long.")
                 continue
 
             if len(msg) == 0:
