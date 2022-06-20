@@ -167,7 +167,7 @@ class ConnectionSubprocess(ConnectionInterface):
 
     async def _ping(self):
         """Send PING message in interval, until self._running is False."""
-        await asyncio.sleep(10)
+        await asyncio.sleep(6)
         self._logger.debug("Start PING loop")
         while True:
             async with self._running_lock:
@@ -228,8 +228,14 @@ class ConnectionSubprocess(ConnectionInterface):
                 )
                 self._local_description_received.set()
             case "PONG":
-                t = round((time.time() - data) * 1000, 2)
-                self._logger.debug(f"Subprocess ping time: {t}ms")
+                t = time.time()
+                rtt = round((t - data["original"]) * 1000, 2)
+                to_time = round((data["subprocess_time"] - data["original"]) * 1000, 2)
+                back_time = round((t - data["subprocess_time"]) * 1000, 2)
+                self._logger.debug(
+                    f"Subprocess ping: RTT: {rtt}ms, to subprocess: {to_time}ms, back: "
+                    f"{back_time}ms"
+                )
             case "STATE_CHANGE":
                 self._set_state(ConnectionState(data))
             case "API":

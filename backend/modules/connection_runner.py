@@ -3,6 +3,7 @@ import asyncio
 import json
 import logging
 import sys
+import time
 from typing import Any
 from aiortc import RTCSessionDescription
 
@@ -107,7 +108,9 @@ class ConnectionRunner:
 
         match command:
             case "PING":
-                self._send_command("PONG", msg["data"])
+                self._send_command(
+                    "PONG", {"original": msg["data"], "subprocess_time": time.time()}
+                )
             case "SEND":
                 await self._connection.send(data)
             case "CREATE_OFFER":
