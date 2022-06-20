@@ -13,6 +13,7 @@ from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 from modules import BACKEND_DIR
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
+from modules.subprocess_logging import handle_log_from_subprocess
 
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
@@ -240,6 +241,8 @@ class ConnectionSubprocess(ConnectionInterface):
                 await self._message_handler(data)
             case "SUBSCRIBER_OFFER":
                 await self._subscriber_offers.put(data)
+            case "LOG":
+                handle_log_from_subprocess(data, self._logger)
 
     async def _log_final_stdout_stderr(self):
         if self._process is None:

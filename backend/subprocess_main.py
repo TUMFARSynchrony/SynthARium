@@ -1,7 +1,7 @@
 import asyncio
 import json
-import logging
 from argparse import ArgumentParser
+import sys
 from typing import Tuple
 from aiortc import RTCSessionDescription
 
@@ -32,11 +32,14 @@ def parse_args() -> Tuple[RTCSessionDescription, str]:
     try:
         offer_obj: RTCSessionDescriptionDict = json.loads(args.offer)
     except (json.JSONDecodeError, TypeError) as e:
-        logging.error(f"Failed to parse offer received in command line arguments: {e}")
+        print(
+            f"Failed to parse offer received in command line arguments: {e}",
+            file=sys.stderr,
+        )
         raise e
 
     if not is_valid_rtc_session_description_dict(offer_obj):
-        logging.error("Offer parsed from command line arguments is invalid.")
+        print("Offer parsed from command line arguments is invalid.", file=sys.stderr)
         raise ValueError("Invalid offer")
 
     offer = RTCSessionDescription(offer_obj["sdp"], offer_obj["type"])
@@ -45,21 +48,10 @@ def parse_args() -> Tuple[RTCSessionDescription, str]:
 
 
 async def main() -> None:
-    # TODO logging config
-    logging.basicConfig(level=logging.DEBUG, filename="./subprocess.log")
-    dependencies_log_level = logging.INFO
-    logging.getLogger("aiohttp").setLevel(dependencies_log_level)
-    logging.getLogger("aioice").setLevel(dependencies_log_level)
-    logging.getLogger("aiortc").setLevel(dependencies_log_level)
-    logging.getLogger("PIL").setLevel(dependencies_log_level)
-
     offer, log_name_suffix = parse_args()
-
-    logging.debug(f"Arguments: log_name_suffix: {log_name_suffix}, offer: {offer}")
 
     runner = ConnectionRunner()
     await runner.run(offer, log_name_suffix)
-    logging.debug(f"runner.run() returned")
 
 
 if __name__ == "__main__":

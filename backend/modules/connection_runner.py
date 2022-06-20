@@ -11,6 +11,7 @@ from custom_types.connection import ConnectionOfferDict
 
 from modules.connection_state import ConnectionState
 from modules.connection import Connection, connection_factory
+from modules.subprocess_logging import SubprocessLoggingHandler
 
 
 class ConnectionRunner:
@@ -21,6 +22,7 @@ class ConnectionRunner:
     _running: bool
     _stopped_event: asyncio.Event
     _tasks: list[asyncio.Task]
+    _logger: logging.Logger
 
     def __init__(self) -> None:
         """TODO document"""
@@ -29,6 +31,16 @@ class ConnectionRunner:
         self._running = False
         self._tasks = []
         self._stopped_event = asyncio.Event()
+
+        log_handler = SubprocessLoggingHandler(self._send_command)
+        logging.basicConfig(level=logging.DEBUG, handlers=[log_handler])
+        dependencies_log_level = logging.INFO
+        logging.getLogger("aiohttp").setLevel(dependencies_log_level)
+        logging.getLogger("aioice").setLevel(dependencies_log_level)
+        logging.getLogger("aiortc").setLevel(dependencies_log_level)
+        logging.getLogger("PIL").setLevel(dependencies_log_level)
+
+        self._logger = logging.getLogger("ConnectionRunner")
 
     async def run(
         self,
@@ -46,39 +58,35 @@ class ConnectionRunner:
         )
 
         await self._listen_for_messages()
-        logging.info("ConnectionRunner finished")
+        self._logger.info("ConnectionRunner exiting")
 
     async def stop(self) -> None:
         """TODO document"""
-        logging.debug("Stopping")
+        self._logger.debug("ConnectionRunner Stopping")
         async with self._lock:
             self._running = False
         await asyncio.gather(*self._tasks)
         self._stopped_event.set()
-        logging.debug("Stop complete")
+        self._logger.debug("Stop complete")
 
     async def _listen_for_messages(self) -> None:
         """TODO document"""
-        logging.debug("Listening for messages from main process")
+        self._logger.debug("Listening for messages from main process")
         msg = ""
         while msg != "q":
             async with self._lock:
                 if not self._running:
-                    logging.debug(
-                        "Stop listening for messages from main process, running is "
-                        "False"
-                    )
                     return
             try:
                 msg = await asyncio.wait_for(self._read(), 5)
             except asyncio.TimeoutError:
-                logging.debug("_listen_for_messages timeout.")
+                self._logger.debug("_listen_for_messages timeout.")
                 continue
 
             try:
                 parsed = json.loads(msg)
             except (json.JSONDecodeError, TypeError) as e:
-                logging.error(f"Failed to parse message from main process: {e}")
+                self._logger.error(f"Failed to parse message from main process: {e}")
                 continue
 
             await self._handle_message(parsed)
@@ -87,21 +95,21 @@ class ConnectionRunner:
         """TODO document"""
         data = msg["data"]
         command = msg["command"]
-        logging.info(f"Received {command} command from main process")
+        self._logger.debug(f"Received {command} command from main process")
 
         match command:
             case "PING":
                 self._send_command("PONG", msg["data"])
             case "SEND":
                 if self._connection is None:
-                    logging.warning(
+                    self._logger.warning(
                         f"Failed to send data, connection not defined. Data: {data}"
                     )
                     return
                 await self._connection.send(data)
             case "CREATE_OFFER":
                 if self._connection is None:
-                    logging.warning(
+                    self._logger.warning(
                         "Failed create subscriber offer, connection not defined. Data: "
                         f"{data}"
                     )
@@ -110,7 +118,7 @@ class ConnectionRunner:
                 self._send_command("SUBSCRIBER_OFFER", offer)
             case "HANDLE_ANSWER":
                 if self._connection is None:
-                    logging.warning(
+                    self._logger.warning(
                         "Failed create handle subscriber answer, connection not defined"
                         f". Data: {data}"
                     )
@@ -118,7 +126,7 @@ class ConnectionRunner:
                 await self._connection.handle_subscriber_answer(data)
             case "STOP_SUBCONNECTION":
                 if self._connection is None:
-                    logging.warning(
+                    self._logger.warning(
                         "Failed to stop subconnection, connection not defined. Data: "
                         f"{data}"
                     )
@@ -126,7 +134,7 @@ class ConnectionRunner:
                 await self._connection.stop_subconnection(data)
             case "SET_MUTED":
                 if self._connection is None:
-                    logging.warning(
+                    self._logger.warning(
                         f"Failed to set muted, connection not defined. Data: {data}"
                     )
                     return
@@ -141,7 +149,7 @@ class ConnectionRunner:
         """TODO document"""
         self._send_command("STATE_CHANGE", state.value)
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
-            logging.debug(f"Stopping, because state is {state}")
+            self._logger.debug(f"Stopping, because state is {state}")
             await self.stop()
 
     async def _relay_api_message(self, message: MessageDict | Any) -> None:
@@ -156,6 +164,5 @@ class ConnectionRunner:
     ) -> None:
         """Send to main process"""
         data = json.dumps({"command": command, "data": data})
-        logging.info(f"Sending: {data}")
         print(data)
         sys.stdout.flush()
