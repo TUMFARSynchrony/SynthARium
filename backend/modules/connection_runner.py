@@ -9,6 +9,7 @@ from aiortc import RTCSessionDescription
 from custom_types.message import MessageDict
 from custom_types.connection import ConnectionOfferDict
 
+from modules.config import Config
 from modules.connection_state import ConnectionState
 from modules.connection import Connection, connection_factory
 from modules.subprocess_logging import SubprocessLoggingHandler
@@ -31,10 +32,14 @@ class ConnectionRunner:
         self._running = False
         self._tasks = []
         self._stopped_event = asyncio.Event()
+        config = Config()
 
-        log_handler = SubprocessLoggingHandler(self._send_command)
-        logging.basicConfig(level=logging.DEBUG, handlers=[log_handler])
-        dependencies_log_level = logging.INFO
+        # Setup logging for subprocess
+        handler = SubprocessLoggingHandler(self._send_command)
+        logging.basicConfig(level=logging.getLevelName(config.log), handlers=[handler])
+
+        # Set logging level for libraries
+        dependencies_log_level = logging.getLevelName(config.log_dependencies)
         logging.getLogger("aiohttp").setLevel(dependencies_log_level)
         logging.getLogger("aioice").setLevel(dependencies_log_level)
         logging.getLogger("aiortc").setLevel(dependencies_log_level)
