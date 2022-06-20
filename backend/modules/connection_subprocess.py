@@ -11,6 +11,7 @@ from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from modules import BACKEND_DIR
+from modules.config import Config
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
@@ -24,6 +25,7 @@ from custom_types.connection import ConnectionOfferDict, ConnectionAnswerDict
 class ConnectionSubprocess(ConnectionInterface):
     """TODO document"""
 
+    _config: Config
     _offer: RTCSessionDescriptionDict
     _log_name_suffix: str
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
@@ -44,9 +46,11 @@ class ConnectionSubprocess(ConnectionInterface):
         offer: RTCSessionDescriptionDict,
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
         log_name_suffix: str,
+        config: Config,
     ):
         """TODO document"""
         super().__init__()
+        self._config = config
         self._offer = offer
         self._log_name_suffix = log_name_suffix
         self._message_handler = message_handler
@@ -158,14 +162,15 @@ class ConnectionSubprocess(ConnectionInterface):
                 name="ConnectionSubprocess._wait_for_messages",
             )
         )
-        self._tasks.append(
-            asyncio.create_task(
-                self._ping(),
-                name="ConnectionSubprocess.ping",
-            ),
-        )
+        if self._config.ping_subprocesses > 0:
+            self._tasks.append(
+                asyncio.create_task(
+                    self._ping(self._config.ping_subprocesses),
+                    name="ConnectionSubprocess.ping",
+                ),
+            )
 
-    async def _ping(self):
+    async def _ping(self, interval: float):
         """Send PING message in interval, until self._running is False."""
         await asyncio.sleep(6)
         self._logger.debug("Start PING loop")
@@ -174,7 +179,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 if not self._running:
                     return
             await self._send_command("PING", time.time())
-            await asyncio.sleep(2)
+            await asyncio.sleep(interval)
 
     async def _wait_for_messages(self):
         """TODO document"""
@@ -294,13 +299,16 @@ async def connection_subprocess_factory(
     offer: RTCSessionDescription,
     message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
     log_name_suffix: str,
+    config: Config,
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """TODO document"""
     # TODO change type of offer parameter to RTCSessionDescriptionDict
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore
     print(offer_dict)
 
-    connection = ConnectionSubprocess(offer_dict, message_handler, log_name_suffix)
+    connection = ConnectionSubprocess(
+        offer_dict, message_handler, log_name_suffix, config
+    )
 
     local_description = await connection.get_local_description()
 

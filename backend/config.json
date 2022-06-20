@@ -7,5 +7,6 @@
 	"log_dependencies": "WARNING",
 	"https": false,
 	"ssl_cert": "./certificate/cert.crt",
-	"ssl_key": "./certificate/key.key"
+	"ssl_key": "./certificate/key.key",
+	"ping_subprocesses": 0.0
 }
