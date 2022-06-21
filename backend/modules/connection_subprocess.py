@@ -30,7 +30,7 @@ class ConnectionSubprocess(ConnectionInterface):
     _log_name_suffix: str
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
 
-    _running_lock: asyncio.Lock
+    __lock: asyncio.Lock
     _running: bool
     _process: Process | None
     _state: ConnectionState
@@ -55,7 +55,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._log_name_suffix = log_name_suffix
         self._message_handler = message_handler
 
-        self._running_lock = asyncio.Lock()
+        self.__lock = asyncio.Lock()
         self._running = True
         self._process = None
         self._state = ConnectionState.NEW
@@ -99,7 +99,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._logger.debug("Stopping ConnectionSubprocess")
         if self._process is not None and self._process.returncode is None:
             self._process.terminate()
-        async with self._running_lock:
+        async with self.__lock:
             self._running = False
         current_task = asyncio.current_task()
         tasks = [t for t in self._tasks if t is not current_task]
@@ -175,7 +175,7 @@ class ConnectionSubprocess(ConnectionInterface):
         await asyncio.sleep(6)
         self._logger.debug("Start PING loop")
         while True:
-            async with self._running_lock:
+            async with self.__lock:
                 if not self._running:
                     return
             await self._send_command("PING", time.time())
@@ -195,7 +195,7 @@ class ConnectionSubprocess(ConnectionInterface):
             return
 
         while True:
-            async with self._running_lock:
+            async with self.__lock:
                 if not self._running:
                     return
 
@@ -288,8 +288,14 @@ class ConnectionSubprocess(ConnectionInterface):
             self._logger.error(f"Failed send {data}, _process.stdin is None")
             return
 
-        self._process.stdin.write(data.encode("utf-8") + b"\n")
-        await self._process.stdin.drain()
+        async with self.__lock:
+            if not self._running:
+                self._logger.debug(
+                    f"Not sending {command} command, because running is false"
+                )
+                return
+            self._process.stdin.write(data.encode("utf-8") + b"\n")
+            await self._process.stdin.drain()
 
 
 ConnectionInterface.register(ConnectionSubprocess)
