@@ -14,12 +14,7 @@ import {
 } from "./features/sessionsList";
 import { deleteSession } from "./features/sessionsList";
 
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useSearchParams,
-} from "react-router-dom";
+import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getLocalStream } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
