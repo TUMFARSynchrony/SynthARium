@@ -202,7 +202,11 @@ function App() {
             path="/postProcessingRoom"
             element={<PostProcessing />}
           />
-          <Route exact path="/experimentRoom" element={<ExperimentRoom />} />
+          <Route
+            exact
+            path="/experimentRoom"
+            element={<ExperimentRoom localStream={localStream} />}
+          />
           <Route exact path="/watchingRoom" element={<WatchingRoom />} />
           <Route
             exact
