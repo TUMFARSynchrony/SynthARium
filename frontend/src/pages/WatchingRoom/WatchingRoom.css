@@ -37,6 +37,12 @@
   aspect-ratio: 16/9;
 }
 
+.connectedParticipants {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .applieadFilters {
   margin-top: 1rem;
   border: 1px solid black;

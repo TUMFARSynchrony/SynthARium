@@ -25,7 +25,18 @@ function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
+  const [connectedParticipants, setConnectedParticipants] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
+
+  const connectedPeersChangeHandler = async (peers) => {
+    console.groupCollapsed(
+      "%cConnection peer streams change Handler",
+      "color:blue"
+    );
+    console.log(peers);
+    console.groupEnd();
+    setConnectedParticipants(peers);
+  };
 
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const dispatch = useDispatch();
@@ -52,9 +63,12 @@ function App() {
 
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
+    connection.on("connectedPeersChange", connectedPeersChangeHandler);
+
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
+      connection.off("connectedPeersChange", connectedPeersChangeHandler);
     };
   }, [connection]);
 
@@ -202,7 +216,13 @@ function App() {
             path="/experimentRoom"
             element={<ExperimentRoom localStream={localStream} />}
           />
-          <Route exact path="/watchingRoom" element={<WatchingRoom />} />
+          <Route
+            exact
+            path="/watchingRoom"
+            element={
+              <WatchingRoom connectedParticipants={connectedParticipants} />
+            }
+          />
           <Route
             exact
             path="/sessionForm"
