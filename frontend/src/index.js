@@ -9,6 +9,7 @@ import sessionsListReducer from "./features/sessionsList";
 import openSessionReducer from "./features/openSession";
 import ongoingExperimentReducer from "./features/ongoingExperiment";
 import "react-toastify/dist/ReactToastify.css";
+import { BrowserRouter as Router } from "react-router-dom";
 
 const store = configureStore({
   reducer: {
@@ -21,7 +22,9 @@ const store = configureStore({
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    <App />
+    <Router>
+      <App />
+    </Router>
   </Provider>
 );
 
