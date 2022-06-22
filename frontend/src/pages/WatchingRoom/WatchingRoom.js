@@ -4,7 +4,7 @@ import Video from "../../components/atoms/Video/Video";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
 import "./WatchingRoom.css";
 
-function WatchingRoom({ connectedParticipants }) {
+function WatchingRoom({ connectedParticipants, onKickBanParticipant }) {
   const [state, setState] = useState("WAITING");
 
   const getVideoTitle = (peer, index) => {
@@ -24,6 +24,7 @@ function WatchingRoom({ connectedParticipants }) {
           <div className="livestream">
             <div className="connectedParticipants">
               {connectedParticipants.map((peer, i) => (
+                //TODO: map to coordinates
                 <Video
                   title={getVideoTitle(peer, i)}
                   srcObject={peer.stream}
@@ -38,7 +39,10 @@ function WatchingRoom({ connectedParticipants }) {
           </div>
         </div>
         <div className="watchingRoomTabs">
-          <WatchingRoomTabs />
+          <WatchingRoomTabs
+            connectedParticipants={connectedParticipants}
+            onKickBanParticipant={onKickBanParticipant}
+          />
         </div>
       </div>
     </div>

@@ -148,16 +148,6 @@ function App() {
     connection.sendMessage("GET_SESSION_LIST", {});
   }, [connection, connectionState]);
 
-  const onDeleteSession = (sessionId) => {
-    connection.sendMessage("DELETE_SESSION", {
-      session_id: sessionId,
-    });
-  };
-
-  const onSendSessionToBackend = (session) => {
-    connection.sendMessage("SAVE_SESSION", session);
-  };
-
   const handleSessionList = (data) => {
     dispatch(getSessionsList(data));
   };
@@ -191,6 +181,20 @@ function App() {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
   };
 
+  const onDeleteSession = (sessionId) => {
+    connection.sendMessage("DELETE_SESSION", {
+      session_id: sessionId,
+    });
+  };
+
+  const onSendSessionToBackend = (session) => {
+    connection.sendMessage("SAVE_SESSION", session);
+  };
+
+  const onKickBanParticipant = (participant) => {
+    connection.sendMessage("KICK_PARTICIPANT", participant);
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -220,7 +224,10 @@ function App() {
             exact
             path="/watchingRoom"
             element={
-              <WatchingRoom connectedParticipants={connectedParticipants} />
+              <WatchingRoom
+                connectedParticipants={connectedParticipants}
+                onKickBanParticipant={onKickBanParticipant}
+              />
             }
           />
           <Route

@@ -4,7 +4,7 @@ import NotesTab from "../../molecules/NotesTab/NotesTab";
 import ParticipantsTab from "../../molecules/ParticipantsTab/ParticipantsTab";
 import OverviewTab from "../../molecules/OverviewTab/OverviewTab";
 
-function WatchingRoomTabs() {
+function WatchingRoomTabs({ connectedParticipants, onKickBanParticipant }) {
   return (
     <>
       <Tabs>
@@ -21,7 +21,10 @@ function WatchingRoomTabs() {
           <NotesTab />
         </TabPanel>
         <TabPanel>
-          <ParticipantsTab />
+          <ParticipantsTab
+            connectedParticipants={connectedParticipants}
+            onKickBanParticipant={onKickBanParticipant}
+          />
         </TabPanel>
       </Tabs>
     </>
