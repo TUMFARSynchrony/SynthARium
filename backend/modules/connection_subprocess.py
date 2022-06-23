@@ -115,7 +115,7 @@ class ConnectionSubprocess(ConnectionInterface):
         await self._send_command("HANDLE_ANSWER", answer)
 
     async def get_local_description(self) -> RTCSessionDescription:
-        """TODO document"""
+        """Get localdescription.  Blocks until subprocess sends localdescription."""
         self._logger.debug("Wait for local_description")
         await self._local_description_received.wait()
         self._logger.debug("Return local_description")
@@ -374,7 +374,7 @@ async def connection_subprocess_factory(
         WebRTC offer for building the connection to the client.
     message_handler : function (message: custom_types.message.MessageDict) -> None
         Message handler for ConnectionSubprocess.  ConnectionSubprocess will pass parsed
-         MessageDicts to this handler.
+        MessageDicts to this handler.
     log_name_suffix : str
         Suffix for logger used in Connection.  Format: Connection-<log_name_suffix>.
 
