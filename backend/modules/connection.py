@@ -23,7 +23,6 @@ from custom_types.error import ErrorDict
 from custom_types.message import MessageDict, is_valid_messagedict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
-    is_valid_connection_answer_dict,
     RTCSessionDescriptionDict,
     ConnectionOfferDict,
     ConnectionAnswerDict,
@@ -33,8 +32,7 @@ from custom_types.connection import (
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
 
-    Manages one or multiple WebRTC connections with the same client.  Implements
-    ConnectionInterface.
+    Implements modules.connection_interface.ConnectionInterface.
 
     Extends AsyncIOEventEmitter, providing the following events:
     - `state_change` : modules.connection_state.ConnectionState
@@ -123,12 +121,7 @@ class Connection(ConnectionInterface):
         )
 
     async def stop(self) -> None:
-        """Stop this connection.
-
-        Stopps all incoming and outgoing streams and emits the `state_change` event.
-        When finished, it removes all event listeners from this Connection, as no more
-        events will be emitted.
-        """
+        # For docstring see ConnectionInterface or hover over function declaration
         if self._stopped:
             return
         self._stopped = True
@@ -154,13 +147,7 @@ class Connection(ConnectionInterface):
         self.remove_all_listeners()
 
     async def send(self, data: MessageDict | dict) -> None:
-        """Send `data` to peer over the datachannel.
-
-        Parameters
-        ----------
-        data : MessageDict or dict
-            Data that will be stringified and send to the peer.
-        """
+        # For docstring see ConnectionInterface or hover over function declaration
         if self._dc is None or self._dc.readyState != "open":
             self._logger.warning("Can not send data because datachannel is not open")
             await self._set_failed_state_and_close()
@@ -171,13 +158,13 @@ class Connection(ConnectionInterface):
 
     @property
     def state(self) -> ConnectionState:
-        """Get the modules.connection_state.ConnectionState the Connection is in."""
+        # For docstring see ConnectionInterface or hover over function declaration
         return self._state
 
     async def create_subscriber_offer(
         self, participant_summary: ParticipantSummaryDict | None
     ) -> ConnectionOfferDict:
-        """TODO document"""
+        # For docstring see ConnectionInterface or hover over function declaration
 
         # TODO
         assert self._incoming_video is not None
@@ -197,7 +184,7 @@ class Connection(ConnectionInterface):
         return offer
 
     async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
-        """TODO document"""
+        # For docstring see ConnectionInterface or hover over function declaration
         subconnection_id = answer["id"]
         sc = self._sub_connections.get(subconnection_id)
         if sc is None:
@@ -211,23 +198,7 @@ class Connection(ConnectionInterface):
         await sc.handle_answer(answer_description)
 
     async def stop_subconnection(self, subconnection_id: str) -> bool:
-        """Stop the subconnection with `stream_id`.
-
-        Parameters
-        ----------
-        subconnection_id : str
-            ID of the outgoing SubConnection that will be stopped.
-
-        Returns
-        -------
-        bool
-            True if a outgoing stream with `subconnection_id` was found and closed.
-            Otherwise False.
-
-        See Also
-        --------
-        add_outgoing_stream : add a new outgoing SubConnection.
-        """
+        # For docstring see ConnectionInterface or hover over function declaration
         if subconnection_id not in self._sub_connections:
             return False
 
@@ -236,15 +207,7 @@ class Connection(ConnectionInterface):
         return True
 
     async def set_muted(self, video: bool, audio: bool) -> None:
-        """Set the muted state for this connection.
-
-        Parameters
-        ----------
-        video : bool
-            Whether the connection video should be muted.
-        audio : bool
-            Whether the connection audio should be muted.
-        """
+        # For docstring see ConnectionInterface or hover over function declaration
         if self._incoming_video is not None:
             self._incoming_video.muted = video
         if self._incoming_audio is not None:
