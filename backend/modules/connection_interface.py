@@ -18,6 +18,12 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     -----
     Do not instantiate directly, use subclasses / implementations of
     `ConnectionInterface` instead.
+
+    See Also
+    --------
+    modules.connection.Connection : Implementation for ConnectionInterface.
+    modules.connection_subprocess.ConnectionSubprocess :
+        Implementation for ConnectionInterface.
     """
 
     @abstractmethod
@@ -36,7 +42,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        data : MessageDict or dict
+        data : custom_types.message.MessageDict or dict
             Data that will be stringified and send to the connected client.
         """
         pass
@@ -51,17 +57,35 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def create_subscriber_offer(
         self, participant_summary: ParticipantSummaryDict | None
     ) -> ConnectionOfferDict:
-        """TODO document"""
+        """Create a subconnection offer.
+
+        Parameters
+        ----------
+        participant_summary : custom_types.participant_summary.ParticipantSummaryDict or None
+            Participant summary that will be included in the resulting offer.
+
+        Returns
+        -------
+        custom_types.connection.ConnectionOfferDict
+            Connection offer including the `participant_summary`.
+        """
         pass
 
     @abstractmethod
     async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
-        """TODO document"""
+        """Handle answer to a connection offer.
+
+        Parameters
+        ----------
+        answer : custom_types.connection.ConnectionAnswerDict
+            Answer to a custom_types.connection.ConnectionOfferDict created by this
+            connection.  The answer ID must match a offer ID send by this connection.
+        """
         pass
 
     @abstractmethod
     async def stop_subconnection(self, subconnection_id: str) -> bool:
-        """Stop the subconnection with `stream_id`.
+        """Stop the subconnection with `subconnection_id`.
 
         Parameters
         ----------
@@ -82,5 +106,13 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     @abstractmethod
     async def set_muted(self, video: bool, audio: bool) -> None:
-        """TODO document"""
+        """Set the muted state for this connection.
+
+        Parameters
+        ----------
+        video : bool
+            Whether the video track should be muted.
+        audio : bool
+            Whether the audio track should be muted.
+        """
         pass
