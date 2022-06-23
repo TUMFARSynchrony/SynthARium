@@ -7,21 +7,25 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 """
 
 from __future__ import annotations
+
 import logging
 import traceback
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Any, Coroutine, Tuple
 from pyee.asyncio import AsyncIOEventEmitter
+from typing import Callable, Any, Coroutine, Tuple
 
-from custom_types.participant_summary import ParticipantSummaryDict
-from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
+from custom_types.message import MessageDict
+from custom_types.participant_summary import ParticipantSummaryDict
 
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
-from custom_types.connection import ConnectionAnswerDict
 from modules.connection_interface import ConnectionInterface
+from modules.tracks import AudioTrackHandler, VideoTrackHandler
+from custom_types.connection import (
+    ConnectionAnswerDict,
+    is_valid_connection_answer_dict,
+)
 
 
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -230,6 +234,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         # TODO temp
         if endpoint == "CONNECTION_ANSWER":
+            if not is_valid_connection_answer_dict(message["data"]):
+                self._logger.warning(f"Received invalid CONNECTION_ANSWER")
+                return
             self.emit("CONNECTION_ANSWER", message["data"])
             return
 
