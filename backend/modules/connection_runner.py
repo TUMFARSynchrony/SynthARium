@@ -1,4 +1,5 @@
-"""TODO document"""
+"""Provide the ConnectionRunner class."""
+
 import asyncio
 import json
 import logging
@@ -17,7 +18,15 @@ from modules.subprocess_logging import SubprocessLoggingHandler
 
 
 class ConnectionRunner:
-    """TODO document"""
+    """Subprocess counterpart to Connection wrapper ConnectionSubprocess.
+
+    Handles incoming commands from main process and relays messages and events from the
+    modules.connection.Connection to the main process.
+
+    Intended to be executed on a dedicated subprocess.  Executing other pieces of code
+    on the same (sub)process may lead to problems, in case stdin, stderr or stdout are
+    also used there.
+    """
 
     _connection: Connection | None
     _lock: asyncio.Lock
@@ -27,7 +36,7 @@ class ConnectionRunner:
     _logger: logging.Logger
 
     def __init__(self) -> None:
-        """TODO document"""
+        """Instantiate new ConnectionRunner."""
         self._connection = None
         self._lock = asyncio.Lock()
         self._running = False
@@ -53,7 +62,15 @@ class ConnectionRunner:
         offer: RTCSessionDescription,
         log_name_suffix: str,
     ) -> None:
-        """TODO document"""
+        """Run the ConnectionRunner.  Returns after the ConnectionRunner finished.
+
+        Parameters
+        ----------
+        offer : aiortc.RTCSessionDescription
+            Initial connection offer from the client.
+        log_name_suffix : str
+            Suffix for logger used in Connection.
+        """
         self._running = True
         answer, self._connection = await connection_factory(
             offer, self._relay_api_message, log_name_suffix
@@ -67,7 +84,11 @@ class ConnectionRunner:
         self._logger.debug("ConnectionRunner exiting")
 
     async def stop(self) -> None:
-        """TODO document"""
+        """Stop the runner.
+
+        Sets `_running` to false, waits for tasks in `_tasks` and sets the
+        `_stopped_event`.
+        """
         self._logger.debug("ConnectionRunner Stopping")
         async with self._lock:
             self._running = False
@@ -76,7 +97,7 @@ class ConnectionRunner:
         self._logger.debug("Stop complete")
 
     async def _listen_for_messages(self) -> None:
-        """TODO document"""
+        """Listen for messages / commands from main / parent process over stdin."""
         self._logger.debug("Listening for messages from main process")
         msg = ""
         while msg != "q":
@@ -95,7 +116,7 @@ class ConnectionRunner:
             await self._handle_message(parsed)
 
     async def _handle_message(self, msg: dict):
-        """TODO document"""
+        """Handle message / command from main / parent process."""
         data = msg["data"]
         command = msg["command"]
         # self._logger.debug(f"Received {command} command from main process")
@@ -127,26 +148,33 @@ class ConnectionRunner:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 
     async def _read(self):
-        """TODO document"""
+        """Read line from stdin.  Non-blocking and awaitable."""
         return await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)
 
     async def _handle_state_change(self, state: ConnectionState) -> None:
-        """TODO document"""
+        """Handle state change from `_connection`."""
         self._send_command("STATE_CHANGE", state.value)
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             self._logger.debug(f"Stopping, because state is {state}")
             await self.stop()
 
     async def _relay_api_message(self, message: MessageDict | Any) -> None:
-        """TODO document"""
+        """Relay api messages from `_connection` to parent process."""
         self._send_command("API", message)
-        pass
 
     def _send_command(
         self,
         command: str,
         data: str | int | float | dict | MessageDict | ConnectionOfferDict,
     ) -> None:
-        """Send to main process"""
+        """Send command to main / parent process via stdout.
+
+        Parameters
+        ----------
+        command : str
+            Command / operator for message.
+        data : ...
+            Data for command / operator.
+        """
         data = json.dumps({"command": command, "data": data})
         print(data, flush=True)
