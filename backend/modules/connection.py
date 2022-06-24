@@ -37,9 +37,6 @@ class Connection(ConnectionInterface):
     Extends AsyncIOEventEmitter, providing the following events:
     - `state_change` : modules.connection_state.ConnectionState
         Emitted when the state of this connection changes.
-    - `tracks_complete` : tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler
-        Emitted when both tracks are received from the client and ready to be
-        distributed / subscribed to.
 
     Notes
     -----
@@ -338,9 +335,6 @@ class Connection(ConnectionInterface):
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
             return
-
-        if self._incoming_audio is not None and self._incoming_video is not None:
-            self.emit("tracks_complete", (self._incoming_video, self._incoming_audio))
 
         @track.on("ended")
         def _on_ended():

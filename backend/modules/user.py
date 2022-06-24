@@ -36,9 +36,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     Extends AsyncIOEventEmitter, providing the following events:
     - `disconnected` : modules.user.User
         Emitted when the connection with the client closes.
-    - `tracks_complete` : tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler
-        Forwarded from modules.connection.Connection.  Emitted when both tracks are
-        received from the client and ready to be distributed / subscribed to.
     - `CONNECTION_ANSWER` : custom_types.connection.ConnectionAnswerDict
         CONNECTION_ANSWER message received from a client.
 
@@ -157,7 +154,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._connection.add_listener(
             "state_change", self._handle_connection_state_change_user
         )
-        self._connection.on("tracks_complete", self._emit_tracks_complete_event)
 
     async def send(self, message: MessageDict) -> None:
         """Send a custom_types.message.MessageDict to the connected client.
@@ -316,15 +312,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._logger.info("Disconnected")
         self.emit("disconnected", self)
         self.remove_all_listeners()
-
-    def _emit_tracks_complete_event(
-        self, tracks: Tuple[VideoTrackHandler, AudioTrackHandler]
-    ) -> None:
-        """Emits the `tracks_complete` event with `data`.
-
-        Use to forward the event from the connection.
-        """
-        self.emit("tracks_complete", tracks)
 
     def _handle_connection_state_change_user(self, state: ConnectionState) -> None:
         """Calls _handle_disconnect if state is CLOSED or FAILED.
