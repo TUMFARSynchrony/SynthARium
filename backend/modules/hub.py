@@ -12,6 +12,7 @@ from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
+from modules.util import get_system_specs
 
 import modules.server as _server
 import modules.experiment as _experiment
@@ -56,6 +57,7 @@ class Hub:
         )
         self._logger = logging.getLogger("Hub")
         self._logger.debug("Initializing Hub")
+        self._logger.debug(f"System: {get_system_specs()}")
 
         # Set logging level for libraries
         dependencies_log_level = logging.getLevelName(self.config.log_dependencies)
