@@ -63,8 +63,8 @@ class Connection(ConnectionInterface):
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel | None
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
-    _incoming_audio: AudioTrackHandler | None
-    _incoming_video: VideoTrackHandler | None
+    _incoming_audio: AudioTrackHandler
+    _incoming_video: VideoTrackHandler
     _sub_connections: dict[str, SubConnection]
 
     def __init__(
@@ -101,8 +101,8 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = None
-        self._incoming_video = None
+        self._incoming_audio = AudioTrackHandler()
+        self._incoming_video = VideoTrackHandler()
         self._dc = None
 
         # Register event handlers
@@ -165,10 +165,6 @@ class Connection(ConnectionInterface):
         self, participant_summary: ParticipantSummaryDict | None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
-
-        # TODO
-        assert self._incoming_video is not None
-        assert self._incoming_audio is not None
 
         subconnection_id = generate_unique_id(list(self._sub_connections.keys()))
         sc = SubConnection(
@@ -332,11 +328,11 @@ class Connection(ConnectionInterface):
         """
         self._logger.debug(f"{track.kind} track received")
         if track.kind == "audio":
-            self._incoming_audio = AudioTrackHandler(track)
+            self._incoming_audio.track = track
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
-            self._incoming_video = VideoTrackHandler(track)
+            self._incoming_video.track = track
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
