@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 import Button from "../../components/atoms/Button/Button";
 import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 import "./KickParticipantModal.css";
@@ -17,6 +18,11 @@ function KickParticipantModal({
 
   const kickBanParticipant = () => {
     //TODO: where to get participant_id?
+    if (!reason) {
+      toast.warn("Please specify the reason!");
+      return;
+    }
+
     onKickBanParticipant({
       // participant_id: participantData.id,
       participant_id: "0f2f37dad7",
