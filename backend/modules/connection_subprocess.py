@@ -245,7 +245,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 continue
 
             if len(msg) == 0:
-                self._logger.error(
+                self._logger.debug(
                     "Stop listening for messages from subprocess, len(msg) == 0"
                 )
                 await self.stop()
@@ -385,7 +385,6 @@ async def connection_subprocess_factory(
     """
     # TODO change type of offer parameter to RTCSessionDescriptionDict
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore
-    print(offer_dict)
 
     connection = ConnectionSubprocess(
         offer_dict, message_handler, log_name_suffix, config
