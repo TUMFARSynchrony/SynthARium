@@ -12,6 +12,7 @@
   top: 0;
   height: fit-content;
 }
+
 .sessionPreviewHeader {
   display: flex;
   flex-direction: column;
@@ -33,4 +34,17 @@
 .sessionPreviewButtons {
   display: flex;
   align-items: center;
+}
+
+.ongoing {
+  background-color: rgb(255, 231, 231);
+  border-top: 3px solid hsl(0, 100%, 18%);
+}
+
+.ongoingExperiment {
+  margin-bottom: 1rem;
+}
+
+.ongoingExperiment > h2 {
+  color: rgb(136, 0, 0);
 }

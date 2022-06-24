@@ -5,13 +5,16 @@ import "./SessionPreview.css";
 
 import { useDispatch } from "react-redux";
 import { copySession, initializeSession } from "../../../features/openSession";
+import Heading from "../../atoms/Heading/Heading";
 import { createExperiment } from "../../../features/ongoingExperiment";
 
 function SessionPreview({
   selectedSession,
   setSelectedSession,
   onDeleteSession,
+  onJoinExperiment,
   onCreateExperiment,
+  isOngoingExperiment,
 }) {
   const dispatch = useDispatch();
 
@@ -32,11 +35,25 @@ function SessionPreview({
   const onStartSelectedSession = () => {
     onCreateExperiment(selectedSession.id);
     dispatch(createExperiment(selectedSession));
+    console.log(`SessionPreview: Starting experiment ${selectedSession.id}`);
+  };
+
+  const joinExperiment = () => {
+    onJoinExperiment(selectedSession.id);
+    dispatch(createExperiment(selectedSession));
+    console.log(`SessionPreview: Joining experiment ${selectedSession.id}`);
   };
 
   return (
-    <div className="sessionPreviewContainer">
+    <div
+      className={
+        "sessionPreviewContainer" + (isOngoingExperiment ? " ongoing" : "")
+      }
+    >
       <div className="sessionPreviewHeader">
+        <div className="ongoingExperiment">
+          {isOngoingExperiment && <Heading heading={"Experiment ongoing."} />}
+        </div>
         <h3 className="sessionPreviewTitles">Title: {selectedSession.title}</h3>
         <h3 className="sessionPreviewTitles">
           Date: {integerToDateTime(selectedSession.date)}
@@ -48,18 +65,20 @@ function SessionPreview({
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
       <>
         <div className="sessionPreviewButtons">
-          <Button
-            name={"DELETE"}
-            design={"negative"}
-            onClick={() => deleteSession()}
-          />
+          {!isOngoingExperiment && (
+            <Button
+              name={"DELETE"}
+              design={"negative"}
+              onClick={() => deleteSession()}
+            />
+          )}
           <LinkButton
             name={"COPY"}
             to="/sessionForm"
             onClick={() => onCopySession()}
           />
 
-          {isFutureSession(selectedSession) && (
+          {!isOngoingExperiment && isFutureSession(selectedSession) && (
             <>
               <LinkButton
                 name={"EDIT"}
@@ -70,6 +89,16 @@ function SessionPreview({
                 name={"START"}
                 to="/watchingRoom"
                 onClick={() => onStartSelectedSession()}
+              />
+            </>
+          )}
+
+          {isOngoingExperiment && (
+            <>
+              <LinkButton
+                name={"JOIN EXPERIMENT"}
+                to="/watchingRoom"
+                onClick={() => joinExperiment()}
               />
             </>
           )}

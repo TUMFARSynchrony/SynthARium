@@ -10,6 +10,7 @@ import ConnectionState from "./networking/ConnectionState";
 import {
   createSession,
   getSessionsList,
+  startSession,
   updateSession,
 } from "./features/sessionsList";
 import { deleteSession } from "./features/sessionsList";
@@ -179,6 +180,7 @@ function App() {
 
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
+    dispatch(startSession({ id: sessionId }));
   };
 
   const onDeleteSession = (sessionId) => {
@@ -195,6 +197,11 @@ function App() {
     connection.sendMessage("KICK_PARTICIPANT", participant);
   };
 
+  const onJoinExperiment = (sessionId) => {
+    connection.sendMessage("JOIN_EXPERIMENT", { session_id: sessionId });
+    dispatch(startSession({ id: sessionId }));
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -207,6 +214,7 @@ function App() {
               <SessionOverview
                 onDeleteSession={onDeleteSession}
                 onCreateExperiment={onCreateExperiment}
+                onJoinExperiment={onJoinExperiment}
               />
             }
           />

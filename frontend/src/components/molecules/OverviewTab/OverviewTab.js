@@ -17,7 +17,7 @@ function OverviewTab() {
 
   return (
     <div className="overviewTabContainer">
-      <Heading heading={"Session 1"} />
+      <Heading heading={sessionData.title} />
       <hr className="separatorLine"></hr>
       <div className="sessionInformation">
         <h3>Session Information</h3>

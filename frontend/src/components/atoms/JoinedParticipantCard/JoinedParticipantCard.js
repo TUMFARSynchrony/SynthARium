@@ -14,7 +14,6 @@ function JoinedParticipant({
   const [showKickBanReason, setShowKickBanReason] = useState(false);
   const [action, setAction] = useState("");
 
-  console.log("participantData", participantData);
   return (
     <div className="joinedParticipantContainer">
       <div className="participantSummary">

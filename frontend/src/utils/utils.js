@@ -23,6 +23,14 @@ export const filterListById = (list, id) => {
   return filteredList;
 };
 
+export const getSessionById = (id, list) => {
+  let session = list.filter((obj) => {
+    return obj.id === id;
+  });
+
+  return session;
+};
+
 export const integerToDateTime = (integerDate) => {
   return new Date(integerDate).toLocaleString();
 };

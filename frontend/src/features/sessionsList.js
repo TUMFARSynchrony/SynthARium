@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { filterListById, sortArray } from "../utils/utils";
+import { filterListById, getSessionById, sortArray } from "../utils/utils";
 
 export const sessionsListSlice = createSlice({
   name: "sessionsList",
@@ -25,10 +25,24 @@ export const sessionsListSlice = createSlice({
       state.value = newSessionsList;
       state.value = sortArray(state.value);
     },
+
+    startSession: (state, { payload }) => {
+      const session = getSessionById(payload.id, state.value)[0];
+      session["ongoing"] = true;
+
+      const newSessionsList = filterListById(state.value, payload.id);
+      state.value = [...newSessionsList, session];
+      state.value = sortArray(state.value);
+    },
   },
 });
 
-export const { getSessionsList, deleteSession, createSession, updateSession } =
-  sessionsListSlice.actions;
+export const {
+  getSessionsList,
+  deleteSession,
+  createSession,
+  updateSession,
+  startSession,
+} = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;
