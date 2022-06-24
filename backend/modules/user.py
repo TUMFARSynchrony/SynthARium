@@ -39,6 +39,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     - `tracks_complete` : tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler
         Forwarded from modules.connection.Connection.  Emitted when both tracks are
         received from the client and ready to be distributed / subscribed to.
+    - `CONNECTION_ANSWER` : custom_types.connection.ConnectionAnswerDict
+        CONNECTION_ANSWER message received from a client.
 
     Attributes
     ----------
@@ -241,7 +243,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         endpoint = message["type"]
 
-        # TODO temp
         if endpoint == "CONNECTION_ANSWER":
             if not is_valid_connection_answer_dict(message["data"]):
                 self._logger.warning(f"Received invalid CONNECTION_ANSWER")
