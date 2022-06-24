@@ -24,6 +24,9 @@ class SubprocessLoggingHandler(logging.StreamHandler):
             "levelname": record.levelname,
             "levelno": record.levelno,
             "msg": record.getMessage(),
+            "created": record.created,
+            "msecs": record.msecs,
+            "relativeCreated": record.relativeCreated,
         }
         self._send_command("LOG", data)
 

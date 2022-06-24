@@ -52,7 +52,7 @@ class Hub:
         # Setup logging
         logging.basicConfig(
             level=logging.getLevelName(self.config.log),
-            format="%(levelname)s:%(name)s: %(message)s",
+            format="%(asctime)s:%(levelname)s:%(name)s: %(message)s",
             filename=self.config.log_file,
         )
         self._logger = logging.getLogger("Hub")
