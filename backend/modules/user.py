@@ -173,7 +173,17 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._handle_disconnect()
 
     async def add_subscriber(self, user: User) -> None:
-        """TODO document"""
+        """Add `user` as a subscriber to this User.
+
+        Sends a `CONNECTION_OFFER` to `user` and waits for an `CONNECTION_ANSWER`.
+        After receiving the answer, the incoming streams from this user will also be
+        send to `user`.
+
+        Parameters
+        ----------
+        user : modules.user.User
+            New subscriber to this User.
+        """
         self._logger.debug(f"Adding subscriber: {repr(user)}")
         offer = await self._connection.create_subscriber_offer(self.get_summary())
         msg = MessageDict(type="CONNECTION_OFFER", data=offer)

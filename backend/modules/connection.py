@@ -434,7 +434,10 @@ class SubConnection(AsyncIOEventEmitter):
         # video_track.on("ended", self.stop)
 
     async def generate_offer(self) -> ConnectionOfferDict:
-        """TODO document
+        """Generate offer for this subconnection.
+
+        This offer can then be send to a client, which should respond with an answer.
+        The answer should be passed to `handle_answer`.
 
         See Also
         --------
