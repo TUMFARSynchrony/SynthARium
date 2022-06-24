@@ -232,7 +232,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Handle incoming message from client.
 
         Pass Message data to all functions registered to message type endpoint using
-        `on`.
+        `on_message`.  Note that `on` is listening for events using AsyncIOEventEmitter,
+        not api requests.
+
         Send responses or exceptions from message handlers to client.
 
         Parameters
@@ -246,6 +248,12 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         if endpoint == "CONNECTION_ANSWER":
             if not is_valid_connection_answer_dict(message["data"]):
                 self._logger.warning(f"Received invalid CONNECTION_ANSWER")
+                err = ErrorDict(
+                    code=400,
+                    type="INVALID_DATATYPE",
+                    description="Invalid connection answer dict",
+                )
+                await self.send(MessageDict(type="ERROR", data=err))
                 return
             self.emit("CONNECTION_ANSWER", message["data"])
             return
