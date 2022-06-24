@@ -5,3 +5,4 @@ aiohttp_cors # dev only
 Pillow 
 av
 argparse 
+shortuuid

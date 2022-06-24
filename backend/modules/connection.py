@@ -10,13 +10,13 @@ from aiortc import (
     RTCRtpSender,
 )
 from pyee.asyncio import AsyncIOEventEmitter
+import shortuuid
 import asyncio
 import logging
 import json
 
 from modules.connection_interface import ConnectionInterface
 from modules.tracks import AudioTrackHandler, VideoTrackHandler
-from modules.util import generate_unique_id
 from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
@@ -166,7 +166,7 @@ class Connection(ConnectionInterface):
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
 
-        subconnection_id = generate_unique_id(list(self._sub_connections.keys()))
+        subconnection_id = shortuuid.uuid()
         sc = SubConnection(
             subconnection_id,
             self._incoming_video.subscribe(),

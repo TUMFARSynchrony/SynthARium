@@ -181,7 +181,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         @user.on("CONNECTION_ANSWER")
         async def _handle_answer(answer: ConnectionAnswerDict):
-            # TODO Ensure id is unique for all users / connections
             if answer["id"] == offer["id"]:
                 await self._connection.handle_subscriber_answer(answer)
                 user.remove_listener("CONNECTION_ANSWER", _handle_answer)
