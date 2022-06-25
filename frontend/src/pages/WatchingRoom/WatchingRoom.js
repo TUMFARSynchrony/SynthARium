@@ -4,7 +4,11 @@ import Video from "../../components/atoms/Video/Video";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
 import "./WatchingRoom.css";
 
-function WatchingRoom({ connectedParticipants, onKickBanParticipant }) {
+function WatchingRoom({
+  connectedParticipants,
+  onKickBanParticipant,
+  onAddNote,
+}) {
   const [state, setState] = useState("WAITING");
 
   const getVideoTitle = (peer, index) => {
@@ -42,6 +46,7 @@ function WatchingRoom({ connectedParticipants, onKickBanParticipant }) {
           <WatchingRoomTabs
             connectedParticipants={connectedParticipants}
             onKickBanParticipant={onKickBanParticipant}
+            onAddNote={onAddNote}
           />
         </div>
       </div>

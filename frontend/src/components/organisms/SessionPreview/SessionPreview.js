@@ -34,13 +34,13 @@ function SessionPreview({
 
   const onStartSelectedSession = () => {
     onCreateExperiment(selectedSession.id);
-    dispatch(createExperiment(selectedSession));
+    dispatch(createExperiment(selectedSession.id));
     console.log(`SessionPreview: Starting experiment ${selectedSession.id}`);
   };
 
   const joinExperiment = () => {
     onJoinExperiment(selectedSession.id);
-    dispatch(createExperiment(selectedSession));
+    dispatch(createExperiment(selectedSession.id));
     console.log(`SessionPreview: Joining experiment ${selectedSession.id}`);
   };
 

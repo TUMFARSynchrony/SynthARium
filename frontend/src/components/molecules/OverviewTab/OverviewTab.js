@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { integerToDateTime } from "../../../utils/utils";
+import { getSessionById, integerToDateTime } from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
@@ -9,7 +9,9 @@ import "./OverviewTab.css";
 
 function OverviewTab() {
   const [message, setMessage] = useState("");
-  const sessionData = useSelector((state) => state.ongoingExperiment.value);
+  const sessionId = useSelector((state) => state.ongoingExperiment.value);
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const sessionData = getSessionById(sessionId, sessionsList)[0];
 
   const onEnterMessage = (newMessage) => {
     setMessage(newMessage);

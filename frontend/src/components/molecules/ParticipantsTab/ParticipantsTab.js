@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import "./ParticipantsTab.css";
 
 function ParticipantsTab({ connectedParticipants, onKickBanParticipant }) {
-  const sessionData = useSelector((state) => state.ongoingExperiment.value);
+  const sessionId = useSelector((state) => state.ongoingExperiment.value);
 
   return (
     <>
@@ -16,7 +16,7 @@ function ParticipantsTab({ connectedParticipants, onKickBanParticipant }) {
                 <JoinedParticipantCard
                   participantData={participantData.summary}
                   key={index}
-                  sessionId={sessionData.id}
+                  sessionId={sessionId}
                   onKickBanParticipant={onKickBanParticipant}
                 />
               );

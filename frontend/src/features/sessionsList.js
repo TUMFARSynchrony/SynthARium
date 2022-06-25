@@ -34,6 +34,15 @@ export const sessionsListSlice = createSlice({
       state.value = [...newSessionsList, session];
       state.value = sortArray(state.value);
     },
+
+    addNote: (state, { payload }) => {
+      const session = getSessionById(payload.id, state.value)[0];
+      session.notes.push(payload.note);
+
+      const newSessionsList = filterListById(state.value, payload.id);
+      state.value = [...newSessionsList, session];
+      state.value = sortArray(state.value);
+    },
   },
 });
 
@@ -43,6 +52,7 @@ export const {
   createSession,
   updateSession,
   startSession,
+  addNote,
 } = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;

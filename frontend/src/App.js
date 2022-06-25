@@ -8,6 +8,7 @@ import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import ConnectionState from "./networking/ConnectionState";
 import {
+  addNote,
   createSession,
   getSessionsList,
   startSession,
@@ -202,6 +203,11 @@ function App() {
     dispatch(startSession({ id: sessionId }));
   };
 
+  const onAddNote = (note, sessionId) => {
+    connection.sendMessage("ADD_NOTE", note);
+    dispatch(addNote({ note: note, id: sessionId }));
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -235,6 +241,7 @@ function App() {
               <WatchingRoom
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
+                onAddNote={onAddNote}
               />
             }
           />
