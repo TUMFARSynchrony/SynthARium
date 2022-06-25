@@ -28,7 +28,7 @@ export const sessionsListSlice = createSlice({
 
     startSession: (state, { payload }) => {
       const session = getSessionById(payload.id, state.value)[0];
-      session["ongoing"] = true;
+      session["creation_time"] = true;
 
       const newSessionsList = filterListById(state.value, payload.id);
       state.value = [...newSessionsList, session];

@@ -18,7 +18,7 @@ import { deleteSession } from "./features/sessionsList";
 
 import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getLocalStream } from "./utils/utils";
+import { getLocalStream, getSessionById } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import { saveSession } from "./features/openSession";
@@ -182,6 +182,8 @@ function App() {
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
     dispatch(startSession({ id: sessionId }));
+    //TODO: uncomment when creation_time is implemented
+    // onSendSessionToBackend(getSessionById(sessionId, sessionsList));
   };
 
   const onDeleteSession = (sessionId) => {

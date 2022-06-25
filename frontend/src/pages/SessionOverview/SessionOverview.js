@@ -109,7 +109,7 @@ function SessionOverview({
               onDeleteSession={onDeleteSession}
               onCreateExperiment={onCreateExperiment}
               onJoinExperiment={onJoinExperiment}
-              isOngoingExperiment={selectedSession.ongoing}
+              isOngoingExperiment={selectedSession.creation_time > 0}
             />
           ) : (
             <h2>No session selected.</h2>
