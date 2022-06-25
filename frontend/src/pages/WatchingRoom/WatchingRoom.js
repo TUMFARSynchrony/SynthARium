@@ -8,8 +8,12 @@ function WatchingRoom({
   connectedParticipants,
   onKickBanParticipant,
   onAddNote,
+  onLeaveExperiment,
 }) {
   const [state, setState] = useState("WAITING");
+  const onStartExperiment = () => {
+    setState("ONGOING");
+  };
 
   const getVideoTitle = (peer, index) => {
     if (peer.summary) {
@@ -47,6 +51,8 @@ function WatchingRoom({
             connectedParticipants={connectedParticipants}
             onKickBanParticipant={onKickBanParticipant}
             onAddNote={onAddNote}
+            onLeaveExperiment={onLeaveExperiment}
+            onStartExperiment={onStartExperiment}
           />
         </div>
       </div>

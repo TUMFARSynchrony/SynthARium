@@ -20,3 +20,13 @@
   background: #2980b9;
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
 }
+
+.negative {
+  background-color: #de4040;
+  text-transform: none;
+  padding: 0.8rem 1rem;
+}
+
+.negative:hover {
+  background: #aa3131;
+}

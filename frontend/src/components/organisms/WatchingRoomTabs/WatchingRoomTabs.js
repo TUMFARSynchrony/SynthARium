@@ -8,6 +8,8 @@ function WatchingRoomTabs({
   connectedParticipants,
   onKickBanParticipant,
   onAddNote,
+  onLeaveExperiment,
+  onStartExperiment,
 }) {
   return (
     <>
@@ -19,7 +21,10 @@ function WatchingRoomTabs({
         </TabList>
 
         <TabPanel>
-          <OverviewTab />
+          <OverviewTab
+            onLeaveExperiment={onLeaveExperiment}
+            onStartExperiment={onStartExperiment}
+          />
         </TabPanel>
         <TabPanel>
           <NotesTab onAddNote={onAddNote} />

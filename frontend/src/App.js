@@ -208,6 +208,10 @@ function App() {
     dispatch(addNote({ note: note, id: sessionId }));
   };
 
+  const onLeaveExperiment = (sessionId) => {
+    connection.sendMessage("LEAVE_EXPERIMENT");
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -242,6 +246,7 @@ function App() {
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
                 onAddNote={onAddNote}
+                onLeaveExperiment={onLeaveExperiment}
               />
             }
           />

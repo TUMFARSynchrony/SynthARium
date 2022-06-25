@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { getSessionById, integerToDateTime } from "../../../utils/utils";
+import {
+  getSessionById,
+  integerToDateTime,
+  useBackListener,
+} from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
+import LinkButton from "../../atoms/LinkButton/LinkButton";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import "./OverviewTab.css";
 
-function OverviewTab() {
+function OverviewTab({ onLeaveExperiment, onStartExperiment }) {
   const [message, setMessage] = useState("");
   const sessionId = useSelector((state) => state.ongoingExperiment.value);
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const sessionData = getSessionById(sessionId, sessionsList)[0];
+
+  useBackListener(() => onLeaveExperiment());
 
   const onEnterMessage = (newMessage) => {
     setMessage(newMessage);
@@ -51,6 +58,19 @@ function OverviewTab() {
         />
         <Button name={"Send"} design={"secondary"} />
       </div>
+      <hr className="separatorLine"></hr>
+
+      <LinkButton
+        name={"LEAVE EXPERIMENT"}
+        design={"negative"}
+        to={"/"}
+        onClick={() => onLeaveExperiment()}
+      />
+      <Button
+        name={"START EXPERIMENT"}
+        design={"positive"}
+        onClick={() => onStartExperiment()}
+      />
     </div>
   );
 }
