@@ -10,7 +10,16 @@ function JoinedParticipantModal({
   showModal,
   setShowModal,
   sessionId,
+  onMuteParticipant,
 }) {
+  const muteParticipant = (muteAudio, muteVideo) => {
+    onMuteParticipant({
+      participant_id: participantData.id,
+      mute_video: muteVideo,
+      mute_audio: muteAudio,
+    });
+  };
+
   return (
     <div className="joinedParticipantModalContainer">
       <div className="joinedParticipantModalData">
@@ -18,7 +27,22 @@ function JoinedParticipantModal({
           title={participantData.first_name + " " + participantData.last_name}
         />
         <hr className="separatorLine"></hr>
-
+        <Button
+          name={"Mute Audio"}
+          design={"secondary"}
+          onClick={() => muteParticipant(true, participantData.muted_video)}
+        />
+        <Button
+          name={"Mute Video"}
+          design={"secondary"}
+          onClick={() => muteParticipant(participantData.muted_audio, true)}
+        />
+        <Button
+          name={"Unmute"}
+          design={"secondary"}
+          onClick={() => muteParticipant(false, false)}
+        />
+        <hr className="separatorLine"></hr>
         <div className="joinedParticipantModalInfo">
           <InputTextField
             title="Link"

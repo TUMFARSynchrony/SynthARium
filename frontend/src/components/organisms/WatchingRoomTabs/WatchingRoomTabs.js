@@ -10,6 +10,7 @@ function WatchingRoomTabs({
   onAddNote,
   onLeaveExperiment,
   onStartExperiment,
+  onMuteParticipant,
 }) {
   return (
     <>
@@ -33,6 +34,7 @@ function WatchingRoomTabs({
           <ParticipantsTab
             connectedParticipants={connectedParticipants}
             onKickBanParticipant={onKickBanParticipant}
+            onMuteParticipant={onMuteParticipant}
           />
         </TabPanel>
       </Tabs>

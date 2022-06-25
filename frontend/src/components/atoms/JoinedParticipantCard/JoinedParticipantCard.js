@@ -9,6 +9,7 @@ function JoinedParticipant({
   participantData,
   sessionId,
   onKickBanParticipant,
+  onMuteParticipant,
 }) {
   const [showModal, setShowModal] = useState(false);
   const [showKickBanReason, setShowKickBanReason] = useState(false);
@@ -48,6 +49,7 @@ function JoinedParticipant({
           showModal={showModal}
           setShowModal={setShowModal}
           sessionId={sessionId}
+          onMuteParticipant={onMuteParticipant}
         />
       )}
       {showKickBanReason && (

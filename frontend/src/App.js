@@ -18,7 +18,7 @@ import { deleteSession } from "./features/sessionsList";
 
 import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getLocalStream, getSessionById } from "./utils/utils";
+import { getLocalStream } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import { saveSession } from "./features/openSession";
@@ -214,6 +214,10 @@ function App() {
     connection.sendMessage("LEAVE_EXPERIMENT");
   };
 
+  const onMuteParticipant = (muteRequest) => {
+    connection.sendMessage("MUTE", muteRequest);
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -249,6 +253,7 @@ function App() {
                 onKickBanParticipant={onKickBanParticipant}
                 onAddNote={onAddNote}
                 onLeaveExperiment={onLeaveExperiment}
+                onMuteParticipant={onMuteParticipant}
               />
             }
           />

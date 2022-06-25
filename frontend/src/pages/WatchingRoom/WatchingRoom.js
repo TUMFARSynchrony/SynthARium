@@ -9,6 +9,7 @@ function WatchingRoom({
   onKickBanParticipant,
   onAddNote,
   onLeaveExperiment,
+  onMuteParticipant,
 }) {
   const [state, setState] = useState("WAITING");
   const onStartExperiment = () => {
@@ -53,6 +54,7 @@ function WatchingRoom({
             onAddNote={onAddNote}
             onLeaveExperiment={onLeaveExperiment}
             onStartExperiment={onStartExperiment}
+            onMuteParticipant={onMuteParticipant}
           />
         </div>
       </div>

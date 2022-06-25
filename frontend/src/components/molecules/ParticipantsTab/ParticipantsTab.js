@@ -3,7 +3,11 @@ import JoinedParticipantCard from "../../atoms/JoinedParticipantCard/JoinedParti
 import { useSelector } from "react-redux";
 import "./ParticipantsTab.css";
 
-function ParticipantsTab({ connectedParticipants, onKickBanParticipant }) {
+function ParticipantsTab({
+  connectedParticipants,
+  onKickBanParticipant,
+  onMuteParticipant,
+}) {
   const sessionId = useSelector((state) => state.ongoingExperiment.value);
 
   return (
@@ -18,6 +22,7 @@ function ParticipantsTab({ connectedParticipants, onKickBanParticipant }) {
                   key={index}
                   sessionId={sessionId}
                   onKickBanParticipant={onKickBanParticipant}
+                  onMuteParticipant={onMuteParticipant}
                 />
               );
             })
