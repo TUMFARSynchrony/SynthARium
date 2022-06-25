@@ -8,7 +8,10 @@ function ParticipantsTab({
   onKickBanParticipant,
   onMuteParticipant,
 }) {
-  const sessionId = useSelector((state) => state.ongoingExperiment.value);
+  const ongoingExperiment = useSelector(
+    (state) => state.ongoingExperiment.value
+  );
+  const sessionId = ongoingExperiment.sessionId;
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSelector } from "react-redux";
 import Heading from "../../components/atoms/Heading/Heading";
 import Video from "../../components/atoms/Video/Video";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
@@ -10,11 +10,12 @@ function WatchingRoom({
   onAddNote,
   onLeaveExperiment,
   onMuteParticipant,
+  onStartExperiment,
 }) {
-  const [state, setState] = useState("WAITING");
-  const onStartExperiment = () => {
-    setState("ONGOING");
-  };
+  const ongoingExperiment = useSelector(
+    (state) => state.ongoingExperiment.value
+  );
+  const state = ongoingExperiment.experimentState;
 
   const getVideoTitle = (peer, index) => {
     if (peer.summary) {

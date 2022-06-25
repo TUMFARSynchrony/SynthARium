@@ -14,7 +14,10 @@ import "./OverviewTab.css";
 
 function OverviewTab({ onLeaveExperiment, onStartExperiment }) {
   const [message, setMessage] = useState("");
-  const sessionId = useSelector((state) => state.ongoingExperiment.value);
+  const ongoingExperiment = useSelector(
+    (state) => state.ongoingExperiment.value
+  );
+  const sessionId = ongoingExperiment.sessionId;
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const sessionData = getSessionById(sessionId, sessionsList)[0];
 

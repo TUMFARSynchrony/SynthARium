@@ -22,6 +22,7 @@ import { getLocalStream } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import { saveSession } from "./features/openSession";
+import { startExperiment } from "./features/ongoingExperiment";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -218,6 +219,11 @@ function App() {
     connection.sendMessage("MUTE", muteRequest);
   };
 
+  const onStartExperiment = () => {
+    connection.sendMessage("START_EXPERIMENT", {});
+    dispatch(startExperiment("ONGOING"));
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -254,6 +260,7 @@ function App() {
                 onAddNote={onAddNote}
                 onLeaveExperiment={onLeaveExperiment}
                 onMuteParticipant={onMuteParticipant}
+                onStartExperiment={onStartExperiment}
               />
             }
           />

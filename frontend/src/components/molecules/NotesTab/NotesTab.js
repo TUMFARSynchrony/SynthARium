@@ -9,7 +9,9 @@ import { useSelector } from "react-redux";
 import { getSessionById } from "../../../utils/utils";
 
 function NotesTab({ onAddNote }) {
-  const sessionId = useSelector((state) => state.ongoingExperiment.value);
+  const sessionId = useSelector(
+    (state) => state.ongoingExperiment.value.sessionId
+  );
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const sessionData = getSessionById(sessionId, sessionsList)[0];
 
