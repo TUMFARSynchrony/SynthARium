@@ -44,3 +44,13 @@
   background: hsl(212, 86%, 64%);
   color: white;
 }
+
+.positive {
+  background-color: #50ad64;
+  text-transform: none;
+  padding: 0.8rem 1rem;
+}
+
+.positive:hover {
+  background: #165b25;
+}

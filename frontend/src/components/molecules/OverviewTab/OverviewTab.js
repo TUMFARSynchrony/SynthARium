@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { changeExperimentState } from "../../../features/ongoingExperiment";
+import { useSelector } from "react-redux";
+import EndVerificationModal from "../../../modals/EndVerificationModal/EndVerificationModal";
+import StartVerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
+import VerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
 import {
   getSessionById,
   integerToDateTime,
@@ -19,7 +21,9 @@ function OverviewTab({
   onEndExperiment,
 }) {
   const [message, setMessage] = useState("");
-  const dispatch = useDispatch();
+  const [startVerificationModal, setStartVerificationModal] = useState(false);
+  const [endVerificationModal, setEndVerificationModal] = useState(false);
+
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
   );
@@ -28,17 +32,6 @@ function OverviewTab({
   const sessionData = getSessionById(sessionId, sessionsList)[0];
 
   useBackListener(() => onLeaveExperiment());
-
-  const onEnterMessage = (newMessage) => {
-    setMessage(newMessage);
-  };
-
-  const onStopExperiment = () => {
-    dispatch(changeExperimentState("WAITING"));
-    onEndExperiment();
-  };
-
-  console.log("experimentState", ongoingExperiment.experimentState);
 
   return (
     <div className="overviewTabContainer">
@@ -70,7 +63,7 @@ function OverviewTab({
         <TextAreaField
           placeholder={"Enter your message here"}
           value={message}
-          onChange={(newMessage) => onEnterMessage(newMessage)}
+          onChange={(newMessage) => setMessage(newMessage)}
         />
         <Button name={"Send"} design={"secondary"} />
       </div>
@@ -86,14 +79,31 @@ function OverviewTab({
         <Button
           name={"START EXPERIMENT"}
           design={"positive"}
-          onClick={() => onStartExperiment()}
+          onClick={() => {
+            setStartVerificationModal(true);
+          }}
         />
       ) : (
-        <LinkButton
+        <Button
           name={"END EXPERIMENT"}
           design={"negative"}
-          to="/"
-          onClick={() => onStopExperiment()}
+          onClick={() => {
+            setEndVerificationModal(true);
+          }}
+        />
+      )}
+
+      {startVerificationModal && (
+        <StartVerificationModal
+          setShowModal={setStartVerificationModal}
+          onStartExperiment={onStartExperiment}
+        />
+      )}
+
+      {endVerificationModal && (
+        <EndVerificationModal
+          setShowModal={setStartVerificationModal}
+          onEndExperiment={onEndExperiment}
         />
       )}
     </div>
