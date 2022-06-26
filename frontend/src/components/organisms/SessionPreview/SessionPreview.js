@@ -6,7 +6,6 @@ import "./SessionPreview.css";
 import { useDispatch } from "react-redux";
 import { copySession, initializeSession } from "../../../features/openSession";
 import Heading from "../../atoms/Heading/Heading";
-import { createExperiment } from "../../../features/ongoingExperiment";
 
 function SessionPreview({
   selectedSession,
@@ -22,24 +21,6 @@ function SessionPreview({
     const sessionId = selectedSession.id;
     onDeleteSession(sessionId);
     setSelectedSession(null);
-  };
-
-  const onCopySession = () => {
-    dispatch(copySession(selectedSession));
-  };
-
-  const onEditSession = () => {
-    dispatch(initializeSession(selectedSession));
-  };
-
-  const onStartSelectedSession = () => {
-    onCreateExperiment(selectedSession.id);
-    dispatch(createExperiment(selectedSession.id));
-  };
-
-  const joinExperiment = () => {
-    onJoinExperiment(selectedSession.id);
-    dispatch(createExperiment(selectedSession.id));
   };
 
   return (
@@ -73,7 +54,7 @@ function SessionPreview({
           <LinkButton
             name={"COPY"}
             to="/sessionForm"
-            onClick={() => onCopySession()}
+            onClick={() => dispatch(copySession(selectedSession))}
           />
 
           {!isOngoingExperiment && isFutureSession(selectedSession) && (
@@ -81,12 +62,12 @@ function SessionPreview({
               <LinkButton
                 name={"EDIT"}
                 to="/sessionForm"
-                onClick={() => onEditSession()}
+                onClick={() => dispatch(initializeSession(selectedSession))}
               />
               <LinkButton
                 name={"START"}
                 to="/watchingRoom"
-                onClick={() => onStartSelectedSession()}
+                onClick={() => onCreateExperiment(selectedSession.id)}
               />
             </>
           )}
@@ -96,7 +77,7 @@ function SessionPreview({
               <LinkButton
                 name={"JOIN EXPERIMENT"}
                 to="/watchingRoom"
-                onClick={() => joinExperiment()}
+                onClick={() => onJoinExperiment(selectedSession.id)}
               />
             </>
           )}

@@ -11,15 +11,18 @@ export const sessionsListSlice = createSlice({
 
       state.value = sortArray(state.value);
     },
+
     getSessionsList: (state, { payload }) => {
       state.value = payload;
       state.value = sortArray(state.value);
     },
+
     updateSession: (state, { payload }) => {
       const newSessionsList = filterListById(state.value, payload.id);
       state.value = [...newSessionsList, payload];
       state.value = sortArray(state.value);
     },
+
     createSession: (state, { payload }) => {
       const newSessionsList = [...state.value, payload];
       state.value = newSessionsList;
@@ -27,10 +30,11 @@ export const sessionsListSlice = createSlice({
     },
 
     startSession: (state, { payload }) => {
-      const session = getSessionById(payload.id, state.value)[0];
-      session["creation_time"] = true;
+      const session = getSessionById(payload, state.value)[0];
+      session["creation_time"] = new Date().getTime();
 
-      const newSessionsList = filterListById(state.value, payload.id);
+      const newSessionsList = filterListById(state.value, payload);
+
       state.value = [...newSessionsList, session];
       state.value = sortArray(state.value);
     },
@@ -43,6 +47,15 @@ export const sessionsListSlice = createSlice({
       state.value = [...newSessionsList, session];
       state.value = sortArray(state.value);
     },
+
+    stopSession: (state, { payload }) => {
+      const session = getSessionById(payload, state.value)[0];
+      session["creation_time"] = 0;
+
+      const newSessionsList = filterListById(state.value, payload);
+      state.value = [...newSessionsList, session];
+      state.value = sortArray(state.value);
+    },
   },
 });
 
@@ -52,6 +65,7 @@ export const {
   createSession,
   updateSession,
   startSession,
+  stopSession,
   addNote,
 } = sessionsListSlice.actions;
 

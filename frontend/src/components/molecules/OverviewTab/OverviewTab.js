@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { changeExperimentState } from "../../../features/ongoingExperiment";
 import {
   getSessionById,
   integerToDateTime,
@@ -12,8 +13,13 @@ import LinkButton from "../../atoms/LinkButton/LinkButton";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import "./OverviewTab.css";
 
-function OverviewTab({ onLeaveExperiment, onStartExperiment }) {
+function OverviewTab({
+  onLeaveExperiment,
+  onStartExperiment,
+  onEndExperiment,
+}) {
   const [message, setMessage] = useState("");
+  const dispatch = useDispatch();
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
   );
@@ -26,6 +32,13 @@ function OverviewTab({ onLeaveExperiment, onStartExperiment }) {
   const onEnterMessage = (newMessage) => {
     setMessage(newMessage);
   };
+
+  const onStopExperiment = () => {
+    dispatch(changeExperimentState("WAITING"));
+    onEndExperiment();
+  };
+
+  console.log("experimentState", ongoingExperiment.experimentState);
 
   return (
     <div className="overviewTabContainer">
@@ -65,15 +78,24 @@ function OverviewTab({ onLeaveExperiment, onStartExperiment }) {
 
       <LinkButton
         name={"LEAVE EXPERIMENT"}
-        design={"negative"}
+        design={"secondary"}
         to={"/"}
         onClick={() => onLeaveExperiment()}
       />
-      <Button
-        name={"START EXPERIMENT"}
-        design={"positive"}
-        onClick={() => onStartExperiment()}
-      />
+      {ongoingExperiment.experimentState === "WAITING" ? (
+        <Button
+          name={"START EXPERIMENT"}
+          design={"positive"}
+          onClick={() => onStartExperiment()}
+        />
+      ) : (
+        <LinkButton
+          name={"END EXPERIMENT"}
+          design={"negative"}
+          to="/"
+          onClick={() => onStopExperiment()}
+        />
+      )}
     </div>
   );
 }

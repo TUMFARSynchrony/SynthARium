@@ -7,18 +7,24 @@ export const ongoingExperimentSlice = createSlice({
   },
   reducers: {
     createExperiment: (state, { payload }) => {
-      const session = { sessionId: "", experimentState: "WAITING" };
-      session.sessionId = payload;
+      const session = { sessionId: payload, experimentState: "WAITING" };
       state.value = session;
     },
 
-    startExperiment: (state, { payload }) => {
+    joinExperiment: (state, { payload }) => {
+      const session = { ...state.value };
+      session.sessionId = payload;
+
+      state.value = session;
+    },
+
+    changeExperimentState: (state, { payload }) => {
       state.value.experimentState = payload;
     },
   },
 });
 
-export const { createExperiment, startExperiment } =
+export const { createExperiment, changeExperimentState, joinExperiment } =
   ongoingExperimentSlice.actions;
 
 export default ongoingExperimentSlice.reducer;

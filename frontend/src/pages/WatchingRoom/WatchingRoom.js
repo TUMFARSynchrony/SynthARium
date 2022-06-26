@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 import Heading from "../../components/atoms/Heading/Heading";
 import Video from "../../components/atoms/Video/Video";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
+import { getVideoTitle } from "../../utils/utils";
 import "./WatchingRoom.css";
 
 function WatchingRoom({
@@ -11,18 +12,12 @@ function WatchingRoom({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
+  onEndExperiment,
 }) {
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
   );
   const state = ongoingExperiment.experimentState;
-
-  const getVideoTitle = (peer, index) => {
-    if (peer.summary) {
-      return `${peer.summary.first_name} ${peer.summary.last_name}`;
-    }
-    return `Peer stream ${index + 1}`;
-  };
 
   return (
     <div className="watchingRoomContainer">
@@ -34,7 +29,6 @@ function WatchingRoom({
           <div className="livestream">
             <div className="connectedParticipants">
               {connectedParticipants.map((peer, i) => (
-                //TODO: map to coordinates
                 <Video
                   title={getVideoTitle(peer, i)}
                   srcObject={peer.stream}
@@ -56,6 +50,7 @@ function WatchingRoom({
             onLeaveExperiment={onLeaveExperiment}
             onStartExperiment={onStartExperiment}
             onMuteParticipant={onMuteParticipant}
+            onEndExperiment={onEndExperiment}
           />
         </div>
       </div>

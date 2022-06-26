@@ -11,6 +11,7 @@ function WatchingRoomTabs({
   onLeaveExperiment,
   onStartExperiment,
   onMuteParticipant,
+  onEndExperiment,
 }) {
   return (
     <>
@@ -25,6 +26,7 @@ function WatchingRoomTabs({
           <OverviewTab
             onLeaveExperiment={onLeaveExperiment}
             onStartExperiment={onStartExperiment}
+            onEndExperiment={onEndExperiment}
           />
         </TabPanel>
         <TabPanel>

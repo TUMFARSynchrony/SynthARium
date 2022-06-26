@@ -170,3 +170,10 @@ export const useBackListener = (callback) => {
     return unlisten;
   }, [callback, navigator]);
 };
+
+export const getVideoTitle = (peer, index) => {
+  if (peer.summary) {
+    return `${peer.summary.first_name} ${peer.summary.last_name}`;
+  }
+  return `Peer stream ${index + 1}`;
+};
