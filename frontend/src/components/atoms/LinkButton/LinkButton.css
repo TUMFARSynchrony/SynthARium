@@ -11,7 +11,7 @@
   margin: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 00;
+  font-weight: 400;
   height: fit-content;
   cursor: pointer;
 }
@@ -29,4 +29,18 @@
 
 .negative:hover {
   background: #aa3131;
+}
+
+.secondary {
+  border: 1px solid hsl(212, 86%, 64%);
+  color: hsl(212, 86%, 64%);
+  box-shadow: none;
+  background-color: white;
+  text-transform: none;
+  padding: 0.6rem 0.8rem;
+}
+
+.secondary:hover {
+  background: hsl(212, 86%, 64%);
+  color: white;
 }
