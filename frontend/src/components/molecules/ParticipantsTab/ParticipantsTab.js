@@ -29,7 +29,7 @@ function ParticipantsTab({
                 />
               );
             })
-          : "No participant joined yet."}
+          : "No participants joined yet."}
       </div>
     </>
   );
