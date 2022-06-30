@@ -9,7 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
 from custom_types.error import ErrorDict
@@ -28,6 +28,7 @@ from custom_types.session_id_request import (
 
 from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
+from modules.connection_subprocess import connection_subprocess_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
 import modules.experiment as _experiment
@@ -114,12 +115,12 @@ class Experimenter(User):
     async def _subscribe_to_participants_streams(self) -> None:
         """Subscribe to all participants in `self._experiment`."""
         if self._experiment is not None:
-            tasks = []
+            coros: list[Coroutine] = []
             for p in self._experiment.participants.values():
                 if p is self:
                     continue
-                tasks.append(self.subscribe_to(p))
-            await asyncio.gather(*tasks)
+                coros.append(p.add_subscriber(self))
+            await asyncio.gather(*coros)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -620,7 +621,7 @@ class Experimenter(User):
             )
 
         experiment = self._get_experiment_or_raise("Failed to mute participant.")
-        experiment.mute_participant(
+        await experiment.mute_participant(
             data["participant_id"], data["mute_video"], data["mute_audio"]
         )
 
@@ -731,8 +732,16 @@ async def experimenter_factory(
         representing the client.
     """
     experimenter = Experimenter(id, hub)
-    answer, connection = await connection_factory(
-        offer, experimenter.handle_message, f"E-{id}"
-    )
+    log_name_suffix = f"E-{id}"
+
+    if hub.config.experimenter_multiprocessing:
+        answer, connection = await connection_subprocess_factory(
+            offer, experimenter.handle_message, log_name_suffix, hub.config
+        )
+    else:
+        answer, connection = await connection_factory(
+            offer, experimenter.handle_message, log_name_suffix
+        )
+
     experimenter.set_connection(connection)
     return (answer, experimenter)

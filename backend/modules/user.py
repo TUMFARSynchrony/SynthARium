@@ -7,20 +7,25 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 """
 
 from __future__ import annotations
+
 import logging
 import traceback
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Any, Coroutine, Tuple
 from pyee.asyncio import AsyncIOEventEmitter
+from typing import Callable, Any, Coroutine, Tuple
 
-from custom_types.participant_summary import ParticipantSummaryDict
-from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
+from custom_types.message import MessageDict
+from custom_types.participant_summary import ParticipantSummaryDict
 
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
-import modules.connection as _connection
+from modules.connection_interface import ConnectionInterface
+from modules.tracks import AudioTrackHandler, VideoTrackHandler
+from custom_types.connection import (
+    ConnectionAnswerDict,
+    is_valid_connection_answer_dict,
+)
 
 
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -31,9 +36,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     Extends AsyncIOEventEmitter, providing the following events:
     - `disconnected` : modules.user.User
         Emitted when the connection with the client closes.
-    - `tracks_complete` : tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler
-        Forwarded from modules.connection.Connection.  Emitted when both tracks are
-        received from the client and ready to be distributed / subscribed to.
+    - `CONNECTION_ANSWER` : custom_types.connection.ConnectionAnswerDict
+        CONNECTION_ANSWER message received from a client.
 
     Attributes
     ----------
@@ -75,7 +79,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
-    _connection: _connection.Connection
+    _connection: ConnectionInterface
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __disconnected: bool
 
@@ -132,7 +136,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
         return None
 
-    def set_connection(self, connection: _connection.Connection) -> None:
+    def set_connection(self, connection: ConnectionInterface) -> None:
         """Set the connection of this user.
 
         This should only be used once before using this User.  See factory functions.
@@ -150,7 +154,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._connection.add_listener(
             "state_change", self._handle_connection_state_change_user
         )
-        self._connection.on("tracks_complete", self._emit_tracks_complete_event)
 
     async def send(self, message: MessageDict) -> None:
         """Send a custom_types.message.MessageDict to the connected client.
@@ -165,82 +168,41 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def disconnect(self) -> None:
         """Disconnect.  Closes the connection with the client."""
         await self._connection.stop()
-        self._handle_disconnect
+        self._handle_disconnect()
 
-    async def subscribe_to(self, user: User) -> None:
-        """Add incoming tracks from `user` to this User.
+    async def add_subscriber(self, user: User) -> None:
+        """Add `user` as a subscriber to this User.
 
-        If the tracks on user do not yet exist, wait for `tracks_complete` event on
-        `user` and subscribe then.
+        Sends a `CONNECTION_OFFER` to `user` and waits for an `CONNECTION_ANSWER`.
+        After receiving the answer, the incoming streams from this user will also be
+        send to `user`.
 
         Parameters
         ----------
         user : modules.user.User
-            Source User this User should subscribe to.
+            New subscriber to this User.
         """
-        self._logger.debug(f"Subscribing to {user.id}")
-        video_track, audio_track = user.get_incoming_stream()
+        self._logger.debug(f"Adding subscriber: {repr(user)}")
+        offer = await self._connection.create_subscriber_offer(self.get_summary())
+        msg = MessageDict(type="CONNECTION_OFFER", data=offer)
+        await user.send(msg)
 
-        # Video and audio tracks already exist, subscribe now
-        if video_track is not None and audio_track is not None:
-            await self._subscribe_to_now(user, video_track, audio_track)
-            return
+        @user.on("CONNECTION_ANSWER")
+        async def _handle_answer(answer: ConnectionAnswerDict):
+            if answer["id"] == offer["id"]:
+                await self._connection.handle_subscriber_answer(answer)
+                user.remove_listener("CONNECTION_ANSWER", _handle_answer)
 
-        # Tracks do not yet exist, subscribe later when `tracks_complete` event is
-        # emitted
-        @user.once("tracks_complete")
-        async def _subscribe_to_wrapper(
-            data: Tuple[VideoTrackHandler, AudioTrackHandler]
-        ) -> None:
-            await self._subscribe_to_now(user, data[0], data[1])
-
-        # Remove above listener from user if self disconnects
         @self.on("disconnected")
-        def _remove_tracks_listener(_) -> None:
+        def _remove_listener(_):
             try:
-                user.remove_listener("tracks_complete", _subscribe_to_wrapper)
+                user.remove_listener("CONNECTION_ANSWER", _handle_answer)
             except KeyError:
-                pass
+                return
 
-    async def _subscribe_to_now(
-        self, user: User, video_track: VideoTrackHandler, audio_track: AudioTrackHandler
-    ) -> None:
-        """Add `video_track` and `audio_track` from `user` to this User.
-
-        This function is called by `subscribe_to` when both tracks exist.  Use
-        `subscribe_to` to subscribe to a user.
-        """
-        participant_summary = user.get_summary()
-        subconnection_id = await self._connection.add_outgoing_stream(
-            video_track.subscribe(), audio_track.subscribe(), participant_summary
-        )
-
-        # Close subconnection when user disconnects
         @user.on("disconnected")
-        async def _handle_disconnect(_):
-            self._logger.debug(
-                f"Handle disconnected event from {user}: remove subconnection_id: "
-                f"{subconnection_id}"
-            )
-            self.remove_listener("disconnected", _remove_handler)
-            await self._connection.stop_outgoing_stream(subconnection_id)
-
-        # Remove event listener from user when self disconnects.
-        @self.on("disconnected")
-        def _remove_handler(_):
-            user.remove_listener("disconnected", _handle_disconnect)
-
-    def get_incoming_stream(
-        self,
-    ) -> Tuple[VideoTrackHandler | None, AudioTrackHandler | None]:
-        """Get incoming video and audio tracks from this User.
-
-        Returns
-        -------
-        tuple of modules.track.VideoTrackHandler and modules.track.AudioTrackHandler or
-            None
-        """
-        return (self._connection.incoming_video, self._connection.incoming_audio)
+        async def _remove_subconnection(_):
+            await self._connection.stop_subconnection(offer["id"])
 
     def on_message(
         self,
@@ -266,7 +228,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Handle incoming message from client.
 
         Pass Message data to all functions registered to message type endpoint using
-        `on`.
+        `on_message`.  Note that `on` is listening for events using AsyncIOEventEmitter,
+        not api requests.
+
         Send responses or exceptions from message handlers to client.
 
         Parameters
@@ -276,6 +240,20 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
 
         endpoint = message["type"]
+
+        if endpoint == "CONNECTION_ANSWER":
+            if not is_valid_connection_answer_dict(message["data"]):
+                self._logger.warning(f"Received invalid CONNECTION_ANSWER")
+                err = ErrorDict(
+                    code=400,
+                    type="INVALID_DATATYPE",
+                    description="Invalid connection answer dict",
+                )
+                await self.send(MessageDict(type="ERROR", data=err))
+                return
+            self.emit("CONNECTION_ANSWER", message["data"])
+            return
+
         handler_functions = self._handlers.get(endpoint, None)
 
         if handler_functions is None:
@@ -305,7 +283,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             if response is not None:
                 await self.send(response)
 
-    def set_muted(self, video: bool, audio: bool) -> None:
+    async def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.
 
         Parameters
@@ -321,10 +299,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._muted_video = video
         self._muted_audio = audio
 
-        if self._connection.incoming_video is not None:
-            self._connection.incoming_video.muted = video
-        if self._connection.incoming_audio is not None:
-            self._connection.incoming_audio.muted = audio
+        await self._connection.set_muted(video, audio)
 
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.
@@ -337,15 +312,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._logger.info("Disconnected")
         self.emit("disconnected", self)
         self.remove_all_listeners()
-
-    def _emit_tracks_complete_event(
-        self, tracks: Tuple[VideoTrackHandler, AudioTrackHandler]
-    ) -> None:
-        """Emits the `tracks_complete` event with `data`.
-
-        Use to forward the event from the connection.
-        """
-        self.emit("tracks_complete", tracks)
 
     def _handle_connection_state_change_user(self, state: ConnectionState) -> None:
         """Calls _handle_disconnect if state is CLOSED or FAILED.

@@ -317,7 +317,7 @@ class Experiment:
         # Save banned state in session / participant data
         participant_data.banned = True
 
-    def mute_participant(self, participant_id: str, video: bool, audio: bool):
+    async def mute_participant(self, participant_id: str, video: bool, audio: bool):
         """Set the muted state for the participant with `participant_id`.
 
         Parameters
@@ -331,7 +331,7 @@ class Experiment:
         """
         # Mute participant if participant is already connected
         if participant_id in self._participants:
-            self._participants[participant_id].set_muted(video, audio)
+            await self._participants[participant_id].set_muted(video, audio)
 
     def add_experimenter(self, experimenter: _experimenter.Experimenter):
         """Add experimenter to experiment.

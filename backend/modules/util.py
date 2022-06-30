@@ -1,6 +1,8 @@
 """Provide utility functions used by different parts of the software."""
 
+import os
 import uuid
+import platform
 
 
 def generate_unique_id(existing_ids: list[str]):
@@ -25,3 +27,17 @@ def generate_unique_id(existing_ids: list[str]):
     while id in existing_ids:
         id = uuid.uuid4().hex[:10]
     return id
+
+
+def get_system_specs() -> dict:
+    """Get general system specs / info."""
+    return {
+        "python_version": platform.python_version(),
+        "system": platform.system(),
+        "release": platform.release(),
+        "version": platform.version(),
+        "machine": platform.machine(),
+        "platform": platform.platform(),
+        "processor": platform.processor(),
+        "cpu_count": os.cpu_count(),
+    }

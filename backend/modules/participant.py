@@ -9,7 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -18,10 +18,12 @@ from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
+from modules.config import Config
 import modules.experiment as _experiment
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
+from modules.connection_subprocess import connection_subprocess_factory
 from modules.data import ParticipantData
 from modules.user import User
 
@@ -152,19 +154,19 @@ class Participant(User):
         self._logger.debug(f"Handle state change. State: {state}")
         if state is ConnectionState.CONNECTED:
             self._logger.info(f"Participant connected. {self}")
-            tasks = []
+            coros: list[Coroutine] = []
             # Add stream to all experimenters
             for e in self._experiment.experimenters:
-                tasks.append(e.subscribe_to(self))
+                coros.append(self.add_subscriber(e))
 
             # Add stream to all participants and all participants streams to self
             for p in self._experiment.participants.values():
                 if p is self:
                     continue
-                tasks.append(self.subscribe_to(p))
-                tasks.append(p.subscribe_to(self))
+                coros.append(self.add_subscriber(p))
+                coros.append(p.add_subscriber(self))
 
-            await asyncio.gather(*tasks)
+            await asyncio.gather(*coros)
 
     async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
         """Handle requests with type `CHAT`.
@@ -224,6 +226,7 @@ async def participant_factory(
     id: str,
     experiment: _experiment.Experiment,
     participant_data: ParticipantData,
+    config: Config,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -241,6 +244,8 @@ async def participant_factory(
         Unique identifier for Participant.  Must exist in experiment.
     experiment : modules.experiment.Experiment
         Experiment the participant is part of.
+    config : modules.config.Config
+        Hub configuration / Config object.
 
     Returns
     -------
@@ -249,8 +254,16 @@ async def participant_factory(
         representing the client.
     """
     participant = Participant(id, experiment, participant_data)
-    answer, connection = await connection_factory(
-        offer, participant.handle_message, f"P-{id}"
-    )
+    log_name_suffix = f"P-{id}"
+
+    if config.participant_multiprocessing:
+        answer, connection = await connection_subprocess_factory(
+            offer, participant.handle_message, log_name_suffix, config
+        )
+    else:
+        answer, connection = await connection_factory(
+            offer, participant.handle_message, log_name_suffix
+        )
+
     participant.set_connection(connection)
     return (answer, participant)

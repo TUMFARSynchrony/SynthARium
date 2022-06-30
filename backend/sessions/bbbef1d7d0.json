@@ -5,18 +5,18 @@
     "record": false,
     "time_limit": 300,
     "description": "Test session for testing backend - frontend communication.",
-    "end_time": 1653219452105,
-    "start_time": 1653219440350,
+    "end_time": 0,
+    "start_time": 0,
     "notes": [],
     "participants": [
         {
-            "id": "aa798c85d5",
-            "first_name": "Max",
-            "last_name": "Mustermann",
+            "id": "a",
+            "first_name": "Anna",
+            "last_name": "Anderson",
             "banned": false,
             "size": {
-                "width": 300,
-                "height": 300
+                "width": 480,
+                "height": 320
             },
             "muted_video": false,
             "muted_audio": false,
@@ -29,18 +29,18 @@
             "filters": []
         },
         {
-            "id": "bb5ad8f231",
-            "first_name": "Erika",
-            "last_name": "Mustermann",
+            "id": "b",
+            "first_name": "Brandon",
+            "last_name": "Brown",
             "banned": false,
             "size": {
-                "width": 300,
-                "height": 300
+                "width": 480,
+                "height": 320
             },
             "muted_video": false,
             "muted_audio": false,
             "position": {
-                "x": 350,
+                "x": 480,
                 "y": 0,
                 "z": 1
             },
@@ -48,38 +48,76 @@
             "filters": []
         },
         {
-            "id": "ccceb2406d",
-            "first_name": "Jeff",
-            "last_name": "Roberts",
+            "id": "c",
+            "first_name": "Christopher",
+            "last_name": "Cook",
             "banned": false,
             "size": {
-                "width": 300,
-                "height": 300
+                "width": 480,
+                "height": 320
             },
             "muted_video": false,
             "muted_audio": false,
             "position": {
-                "x": 100,
-                "y": 270,
-                "z": 30
+                "x": 0,
+                "y": 320,
+                "z": 0
             },
             "chat": [],
             "filters": []
         },
         {
-            "id": "dd1882e48b",
-            "first_name": "Tegan",
-            "last_name": "Dalton",
+            "id": "d",
+            "first_name": "Daniel",
+            "last_name": "Dunn",
             "banned": false,
             "size": {
-                "width": 300,
-                "height": 300
+                "width": 480,
+                "height": 320
             },
             "muted_video": false,
             "muted_audio": false,
             "position": {
-                "x": 400,
-                "y": 270,
+                "x": 480,
+                "y": 320,
+                "z": 0
+            },
+            "chat": [],
+            "filters": []
+        },
+        {
+            "id": "e",
+            "first_name": "Emily",
+            "last_name": "Edwards",
+            "banned": false,
+            "size": {
+                "width": 480,
+                "height": 320
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 960,
+                "y": 0,
+                "z": 35
+            },
+            "chat": [],
+            "filters": []
+        },
+        {
+            "id": "f",
+            "first_name": "Felix",
+            "last_name": "Freeman",
+            "banned": false,
+            "size": {
+                "width": 480,
+                "height": 320
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 960,
+                "y": 320,
                 "z": 35
             },
             "chat": [],

@@ -58,7 +58,6 @@ class _BaseDataClass(AsyncIOEventEmitter):
         """Emit an `update` event if `_emit_updates` is true."""
         try:
             if self._emit_updates:
-                print("_emit_update_event", self)
                 self.emit("update", self)
         except AttributeError as e:
             pass
@@ -492,7 +491,6 @@ class SessionData(_BaseDataClass):
         _handle_updates() :
             Handle updates in data. See for information about `self._trigger_updates`.
         """
-        print("_set_variables")
         if session_dict["id"] == "":
             raise ValueError('Missing "id" in session dict.')
 
@@ -511,14 +509,12 @@ class SessionData(_BaseDataClass):
         self.start_time = session_dict["end_time"]
 
         # Remove event listeners from current participants (before deleting them)
-        print("removing event listeners from old participants")
         for old_participant in self.participants.values():
             old_participant.remove_all_listeners()
 
         # Parse participants
         _generate_participant_ids(session_dict)
         self.participants = {}
-        print("Generating new participants:\n  -> ", session_dict["participants"])
         for participant_dict in session_dict["participants"]:
             p = participant_data_factory(participant_dict)
             p.add_listener("update", self._emit_update_event)
