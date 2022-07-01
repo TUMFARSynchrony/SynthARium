@@ -51,6 +51,7 @@ ERROR_TYPES = Literal[
     "INVALID_PARAMETER",
     "NOT_CONNECTED_TO_EXPERIMENT",
     "EXPERIMENT_RUNNING",
+    "ALREADY_JOINED_EXPERIMENT",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

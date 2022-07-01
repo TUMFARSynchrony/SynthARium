@@ -341,13 +341,24 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid dict with a `session_id` str or if there is no
-            Experiment with `session_id`.
+            Experiment with `session_id`. Also raises if this experimenter is already
+            part of an experiment.
         """
         if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_DATATYPE",
                 description="Message data is not a valid SessionIdRequest.",
+            )
+
+        if self._experiment is not None:
+            raise ErrorDictException(
+                code=409,
+                type="ALREADY_JOINED_EXPERIMENT",
+                description=(
+                    "Can not join an experiment while already connected to an "
+                    "experiment."
+                ),
             )
 
         experiment = self._hub.experiments.get(data["session_id"])
