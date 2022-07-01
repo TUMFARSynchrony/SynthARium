@@ -142,15 +142,14 @@ class Experimenter(User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    async def _handle_save_session(self, data: SessionDict | Any) -> None:
+    async def _handle_save_session(self, data: SessionDict | Any) -> MessageDict:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
         if `id` in data is not a empty string, otherwise try to create new session.
 
-        If the session was newly created, an `CREATED_SESSION` message is send to all
-        experimenters.  Otherwise, if the session was updated, an `UPDATED_SESSION` is
-        send to all experimenters.
+        As a response, `SAVED_SESSION` is send to the caller.  Additionally,
+        `SESSION_CHANGE` is send to all other experimenters connected to the hub.
 
         Parameters
         ----------
@@ -177,9 +176,10 @@ class Experimenter(User):
             session = sm.create_session(data)
 
             # Notify all experimenters about the change
-            message = MessageDict(type="CREATED_SESSION", data=session.asdict())
-            await self._hub.send_to_experimenters(message)
-            return
+            session_dict = session.asdict()
+            message = MessageDict(type="SESSION_CHANGE", data=session_dict)
+            await self._hub.send_to_experimenters(message, self)
+            return MessageDict(type="SAVED_SESSION", data=session_dict)
 
         # Update existing session
         session = sm.get_session(data["id"])
@@ -217,8 +217,11 @@ class Experimenter(User):
         session.update(data)
 
         # Notify all experimenters about the change
-        message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
-        await self._hub.send_to_experimenters(message)
+        session_dict = session.asdict()
+        message = MessageDict(type="SESSION_CHANGE", data=session_dict)
+        await self._hub.send_to_experimenters(message, self)
+
+        return MessageDict(type="SAVED_SESSION", data=session_dict)
 
     async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.

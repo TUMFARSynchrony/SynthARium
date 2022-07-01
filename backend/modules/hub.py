@@ -292,7 +292,9 @@ class Hub:
         self.experiments[session_id] = experiment
         return experiment
 
-    async def send_to_experimenters(self, data: MessageDict):
+    async def send_to_experimenters(
+        self, data: MessageDict, exclude: _experimenter.Experimenter | None = None
+    ):
         """Send `data` to all connected experimenters.
 
         Can be used to inform experimenters about changes to sessions.
@@ -301,6 +303,9 @@ class Hub:
         ----------
         data : custom_types.message.MessageDict
             Message for the experimenters.
+        exclude : modules.experimenter.Experimenter, default None
+            Optional `Experimenter` that will be ignored.
         """
         for experimenter in self.experimenters:
-            await experimenter.send(data)
+            if experimenter is not exclude:
+                await experimenter.send(data)

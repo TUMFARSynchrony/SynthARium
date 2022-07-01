@@ -4,10 +4,13 @@ Use for type hints and static type checking without any overhead during runtime.
 """
 
 from __future__ import annotations
+import logging
 
 from typing import Any, Literal, TypedDict, get_args
 
 import custom_types.util as util
+
+logger = logging.getLogger("Message")
 
 
 class MessageDict(TypedDict):
@@ -41,8 +44,8 @@ MESSAGE_TYPES = Literal[
     "CONNECTION_OFFER",
     "CONNECTION_ANSWER",
     "SAVE_SESSION",
-    "CREATED_SESSION",
-    "UPDATED_SESSION",
+    "SAVED_SESSION",
+    "SESSION_CHANGE",
     "DELETE_SESSION",
     "DELETED_SESSION",
     "GET_SESSION_LIST",
@@ -94,4 +97,8 @@ def is_valid_messagedict(data) -> bool:
     if not util.check_valid_typeddict_keys(data, MessageDict):
         return False
 
-    return data["type"] in get_args(MESSAGE_TYPES)
+    known_type = data["type"] in get_args(MESSAGE_TYPES)
+    if not known_type:
+        logger.debug(f'Unknown type: {data["type"]}')
+
+    return known_type
