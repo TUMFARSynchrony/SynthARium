@@ -195,7 +195,7 @@ class Experimenter(User):
         if session.start_time != 0:
             raise ErrorDictException(
                 code=409,
-                type="SESSION_ALREADY_STARTED",
+                type="EXPERIMENT_ALREADY_STARTED",
                 description="Cannot edit session, session has already started.",
             )
 
