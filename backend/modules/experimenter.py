@@ -76,6 +76,7 @@ class Experimenter(User):
         self.on_message("DELETE_SESSION", self._handle_delete_session)
         self.on_message("CREATE_EXPERIMENT", self._handle_create_experiment)
         self.on_message("JOIN_EXPERIMENT", self._handle_join_experiment)
+        self.on_message("LEAVE_EXPERIMENT", self._handle_leave_experiment)
         self.on_message("START_EXPERIMENT", self._handle_start_experiment)
         self.on_message("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on_message("ADD_NOTE", self._handle_add_note)
@@ -381,6 +382,26 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
+    async def _handle_leave_experiment(self, _) -> MessageDict:
+        """Handle requests with type `LEAVE_EXPERIMENT`.
+
+        If part of an experiment, remove self from experiment and set `self._experiment`
+        to None.
+
+        Raises
+        ------
+        ErrorDictException
+            If this Experimenter is not connected to an modules.experiment.Experiment.
+        """
+        experiment = self._get_experiment_or_raise("Failed to leave experiment.")
+        experiment.remove_experimenter(self)
+        self._experiment = None
+
+        success = SuccessDict(
+            type="LEAVE_EXPERIMENT", description="Successfully left experiment."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
     async def _handle_start_experiment(self, _) -> MessageDict:
         """Handle requests with type `START_EXPERIMENT`.
 
@@ -401,17 +422,8 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already started.
         """
-        if not self._experiment:
-            raise ErrorDictException(
-                code=409,
-                type="INVALID_REQUEST",
-                description=(
-                    "Cannot start experiment. Experimenter is not connected to an "
-                    "experiment."
-                ),
-            )
-
-        await self._experiment.start()
+        experiment = self._get_experiment_or_raise("Cannot start experiment.")
+        await experiment.start()
 
         success = SuccessDict(
             type="START_EXPERIMENT", description="Successfully started experiment."
