@@ -23,6 +23,7 @@ EXAMPLE_SESSION: SessionDict = {
     "date": 1650380763073,
     "time_limit": 300,
     "record": False,
+    "creation_time": 0,
     "start_time": 0,
     "end_time": 0,
     "participants": [
@@ -51,8 +52,6 @@ EXAMPLE_SESSION: SessionDict = {
             "banned": False,
         },
     ],
-    "start_time": 0,
-    "end_time": 0,
     "notes": [],
     "log": [],
 }

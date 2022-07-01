@@ -33,6 +33,10 @@ class SessionDict(TypedDict):
         Whether the experiment is to be recorded.
     participants : list of custom_types.participant.ParticipantDict
         List of invited participants.
+    creation_time : int, default 0
+        Time the experiment was created, if an experiment still exists.  A value grater
+        than 0 indicates that there is a running experiment for this session.  Time in
+        milliseconds since January 1, 1970, 00:00:00 (UTC).  Read only for client.
     start_time : int, default 0
         Time the experiment started in milliseconds since January 1, 1970, 00:00:00
         (UTC).  Read only for client.
@@ -58,6 +62,7 @@ class SessionDict(TypedDict):
     time_limit: int
     record: bool
     participants: list[ParticipantDict]
+    creation_time: int
     start_time: int
     end_time: int
     notes: list[NoteDict]
@@ -103,6 +108,7 @@ def is_valid_session(data, recursive: bool) -> bool:
 
     return (
         isinstance(data["id"], str)
+        and isinstance(data["creation_time"], int)
         and isinstance(data["start_time"], int)
         and isinstance(data["end_time"], int)
         and isinstance(data["title"], str)

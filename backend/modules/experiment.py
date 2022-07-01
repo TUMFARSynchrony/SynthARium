@@ -86,8 +86,10 @@ class Experiment:
     async def stop(self):
         """Stop the experiment.
 
-        If state is not already `ENDED`, save the current time in `session.end_time` and
-        set state to `ENDED`.
+        If state is not already `ENDED`, save the current time in `session.end_time`
+        and in `session.start_time`, if not already set, and set state to `ENDED`.
+        Also resets `session.creation_time` to 0 to indicate that there is no experiment
+        running.
 
         Raises
         ------
@@ -105,6 +107,9 @@ class Experiment:
         timestamp = round(time.time() * 1000)
         self._logger.info(f"Experiment ended. End time: {timestamp}")
         self.session.end_time = timestamp
+        if self.session.start_time == 0:
+            self.session.start_time = timestamp
+        self.session.creation_time = 0
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})

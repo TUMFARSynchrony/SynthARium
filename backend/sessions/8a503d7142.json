@@ -71,6 +71,7 @@
 			"banned": false
 		}
 	],
+	"creation_time": 0,
 	"start_time": 1650380763076,
 	"end_time": 1650380864076,
 	"notes": [

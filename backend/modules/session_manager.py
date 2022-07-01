@@ -140,6 +140,15 @@ class SessionManager:
                     ),
                 )
 
+        if session_dict["creation_time"] != 0:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description=(
+                    '"creation_time" must initially be set to the default value 0.'
+                ),
+            )
+
         if session_dict["end_time"] != 0:
             raise ErrorDictException(
                 code=400,

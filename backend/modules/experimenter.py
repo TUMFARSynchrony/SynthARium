@@ -201,6 +201,15 @@ class Experimenter(User):
 
         # Check if read only parameters where changed
         # Checks for participant IDs are included in session.update()
+        if data["creation_time"] != session.creation_time:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_PARAMETER",
+                description=(
+                    'Cannot change session "creation_time", field is read only.'
+                ),
+            )
+
         if data["start_time"] != session.start_time:
             raise ErrorDictException(
                 code=409,
