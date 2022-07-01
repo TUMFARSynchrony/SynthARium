@@ -7,6 +7,7 @@ function ParticipantsTab({
   connectedParticipants,
   onKickBanParticipant,
   onMuteParticipant,
+  onSendChat,
 }) {
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
@@ -26,6 +27,7 @@ function ParticipantsTab({
                   sessionId={sessionId}
                   onKickBanParticipant={onKickBanParticipant}
                   onMuteParticipant={onMuteParticipant}
+                  onSendChat={onSendChat}
                 />
               );
             })

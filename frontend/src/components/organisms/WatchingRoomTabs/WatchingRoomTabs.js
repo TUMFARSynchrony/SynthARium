@@ -12,6 +12,7 @@ function WatchingRoomTabs({
   onStartExperiment,
   onMuteParticipant,
   onEndExperiment,
+  onSendChat,
 }) {
   return (
     <>
@@ -37,6 +38,7 @@ function WatchingRoomTabs({
             connectedParticipants={connectedParticipants}
             onKickBanParticipant={onKickBanParticipant}
             onMuteParticipant={onMuteParticipant}
+            onSendChat={onSendChat}
           />
         </TabPanel>
       </Tabs>

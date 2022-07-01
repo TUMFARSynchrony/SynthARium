@@ -13,6 +13,7 @@ function WatchingRoom({
   onMuteParticipant,
   onStartExperiment,
   onEndExperiment,
+  onSendChat,
 }) {
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
@@ -51,6 +52,7 @@ function WatchingRoom({
             onStartExperiment={onStartExperiment}
             onMuteParticipant={onMuteParticipant}
             onEndExperiment={onEndExperiment}
+            onSendChat={onSendChat}
           />
         </div>
       </div>

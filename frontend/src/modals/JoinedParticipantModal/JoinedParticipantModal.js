@@ -1,5 +1,6 @@
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
+import Chat from "../../components/molecules/Chat/Chat";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
 import { PARTICIPANT_HOST } from "../../utils/constants";
 
@@ -11,6 +12,7 @@ function JoinedParticipantModal({
   setShowModal,
   sessionId,
   onMuteParticipant,
+  onSendChat,
 }) {
   const muteParticipant = (muteAudio, muteVideo) => {
     onMuteParticipant({
@@ -65,7 +67,13 @@ function JoinedParticipantModal({
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantActions">
           <div className="joinedParticipantFilters">Filter List</div>
-          <div className="joinedParticipantChat">Chat with participant</div>
+          <div className="joinedParticipantChat">
+            <Chat
+              participantId={participantData.id}
+              chat={participantData.chat}
+              onSendChat={onSendChat}
+            />
+          </div>
         </div>
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantButtons">

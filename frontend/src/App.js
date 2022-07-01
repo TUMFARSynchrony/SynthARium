@@ -237,6 +237,10 @@ function App() {
     // onSendSessionToBackend(getSessionById(sessionId, sessionsList));
   };
 
+  const onSendChat = (chatMessage) => {
+    connection.sendMessage("STOP_EXPERIMENT", chatMessage);
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -275,6 +279,7 @@ function App() {
                 onMuteParticipant={onMuteParticipant}
                 onStartExperiment={onStartExperiment}
                 onEndExperiment={onEndExperiment}
+                onSendChat={onSendChat}
               />
             }
           />

@@ -102,7 +102,7 @@ function OverviewTab({
 
       {endVerificationModal && (
         <EndVerificationModal
-          setShowModal={setStartVerificationModal}
+          setShowModal={setEndVerificationModal}
           onEndExperiment={onEndExperiment}
         />
       )}
