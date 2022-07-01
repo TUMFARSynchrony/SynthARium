@@ -329,6 +329,20 @@ class Experiment:
         audio : bool
             Whether the participants audio should be muted.
         """
+        # Save muted state in session data
+        participantData = self.session.participants.get(participant_id)
+        if participantData is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=(
+                    "Failed to mute participant, requested participantId is not part "
+                    "of this experiment."
+                ),
+            )
+        participantData.muted_audio = audio
+        participantData.muted_video = video
+
         # Mute participant if participant is already connected
         if participant_id in self._participants:
             await self._participants[participant_id].set_muted(video, audio)
