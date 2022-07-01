@@ -289,7 +289,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         ParticipantData based on the data in `participant_dict`.
     """
     size = participant_dict["size"]
-    sizeData = SizeData(size["width"], size["width"])
+    sizeData = SizeData(size["width"], size["height"])
 
     pos = participant_dict["position"]
     positionData = PositionData(pos["x"], pos["y"], pos["z"])
