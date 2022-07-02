@@ -190,14 +190,18 @@ class Connection(ConnectionInterface):
         )
         await sc.handle_answer(answer_description)
 
-    async def stop_subconnection(self, subconnection_id: str) -> bool:
+    async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         if subconnection_id not in self._sub_connections:
-            return False
+            self._logger.error(
+                "Failed to remove subconnection, unknown subconnection_id: "
+                f"{subconnection_id}"
+            )
+            return
 
         sub_connection = self._sub_connections[subconnection_id]
         await sub_connection.stop()
-        return True
+        return
 
     async def set_muted(self, video: bool, audio: bool) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
