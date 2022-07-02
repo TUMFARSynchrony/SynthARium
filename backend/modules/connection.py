@@ -159,7 +159,7 @@ class Connection(ConnectionInterface):
         return self._state
 
     async def create_subscriber_offer(
-        self, participant_summary: ParticipantSummaryDict | None
+        self, participant: ParticipantSummaryDict | str | None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
 
@@ -168,7 +168,7 @@ class Connection(ConnectionInterface):
             subconnection_id,
             self._incoming_video.subscribe(),
             self._incoming_audio.subscribe(),
-            participant_summary,
+            participant,
             self._log_name_suffix,
         )
         sc.add_listener("connection_closed", self._handle_closed_subconnection)
@@ -381,7 +381,7 @@ class SubConnection(AsyncIOEventEmitter):
     """
 
     id: str
-    _participant_summary: ParticipantSummaryDict | None
+    _participant_summary: ParticipantSummaryDict | str | None
     _pc: RTCPeerConnection
 
     _audio_track: MediaStreamTrack
@@ -395,7 +395,7 @@ class SubConnection(AsyncIOEventEmitter):
         id: str,
         video_track: MediaStreamTrack,
         audio_track: MediaStreamTrack,
-        participant_summary: ParticipantSummaryDict | None,
+        participant_summary: ParticipantSummaryDict | str | None,
         log_name_suffix: str,
     ) -> None:
         """Initialize new SubConnection.
@@ -408,7 +408,7 @@ class SubConnection(AsyncIOEventEmitter):
         audio_track : aiortc.MediaStreamTrack
             Audio track that will be send in this SubConnection.
         participant_summary : None or custom_types.participant_summary.ParticipantSummaryDict
-            Participant summary send to the client with the initial offer.
+            Participant summary or ID send to the client with the initial offer.
         """
         super().__init__()
         self._logger = logging.getLogger(f"SubConnection-{log_name_suffix}")

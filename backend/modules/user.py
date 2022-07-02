@@ -11,17 +11,17 @@ from __future__ import annotations
 import logging
 import traceback
 from abc import ABCMeta, abstractmethod
+from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
-from typing import Callable, Any, Coroutine, Tuple
 
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
+import modules.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from custom_types.connection import (
     ConnectionAnswerDict,
     is_valid_connection_answer_dict,
@@ -183,7 +183,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             New subscriber to this User.
         """
         self._logger.debug(f"Adding subscriber: {repr(user)}")
-        offer = await self._connection.create_subscriber_offer(self.get_summary())
+        if isinstance(user, _experimenter.Experimenter):
+            offer = await self._connection.create_subscriber_offer(self.id)
+        else:
+            offer = await self._connection.create_subscriber_offer(self.get_summary())
+
         msg = MessageDict(type="CONNECTION_OFFER", data=offer)
         await user.send(msg)
 

@@ -103,7 +103,7 @@ class ConnectionSubprocess(ConnectionInterface):
         return self._state
 
     async def create_subscriber_offer(
-        self, participant_summary: ParticipantSummaryDict | None
+        self, participant_summary: ParticipantSummaryDict | str | None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("CREATE_OFFER", participant_summary)
