@@ -380,6 +380,8 @@ class Experiment:
             If the given `experimenter` is not part of this experiment.
         """
         self._experimenters.remove(experimenter)
+        experimenter.remove_listener("disconnected", self.remove_experimenter)
+
         self._logger.info(f"Experimenter ({str(experimenter)}) left Experiment")
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"

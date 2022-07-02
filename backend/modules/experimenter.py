@@ -404,6 +404,10 @@ class Experimenter(User):
         """
         experiment = self._get_experiment_or_raise("Failed to leave experiment.")
         experiment.remove_experimenter(self)
+
+        for participant in experiment.participants.values():
+            await participant.remove_subscriber(self)
+
         self._experiment = None
 
         success = SuccessDict(
