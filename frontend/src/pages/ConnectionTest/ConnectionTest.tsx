@@ -199,6 +199,12 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
           GET_SESSION_LIST
         </button>
         <button
+          onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          START_EXPERIMENT
+        </button>
+        <button
           onClick={() => props.connection.sendMessage("STOP_EXPERIMENT", {})}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
@@ -224,6 +230,12 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             JOIN_EXPERIMENT
           </button>
         </div>
+        <button
+          onClick={() => props.connection.sendMessage("LEAVE_EXPERIMENT", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          LEAVE_EXPERIMENT
+        </button>
         <div className="inputBtnBox">
           <input
             type="text"
