@@ -100,6 +100,6 @@ def is_valid_messagedict(data) -> bool:
 
     known_type = data["type"] in get_args(MESSAGE_TYPES)
     if not known_type:
-        logger.debug(f'Unknown type: {data["type"]}')
+        logger.debug(f'Unknown message type: {data["type"]}')
 
     return known_type

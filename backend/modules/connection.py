@@ -159,7 +159,7 @@ class Connection(ConnectionInterface):
         return self._state
 
     async def create_subscriber_offer(
-        self, participant: ParticipantSummaryDict | str | None
+        self, participant_summary: ParticipantSummaryDict | str | None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
 
@@ -168,7 +168,7 @@ class Connection(ConnectionInterface):
             subconnection_id,
             self._incoming_video.subscribe(),
             self._incoming_audio.subscribe(),
-            participant,
+            participant_summary,
             self._log_name_suffix,
         )
         sc.add_listener("connection_closed", self._handle_closed_subconnection)
