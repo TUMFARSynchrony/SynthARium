@@ -6,6 +6,7 @@ from typing import Any
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
 
+from modules.util import timestamp
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 from modules.data import SessionData
@@ -37,6 +38,7 @@ class Experiment:
         self._experimenters = []
         self._participants = {}
         self._logger.info(f"Experiment created: {self}")
+        self.session.creation_time = timestamp()
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -75,9 +77,9 @@ class Experiment:
             )
 
         self._state = ExperimentState.RUNNING
-        timestamp = round(time.time() * 1000)
-        self._logger.info(f"Experiment started. Start time: {timestamp}")
-        self.session.start_time = timestamp
+        time = timestamp()
+        self._logger.info(f"Experiment started. Start time: {time}")
+        self.session.start_time = time
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
@@ -88,8 +90,6 @@ class Experiment:
 
         If state is not already `ENDED`, save the current time in `session.end_time`
         and in `session.start_time`, if not already set, and set state to `ENDED`.
-        Also resets `session.creation_time` to 0 to indicate that there is no experiment
-        running.
 
         Raises
         ------
@@ -104,12 +104,11 @@ class Experiment:
             )
 
         self._state = ExperimentState.ENDED
-        timestamp = round(time.time() * 1000)
-        self._logger.info(f"Experiment ended. End time: {timestamp}")
-        self.session.end_time = timestamp
+        time = timestamp()
+        self._logger.info(f"Experiment ended. End time: {time}")
+        self.session.end_time = time
         if self.session.start_time == 0:
-            self.session.start_time = timestamp
-        self.session.creation_time = 0
+            self.session.start_time = time
 
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_ENDED", data={})

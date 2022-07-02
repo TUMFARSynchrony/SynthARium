@@ -5,7 +5,7 @@ factory functions for `SessionData`: `session_data_factory` and `ParticipantData
 `participant_data_factory`.
 """
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.util import generate_unique_id
@@ -571,6 +571,8 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
     """
     if session_dict["id"] == "":
         raise ValueError('Missing "id" in session dict.')
+    if session_dict["creation_time"] != 0:
+        raise ValueError('"creation_time" must be 0 when creating new SessionData.')
 
     if has_duplicate_participant_ids(session_dict):
         raise ErrorDictException(

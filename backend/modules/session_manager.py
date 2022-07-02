@@ -249,6 +249,8 @@ class SessionManager:
         sessions_with_missing_ids: list[SessionDict] = []
         for file in filenames:
             session_dict: SessionDict = self._read(file)
+            session_dict["creation_time"] = 0
+
             if not is_valid_session(session_dict, True):
                 self._logger.error(f"Invalid session file: {file}. Ignoring file")
                 continue

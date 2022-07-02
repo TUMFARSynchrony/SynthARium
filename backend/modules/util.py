@@ -2,6 +2,7 @@
 
 import os
 import uuid
+import time
 import platform
 
 
@@ -41,3 +42,8 @@ def get_system_specs() -> dict:
         "processor": platform.processor(),
         "cpu_count": os.cpu_count(),
     }
+
+
+def timestamp() -> int:
+    """Get the current time in milliseconds since January 1, 1970, 00:00:00 (UTC)."""
+    return round(time.time() * 1000)
