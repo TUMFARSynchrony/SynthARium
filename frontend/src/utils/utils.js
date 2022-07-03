@@ -130,7 +130,9 @@ export const getPastAndFutureSessions = (sessionsList) => {
   let today = new Date().getTime();
 
   sessionsList.forEach((session, _) => {
-    if (session.date < today) {
+    // Sessions in the past are in the past and cannot be started.
+    // end_time needs to be > 0 for a session to be past as well.
+    if (session.date < today || session.end_time > 0) {
       pastSessions.push(session);
     } else {
       futureSessions.push(session);

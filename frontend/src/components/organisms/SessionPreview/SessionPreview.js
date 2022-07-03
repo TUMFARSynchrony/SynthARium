@@ -13,10 +13,8 @@ function SessionPreview({
   onDeleteSession,
   onJoinExperiment,
   onCreateExperiment,
-  isOngoingExperiment,
 }) {
   const dispatch = useDispatch();
-
   const deleteSession = () => {
     const sessionId = selectedSession.id;
     onDeleteSession(sessionId);
@@ -26,12 +24,18 @@ function SessionPreview({
   return (
     <div
       className={
-        "sessionPreviewContainer" + (isOngoingExperiment ? " ongoing" : "")
+        "sessionPreviewContainer" +
+        (selectedSession.creation_time > 0 && selectedSession.end_time === 0
+          ? " ongoing"
+          : "")
       }
     >
       <div className="sessionPreviewHeader">
         <div className="ongoingExperiment">
-          {isOngoingExperiment && <Heading heading={"Experiment ongoing."} />}
+          {selectedSession.creation_time > 0 &&
+            selectedSession.end_time === 0 && (
+              <Heading heading={"Experiment ongoing."} />
+            )}
         </div>
         <h3 className="sessionPreviewTitles">Title: {selectedSession.title}</h3>
         <h3 className="sessionPreviewTitles">
@@ -44,35 +48,38 @@ function SessionPreview({
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
       <>
         <div className="sessionPreviewButtons">
-          {!isOngoingExperiment && (
-            <Button
-              name={"DELETE"}
-              design={"negative"}
-              onClick={() => deleteSession()}
-            />
-          )}
+          {!selectedSession.creation_time > 0 &&
+            !selectedSession.end_time === 0 && (
+              <Button
+                name={"DELETE"}
+                design={"negative"}
+                onClick={() => deleteSession()}
+              />
+            )}
           <LinkButton
             name={"COPY"}
             to="/sessionForm"
             onClick={() => dispatch(copySession(selectedSession))}
           />
 
-          {!isOngoingExperiment && isFutureSession(selectedSession) && (
-            <>
-              <LinkButton
-                name={"EDIT"}
-                to="/sessionForm"
-                onClick={() => dispatch(initializeSession(selectedSession))}
-              />
-              <LinkButton
-                name={"START"}
-                to="/watchingRoom"
-                onClick={() => onCreateExperiment(selectedSession.id)}
-              />
-            </>
-          )}
+          {!selectedSession.creation_time > 0 &&
+            selectedSession.end_time === 0 &&
+            isFutureSession(selectedSession) && (
+              <>
+                <LinkButton
+                  name={"EDIT"}
+                  to="/sessionForm"
+                  onClick={() => dispatch(initializeSession(selectedSession))}
+                />
+                <LinkButton
+                  name={"START"}
+                  to="/watchingRoom"
+                  onClick={() => onCreateExperiment(selectedSession.id)}
+                />
+              </>
+            )}
 
-          {isOngoingExperiment && (
+          {selectedSession.creation_time > 0 && selectedSession.end_time === 0 && (
             <>
               <LinkButton
                 name={"JOIN EXPERIMENT"}

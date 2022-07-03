@@ -75,7 +75,7 @@ function OverviewTab({
         to={"/"}
         onClick={() => onLeaveExperiment()}
       />
-      {ongoingExperiment.experimentState === "WAITING" ? (
+      {sessionData.start_time === 0 ? (
         <Button
           name={"START EXPERIMENT"}
           design={"positive"}
@@ -95,6 +95,7 @@ function OverviewTab({
 
       {startVerificationModal && (
         <StartVerificationModal
+          sessionId={sessionId}
           setShowModal={setStartVerificationModal}
           onStartExperiment={onStartExperiment}
         />
@@ -102,6 +103,7 @@ function OverviewTab({
 
       {endVerificationModal && (
         <EndVerificationModal
+          sessionId={sessionId}
           setShowModal={setEndVerificationModal}
           onEndExperiment={onEndExperiment}
         />

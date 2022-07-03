@@ -12,14 +12,15 @@ import {
   createSession,
   getSessionsList,
   startSession,
-  stopSession,
+  stopExperiment,
+  startExperiment,
   updateSession,
 } from "./features/sessionsList";
 import { deleteSession } from "./features/sessionsList";
 
 import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getLocalStream } from "./utils/utils";
+import { getLocalStream, getSessionById } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import { saveSession } from "./features/openSession";
@@ -191,10 +192,8 @@ function App() {
 
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
-    dispatch(createExperiment(sessionId));
-    dispatch(startSession(sessionId));
-    //TODO: uncomment when creation_time is implemented
-    // onSendSessionToBackend(getSessionById(sessionId, sessionsList));
+    dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
+    dispatch(startSession(sessionId)); // Change creation_time to current time
   };
 
   const onDeleteSession = (sessionId) => {
@@ -213,7 +212,6 @@ function App() {
 
   const onJoinExperiment = (sessionId) => {
     connection.sendMessage("JOIN_EXPERIMENT", { session_id: sessionId });
-    // dispatch(startSession(sessionId));
     dispatch(joinExperiment(sessionId));
   };
 
@@ -223,24 +221,23 @@ function App() {
   };
 
   const onLeaveExperiment = () => {
-    connection.sendMessage("LEAVE_EXPERIMENT");
+    connection.sendMessage("LEAVE_EXPERIMENT", {});
   };
 
   const onMuteParticipant = (muteRequest) => {
     connection.sendMessage("MUTE", muteRequest);
   };
 
-  const onStartExperiment = () => {
+  const onStartExperiment = (sessionId) => {
     connection.sendMessage("START_EXPERIMENT", {});
     dispatch(changeExperimentState("ONGOING"));
+    dispatch(startExperiment(sessionId)); // set start_time to current time
   };
 
   const onEndExperiment = (sessionId) => {
     connection.sendMessage("STOP_EXPERIMENT", {});
     dispatch(changeExperimentState("WAITING"));
-    dispatch(stopSession(sessionId));
-    //TODO: uncomment when creation_time is implemented
-    // onSendSessionToBackend(getSessionById(sessionId, sessionsList));
+    dispatch(stopExperiment(sessionId)); // set end_time to current time
   };
 
   const onSendChat = (chatMessage) => {

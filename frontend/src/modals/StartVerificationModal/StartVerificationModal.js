@@ -2,10 +2,14 @@ import Button from "../../components/atoms/Button/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 import "./StartVerificationModal.css";
 
-function StartVerificationModal({ setShowModal, onStartExperiment }) {
+function StartVerificationModal({
+  sessionId,
+  setShowModal,
+  onStartExperiment,
+}) {
   const startExperiment = () => {
     setShowModal(false);
-    onStartExperiment();
+    onStartExperiment(sessionId);
   };
 
   return (
