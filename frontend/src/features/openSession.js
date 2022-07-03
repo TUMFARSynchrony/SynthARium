@@ -14,6 +14,7 @@ export const openSessionSlice = createSlice({
       participants: [],
       start_time: 0,
       end_time: 0,
+      creation_time: 0,
       notes: [],
       log: "",
     },

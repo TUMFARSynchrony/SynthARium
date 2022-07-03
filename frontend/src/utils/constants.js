@@ -8,6 +8,7 @@ export const INITIAL_SESSION_DATA = {
   participants: [],
   start_time: 0,
   end_time: 0,
+  creation_time: 0,
   notes: [],
   log: "",
 };

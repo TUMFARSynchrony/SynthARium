@@ -96,6 +96,9 @@ function SessionForm({ onSendSessionToBackend }) {
       toast.error("Failed to save session since required fields are missing!");
       return;
     }
+
+    console.log("sessionData", sessionData);
+
     onSendSessionToBackend(sessionData);
   };
 
@@ -132,6 +135,7 @@ function SessionForm({ onSendSessionToBackend }) {
       ],
       start_time: 0,
       end_time: 0,
+      creation_time: 0,
       notes: [],
       log: "",
     };

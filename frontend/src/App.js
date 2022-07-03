@@ -131,7 +131,8 @@ function App() {
 
     connection.api.on("SESSION_LIST", handleSessionList);
     connection.api.on("DELETED_SESSION", handleDeletedSession);
-    connection.api.on("CREATED_SESSION", handleCreatedSession);
+    connection.api.on("SAVED_SESSION", handleSavedSession);
+    connection.api.on("SESSION_CHANGE", handleSessionChange);
     connection.api.on("UPDATED_SESSION", handleUpdatedSession);
     connection.api.on("SUCCESS", handleSuccess);
     connection.api.on("ERROR", handleError);
@@ -140,7 +141,8 @@ function App() {
       connection.api.off("SESSION_LIST", handleSessionList);
       connection.api.off("DELETED_SESSION", handleDeletedSession);
       connection.api.off("UPDATED_SESSION", handleUpdatedSession);
-      connection.api.off("CREATED_SESSION", handleCreatedSession);
+      connection.api.off("SAVED_SESSION", handleSavedSession);
+      connection.api.off("SESSION_CHANGE", handleSessionChange);
       connection.api.off("SUCCESS", handleSuccess);
       connection.api.off("ERROR", handleError);
     };
@@ -169,7 +171,7 @@ function App() {
     dispatch(saveSession(data));
   };
 
-  const handleCreatedSession = (data) => {
+  const handleSavedSession = (data) => {
     toast.success("Successfully created session " + data.title);
     dispatch(createSession(data));
     dispatch(saveSession(data));
@@ -181,6 +183,10 @@ function App() {
 
   const handleError = (data) => {
     toast.error(data.description);
+  };
+
+  const handleSessionChange = (data) => {
+    dispatch(createSession(data));
   };
 
   const onCreateExperiment = (sessionId) => {
@@ -216,7 +222,7 @@ function App() {
     dispatch(addNote({ note: note, id: sessionId }));
   };
 
-  const onLeaveExperiment = (sessionId) => {
+  const onLeaveExperiment = () => {
     connection.sendMessage("LEAVE_EXPERIMENT");
   };
 
