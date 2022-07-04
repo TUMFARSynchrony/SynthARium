@@ -244,14 +244,6 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     }
   }
 
-  /** Handle the `signalingstatechange` event on `this.pc`. */
-  protected handleSignalingStateChange(): void {
-    this.log(`SignalingState: ${this.pc.signalingState}`);
-    if (this.pc.signalingState === "closed") {
-      this.stop();
-    }
-  }
-
   /** Initialize `this.dc` and add event listeners. */
   private initDataChannel() {
     this.dc = this.pc.createDataChannel("API");

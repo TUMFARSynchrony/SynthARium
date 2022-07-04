@@ -87,13 +87,6 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.emit("connectionClosed", this.id);
   }
 
-  protected handleSignalingStateChange(): void {
-    this.log(`SignalingState: ${this.pc.signalingState}`);
-    if (this.pc.signalingState === "closed") {
-      this.stop();
-    }
-  }
-
   protected handleIceConnectionStateChange(): void {
     this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
     if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {

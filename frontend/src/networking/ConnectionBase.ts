@@ -163,9 +163,17 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     });
   }
 
-  /** TODO Document */
-  protected abstract handleIceConnectionStateChange(): void;
+  /** Handle the `signalingstatechange` event on `this.pc`. */
+  protected handleSignalingStateChange(): void {
+    this.log(`SignalingState: ${this.pc.signalingState}`);
+    if (this.pc.signalingState === "closed") {
+      this.stop();
+    }
+  }
 
   /** TODO Document */
-  protected abstract handleSignalingStateChange(): void;
+  public abstract stop(): void;
+
+  /** TODO Document */
+  protected abstract handleIceConnectionStateChange(): void;
 }
