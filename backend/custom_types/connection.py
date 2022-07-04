@@ -11,8 +11,17 @@ from custom_types.participant_summary import ParticipantSummaryDict
 import custom_types.util as util
 
 
+class ConnectionProposalDict(TypedDict):
+    """TODO Document"""
+
+    id: str
+    participant_summary: ParticipantSummaryDict | str | None
+
+
 class ConnectionOfferDict(TypedDict):
     """TypedDict for sending a `CONNECTION_OFFER` message to the client.
+
+    TODO update docs
 
     This is used to offer the client a new subconnection.
 
@@ -36,7 +45,28 @@ class ConnectionOfferDict(TypedDict):
 
     id: str
     offer: RTCSessionDescriptionDict
-    participant_summary: ParticipantSummaryDict | str | None
+
+
+def is_valid_connection_offer_dict(data: Any) -> bool:
+    """Check if `data` is a valid custom_types.connection.ConnectionOfferDict.
+
+    Parameters
+    ----------
+    data : Any
+        Data to perform check on.
+
+    Returns
+    -------
+    bool
+        True if `data` is a valid custom_types.connection.ConnectionOfferDict.
+    """
+    # Check if all required and only required or optional keys exist in data
+    if not util.check_valid_typeddict_keys(data, ConnectionOfferDict):
+        return False
+
+    return isinstance(data["id"], str) and is_valid_rtc_session_description_dict(
+        data["offer"]
+    )
 
 
 class RTCSessionDescriptionDict(TypedDict):

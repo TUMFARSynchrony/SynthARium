@@ -8,7 +8,11 @@ from modules.connection_state import ConnectionState
 
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
-from custom_types.connection import ConnectionOfferDict, ConnectionAnswerDict
+from custom_types.connection import (
+    ConnectionOfferDict,
+    ConnectionAnswerDict,
+    ConnectionProposalDict,
+)
 
 
 class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -54,27 +58,31 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def create_subscriber_offer(
+    async def create_subscriber_proposal(
         self, participant_summary: ParticipantSummaryDict | str | None
-    ) -> ConnectionOfferDict:
-        """Create a subconnection offer.
+    ) -> ConnectionProposalDict:
+        """Create a subconnection proposal.
 
         Parameters
         ----------
         participant_summary : custom_types.participant_summary.ParticipantSummaryDict, str or None
             Optional participant summary or participant ID that will be included in the
-            resulting offer.
+            resulting proposal.
 
         Returns
         -------
-        custom_types.connection.ConnectionOfferDict
-            Connection offer including `participant_summary`.
+        custom_types.connection.ConnectionProposalDict
+            Connection proposal including `participant_summary`.
         """
         pass
 
     @abstractmethod
-    async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
+    async def handle_subscriber_offer(
+        self, offer: ConnectionOfferDict
+    ) -> ConnectionAnswerDict:
         """Handle answer to a connection offer.
+
+        TODO update docs - raises ValueError
 
         Parameters
         ----------
