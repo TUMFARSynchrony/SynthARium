@@ -11,6 +11,8 @@ export default class ConnectionBase<T> extends EventHandler<T> {
 
   readonly logging: boolean;
   protected _participantSummary: ParticipantSummary | string | null;
+  protected pc: RTCPeerConnection;
+
   private name: string;
 
   /**
@@ -24,6 +26,11 @@ export default class ConnectionBase<T> extends EventHandler<T> {
     this.logging = logging;
     this.name = name;
     this._participantSummary = null;
+
+    const config: any = {
+      sdpSemantics: "unified-plan",
+    };
+    this.pc = new RTCPeerConnection(config);
   }
 
   /**
@@ -70,5 +77,36 @@ export default class ConnectionBase<T> extends EventHandler<T> {
    */
   protected logError(message: any, ...optionalParams: any[]): void {
     console.error(`[${this.name}] ${message}`, ...optionalParams);
+  }
+
+  /** TODO Document */
+  protected async createOffer(): Promise<RTCSessionDescription> {
+    const options = {
+      offerToReceiveVideo: true,
+      offerToReceiveAudio: true,
+    };
+
+    const offer = await this.pc.createOffer(options);
+    await this.pc.setLocalDescription(offer);
+
+    // Wait for iceGatheringState to be "complete".
+    await new Promise((resolve) => {
+      if (this.pc?.iceGatheringState === "complete") {
+        resolve(undefined);
+      } else {
+        const checkState = () => {
+          if (this.pc?.iceGatheringState === "complete") {
+            this.pc.removeEventListener(
+              "icegatheringstatechange",
+              checkState
+            );
+            resolve(undefined);
+          }
+        };
+        this.pc?.addEventListener("icegatheringstatechange", checkState);
+      }
+    });
+
+    return this.pc.localDescription;
   }
 }
