@@ -50,7 +50,6 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   private _state: ConnectionState;
   private localStream: MediaStream;
-  private _remoteStream: MediaStream;
   private dc: RTCDataChannel;
   private subConnections: Map<string, SubConnection>;
 
@@ -81,23 +80,12 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.userType = userType;
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
-    this._remoteStream = new MediaStream();
 
     this.api = new EventHandler();
     this.api.on("CONNECTION_PROPOSAL", this.handleConnectionProposal.bind(this));
     this.api.on("CONNECTION_ANSWER", this.handleConnectionAnswer.bind(this));
 
-    this.addPcEventHandlers();
     this.initDataChannel();
-  }
-
-  /**
-   * Get remote stream of this client. 
-   * 
-   * The remote stream is the stream received from the backend, based on the stream send from this client.
-   */
-  public get remoteStream(): MediaStream {
-    return this._remoteStream;
   }
 
   /**
@@ -244,40 +232,8 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.emit("connectionStateChange", state);
   }
 
-  /** Initialize `this.pc` and add event listeners. */
-  private addPcEventHandlers() {
-    this.pc.addEventListener(
-      "icegatheringstatechange",
-      () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
-      false
-    );
-    this.pc.addEventListener(
-      "iceconnectionstatechange",
-      this.handleIceConnectionStateChange.bind(this),
-      false
-    );
-    this.pc.addEventListener(
-      "signalingstatechange",
-      this.handleSignalingStateChange.bind(this),
-      false
-    );
-
-    // Receive audio / video
-    this.pc.addEventListener("track", (e) => {
-      this.logGroup(`Received ${e.track.kind} track from remote`, e, true);
-
-      if (e.track.kind !== "video" && e.track.kind !== "audio") {
-        this.logError("Received track with unknown kind:", e.track.kind);
-        return;
-      }
-
-      this._remoteStream.addTrack(e.track);
-      this.emit("remoteStreamChange", this._remoteStream);
-    });
-  }
-
   /** Handle the `iceconnectionstatechange` event on `this.pc`. */
-  private handleIceConnectionStateChange() {
+  protected handleIceConnectionStateChange(): void {
     this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
     if (["disconnected", "closed"].includes(this.pc.iceConnectionState)) {
       this.stop();
@@ -289,7 +245,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   }
 
   /** Handle the `signalingstatechange` event on `this.pc`. */
-  private handleSignalingStateChange() {
+  protected handleSignalingStateChange(): void {
     this.log(`SignalingState: ${this.pc.signalingState}`);
     if (this.pc.signalingState === "closed") {
       this.stop();

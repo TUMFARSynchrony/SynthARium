@@ -12,7 +12,6 @@ import { ConnectionAnswer, ConnectionOffer, ConnectionProposal } from "./typing"
  */
 export default class SubConnection extends ConnectionBase<MediaStream | string> {
   readonly id: string;
-  readonly remoteStream: MediaStream;
 
   private connection: Connection;
   private stopped: boolean;
@@ -30,13 +29,11 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   constructor(proposal: ConnectionProposal, connection: Connection, logging: boolean) {
     super(true, `SubConnection - ${proposal.id}`, logging);
     this.id = proposal.id;
-    this.remoteStream = new MediaStream();
     this.connection = connection;
     this.stopped = false;
     this._participantSummary = proposal.participant_summary;
 
     this.log("Initiating SubConnection");
-    this.addPcEventHandlers();
   }
 
   /**
@@ -90,55 +87,14 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.emit("connectionClosed", this.id);
   }
 
-  /** TODO Document */
-  private addPcEventHandlers() {
-    this.pc.addEventListener(
-      "icegatheringstatechange",
-      () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
-      false
-    );
-    this.pc.addEventListener(
-      "iceconnectionstatechange",
-      this.handleIceConnectionStateChange.bind(this),
-      false
-    );
-    this.pc.addEventListener(
-      "signalingstatechange",
-      this.handleSignalingStateChange.bind(this),
-      false
-    );
-
-    // handle incoming audio / video tracks
-    this.pc.addEventListener("track", (e) => {
-      this.log(`Received a ${e.track.kind}, track from remote`);
-      if (e.track.kind !== "video" && e.track.kind !== "audio") {
-        this.logError(`Received track with unknown kind: ${e.track.kind}`);
-        return;
-      }
-      this.remoteStream.addTrack(e.track);
-      this.emit("remoteStreamChange", this.remoteStream);
-
-      // Debug logging - when track state changes
-      e.track.onended = () => {
-        this.log(`${e.track.kind} track ended`);
-      };
-      e.track.onmute = () => {
-        this.log(`${e.track.kind} track muted`);
-      };
-      e.track.onunmute = () => {
-        this.log(`${e.track.kind} track un-muted`);
-      };
-    });
-  }
-
-  private handleSignalingStateChange() {
+  protected handleSignalingStateChange(): void {
     this.log(`SignalingState: ${this.pc.signalingState}`);
     if (this.pc.signalingState === "closed") {
       this.stop();
     }
   }
 
-  private handleIceConnectionStateChange() {
+  protected handleIceConnectionStateChange(): void {
     this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
     if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {
       this.stop();

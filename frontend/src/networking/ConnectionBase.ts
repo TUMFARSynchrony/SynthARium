@@ -7,11 +7,12 @@ import { ParticipantSummary } from "./typing";
  * 
  * @extends EventHandler
  */
-export default class ConnectionBase<T> extends EventHandler<T> {
+export default abstract class ConnectionBase<T> extends EventHandler<T> {
 
   readonly logging: boolean;
   protected _participantSummary: ParticipantSummary | string | null;
   protected pc: RTCPeerConnection;
+  protected _remoteStream: MediaStream;
 
   private name: string;
 
@@ -31,6 +32,17 @@ export default class ConnectionBase<T> extends EventHandler<T> {
       sdpSemantics: "unified-plan",
     };
     this.pc = new RTCPeerConnection(config);
+    this._remoteStream = new MediaStream();
+    this.addPcEventHandlers();
+  }
+
+  /**
+   * Get remote stream of this client. 
+   * 
+   * The remote stream is the stream received from the backend, based on the stream send from this client.
+   */
+  public get remoteStream(): MediaStream {
+    return this._remoteStream;
   }
 
   /**
@@ -109,4 +121,51 @@ export default class ConnectionBase<T> extends EventHandler<T> {
 
     return this.pc.localDescription;
   }
+
+  /** TODO Document */
+  private addPcEventHandlers() {
+    this.pc.addEventListener(
+      "icegatheringstatechange",
+      () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
+      false
+    );
+    this.pc.addEventListener(
+      "iceconnectionstatechange",
+      this.handleIceConnectionStateChange.bind(this),
+      false
+    );
+    this.pc.addEventListener(
+      "signalingstatechange",
+      this.handleSignalingStateChange.bind(this),
+      false
+    );
+
+    // handle incoming audio / video tracks
+    this.pc.addEventListener("track", (e) => {
+      this.log(`Received a ${e.track.kind}, track from remote`);
+      if (e.track.kind !== "video" && e.track.kind !== "audio") {
+        this.logError(`Received track with unknown kind: ${e.track.kind}`);
+        return;
+      }
+      this._remoteStream.addTrack(e.track);
+      this.emit("remoteStreamChange", this.remoteStream);
+
+      // Debug logging - when track state changes
+      e.track.onended = () => {
+        this.log(`${e.track.kind} track ended`);
+      };
+      e.track.onmute = () => {
+        this.log(`${e.track.kind} track muted`);
+      };
+      e.track.onunmute = () => {
+        this.log(`${e.track.kind} track un-muted`);
+      };
+    });
+  }
+
+  /** TODO Document */
+  protected abstract handleIceConnectionStateChange(): void;
+
+  /** TODO Document */
+  protected abstract handleSignalingStateChange(): void;
 }
