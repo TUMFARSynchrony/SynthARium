@@ -174,8 +174,14 @@ export const useBackListener = (callback) => {
 };
 
 export const getVideoTitle = (peer, index) => {
-  if (peer.summary) {
-    return `${peer.summary.first_name} ${peer.summary.last_name}`;
+  if (peer) {
+    return `${peer.first_name} ${peer.last_name}`;
   }
   return `Peer stream ${index + 1}`;
+};
+
+export const getParticipantById = (participantId, sessionData) => {
+  let participants = sessionData.participants;
+
+  return getSessionById(participantId, participants)[0];
 };

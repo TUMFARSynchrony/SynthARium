@@ -1,34 +1,51 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import Button from "../../components/atoms/Button/Button";
 import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
+import { banMuteUnmuteParticipant } from "../../features/sessionsList";
 import "./KickParticipantModal.css";
 
 function KickParticipantModal({
-  participantData,
+  participantId,
+  sessionId,
   showModal,
   setShowModal,
   onKickBanParticipant,
   action,
 }) {
   const [reason, setReason] = useState("");
+  const dispatch = useDispatch();
+
   const onChange = (newReason) => {
     setReason(newReason);
   };
 
   const kickBanParticipant = () => {
-    //TODO: where to get participant_id?
     if (!reason) {
       toast.warn("Please specify the reason!");
       return;
     }
 
-    onKickBanParticipant({
-      // participant_id: participantData.id,
-      participant_id: "0f2f37dad7",
-      reason: "lalala",
-    });
+    onKickBanParticipant(
+      {
+        participant_id: participantId,
+        reason: reason,
+      },
+      action
+    );
     setShowModal(!showModal);
+
+    if (action === "Ban") {
+      dispatch(
+        banMuteUnmuteParticipant({
+          participantId: participantId,
+          action: "banned",
+          value: true,
+          sessionId: sessionId,
+        })
+      );
+    }
   };
 
   return (

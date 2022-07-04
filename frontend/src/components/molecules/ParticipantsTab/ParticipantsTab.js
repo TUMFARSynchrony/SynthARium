@@ -2,6 +2,7 @@ import Heading from "../../atoms/Heading/Heading";
 import JoinedParticipantCard from "../../atoms/JoinedParticipantCard/JoinedParticipantCard";
 import { useSelector } from "react-redux";
 import "./ParticipantsTab.css";
+import { getSessionById } from "../../../utils/utils";
 
 function ParticipantsTab({
   connectedParticipants,
@@ -13,18 +14,20 @@ function ParticipantsTab({
     (state) => state.ongoingExperiment.value
   );
   const sessionId = ongoingExperiment.sessionId;
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const sessionData = getSessionById(sessionId, sessionsList)[0];
 
   return (
     <>
       <Heading heading={"Joined participants"} />
       <div className="joinedParticipants">
         {connectedParticipants.length > 0
-          ? connectedParticipants.map((participantData, index) => {
+          ? connectedParticipants.map((participant, index) => {
               return (
                 <JoinedParticipantCard
-                  participantData={participantData.summary}
+                  participantId={participant.summary}
                   key={index}
-                  sessionId={sessionId}
+                  sessionData={sessionData}
                   onKickBanParticipant={onKickBanParticipant}
                   onMuteParticipant={onMuteParticipant}
                   onSendChat={onSendChat}

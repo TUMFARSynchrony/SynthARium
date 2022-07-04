@@ -1,7 +1,9 @@
+import { useDispatch } from "react-redux";
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
 import Chat from "../../components/molecules/Chat/Chat";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
+import { banMuteUnmuteParticipant } from "../../features/sessionsList";
 import { PARTICIPANT_HOST } from "../../utils/constants";
 
 import "./JoinedParticipantModal.css";
@@ -14,14 +16,35 @@ function JoinedParticipantModal({
   onMuteParticipant,
   onSendChat,
 }) {
+  const dispatch = useDispatch();
+
   const muteParticipant = (muteAudio, muteVideo) => {
     onMuteParticipant({
       participant_id: participantData.id,
       mute_video: muteVideo,
       mute_audio: muteAudio,
     });
+
+    dispatch(
+      banMuteUnmuteParticipant({
+        participantId: participantData.id,
+        action: "muted_audio",
+        value: muteAudio,
+        sessionId: sessionId,
+      })
+    );
+
+    dispatch(
+      banMuteUnmuteParticipant({
+        participantId: participantData.id,
+        action: "muted_video",
+        value: muteVideo,
+        sessionId: sessionId,
+      })
+    );
   };
 
+  console.log("participantData", participantData);
   return (
     <div className="joinedParticipantModalContainer">
       <div className="joinedParticipantModalData">
@@ -30,19 +53,24 @@ function JoinedParticipantModal({
         />
         <hr className="separatorLine"></hr>
         <Button
-          name={"Mute Audio"}
+          name={participantData.muted_audio ? "Unmute Audio" : "Mute Audito"}
           design={"secondary"}
-          onClick={() => muteParticipant(true, participantData.muted_video)}
+          onClick={() =>
+            muteParticipant(
+              !participantData.muted_audio,
+              participantData.muted_video
+            )
+          }
         />
         <Button
-          name={"Mute Video"}
+          name={participantData.muted_video ? "Unmute Video" : "Mute Video"}
           design={"secondary"}
-          onClick={() => muteParticipant(participantData.muted_audio, true)}
-        />
-        <Button
-          name={"Unmute"}
-          design={"secondary"}
-          onClick={() => muteParticipant(false, false)}
+          onClick={() =>
+            muteParticipant(
+              participantData.muted_audio,
+              !participantData.muted_video
+            )
+          }
         />
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantModalInfo">

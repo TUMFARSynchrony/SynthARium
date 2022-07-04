@@ -2,7 +2,11 @@ import { useSelector } from "react-redux";
 import Heading from "../../components/atoms/Heading/Heading";
 import Video from "../../components/atoms/Video/Video";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
-import { getVideoTitle } from "../../utils/utils";
+import {
+  getParticipantById,
+  getSessionById,
+  getVideoTitle,
+} from "../../utils/utils";
 import "./WatchingRoom.css";
 
 function WatchingRoom({
@@ -19,7 +23,13 @@ function WatchingRoom({
     (state) => state.ongoingExperiment.value
   );
   const state = ongoingExperiment.experimentState;
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const sessionData = getSessionById(
+    ongoingExperiment.sessionId,
+    sessionsList
+  )[0];
 
+  console.log("connectedParticipants", connectedParticipants);
   return (
     <div className="watchingRoomContainer">
       <div className="watchingRoomHeader">
@@ -31,7 +41,10 @@ function WatchingRoom({
             <div className="connectedParticipants">
               {connectedParticipants.map((peer, i) => (
                 <Video
-                  title={getVideoTitle(peer, i)}
+                  title={getVideoTitle(
+                    getParticipantById(peer.summary, sessionData),
+                    i
+                  )}
                   srcObject={peer.stream}
                   key={i}
                 />

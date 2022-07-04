@@ -206,8 +206,12 @@ function App() {
     connection.sendMessage("SAVE_SESSION", session);
   };
 
-  const onKickBanParticipant = (participant) => {
-    connection.sendMessage("KICK_PARTICIPANT", participant);
+  const onKickBanParticipant = (participant, action) => {
+    if (action === "Kick") {
+      connection.sendMessage("KICK_PARTICIPANT", participant);
+    } else {
+      connection.sendMessage("BAN_PARTICIPANT", participant);
+    }
   };
 
   const onJoinExperiment = (sessionId) => {

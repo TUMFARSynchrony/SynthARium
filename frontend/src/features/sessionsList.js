@@ -69,15 +69,39 @@ export const sessionsListSlice = createSlice({
 
     sendChat: (state, { payload }) => {
       const session = getSessionById(payload.sessionId, state.value)[0];
-      const participant = getSessionById(payload.participantId, session)[0];
+      const participant = getSessionById(
+        payload.participantId,
+        session.participants
+      )[0];
       participant.chat.push(payload.message);
 
       const newParticipantList = filterListById(
-        state.value.participants,
+        session.participants,
         payload.participantId
       );
       newParticipantList.push(participant);
 
+      session.participants = newParticipantList;
+
+      const newSessionsList = filterListById(state.value, payload.sessionId);
+      state.value = [...newSessionsList, session];
+      state.value = sortArray(state.value);
+    },
+
+    banMuteUnmuteParticipant: (state, { payload }) => {
+      const session = getSessionById(payload.sessionId, state.value)[0];
+      const participant = getSessionById(
+        payload.participantId,
+        session.participants
+      )[0];
+
+      participant[payload.action] = payload.value;
+
+      const newParticipantList = filterListById(
+        session.participants,
+        payload.participantId
+      );
+      newParticipantList.push(participant);
       session.participants = newParticipantList;
 
       const newSessionsList = filterListById(state.value, payload.sessionId);
@@ -96,6 +120,7 @@ export const {
   startExperiment,
   stopExperiment,
   addNote,
+  banMuteUnmuteParticipant,
 } = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;

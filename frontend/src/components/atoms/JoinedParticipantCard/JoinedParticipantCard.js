@@ -1,13 +1,14 @@
 import { useState } from "react";
 import JoinedParticipantModal from "../../../modals/JoinedParticipantModal/JoinedParticipantModal";
 import KickParticipantModal from "../../../modals/KickParticipantModal/KickParticipantModal";
+import { getParticipantById } from "../../../utils/utils";
 import Button from "../Button/Button";
 import Label from "../Label/Label";
 import "./JoinedParticipantCard.css";
 
 function JoinedParticipant({
-  participantData,
-  sessionId,
+  participantId,
+  sessionData,
   onKickBanParticipant,
   onMuteParticipant,
   onSendChat,
@@ -15,6 +16,7 @@ function JoinedParticipant({
   const [showModal, setShowModal] = useState(false);
   const [showKickBanReason, setShowKickBanReason] = useState(false);
   const [action, setAction] = useState("");
+  const participantData = getParticipantById(participantId, sessionData);
 
   return (
     <div className="joinedParticipantContainer">
@@ -49,18 +51,19 @@ function JoinedParticipant({
           participantData={participantData}
           showModal={showModal}
           setShowModal={setShowModal}
-          sessionId={sessionId}
+          sessionId={sessionData.id}
           onMuteParticipant={onMuteParticipant}
           onSendChat={onSendChat}
         />
       )}
       {showKickBanReason && (
         <KickParticipantModal
-          participantData={participantData}
+          participantId={participantData.id}
           showModal={showKickBanReason}
           setShowModal={setShowKickBanReason}
           onKickBanParticipant={onKickBanParticipant}
           action={action}
+          sessionId={sessionData.id}
         />
       )}
     </div>

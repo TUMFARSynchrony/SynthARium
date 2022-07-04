@@ -48,8 +48,8 @@ function SessionPreview({
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
       <>
         <div className="sessionPreviewButtons">
-          {!selectedSession.creation_time > 0 &&
-            !selectedSession.end_time === 0 && (
+          {selectedSession.creation_time === 0 &&
+            selectedSession.end_time === 0 && (
               <Button
                 name={"DELETE"}
                 design={"negative"}
