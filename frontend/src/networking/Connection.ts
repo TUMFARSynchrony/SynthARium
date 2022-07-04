@@ -2,7 +2,13 @@ import { BACKEND, ENVIRONMENT } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
-import { isValidConnectionOffer, isValidMessage, Message, ConnectedPeer } from "./typing";
+import {
+  isValidConnectionProposal,
+  isValidConnectionAnswer,
+  isValidMessage,
+  Message,
+  ConnectedPeer
+} from "./typing";
 import SubConnection from "./SubConnection";
 
 
@@ -79,7 +85,8 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this._remoteStream = new MediaStream();
 
     this.api = new EventHandler();
-    this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
+    this.api.on("CONNECTION_PROPOSAL", this.handleConnectionProposal.bind(this));
+    this.api.on("CONNECTION_ANSWER", this.handleConnectionAnswer.bind(this));
 
     this.initMainPeerConnection();
     this.initDataChannel();
@@ -422,16 +429,18 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   }
 
   /**
-   * Handle incoming CONNECTION_OFFER messages from the backend connection.
+   * Handle incoming CONNECTION_PROPOSAL messages from the backend connection.
+   * 
+   * TODO update docs
    * 
    * If the offer is valid, start a new SubConnection, add event listeners and store it in `this.subConnections`.
    * @param data message data from the incoming message of type "CONNECTION_OFFER".
    * 
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
    */
-  private async handleConnectionOffer(data: any): Promise<void> {
-    if (!isValidConnectionOffer(data)) {
-      this.logError("Received invalid CONNECTION_OFFER.");
+  private async handleConnectionProposal(data: any): Promise<void> {
+    if (!isValidConnectionProposal(data)) {
+      this.logError("Received invalid CONNECTION_PROPOSAL.");
       return;
     }
     const subConnection = new SubConnection(data, this, this.logging);
@@ -444,6 +453,20 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       this.subConnections.delete(id as string);
       this.emit("connectedPeersChange", this.connectedPeers);
     });
-    await subConnection.start();
+    await subConnection.sendOffer();
+  }
+
+  /** TODO document */
+  private async handleConnectionAnswer(data: any): Promise<void> {
+    if (!isValidConnectionAnswer(data)) {
+      this.logError("Received invalid CONNECTION_ANSWER.");
+      return;
+    }
+    const subConnection: SubConnection | undefined = this.subConnections.get(data.id);
+    if (!subConnection) {
+      this.logError("Failed to handle answer, no subconnection found for id:", data.id);
+      return; // TODO error handling?
+    }
+    subConnection.handleAnswer(data);
   }
 }

@@ -16,29 +16,40 @@ export function isValidMessage(data: any): data is Message {
 	return "type" in data && typeof data.type === 'string' && "data" in data;
 }
 
-/**
- * ConnectionOffer received from the backend connection, offering a subconnection for a new user.
- */
-export type ConnectionOffer = {
+/** TODO document */
+function isValidConnectionRTCSessionDescriptionInit(data: any): data is RTCSessionDescriptionInit {
+	return "sdp" in data && "type" in data;
+}
+
+/** TODO document */
+export type ConnectionProposal = {
 	id: string,
-	offer: {
-		sdp: string;
-		type: string;
-	};
 	participant_summary: ParticipantSummary | string | null;
 };
 
-/**
- * Checks if all fields of an {@link ConnectionOffer} exist in `data`.
- * Does currently not check the data types or contents of any fields.
- */
-export function isValidConnectionOffer(data: any): data is ConnectionOffer {
+/** TODO document */
+export function isValidConnectionProposal(data: any): data is ConnectionProposal {
+	return "id" in data && "participant_summary" in data;
+}
+
+/** TODO document */
+export type ConnectionOffer = {
+	id: string,
+	offer: RTCSessionDescriptionInit;
+};
+
+/** TODO document */
+export type ConnectionAnswer = {
+	id: string;
+	answer: RTCSessionDescriptionInit;
+};
+
+/** TODO document */
+export function isValidConnectionAnswer(data: any): data is ConnectionAnswer {
 	return (
 		"id" in data
-		&& "offer" in data
-		&& "sdp" in data.offer
-		&& "type" in data.offer
-		&& "participant_summary" in data
+		&& "answer" in data
+		&& isValidConnectionRTCSessionDescriptionInit(data.answer)
 	);
 }
 

@@ -1,6 +1,6 @@
 import Connection from "./Connection";
 import ConnectionBase from "./ConnectionBase";
-import { ConnectionOffer } from "./typing";
+import { ConnectionAnswer, ConnectionOffer, ConnectionProposal } from "./typing";
 
 /**
  * SubConnection class used by {@link Connection} to get streams of other users from the backend.
@@ -15,11 +15,12 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   readonly remoteStream: MediaStream;
 
   private pc: RTCPeerConnection;
-  private initialOffer: ConnectionOffer;
   private connection: Connection;
   private stopped: boolean;
 
   /**
+   * TODO update docs 
+   * 
    * Initialize new SubConnection.
    * @param offer ConnectionOffer received from the backend, with information on how to open the SubConnection.
    * @param connection parent Connection, used to send data to the backend.
@@ -27,18 +28,17 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
    * 
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
-  constructor(offer: ConnectionOffer, connection: Connection, logging: boolean) {
-    super(true, `SubConnection - ${offer.id}`, logging);
-    this.id = offer.id;
+  constructor(proposal: ConnectionProposal, connection: Connection, logging: boolean) {
+    super(true, `SubConnection - ${proposal.id}`, logging);
+    this.id = proposal.id;
     this.remoteStream = new MediaStream();
     const config: any = {
       sdpSemantics: "unified-plan",
     };
     this.pc = new RTCPeerConnection(config);
-    this.initialOffer = offer;
     this.connection = connection;
     this.stopped = false;
-    this._participantSummary = offer.participant_summary;
+    this._participantSummary = proposal.participant_summary;
 
     this.log("Initiating SubConnection");
 
@@ -85,23 +85,52 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   /**
    * Start the subconnection.
    * 
+   * TODO update docs
+   * 
    * Create and send an Answer to the initial offer set in the constructor and send 
    * it to the backend using the connection set in the constructor.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
-  public async start() {
-    this.log("Starting SubConnection");
-    await this.pc.setRemoteDescription(this.initialOffer.offer as RTCSessionDescriptionInit);
-    const answer = await this.pc.createAnswer();
-    await this.pc.setLocalDescription(answer);
-    const connectionAnswer = {
+  public async sendOffer() {
+    this.log("Generating & sending offer");
+    const offer = await this.pc.createOffer({
+      offerToReceiveVideo: true,
+      offerToReceiveAudio: true,
+    });
+    await this.pc.setLocalDescription(offer);
+
+    // Wait for iceGatheringState to be "complete".
+    await new Promise((resolve) => {
+      if (this.pc?.iceGatheringState === "complete") {
+        resolve(undefined);
+      } else {
+        const checkState = () => {
+          if (this.pc?.iceGatheringState === "complete") {
+            this.pc.removeEventListener(
+              "icegatheringstatechange",
+              checkState
+            );
+            resolve(undefined);
+          }
+        };
+        this.pc?.addEventListener("icegatheringstatechange", checkState);
+      }
+    });
+
+    const connectionOffer: ConnectionOffer = {
       id: this.id,
-      answer: {
-        type: answer.type,
-        sdp: answer.sdp
+      offer: {
+        sdp: this.pc.localDescription.sdp,
+        type: this.pc.localDescription.type,
       }
     };
-    this.connection.sendMessage("CONNECTION_ANSWER", connectionAnswer);
+    this.connection.sendMessage("CONNECTION_OFFER", connectionOffer);
+  }
+
+  /** TODO document */
+  public async handleAnswer(answer: ConnectionAnswer) {
+    // TODO Check if answer already handled
+    await this.pc.setRemoteDescription(answer.answer);
   }
 
   /**
