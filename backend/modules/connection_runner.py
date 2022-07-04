@@ -9,7 +9,7 @@ from typing import Any
 from aiortc import RTCSessionDescription
 
 from custom_types.message import MessageDict
-from custom_types.connection import ConnectionOfferDict
+from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
 
 from modules.config import Config
 from modules.connection_state import ConnectionState
@@ -119,6 +119,7 @@ class ConnectionRunner:
         """Handle message / command from main / parent process."""
         data = msg["data"]
         command = msg["command"]
+        command_nr = msg["command_nr"]
         # self._logger.debug(f"Received {command} command from main process")
 
         if self._connection is None:
@@ -134,11 +135,12 @@ class ConnectionRunner:
                 )
             case "SEND":
                 await self._connection.send(data)
-            case "CREATE_OFFER":
-                offer = await self._connection.create_subscriber_offer(data)
-                self._send_command("SUBSCRIBER_OFFER", offer)
-            case "HANDLE_ANSWER":
-                await self._connection.handle_subscriber_answer(data)
+            case "CREATE_PROPOSAL":
+                proposal = await self._connection.create_subscriber_proposal(data)
+                self._send_command("CONNECTION_PROPOSAL", proposal, command_nr)
+            case "HANDLE_OFFER":
+                answer = await self._connection.handle_subscriber_offer(data)
+                self._send_command("CONNECTION_ANSWER", answer, command_nr)
             case "STOP_SUBCONNECTION":
                 await self._connection.stop_subconnection(data)
             case "SET_MUTED":
@@ -165,7 +167,14 @@ class ConnectionRunner:
     def _send_command(
         self,
         command: str,
-        data: str | int | float | dict | MessageDict | ConnectionOfferDict,
+        data: str
+        | int
+        | float
+        | dict
+        | MessageDict
+        | ConnectionProposalDict
+        | ConnectionAnswerDict,
+        command_nr: int = -1,
     ) -> None:
         """Send command to main / parent process via stdout.
 
@@ -175,6 +184,9 @@ class ConnectionRunner:
             Command / operator for message.
         data : ...
             Data for command / operator.
+        command_nr : int, optional
+            Command nr identifying requests with responses.  Only required if response
+            must be identified with request.
         """
-        data = json.dumps({"command": command, "data": data})
+        data = json.dumps({"command": command, "data": data, "command_nr": command_nr})
         print(data, flush=True)
