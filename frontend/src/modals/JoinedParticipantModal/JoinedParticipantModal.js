@@ -95,13 +95,7 @@ function JoinedParticipantModal({
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantActions">
           <div className="joinedParticipantFilters">Filter List</div>
-          <div className="joinedParticipantChat">
-            <Chat
-              participantId={participantData.id}
-              chat={participantData.chat}
-              onSendChat={onSendChat}
-            />
-          </div>
+          <div className="joinedParticipantChat">Chat</div>
         </div>
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantButtons">
