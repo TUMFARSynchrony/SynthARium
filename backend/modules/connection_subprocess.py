@@ -280,9 +280,9 @@ class ConnectionSubprocess(ConnectionInterface):
         command = msg["command"]
         command_nr = msg["command_nr"]
 
-        self._logger.debug(
-            f"Received {command} command from subprocess, nr: {command_nr}"
-        )
+        # self._logger.debug(
+        #     f"Received {command} command from subprocess, nr: {command_nr}"
+        # )
 
         match command:
             case "SET_LOCAL_DESCRIPTION":
