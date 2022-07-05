@@ -1,3 +1,4 @@
+import { ICE_SERVERS } from "../utils/constants";
 import { EventHandler } from "./EventHandler";
 import { ParticipantSummary } from "./typing";
 
@@ -31,6 +32,10 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     const config: any = {
       sdpSemantics: "unified-plan",
     };
+    if (ICE_SERVERS) {
+      config.iceServers = ICE_SERVERS;
+    }
+    console.log("config", config);
     this.pc = new RTCPeerConnection(config);
     this._remoteStream = new MediaStream();
     this.addPcEventHandlers();
