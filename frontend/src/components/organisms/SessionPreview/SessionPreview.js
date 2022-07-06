@@ -48,20 +48,19 @@ function SessionPreview({
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
       <>
         <div className="sessionPreviewButtons">
-          {selectedSession.creation_time === 0 &&
-            selectedSession.end_time === 0 && (
-              <Button
-                name={"DELETE"}
-                design={"negative"}
-                onClick={() => deleteSession()}
-              />
-            )}
+          {(selectedSession.creation_time === 0 ||
+            selectedSession.end_time > 0) && (
+            <Button
+              name={"DELETE"}
+              design={"negative"}
+              onClick={() => deleteSession()}
+            />
+          )}
           <LinkButton
             name={"COPY"}
             to="/sessionForm"
             onClick={() => dispatch(copySession(selectedSession))}
           />
-
           {!selectedSession.creation_time > 0 &&
             selectedSession.end_time === 0 &&
             isFutureSession(selectedSession) && (
@@ -78,7 +77,6 @@ function SessionPreview({
                 />
               </>
             )}
-
           {selectedSession.creation_time > 0 && selectedSession.end_time === 0 && (
             <>
               <LinkButton
