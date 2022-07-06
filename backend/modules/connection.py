@@ -427,23 +427,10 @@ class SubConnection(AsyncIOEventEmitter):
         self._pc.addTrack(video_track)
         self._pc.addTrack(audio_track)
         self._pc.on("connectionstatechange", self._on_connection_state_change)
-        self._pc.on("datachannel", f=self._on_datachannel)
 
         # Stop SubConnection if one of the tracks ends
-        audio_track.on("ended", self.stop)
-        video_track.on("ended", self.stop)
-
-    def _on_datachannel(self, channel: RTCDataChannel) -> None:
-        """TODO REMOVE"""
-        self._logger.debug(f"SubConnection Received datachannel {repr(channel)}")
-
-        @channel.on("message")
-        def temp1(m):
-            self._logger.info(f"SubConnection DC message: {m}")
-
-        @channel.on("close")
-        def temp2(_=None):
-            self._logger.info("SubConnection DC closed")
+        # audio_track.on("ended", self.stop)
+        # video_track.on("ended", self.stop)
 
     @property
     def proposal(self):
