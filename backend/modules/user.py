@@ -172,16 +172,19 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def add_subscriber(self, user: User) -> None:
         """Add `user` as a subscriber to this User.
 
-        TODO update docs
-
-        Sends a `CONNECTION_OFFER` to `user` and waits for an `CONNECTION_ANSWER`.
-        After receiving the answer, the incoming streams from this user will also be
-        send to `user`.
+        Sends a `CONNECTION_PROPOSAL` to `user` and waits for an `CONNECTION_OFFER`.
+        Will respond with a `CONNECTION_ANSWER` to the `CONNECTION_OFFER` with the same
+        `id` as the send proposal.
 
         Parameters
         ----------
         user : modules.user.User
             New subscriber to this User.
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection
         """
         self._logger.debug(f"Adding subscriber: {repr(user)}")
         if isinstance(user, _experimenter.Experimenter):
@@ -219,9 +222,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             await self._connection.stop_subconnection(proposal["id"])
 
     async def remove_subscriber(self, user: User) -> None:
-        """Remove `users` from the subscribers to this User.
+        """Remove `user` from the subscribers to this User.
 
-        Stopps the SubConnection distributing the steam of this User to `user`.
+        Stops the SubConnection distributing the steam of this User to `user`.
+
+        Not required if `user` disconnects.
 
         Parameters
         ----------

@@ -61,7 +61,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def create_subscriber_proposal(
         self, participant_summary: ParticipantSummaryDict | str | None
     ) -> ConnectionProposalDict:
-        """Create a subconnection proposal.
+        """Create a SubConnection proposal.
 
         Parameters
         ----------
@@ -72,7 +72,17 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Returns
         -------
         custom_types.connection.ConnectionProposalDict
-            Connection proposal including `participant_summary`.
+            Connection proposal including `participant_summary`.  The `id` in the
+            returned dict is the `subconnection_id` for this proposal.  If the
+            subscriber should be removed manually, this ID is required for
+            `stop_subconnection(subconnection_id)`.  This is not required if the user
+            disconnects.
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            Details about the connection protocol this function is part of.
+            https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
         """
         pass
 
@@ -80,21 +90,42 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
-        """Handle answer to a connection offer.
+        """Handle a ConnectionOffer based on a ConnectionProposal from this Connection.
 
-        TODO update docs - raises ValueError
+        The offer should be in response to a
+        custom_types.connection.ConnectionProposalDict created by this connection and
+        send to a different user.
 
         Parameters
         ----------
         answer : custom_types.connection.ConnectionAnswerDict
             Answer to a custom_types.connection.ConnectionOfferDict created by this
             connection.  The answer ID must match a offer ID send by this connection.
+
+        Raises
+        ------
+        ValueError
+            If `id` in `offer` is unknown (not a modules.connection.SubConnection ID
+            handled by this modules.connection.Connection).
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            Details about the connection protocol this function is part of.
+            https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
         """
         pass
 
     @abstractmethod
     async def stop_subconnection(self, subconnection_id: str) -> None:
         """Stop the subconnection with `subconnection_id`.
+
+        This can be used to manually remove a subscriber without disconnecting the user,
+        e.g. when an experimenter leaves an experiment.  It is not required if the user
+        disconnects.
+
+        The `subconnection_id` is obtained from the result of
+        `create_subscriber_proposal` (`id` variable).
 
         Parameters
         ----------
@@ -103,7 +134,8 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         See Also
         --------
-        add_outgoing_stream : add a new outgoing SubConnection.
+        create_subscriber_proposal :
+            Create a new subscriber proposal, containing the subconnection ID.
         """
         pass
 

@@ -447,7 +447,13 @@ class SubConnection(AsyncIOEventEmitter):
 
     @property
     def proposal(self):
-        """TODO document"""
+        """Get a custom_types.connection.ConnectionProposalDict for this SubConnection.
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
+        """
         return ConnectionProposalDict(
             id=self.id, participant_summary=self._participant_summary
         )
@@ -474,14 +480,23 @@ class SubConnection(AsyncIOEventEmitter):
     async def handle_offer(self, offer: RTCSessionDescription) -> ConnectionAnswerDict:
         """Handle a `CONNECTION_OFFER` message for this SubConnection.
 
-        TODO update docs
-
         Parameters
         ----------
         offer : aiortc.RTCSessionDescription
+
+        Returns
+        -------
+        custom_types.connection.ConnectionAnswerDict
+            Answer that should be send as a response to the offer.
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
         """
         await self._pc.setRemoteDescription(offer)
 
+        # TODO handle InvalidStateError
         answer = await self._pc.createAnswer()
         await self._pc.setLocalDescription(answer)  # type: ignore
 
