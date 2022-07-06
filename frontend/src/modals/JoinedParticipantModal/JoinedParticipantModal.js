@@ -1,7 +1,6 @@
 import { useDispatch } from "react-redux";
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
-import Chat from "../../components/molecules/Chat/Chat";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
 import { banMuteUnmuteParticipant } from "../../features/sessionsList";
 import { PARTICIPANT_HOST } from "../../utils/constants";
