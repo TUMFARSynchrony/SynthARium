@@ -12,6 +12,7 @@ from custom_types.message import MessageDict
 from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
 
 from modules.config import Config
+from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection import Connection, connection_factory
 from modules.subprocess_logging import SubprocessLoggingHandler
@@ -139,7 +140,11 @@ class ConnectionRunner:
                 proposal = await self._connection.create_subscriber_proposal(data)
                 self._send_command("CONNECTION_PROPOSAL", proposal, command_nr)
             case "HANDLE_OFFER":
-                answer = await self._connection.handle_subscriber_offer(data)
+                try:
+                    answer = await self._connection.handle_subscriber_offer(data)
+                except ErrorDictException as e:
+                    self._send_command("CONNECTION_ANSWER", e.error_message, command_nr)
+                    return
                 self._send_command("CONNECTION_ANSWER", answer, command_nr)
             case "STOP_SUBCONNECTION":
                 await self._connection.stop_subconnection(data)

@@ -12,10 +12,12 @@ from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from modules import BACKEND_DIR
 from modules.config import Config
+from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
 
+from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -46,7 +48,7 @@ class ConnectionSubprocess(ConnectionInterface):
     _logger: logging.Logger
     _tasks: list[asyncio.Task]
     _command_nr: int
-    _responses: dict[int, asyncio.Queue]
+    _responses: dict[int, asyncio.Queue[dict]]
 
     _local_description_received: asyncio.Event
     _local_description: RTCSessionDescription | None
@@ -304,10 +306,7 @@ class ConnectionSubprocess(ConnectionInterface):
             case "API":
                 await self._message_handler(data)
             case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER":
-                self._logger.debug(
-                    f"Received {command} command from subprocess - {self._responses[command_nr]}"
-                )
-                await self._responses[command_nr].put(data)
+                await self._set_answer(command_nr, data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)
             case _:
@@ -332,13 +331,14 @@ class ConnectionSubprocess(ConnectionInterface):
         if stderr:
             self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
 
-    async def _set_answer(self, command_nr: int, data: Any):
+    async def _set_answer(self, command_nr: int, data: dict):
         """Save a answer in `_responses`"""
         queue = self._responses.get(command_nr)
         if queue is None:
-            self._logger.debug(
+            self._logger.error(
                 f"Did not find queue for response with command_nr: {command_nr}"
             )
+            self._logger.error(f"{command_nr} data: {data}")
             return
         await queue.put(data)
 
@@ -356,7 +356,7 @@ class ConnectionSubprocess(ConnectionInterface):
         | MessageDict,
         timeout: int | None = None,
         retries: int = 1,
-    ) -> Any | None:
+    ) -> dict | None:
         """Send a command including unique command_nr and wait for response.
 
         Parameters
@@ -372,8 +372,13 @@ class ConnectionSubprocess(ConnectionInterface):
 
         Returns
         -------
-        None or Any
+        None or dict
             None if no response was received, otherwise response
+
+        Raises
+        ------
+        ErrorDictException
+            If the subprocess returned an error custom_types.message.Message.
         """
         for attempt in range(retries + 1):
             if attempt > 0:
@@ -382,7 +387,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 )
             command_nr = self._command_nr
             self._command_nr += 1
-            responseQueue = asyncio.Queue(maxsize=1)
+            responseQueue = asyncio.Queue(maxsize=2)
             self._responses[command_nr] = responseQueue
 
             # Send command and wait for response.  Response should be added to Queue
@@ -395,6 +400,12 @@ class ConnectionSubprocess(ConnectionInterface):
             finally:
                 # Remove queue from _responses
                 self._responses.pop(command_nr)
+
+            if "type" in answer and answer["type"] == "ERROR":
+                err: ErrorDict = answer["data"]
+                raise ErrorDictException(
+                    code=err["code"], type=err["type"], description=err["description"]
+                )
 
             return answer
 

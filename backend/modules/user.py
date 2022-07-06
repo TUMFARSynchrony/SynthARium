@@ -205,8 +205,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 user.remove_listener("CONNECTION_OFFER", _handle_offer)
                 try:
                     answer = await self._connection.handle_subscriber_offer(offer)
-                except ValueError:
-                    return  # TODO error handling?
+                except ErrorDictException as err:
+                    await user.send(err.error_message)
+                    return
                 msg = MessageDict(type="CONNECTION_ANSWER", data=answer)
                 await user.send(msg)
 

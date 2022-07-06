@@ -15,6 +15,7 @@ import asyncio
 import logging
 import json
 
+from modules.exceptions import ErrorDictException
 from modules.connection_interface import ConnectionInterface
 from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.connection_state import ConnectionState, parse_connection_state
@@ -184,7 +185,11 @@ class Connection(ConnectionInterface):
         sc = self._sub_connections.get(subconnection_id)
         if sc is None:
             self._logger.error(f"SubConnection for ID: {subconnection_id} not found.")
-            raise ValueError(f"Unknown subconnection {subconnection_id}")
+            raise ErrorDictException(
+                code=0,
+                type="UNKNOWN_SUBCONNECTION_ID",
+                description=f"Unknown offer ID {subconnection_id}",
+            )
 
         offer_description = RTCSessionDescription(
             offer["offer"]["sdp"], offer["offer"]["type"]

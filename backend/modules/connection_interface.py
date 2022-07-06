@@ -104,7 +104,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Raises
         ------
-        ValueError
+        ErrorDictException
             If `id` in `offer` is unknown (not a modules.connection.SubConnection ID
             handled by this modules.connection.Connection).
 
