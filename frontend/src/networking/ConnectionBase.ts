@@ -96,7 +96,14 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     console.error(`[${this.name}] ${message}`, ...optionalParams);
   }
 
-  /** TODO Document */
+  /** 
+   * Create a new Offer for this connection.
+   * 
+   * Calls `createOffer`, `setLocalDescription`, waits for iceGatheringState to be "complete"
+   * and returns `localDescription` of {@link pc}
+   * 
+   * @returns `localDescription` of {@link pc}
+   */
   protected async createOffer(): Promise<RTCSessionDescription> {
     const options = {
       offerToReceiveVideo: true,
@@ -127,7 +134,9 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     return this.pc.localDescription;
   }
 
-  /** TODO Document */
+  /** 
+   * Add event handlers for {@link pc}.
+   */
   private addPcEventHandlers() {
     this.pc.addEventListener(
       "icegatheringstatechange",
@@ -168,7 +177,9 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     });
   }
 
-  /** Handle the `signalingstatechange` event on `this.pc`. */
+  /** 
+   * Handle the `signalingstatechange` event on {@link pc}. 
+   */
   protected handleSignalingStateChange(): void {
     this.log(`SignalingState: ${this.pc.signalingState}`);
     if (this.pc.signalingState === "closed") {
@@ -176,9 +187,15 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     }
   }
 
-  /** TODO Document */
+  /** 
+   * Stop the connection. 
+   * 
+   * See documentation in implementations for details regarding effects and fired events.
+   */
   public abstract stop(): void;
 
-  /** TODO Document */
+  /** 
+   * Handle the `iceconnectionstatechange` event on {@link pc}. 
+   */
   protected abstract handleIceConnectionStateChange(): void;
 }

@@ -342,14 +342,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   }
 
   /**
-   * Handle incoming CONNECTION_PROPOSAL messages from the backend connection.
+   * Handle incoming `CONNECTION_PROPOSAL` messages from the backend.
    * 
-   * TODO update docs
+   * If the proposal is valid, create a new SubConnection, add event listeners and store it in `this.subConnections`.
+   * Sends `CONNECTION_OFFER` for new SubConnection to backend.
    * 
-   * If the offer is valid, start a new SubConnection, add event listeners and store it in `this.subConnections`.
-   * @param data message data from the incoming message of type "CONNECTION_OFFER".
+   * @param data message data from the incoming message of type `CONNECTION_PROPOSAL`.
    * 
-   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
+   * @see https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection Connection protocol - Adding a SubConnection.
    */
   private async handleConnectionProposal(data: any): Promise<void> {
     if (!isValidConnectionProposal(data)) {
@@ -369,7 +369,15 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     await subConnection.sendOffer();
   }
 
-  /** TODO document */
+  /**
+   * Handle incoming `CONNECTION_ANSWER` messages from the backend.
+   * 
+   * If the answer is valid, it will be passed to the corresponding SubConnection.  
+   * 
+   * @param data message data from the incoming message of type `CONNECTION_ANSWER`.
+   * 
+   * @see https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection Connection protocol - Adding a SubConnection.
+   */
   private async handleConnectionAnswer(data: any): Promise<void> {
     if (!isValidConnectionAnswer(data)) {
       this.logError("Received invalid CONNECTION_ANSWER.");

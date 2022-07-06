@@ -17,10 +17,8 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   private stopped: boolean;
 
   /**
-   * TODO update docs 
-   * 
    * Initialize new SubConnection.
-   * @param offer ConnectionOffer received from the backend, with information on how to open the SubConnection.
+   * @param proposal ConnectionProposal received from the backend.
    * @param connection parent Connection, used to send data to the backend.
    * @param logging Whether logging should be enabled.
    * 
@@ -37,12 +35,8 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   }
 
   /**
-   * Start the subconnection.
+   * Send offer for this SubConnection to the backend.
    * 
-   * TODO update docs
-   * 
-   * Create and send an Answer to the initial offer set in the constructor and send 
-   * it to the backend using the connection set in the constructor.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
   public async sendOffer() {
@@ -55,7 +49,11 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.connection.sendMessage("CONNECTION_OFFER", connectionOffer);
   }
 
-  /** TODO document */
+  /** 
+   * Handle `CONNECTION_ANSWER` message from the backend.
+   * 
+   * The answer is set as remote description for {@link pc}.
+   */
   public async handleAnswer(answer: ConnectionAnswer) {
     // TODO Check if answer already handled
     await this.pc.setRemoteDescription(answer.answer);
