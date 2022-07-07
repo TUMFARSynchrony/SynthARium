@@ -19,8 +19,8 @@ import {
 import { deleteSession } from "./features/sessionsList";
 
 import { Routes, Route, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getLocalStream } from "./utils/utils";
+import { useEffect, useRef, useState } from "react";
+import { getLocalStream, getSessionById } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import { saveSession } from "./features/openSession";
@@ -36,6 +36,11 @@ function App() {
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const sessionsListRef = useRef();
+  sessionsListRef.current = sessionsList;
+
+  const dispatch = useDispatch();
 
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
@@ -46,9 +51,6 @@ function App() {
     console.groupEnd();
     setConnectedParticipants(peers);
   };
-
-  const sessionsList = useSelector((state) => state.sessionsList.value);
-  const dispatch = useDispatch();
 
   const streamChangeHandler = async (_) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -134,14 +136,12 @@ function App() {
     connection.api.on("DELETED_SESSION", handleDeletedSession);
     connection.api.on("SAVED_SESSION", handleSavedSession);
     connection.api.on("SESSION_CHANGE", handleSessionChange);
-    connection.api.on("UPDATED_SESSION", handleUpdatedSession);
     connection.api.on("SUCCESS", handleSuccess);
     connection.api.on("ERROR", handleError);
 
     return () => {
       connection.api.off("SESSION_LIST", handleSessionList);
       connection.api.off("DELETED_SESSION", handleDeletedSession);
-      connection.api.off("UPDATED_SESSION", handleUpdatedSession);
       connection.api.off("SAVED_SESSION", handleSavedSession);
       connection.api.off("SESSION_CHANGE", handleSessionChange);
       connection.api.off("SUCCESS", handleSuccess);
@@ -166,15 +166,15 @@ function App() {
     dispatch(deleteSession(data));
   };
 
-  const handleUpdatedSession = (data) => {
-    toast.success("Successfully updated session " + data.title);
-    dispatch(updateSession(data));
-    dispatch(saveSession(data));
-  };
-
   const handleSavedSession = (data) => {
-    toast.success("Successfully created session " + data.title);
-    dispatch(createSession(data));
+    if (getSessionById(data.id, sessionsListRef.current).length === 0) {
+      toast.success("Successfully created session " + data.title);
+      dispatch(createSession(data));
+    } else {
+      toast.success("Successfully updated session " + data.title);
+      dispatch(updateSession(data));
+    }
+
     dispatch(saveSession(data));
   };
 
@@ -187,7 +187,11 @@ function App() {
   };
 
   const handleSessionChange = (data) => {
-    dispatch(createSession(data));
+    if (getSessionById(data.id, sessionsListRef.current).length === 0) {
+      dispatch(createSession(data));
+    } else {
+      dispatch(updateSession(data));
+    }
   };
 
   const onCreateExperiment = (sessionId) => {
@@ -272,7 +276,12 @@ function App() {
           <Route
             exact
             path="/experimentRoom"
-            element={<ExperimentRoom localStream={localStream} />}
+            element={
+              <ExperimentRoom
+                localStream={localStream}
+                connectedParticipants={connectedParticipants}
+              />
+            }
           />
           <Route
             exact
