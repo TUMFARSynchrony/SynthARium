@@ -479,7 +479,6 @@ async def connection_subprocess_factory(
     tuple with aiortc.RTCSessionDescription, modules.connection_subprocess.ConnectionSubprocess
         WebRTC answer that should be send back to the client and a ConnectionSubprocess.
     """
-    # TODO change type of offer parameter to RTCSessionDescriptionDict
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore
 
     connection = ConnectionSubprocess(

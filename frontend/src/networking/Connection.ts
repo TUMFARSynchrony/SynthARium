@@ -386,7 +386,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     const subConnection: SubConnection | undefined = this.subConnections.get(data.id);
     if (!subConnection) {
       this.logError("Failed to handle answer, no subconnection found for id:", data.id);
-      return; // TODO error handling?
+      return;
     }
     subConnection.handleAnswer(data);
   }

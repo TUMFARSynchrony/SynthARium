@@ -55,7 +55,6 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
    * The answer is set as remote description for {@link pc}.
    */
   public async handleAnswer(answer: ConnectionAnswer) {
-    // TODO Check if answer already handled
     await this.pc.setRemoteDescription(answer.answer);
   }
 

@@ -488,7 +488,6 @@ class SubConnection(AsyncIOEventEmitter):
         """
         await self._pc.setRemoteDescription(offer)
 
-        # TODO handle InvalidStateError
         answer = await self._pc.createAnswer()
         await self._pc.setLocalDescription(answer)  # type: ignore
 
