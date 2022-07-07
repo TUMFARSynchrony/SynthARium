@@ -192,7 +192,7 @@ class SessionManager:
         Raises
         ------
         ErrorDictException
-            If there is no session with `id`.
+            If there is no session with `id` or `creation_time` of the session is > 0.
         """
         if id not in self._sessions:
             self._logger.warning(
@@ -205,7 +205,15 @@ class SessionManager:
                 description="No session found for the given ID.",
             )
 
-        # TODO check if the session obj is used in an experiment.
+        # Check if creation_time > 0 / an experiment is running for this session
+        if self._sessions[id].creation_time > 0:
+            raise ErrorDictException(
+                code=409,
+                type="EXPERIMENT_RUNNING",
+                description=(
+                    "Can not delete the session, a experiment for this session exists."
+                ),
+            )
 
         self._logger.info(f"Deleting session with ID: {id}")
         self._delete_file(f"{id}.json")
