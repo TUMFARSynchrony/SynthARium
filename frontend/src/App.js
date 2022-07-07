@@ -78,11 +78,18 @@ function App() {
     const userType =
       sessionId && participantId ? "participant" : "experimenter";
 
+    const isConnectionTestPage = (
+      window.location.pathname.toLowerCase() === "/connectiontest"
+    );
+
     const asyncStreamHelper = async (connection) => {
       const stream = await getLocalStream();
       if (stream) {
         setLocalStream(stream);
-        connection.start(stream);
+        // Start connection if current page is not connection test page
+        if (!isConnectionTestPage) {
+          connection.start(stream);
+        }
       }
     };
 
@@ -99,7 +106,10 @@ function App() {
       return;
     }
 
-    newConnection.start();
+    // Start connection if current page is not connection test page
+    if (!isConnectionTestPage) {
+      newConnection.start();
+    }
 
     window.addEventListener("beforeunload", closeConnection);
 
@@ -218,6 +228,7 @@ function App() {
               connection ? (
                 <ConnectionTest
                   localStream={localStream}
+                  setLocalStream={setLocalStream}
                   connection={connection}
                   setConnection={setConnection}
                 />
