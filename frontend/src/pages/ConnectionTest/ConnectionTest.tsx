@@ -5,12 +5,14 @@ import "./ConnectionTest.css";
 import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import { ConnectedPeer } from "../../networking/typing";
+import { getLocalStream } from "../../utils/utils";
 
 /**
  * Test page for testing the {@link Connection} & api.
  */
 const ConnectionTest = (props: {
   localStream?: MediaStream,
+  setLocalStream: (localStream: MediaStream) => void,
   connection: Connection,
   setConnection: (connection: Connection) => void,
 }) => {
@@ -108,11 +110,19 @@ const ConnectionTest = (props: {
       </p>
       <button onClick={() => connection.start(props.localStream)} disabled={connection.state !== ConnectionState.NEW}>Start Connection</button>
       <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
-      {connection.state === ConnectionState.NEW ? <ReplaceConnection connection={connection} setConnection={props.setConnection} /> : ""}
+      {connection.state === ConnectionState.NEW ?
+        <ReplaceConnection
+          connection={connection}
+          setConnection={props.setConnection}
+          localStream={props.localStream}
+          setLocalStream={props.setLocalStream}
+        /> : ""
+      }
       <div className="ownStreams">
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} ignoreAudio />
-        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} />
-      </div>{props.localStream ?
+        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} ignoreAudio />
+      </div>
+      {props.localStream ?
         <>
           <button onClick={muteAudio}>{audioIsMuted ? "Unmute" : "Mute"} localStream Audio</button>
           <button onClick={muteVideo}>{videoIsMuted ? "Unmute" : "Mute"} localStream Video</button>
@@ -302,12 +312,23 @@ function PrettyJson(props: { json: any; }) {
 function ReplaceConnection(props: {
   connection: Connection,
   setConnection: (connection: Connection) => void,
+  localStream: MediaStream,
+  setLocalStream: (localStream: MediaStream) => void,
 }) {
   const [userType, setUserType] = useState<"participant" | "experimenter">(props.connection.userType);
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
   const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
 
-  const updateConnection = (userType: "participant" | "experimenter", sessionId: string, participantId: string) => {
+  const updateConnection = async (userType: "participant" | "experimenter", sessionId: string, participantId: string) => {
+    if (userType === "participant") {
+      if (sessionId === "") sessionId = "placeholderId";
+      if (participantId === "") participantId = "placeholderId";
+      // request local stream if it does not exist.
+      if (!props.localStream) {
+        const stream = await getLocalStream();
+        if (stream) props.setLocalStream(stream);
+      }
+    }
     console.log(`%c[ReplaceConnection] Replaced connection with new parameters: ${userType}, ${sessionId}, ${participantId}`, "color:darkgreen");
     const connection = new Connection(userType, sessionId, participantId, props.connection.logging);
     props.setConnection(connection);
