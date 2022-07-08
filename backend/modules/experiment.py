@@ -64,6 +64,9 @@ class Experiment:
         If state is `WAITING`, save the current time in `session.start_time` and set
         state to `RUNNING`.  If state is not `WAITING`, an ErrorDictException is raised.
 
+        Also send a `EXPERIMENT_STARTED` message to all users connected to the
+        experiment, if experiment was successfully started.
+
         Raises
         ------
         ErrorDictException
@@ -82,7 +85,7 @@ class Experiment:
         self.session.start_time = time
 
         # Notify all users
-        end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
+        end_message = MessageDict(type="EXPERIMENT_STARTED", data={"start_time": time})
         await self.send("all", end_message, secure_origin=True)
 
     async def stop(self):
@@ -111,7 +114,10 @@ class Experiment:
             self.session.start_time = time
 
         # Notify all users
-        end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
+        end_message = MessageDict(
+            type="EXPERIMENT_ENDED",
+            data={"end_time": time, "start_time": self.session.start_time},
+        )
         await self.send("all", end_message, secure_origin=True)
 
     async def send(

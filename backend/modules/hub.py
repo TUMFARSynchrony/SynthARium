@@ -262,8 +262,11 @@ class Hub:
 
         return (answer, participantData.as_summary_dict())
 
-    def create_experiment(self, session_id: str) -> Experiment:
+    async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
+
+        Also send a `CREATED_EXPERIMENT` message to all experimenters, if experiment was
+        successfully created.
 
         Parameters
         ----------
@@ -292,8 +295,20 @@ class Hub:
                 description="No session with the given ID found.",
             )
 
+        # Create Experiment
         experiment = Experiment(session)
         self.experiments[session_id] = experiment
+
+        # Notify all experimenters about the new experiment
+        message = MessageDict(
+            type="CREATED_EXPERIMENT",
+            data={
+                "session_id": session_id,
+                "creation_time": experiment.session.creation_time,
+            },
+        )
+        await self.send_to_experimenters(message)
+
         return experiment
 
     async def send_to_experimenters(

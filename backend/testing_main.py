@@ -90,7 +90,7 @@ async def main():
 
     print("################################")
 
-    hub.create_experiment(session.id)
+    await hub.create_experiment(session.id)
     print("## Experiment Started - Connect now ##")
 
     # Run forever

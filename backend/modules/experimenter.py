@@ -283,8 +283,7 @@ class Experimenter(User):
         If found, try to create a new modules.experiment.Experiment based on the session
         with the `session_id` in `data`.
 
-        Sends a `CREATED_EXPERIMENT` message to all experimenters, if experiment was
-        successfully started.
+        Experimenters are notified using a `CREATED_EXPERIMENT` message by the hub.
 
         Parameters
         ----------
@@ -310,12 +309,8 @@ class Experimenter(User):
                 description="Message data is not a valid SessionIdRequest.",
             )
 
-        self._experiment = self._hub.create_experiment(data["session_id"])
+        self._experiment = await self._hub.create_experiment(data["session_id"])
         self._experiment.add_experimenter(self)
-
-        # Notify all experimenters about the new experiment
-        message = MessageDict(type="CREATED_EXPERIMENT", data=data)
-        await self._hub.send_to_experimenters(message)
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
