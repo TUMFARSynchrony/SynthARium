@@ -29,40 +29,11 @@ export const sessionsListSlice = createSlice({
       state.value = sortArray(state.value);
     },
 
-    startSession: (state, { payload }) => {
-      const session = getSessionById(payload, state.value)[0];
-      session["creation_time"] = new Date().getTime();
-
-      const newSessionsList = filterListById(state.value, payload);
-
-      state.value = [...newSessionsList, session];
-      state.value = sortArray(state.value);
-    },
-
-    startExperiment: (state, { payload }) => {
-      const session = getSessionById(payload, state.value)[0];
-      session["start_time"] = new Date().getTime();
-
-      const newSessionsList = filterListById(state.value, payload);
-
-      state.value = [...newSessionsList, session];
-      state.value = sortArray(state.value);
-    },
-
     addNote: (state, { payload }) => {
       const session = getSessionById(payload.id, state.value)[0];
       session.notes.push(payload.note);
 
       const newSessionsList = filterListById(state.value, payload.id);
-      state.value = [...newSessionsList, session];
-      state.value = sortArray(state.value);
-    },
-
-    stopExperiment: (state, { payload }) => {
-      const session = getSessionById(payload, state.value)[0];
-      session["end_time"] = new Date().getTime();
-
-      const newSessionsList = filterListById(state.value, payload);
       state.value = [...newSessionsList, session];
       state.value = sortArray(state.value);
     },
@@ -108,6 +79,15 @@ export const sessionsListSlice = createSlice({
       state.value = [...newSessionsList, session];
       state.value = sortArray(state.value);
     },
+
+    setExperimentTimes: (state, { payload }) => {
+      const session = getSessionById(payload.sessionId, state.value)[0];
+      session[payload.action] = payload.value;
+
+      const newSessionsList = filterListById(state.value, payload.sessionId);
+      state.value = [...newSessionsList, session];
+      state.value = sortArray(state.value);
+    },
   },
 });
 
@@ -116,11 +96,9 @@ export const {
   deleteSession,
   createSession,
   updateSession,
-  startSession,
-  startExperiment,
-  stopExperiment,
   addNote,
   banMuteUnmuteParticipant,
+  setExperimentTimes,
 } = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;

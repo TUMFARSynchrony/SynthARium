@@ -2,10 +2,10 @@ import Button from "../../components/atoms/Button/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 
-function EndVerificationModal({ setShowModal, onEndExperiment, sessionId }) {
+function EndVerificationModal({ setShowModal, onEndExperiment }) {
   const endExperiment = () => {
     setShowModal(false);
-    onEndExperiment(sessionId);
+    onEndExperiment();
   };
 
   return (

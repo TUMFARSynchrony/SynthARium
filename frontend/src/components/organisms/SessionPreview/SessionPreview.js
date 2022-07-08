@@ -14,6 +14,7 @@ function SessionPreview({
   onJoinExperiment,
   onCreateExperiment,
 }) {
+  console.log("selected session sessionPreview", selectedSession);
   const dispatch = useDispatch();
   const deleteSession = () => {
     const sessionId = selectedSession.id;

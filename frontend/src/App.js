@@ -11,10 +11,8 @@ import {
   addNote,
   createSession,
   getSessionsList,
-  startSession,
-  stopExperiment,
-  startExperiment,
   updateSession,
+  setExperimentTimes,
 } from "./features/sessionsList";
 import { deleteSession } from "./features/sessionsList";
 
@@ -37,8 +35,14 @@ function App() {
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useSelector((state) => state.sessionsList.value);
+  const ongoingExperiment = useSelector(
+    (state) => state.ongoingExperiment.value
+  );
+
   const sessionsListRef = useRef();
   sessionsListRef.current = sessionsList;
+  const ongoingExperimentRef = useRef();
+  ongoingExperimentRef.current = ongoingExperiment;
 
   const dispatch = useDispatch();
 
@@ -138,6 +142,9 @@ function App() {
     connection.api.on("SESSION_CHANGE", handleSessionChange);
     connection.api.on("SUCCESS", handleSuccess);
     connection.api.on("ERROR", handleError);
+    connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
+    connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
+    connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
 
     return () => {
       connection.api.off("SESSION_LIST", handleSessionList);
@@ -146,6 +153,9 @@ function App() {
       connection.api.off("SESSION_CHANGE", handleSessionChange);
       connection.api.off("SUCCESS", handleSuccess);
       connection.api.off("ERROR", handleError);
+      connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
+      connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
+      connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
     };
   }, [connection]);
 
@@ -194,10 +204,55 @@ function App() {
     }
   };
 
+  const handleExperimentCreated = (data) => {
+    dispatch(
+      setExperimentTimes({
+        action: "creation_time",
+        value: data.creation_time,
+        sessionId: data.session_id,
+      })
+    );
+  };
+
+  const handleExperimentStarted = (data) => {
+    dispatch(
+      setExperimentTimes({
+        action: "start_time",
+        value: data.start_time,
+        sessionId: ongoingExperimentRef.current.sessionId,
+      })
+    );
+  };
+
+  const handleExperimentEnded = (data) => {
+    dispatch(
+      setExperimentTimes({
+        action: "end_time",
+        value: data.end_time,
+        sessionId: ongoingExperimentRef.current.sessionId,
+      })
+    );
+
+    dispatch(
+      setExperimentTimes({
+        action: "creation_time",
+        value: 0,
+        sessionId: ongoingExperimentRef.current.sessionId,
+      })
+    );
+
+    dispatch(
+      setExperimentTimes({
+        action: "start_time",
+        value: data.start_time,
+        sessionId: ongoingExperimentRef.current.sessionId,
+      })
+    );
+  };
+
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
     dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
-    dispatch(startSession(sessionId)); // Change creation_time to current time
   };
 
   const onDeleteSession = (sessionId) => {
@@ -236,21 +291,20 @@ function App() {
     connection.sendMessage("MUTE", muteRequest);
   };
 
-  const onStartExperiment = (sessionId) => {
+  const onStartExperiment = () => {
     connection.sendMessage("START_EXPERIMENT", {});
     dispatch(changeExperimentState("ONGOING"));
-    dispatch(startExperiment(sessionId)); // set start_time to current time
   };
 
-  const onEndExperiment = (sessionId) => {
+  const onEndExperiment = () => {
     connection.sendMessage("STOP_EXPERIMENT", {});
-    dispatch(changeExperimentState("WAITING"));
-    dispatch(stopExperiment(sessionId)); // set end_time to current time
   };
 
   const onSendChat = (chatMessage) => {
     connection.sendMessage("STOP_EXPERIMENT", chatMessage);
   };
+
+  console.log("sessionsList", sessionsList);
 
   return (
     <div className="App">

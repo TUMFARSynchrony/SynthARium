@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import EndVerificationModal from "../../../modals/EndVerificationModal/EndVerificationModal";
 import StartVerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
-import VerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
 import {
   getSessionById,
   integerToDateTime,
@@ -95,7 +94,6 @@ function OverviewTab({
 
       {startVerificationModal && (
         <StartVerificationModal
-          sessionId={sessionId}
           setShowModal={setStartVerificationModal}
           onStartExperiment={onStartExperiment}
         />
@@ -103,7 +101,6 @@ function OverviewTab({
 
       {endVerificationModal && (
         <EndVerificationModal
-          sessionId={sessionId}
           setShowModal={setEndVerificationModal}
           onEndExperiment={onEndExperiment}
         />
