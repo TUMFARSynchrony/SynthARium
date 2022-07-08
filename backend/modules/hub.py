@@ -265,7 +265,7 @@ class Hub:
     async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
 
-        Also send a `CREATED_EXPERIMENT` message to all experimenters, if experiment was
+        Also send a `EXPERIMENT_CREATED` message to all experimenters, if experiment was
         successfully created.
 
         Parameters
@@ -301,7 +301,7 @@ class Hub:
 
         # Notify all experimenters about the new experiment
         message = MessageDict(
-            type="CREATED_EXPERIMENT",
+            type="EXPERIMENT_CREATED",
             data={
                 "session_id": session_id,
                 "creation_time": experiment.session.creation_time,

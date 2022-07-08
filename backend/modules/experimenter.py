@@ -283,7 +283,7 @@ class Experimenter(User):
         If found, try to create a new modules.experiment.Experiment based on the session
         with the `session_id` in `data`.
 
-        Experimenters are notified using a `CREATED_EXPERIMENT` message by the hub.
+        Experimenters are notified using a `EXPERIMENT_CREATED` message by the hub.
 
         Parameters
         ----------
