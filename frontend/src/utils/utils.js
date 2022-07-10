@@ -139,7 +139,7 @@ export const getPastAndFutureSessions = (sessionsList) => {
     }
   });
 
-  return { past: pastSessions, future: futureSessions };
+  return { pastSession: pastSessions, futureSession: futureSessions };
 };
 
 // Required: "title", "description", "date", "time_limit"

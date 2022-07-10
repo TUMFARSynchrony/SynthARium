@@ -235,14 +235,6 @@ function App() {
 
     dispatch(
       setExperimentTimes({
-        action: "creation_time",
-        value: 0,
-        sessionId: ongoingExperimentRef.current.sessionId,
-      })
-    );
-
-    dispatch(
-      setExperimentTimes({
         action: "start_time",
         value: data.start_time,
         sessionId: ongoingExperimentRef.current.sessionId,
@@ -303,8 +295,6 @@ function App() {
   const onSendChat = (chatMessage) => {
     connection.sendMessage("STOP_EXPERIMENT", chatMessage);
   };
-
-  console.log("sessionsList", sessionsList);
 
   return (
     <div className="App">

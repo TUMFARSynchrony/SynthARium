@@ -97,8 +97,6 @@ function SessionForm({ onSendSessionToBackend }) {
       return;
     }
 
-    console.log("sessionData", sessionData);
-
     onSendSessionToBackend(sessionData);
   };
 

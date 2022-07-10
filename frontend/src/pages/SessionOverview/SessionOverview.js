@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { initializeSession } from "../../features/openSession";
@@ -21,16 +21,21 @@ function SessionOverview({
 }) {
   const dispatch = useDispatch();
   const sessionsList = useSelector((state) => state.sessionsList.value);
-  const { past, future } = getPastAndFutureSessions(sessionsList);
+  const [past, setPast] = useState([]);
+  const [future, setFuture] = useState([]);
 
-  console.log("sessionsList", sessionsList);
-  console.log("future", future);
+  // const { past, future } = getPastAndFutureSessions(sessionsList);
+  useEffect(() => {
+    const { pastSession, futureSession } =
+      getPastAndFutureSessions(sessionsList);
+    setPast(pastSession);
+    setFuture(futureSession);
+    setSelectedSession(futureSession.length !== 0 ? futureSession[0] : null);
+  }, [sessionsList]);
 
   const [selectedSession, setSelectedSession] = useState(
     future.length !== 0 ? future[0] : null
   );
-
-  console.log("selectedSession SessionOverview", selectedSession);
 
   const [showPastSessions, setShowPastSessions] = useState(false);
 
