@@ -4,13 +4,10 @@ import asyncio
 import unittest
 
 from custom_types.chat_message import ChatMessageDict
-from custom_types.note import NoteDict
 
 from modules.data import (
     participant_data_factory,
     session_data_factory,
-    SessionData,
-    ParticipantData,
     PositionData,
     SizeData,
 )
@@ -202,6 +199,90 @@ class TestParticipantDataUpdateEvent(unittest.IsolatedAsyncioTestCase):
         self.participant.banned = True
         await self.check_update_handler("banned")
         self.assertTrue(self.participant.banned)
+
+
+class TestSizeDataUpdateEvent(unittest.IsolatedAsyncioTestCase):
+    """Checks for modules.data.SizeData class.
+
+    Check if variable changes to modules.data.SizeData trigger an `update` event
+    and are saved correctly.
+    """
+
+    def setUp(self):
+        self.size = SizeData(width=10, height=10)
+        self.received_event = asyncio.Event()
+
+        @self.size.on("update")
+        async def update_handler(session):
+            self.received_event.set()
+
+    async def check_update_handler(self, variable: str):
+        """Check if the update event was fired by checking `self.received_event`.
+
+        Wait for up to 5 seconds, fail if timeout occurs.
+        """
+        timeout = 5
+        try:
+            await asyncio.wait_for(self.received_event.wait(), timeout)
+        except asyncio.TimeoutError:
+            self.fail(f'Update for "{variable}" not received within {timeout} seconds')
+
+    async def test_update_event_width(self):
+        """Check if update event fires when editing `width` in SizeData."""
+        self.size.width = 1000
+        await self.check_update_handler("width")
+        self.assertEqual(self.size.width, 1000)
+
+    async def test_update_event_height(self):
+        """Check if update event fires when editing `height` in SizeData."""
+        self.size.height = 1000
+        await self.check_update_handler("height")
+        self.assertEqual(self.size.height, 1000)
+
+
+class TestPositionDataUpdateEvent(unittest.IsolatedAsyncioTestCase):
+    """Checks for modules.data.PositionData class.
+
+    Check if variable changes to modules.data.SizeData trigger an `update` event
+    and are saved correctly.
+    """
+
+    def setUp(self):
+        self.position = PositionData(x=10, y=10, z=10)
+        self.received_event = asyncio.Event()
+
+        @self.position.on("update")
+        async def update_handler(session):
+            self.received_event.set()
+
+    async def check_update_handler(self, variable: str):
+        """Check if the update event was fired by checking `self.received_event`.
+
+        Wait for up to 5 seconds, fail if timeout occurs.
+        """
+        timeout = 5
+        try:
+            await asyncio.wait_for(self.received_event.wait(), timeout)
+        except asyncio.TimeoutError:
+            self.fail(f'Update for "{variable}" not received within {timeout} seconds')
+
+    async def test_update_event_x(self):
+        """Check if update event fires when editing `x` in PositionData."""
+        self.position.x = 1000
+        await self.check_update_handler("x")
+        self.assertEqual(self.position.x, 1000)
+
+    async def test_update_event_y(self):
+        """Check if update event fires when editing `y` in PositionData."""
+        self.position.y = 1000
+        await self.check_update_handler("y")
+        self.assertEqual(self.position.y, 1000)
+
+    async def test_update_event_z(self):
+        """Check if update event fires when editing `z` in PositionData."""
+        self.position.z = 1000
+        await self.check_update_handler("z")
+        self.assertEqual(self.position.z, 1000)
 
 
 if __name__ == "__main__":
