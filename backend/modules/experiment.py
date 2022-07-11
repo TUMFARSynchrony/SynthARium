@@ -6,6 +6,7 @@ from typing import Any
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
 
+from modules.util import timestamp
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 from modules.data import SessionData
@@ -37,6 +38,7 @@ class Experiment:
         self._experimenters = []
         self._participants = {}
         self._logger.info(f"Experiment created: {self}")
+        self.session.creation_time = timestamp()
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -62,6 +64,9 @@ class Experiment:
         If state is `WAITING`, save the current time in `session.start_time` and set
         state to `RUNNING`.  If state is not `WAITING`, an ErrorDictException is raised.
 
+        Also send a `EXPERIMENT_STARTED` message to all users connected to the
+        experiment, if experiment was successfully started.
+
         Raises
         ------
         ErrorDictException
@@ -75,19 +80,19 @@ class Experiment:
             )
 
         self._state = ExperimentState.RUNNING
-        timestamp = round(time.time() * 1000)
-        self._logger.info(f"Experiment started. Start time: {timestamp}")
-        self.session.start_time = timestamp
+        time = timestamp()
+        self._logger.info(f"Experiment started. Start time: {time}")
+        self.session.start_time = time
 
         # Notify all users
-        end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
+        end_message = MessageDict(type="EXPERIMENT_STARTED", data={"start_time": time})
         await self.send("all", end_message, secure_origin=True)
 
     async def stop(self):
         """Stop the experiment.
 
-        If state is not already `ENDED`, save the current time in `session.end_time` and
-        set state to `ENDED`.
+        If state is not already `ENDED`, save the current time in `session.end_time`
+        and in `session.start_time`, if not already set, and set state to `ENDED`.
 
         Raises
         ------
@@ -102,12 +107,17 @@ class Experiment:
             )
 
         self._state = ExperimentState.ENDED
-        timestamp = round(time.time() * 1000)
-        self._logger.info(f"Experiment ended. End time: {timestamp}")
-        self.session.end_time = timestamp
+        time = timestamp()
+        self._logger.info(f"Experiment ended. End time: {time}")
+        self.session.end_time = time
+        if self.session.start_time == 0:
+            self.session.start_time = time
 
         # Notify all users
-        end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
+        end_message = MessageDict(
+            type="EXPERIMENT_ENDED",
+            data={"end_time": time, "start_time": self.session.start_time},
+        )
         await self.send("all", end_message, secure_origin=True)
 
     async def send(
@@ -329,6 +339,20 @@ class Experiment:
         audio : bool
             Whether the participants audio should be muted.
         """
+        # Save muted state in session data
+        participantData = self.session.participants.get(participant_id)
+        if participantData is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=(
+                    "Failed to mute participant, requested participantId is not part "
+                    "of this experiment."
+                ),
+            )
+        participantData.muted_audio = audio
+        participantData.muted_video = video
+
         # Mute participant if participant is already connected
         if participant_id in self._participants:
             await self._participants[participant_id].set_muted(video, audio)
@@ -362,6 +386,8 @@ class Experiment:
             If the given `experimenter` is not part of this experiment.
         """
         self._experimenters.remove(experimenter)
+        experimenter.remove_listener("disconnected", self.remove_experimenter)
+
         self._logger.info(f"Experimenter ({str(experimenter)}) left Experiment")
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"

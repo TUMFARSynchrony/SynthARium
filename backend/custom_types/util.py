@@ -30,6 +30,7 @@ def check_valid_typeddict_keys(data: Any, type: Type[TypedDict]) -> bool:
         False.
     """
     if not isinstance(data, dict):
+        logger.debug(f"Invalid data type: {type(data)}, expected dict.")  # type: ignore
         return False
 
     # Note: Pyright does not seem to know __required_keys__ and __optional_keys__,

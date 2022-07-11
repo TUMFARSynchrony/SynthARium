@@ -89,7 +89,10 @@ const ConnectionTest = (props: {
   /** Get the title displayed in a {@link Video} element for `peer`. */
   const getVideoTitle = (peer: ConnectedPeer, index: number) => {
     if (peer.summary) {
-      return `${peer.summary.first_name} ${peer.summary.last_name}`;
+      if (peer.summary instanceof Object) {
+        return `${peer.summary.first_name} ${peer.summary.last_name}`;
+      }
+      return `UserID: ${peer.summary}`;
     }
     return `Peer stream ${index + 1}`;
   };
@@ -97,7 +100,10 @@ const ConnectionTest = (props: {
   /** Get the title displayed in a {@link Video} element for the remote stream of this client. */
   const getRemoteStreamTitle = () => {
     if (connection.participantSummary) {
-      return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
+      if (connection.participantSummary instanceof Object) {
+        return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
+      }
+      return `remote stream: ${connection.participantSummary}`;
     }
     return "remote stream";
   };
@@ -203,6 +209,12 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
           GET_SESSION_LIST
         </button>
         <button
+          onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          START_EXPERIMENT
+        </button>
+        <button
           onClick={() => props.connection.sendMessage("STOP_EXPERIMENT", {})}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
@@ -228,6 +240,12 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             JOIN_EXPERIMENT
           </button>
         </div>
+        <button
+          onClick={() => props.connection.sendMessage("LEAVE_EXPERIMENT", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          LEAVE_EXPERIMENT
+        </button>
         <div className="inputBtnBox">
           <input
             type="text"

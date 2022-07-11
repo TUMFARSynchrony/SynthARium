@@ -25,7 +25,7 @@ export type ConnectionOffer = {
 		sdp: string;
 		type: string;
 	};
-	participant_summary: ParticipantSummary | null;
+	participant_summary: ParticipantSummary | string | null;
 };
 
 /**
@@ -71,5 +71,5 @@ export type ParticipantSummary = {
  */
 export type ConnectedPeer = {
 	stream: MediaStream,
-	summary: ParticipantSummary | null;
+	summary: ParticipantSummary | string | null;
 };

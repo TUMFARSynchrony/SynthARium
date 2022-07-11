@@ -11,17 +11,17 @@ from __future__ import annotations
 import logging
 import traceback
 from abc import ABCMeta, abstractmethod
+from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
-from typing import Callable, Any, Coroutine, Tuple
 
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
+import modules.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from custom_types.connection import (
     ConnectionAnswerDict,
     is_valid_connection_answer_dict,
@@ -81,6 +81,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _muted_audio: bool
     _connection: ConnectionInterface
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
+    __subscribers: dict[str, str]  # User ID -> subconnection_id
     __disconnected: bool
 
     def __init__(
@@ -105,6 +106,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._muted_video = muted_video
         self._muted_audio = muted_audio
         self._handlers = {}
+        self.__subscribers = {}
         self.__disconnected = False
 
     @property
@@ -183,9 +185,15 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             New subscriber to this User.
         """
         self._logger.debug(f"Adding subscriber: {repr(user)}")
-        offer = await self._connection.create_subscriber_offer(self.get_summary())
+        if isinstance(user, _experimenter.Experimenter):
+            offer = await self._connection.create_subscriber_offer(self.id)
+        else:
+            offer = await self._connection.create_subscriber_offer(self.get_summary())
+
         msg = MessageDict(type="CONNECTION_OFFER", data=offer)
         await user.send(msg)
+
+        self.__subscribers[user.id] = offer["id"]
 
         @user.on("CONNECTION_ANSWER")
         async def _handle_answer(answer: ConnectionAnswerDict):
@@ -203,6 +211,25 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         @user.on("disconnected")
         async def _remove_subconnection(_):
             await self._connection.stop_subconnection(offer["id"])
+
+    async def remove_subscriber(self, user: User) -> None:
+        """Remove `users` from the subscribers to this User.
+
+        Stopps the SubConnection distributing the steam of this User to `user`.
+
+        Parameters
+        ----------
+        user : modules.user.User
+            Subscriber to this User that will be removed.
+        """
+        self._logger.debug(f"Removing subscriber: {user}")
+        subconnection_id = self.__subscribers.pop(user.id, None)
+        if subconnection_id is None:
+            self._logger.error(
+                f"Failed to remove SubConnection, {repr(User)} not found in subscribers"
+            )
+            return
+        await self._connection.stop_subconnection(subconnection_id)
 
     def on_message(
         self,

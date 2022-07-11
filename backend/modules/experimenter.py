@@ -76,6 +76,7 @@ class Experimenter(User):
         self.on_message("DELETE_SESSION", self._handle_delete_session)
         self.on_message("CREATE_EXPERIMENT", self._handle_create_experiment)
         self.on_message("JOIN_EXPERIMENT", self._handle_join_experiment)
+        self.on_message("LEAVE_EXPERIMENT", self._handle_leave_experiment)
         self.on_message("START_EXPERIMENT", self._handle_start_experiment)
         self.on_message("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on_message("ADD_NOTE", self._handle_add_note)
@@ -142,15 +143,14 @@ class Experimenter(User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    async def _handle_save_session(self, data: SessionDict | Any) -> None:
+    async def _handle_save_session(self, data: SessionDict | Any) -> MessageDict:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
         if `id` in data is not a empty string, otherwise try to create new session.
 
-        If the session was newly created, an `CREATED_SESSION` message is send to all
-        experimenters.  Otherwise, if the session was updated, an `UPDATED_SESSION` is
-        send to all experimenters.
+        As a response, `SAVED_SESSION` is send to the caller.  Additionally,
+        `SESSION_CHANGE` is send to all other experimenters connected to the hub.
 
         Parameters
         ----------
@@ -177,9 +177,10 @@ class Experimenter(User):
             session = sm.create_session(data)
 
             # Notify all experimenters about the change
-            message = MessageDict(type="CREATED_SESSION", data=session.asdict())
-            await self._hub.send_to_experimenters(message)
-            return
+            session_dict = session.asdict()
+            message = MessageDict(type="SESSION_CHANGE", data=session_dict)
+            await self._hub.send_to_experimenters(message, self)
+            return MessageDict(type="SAVED_SESSION", data=session_dict)
 
         # Update existing session
         session = sm.get_session(data["id"])
@@ -194,12 +195,21 @@ class Experimenter(User):
         if session.start_time != 0:
             raise ErrorDictException(
                 code=409,
-                type="SESSION_ALREADY_STARTED",
+                type="EXPERIMENT_ALREADY_STARTED",
                 description="Cannot edit session, session has already started.",
             )
 
         # Check if read only parameters where changed
         # Checks for participant IDs are included in session.update()
+        if data["creation_time"] != session.creation_time:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_PARAMETER",
+                description=(
+                    'Cannot change session "creation_time", field is read only.'
+                ),
+            )
+
         if data["start_time"] != session.start_time:
             raise ErrorDictException(
                 code=409,
@@ -217,8 +227,11 @@ class Experimenter(User):
         session.update(data)
 
         # Notify all experimenters about the change
-        message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
-        await self._hub.send_to_experimenters(message)
+        session_dict = session.asdict()
+        message = MessageDict(type="SESSION_CHANGE", data=session_dict)
+        await self._hub.send_to_experimenters(message, self)
+
+        return MessageDict(type="SAVED_SESSION", data=session_dict)
 
     async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
@@ -270,8 +283,7 @@ class Experimenter(User):
         If found, try to create a new modules.experiment.Experiment based on the session
         with the `session_id` in `data`.
 
-        Sends a `CREATED_EXPERIMENT` message to all experimenters, if experiment was
-        successfully started.
+        Experimenters are notified using a `EXPERIMENT_CREATED` message by the hub.
 
         Parameters
         ----------
@@ -297,12 +309,8 @@ class Experimenter(User):
                 description="Message data is not a valid SessionIdRequest.",
             )
 
-        self._experiment = self._hub.create_experiment(data["session_id"])
+        self._experiment = await self._hub.create_experiment(data["session_id"])
         self._experiment.add_experimenter(self)
-
-        # Notify all experimenters about the new experiment
-        message = MessageDict(type="CREATED_EXPERIMENT", data=data)
-        await self._hub.send_to_experimenters(message)
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
@@ -338,13 +346,24 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid dict with a `session_id` str or if there is no
-            Experiment with `session_id`.
+            Experiment with `session_id`. Also raises if this experimenter is already
+            part of an experiment.
         """
         if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_DATATYPE",
                 description="Message data is not a valid SessionIdRequest.",
+            )
+
+        if self._experiment is not None:
+            raise ErrorDictException(
+                code=409,
+                type="ALREADY_JOINED_EXPERIMENT",
+                description=(
+                    "Can not join an experiment while already connected to an "
+                    "experiment."
+                ),
             )
 
         experiment = self._hub.experiments.get(data["session_id"])
@@ -364,6 +383,30 @@ class Experimenter(User):
 
         success = SuccessDict(
             type="JOIN_EXPERIMENT", description="Successfully joined experiment."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_leave_experiment(self, _) -> MessageDict:
+        """Handle requests with type `LEAVE_EXPERIMENT`.
+
+        If part of an experiment, remove self from experiment and set `self._experiment`
+        to None.
+
+        Raises
+        ------
+        ErrorDictException
+            If this Experimenter is not connected to an modules.experiment.Experiment.
+        """
+        experiment = self._get_experiment_or_raise("Failed to leave experiment.")
+        experiment.remove_experimenter(self)
+
+        for participant in experiment.participants.values():
+            await participant.remove_subscriber(self)
+
+        self._experiment = None
+
+        success = SuccessDict(
+            type="LEAVE_EXPERIMENT", description="Successfully left experiment."
         )
         return MessageDict(type="SUCCESS", data=success)
 
@@ -387,17 +430,8 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already started.
         """
-        if not self._experiment:
-            raise ErrorDictException(
-                code=409,
-                type="INVALID_REQUEST",
-                description=(
-                    "Cannot start experiment. Experimenter is not connected to an "
-                    "experiment."
-                ),
-            )
-
-        await self._experiment.start()
+        experiment = self._get_experiment_or_raise("Cannot start experiment.")
+        await experiment.start()
 
         success = SuccessDict(
             type="START_EXPERIMENT", description="Successfully started experiment."

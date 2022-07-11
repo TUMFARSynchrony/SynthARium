@@ -5,6 +5,7 @@
     "record": false,
     "time_limit": 300,
     "description": "Test session for testing backend - frontend communication.",
+    "creation_time": 0,
     "end_time": 0,
     "start_time": 0,
     "notes": [],

@@ -5,7 +5,7 @@ factory functions for `SessionData`: `session_data_factory` and `ParticipantData
 `participant_data_factory`.
 """
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.util import generate_unique_id
@@ -289,7 +289,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         ParticipantData based on the data in `participant_dict`.
     """
     size = participant_dict["size"]
-    sizeData = SizeData(size["width"], size["width"])
+    sizeData = SizeData(size["width"], size["height"])
 
     pos = participant_dict["position"]
     positionData = PositionData(pos["x"], pos["y"], pos["z"])
@@ -325,6 +325,7 @@ class SessionData(_BaseDataClass):
     notes : list of custom_types.note.NoteDict
     participants : dict
     log : Any or None
+    creation_time : int or None
     end_time : int or None
     start_time : int or None
 
@@ -384,6 +385,13 @@ class SessionData(_BaseDataClass):
     # Variables with default values:
     log: Any = field(repr=False, default_factory=list)
     """TODO Document - log still wip"""
+
+    creation_time: int = field(repr=False, default=0)
+    """Time an experiment for this session was created.
+
+    0 indicates that no experiment for this session is running.  Time is given in
+    milliseconds since January 1, 1970, 00:00:00 (UTC).
+    """
 
     end_time: int = field(repr=False, default=0)
     """Session end time in milliseconds since January 1, 1970, 00:00:00 (UTC)."""
@@ -452,19 +460,13 @@ class SessionData(_BaseDataClass):
             "record": self.record,
             "time_limit": self.time_limit,
             "description": self.description,
+            "creation_time": self.creation_time,
             "end_time": self.end_time,
             "start_time": self.start_time,
             "notes": self.notes,
             "participants": [p.asdict() for p in self.participants.values()],
             "log": self.log,
         }
-
-        if self.log is not None:
-            session_dict["log"] = self.log
-        if self.end_time is not None:
-            session_dict["end_time"] = self.end_time
-        if self.start_time is not None:
-            session_dict["start_time"] = self.start_time
 
         return session_dict
 
@@ -505,8 +507,9 @@ class SessionData(_BaseDataClass):
         self.description = session_dict["description"]
         self.notes = session_dict["notes"]
         self.log = session_dict["log"]
+        self.creation_time = session_dict["creation_time"]
         self.end_time = session_dict["end_time"]
-        self.start_time = session_dict["end_time"]
+        self.start_time = session_dict["start_time"]
 
         # Remove event listeners from current participants (before deleting them)
         for old_participant in self.participants.values():
@@ -568,6 +571,8 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
     """
     if session_dict["id"] == "":
         raise ValueError('Missing "id" in session dict.')
+    if session_dict["creation_time"] != 0:
+        raise ValueError('"creation_time" must be 0 when creating new SessionData.')
 
     if has_duplicate_participant_ids(session_dict):
         raise ErrorDictException(

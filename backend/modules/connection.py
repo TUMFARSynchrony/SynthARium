@@ -159,7 +159,7 @@ class Connection(ConnectionInterface):
         return self._state
 
     async def create_subscriber_offer(
-        self, participant_summary: ParticipantSummaryDict | None
+        self, participant_summary: ParticipantSummaryDict | str | None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
 
@@ -190,14 +190,18 @@ class Connection(ConnectionInterface):
         )
         await sc.handle_answer(answer_description)
 
-    async def stop_subconnection(self, subconnection_id: str) -> bool:
+    async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         if subconnection_id not in self._sub_connections:
-            return False
+            self._logger.error(
+                "Failed to remove subconnection, unknown subconnection_id: "
+                f"{subconnection_id}"
+            )
+            return
 
         sub_connection = self._sub_connections[subconnection_id]
         await sub_connection.stop()
-        return True
+        return
 
     async def set_muted(self, video: bool, audio: bool) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -381,7 +385,7 @@ class SubConnection(AsyncIOEventEmitter):
     """
 
     id: str
-    _participant_summary: ParticipantSummaryDict | None
+    _participant_summary: ParticipantSummaryDict | str | None
     _pc: RTCPeerConnection
 
     _audio_track: MediaStreamTrack
@@ -395,7 +399,7 @@ class SubConnection(AsyncIOEventEmitter):
         id: str,
         video_track: MediaStreamTrack,
         audio_track: MediaStreamTrack,
-        participant_summary: ParticipantSummaryDict | None,
+        participant_summary: ParticipantSummaryDict | str | None,
         log_name_suffix: str,
     ) -> None:
         """Initialize new SubConnection.
@@ -408,7 +412,7 @@ class SubConnection(AsyncIOEventEmitter):
         audio_track : aiortc.MediaStreamTrack
             Audio track that will be send in this SubConnection.
         participant_summary : None or custom_types.participant_summary.ParticipantSummaryDict
-            Participant summary send to the client with the initial offer.
+            Participant summary or ID send to the client with the initial offer.
         """
         super().__init__()
         self._logger = logging.getLogger(f"SubConnection-{log_name_suffix}")

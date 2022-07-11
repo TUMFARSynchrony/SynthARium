@@ -36,7 +36,7 @@ class ConnectionOfferDict(TypedDict):
 
     id: str
     offer: RTCSessionDescriptionDict
-    participant_summary: ParticipantSummaryDict | None
+    participant_summary: ParticipantSummaryDict | str | None
 
 
 class RTCSessionDescriptionDict(TypedDict):

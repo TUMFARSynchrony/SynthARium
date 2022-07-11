@@ -81,7 +81,11 @@ class Hub:
         """Stop the hub, close all connection and stop the server."""
         self._logger.info("Stopping Hub")
         for experiment in self.experiments.values():
-            await experiment.stop()
+            try:
+                await experiment.stop()
+            except ErrorDictException:
+                pass
+            experiment.session.creation_time = 0
         tasks = [self.server.stop()]
         for experimenter in self.experimenters:
             tasks.append(experimenter.disconnect())
@@ -150,7 +154,7 @@ class Hub:
             )
 
         elif user_type == "experimenter":
-            id = generate_unique_id([e.id for e in self.experimenters])
+            id = "E" + generate_unique_id([e.id for e in self.experimenters])
             answer, experimenter = await _experimenter.experimenter_factory(
                 offer, id, self
             )
@@ -258,8 +262,11 @@ class Hub:
 
         return (answer, participantData.as_summary_dict())
 
-    def create_experiment(self, session_id: str) -> Experiment:
+    async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
+
+        Also send a `EXPERIMENT_CREATED` message to all experimenters, if experiment was
+        successfully created.
 
         Parameters
         ----------
@@ -288,11 +295,25 @@ class Hub:
                 description="No session with the given ID found.",
             )
 
+        # Create Experiment
         experiment = Experiment(session)
         self.experiments[session_id] = experiment
+
+        # Notify all experimenters about the new experiment
+        message = MessageDict(
+            type="EXPERIMENT_CREATED",
+            data={
+                "session_id": session_id,
+                "creation_time": experiment.session.creation_time,
+            },
+        )
+        await self.send_to_experimenters(message)
+
         return experiment
 
-    async def send_to_experimenters(self, data: MessageDict):
+    async def send_to_experimenters(
+        self, data: MessageDict, exclude: _experimenter.Experimenter | None = None
+    ):
         """Send `data` to all connected experimenters.
 
         Can be used to inform experimenters about changes to sessions.
@@ -301,6 +322,9 @@ class Hub:
         ----------
         data : custom_types.message.MessageDict
             Message for the experimenters.
+        exclude : modules.experimenter.Experimenter, default None
+            Optional `Experimenter` that will be ignored.
         """
         for experimenter in self.experimenters:
-            await experimenter.send(data)
+            if experimenter is not exclude:
+                await experimenter.send(data)

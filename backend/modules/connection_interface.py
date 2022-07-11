@@ -55,19 +55,20 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     @abstractmethod
     async def create_subscriber_offer(
-        self, participant_summary: ParticipantSummaryDict | None
+        self, participant_summary: ParticipantSummaryDict | str | None
     ) -> ConnectionOfferDict:
         """Create a subconnection offer.
 
         Parameters
         ----------
-        participant_summary : custom_types.participant_summary.ParticipantSummaryDict or None
-            Participant summary that will be included in the resulting offer.
+        participant_summary : custom_types.participant_summary.ParticipantSummaryDict, str or None
+            Optional participant summary or participant ID that will be included in the
+            resulting offer.
 
         Returns
         -------
         custom_types.connection.ConnectionOfferDict
-            Connection offer including the `participant_summary`.
+            Connection offer including `participant_summary`.
         """
         pass
 
@@ -84,19 +85,13 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def stop_subconnection(self, subconnection_id: str) -> bool:
+    async def stop_subconnection(self, subconnection_id: str) -> None:
         """Stop the subconnection with `subconnection_id`.
 
         Parameters
         ----------
         subconnection_id : str
             ID of the outgoing SubConnection that will be stopped.
-
-        Returns
-        -------
-        bool
-            True if a outgoing stream with `subconnection_id` was found and closed.
-            Otherwise False.
 
         See Also
         --------
