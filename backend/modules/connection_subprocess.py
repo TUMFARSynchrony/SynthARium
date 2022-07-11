@@ -12,10 +12,12 @@ from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from modules import BACKEND_DIR
 from modules.config import Config
+from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
 
+from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -44,8 +46,9 @@ class ConnectionSubprocess(ConnectionInterface):
     _process: Process | None
     _state: ConnectionState
     _logger: logging.Logger
-    _subscriber_offers: asyncio.Queue
     _tasks: list[asyncio.Task]
+    _command_nr: int
+    _responses: dict[int, asyncio.Queue[dict]]
 
     _local_description_received: asyncio.Event
     _local_description: RTCSessionDescription | None
@@ -88,10 +91,12 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
-        self._subscriber_offers = asyncio.Queue()
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
+
+        self._command_nr = 0
+        self._responses = {}
 
         self._tasks = [
             asyncio.create_task(self._run(), name=f"ConnectionSubprocess.run")
@@ -102,17 +107,23 @@ class ConnectionSubprocess(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         return self._state
 
-    async def create_subscriber_offer(
+    async def create_subscriber_proposal(
         self, participant_summary: ParticipantSummaryDict | str | None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
-        await self._send_command("CREATE_OFFER", participant_summary)
-        offer = await self._subscriber_offers.get()
+        # Send command and wait for response.
+        offer = await self._send_command_wait_for_response(
+            "CREATE_PROPOSAL", participant_summary
+        )
         return offer
 
-    async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
+    async def handle_subscriber_offer(
+        self, offer: ConnectionOfferDict
+    ) -> ConnectionAnswerDict:
         # For docstring see ConnectionInterface or hover over function declaration
-        await self._send_command("HANDLE_ANSWER", answer)
+        # Send command and wait for response.
+        answer = await self._send_command_wait_for_response("HANDLE_OFFER", offer)
+        return answer
 
     async def get_local_description(self) -> RTCSessionDescription:
         """Get localdescription.  Blocks until subprocess sends localdescription."""
@@ -269,7 +280,11 @@ class ConnectionSubprocess(ConnectionInterface):
         """
         data = msg["data"]
         command = msg["command"]
-        # self._logger.debug(f"Received {command} command from subprocess")
+        command_nr = msg["command_nr"]
+
+        # self._logger.debug(
+        #     f"Received {command} command from subprocess, nr: {command_nr}"
+        # )
 
         match command:
             case "SET_LOCAL_DESCRIPTION":
@@ -290,12 +305,12 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._set_state(ConnectionState(data))
             case "API":
                 await self._message_handler(data)
-            case "SUBSCRIBER_OFFER":
-                await self._subscriber_offers.put(data)
+            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER":
+                await self._set_answer(command_nr, data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)
             case _:
-                self._logger.error(f"Unrecognized command from main process: {command}")
+                self._logger.error(f"Unrecognized command from subprocess: {command}")
 
     async def _log_final_stdout_stderr(self) -> None:
         """Wait for and log potential output on stdout and stderr of exited subprocess.
@@ -316,6 +331,84 @@ class ConnectionSubprocess(ConnectionInterface):
         if stderr:
             self._logger.error(f"[stderr START]:\n {stderr.decode()}\n[stderr END]")
 
+    async def _set_answer(self, command_nr: int, data: dict):
+        """Save a answer in `_responses`"""
+        queue = self._responses.get(command_nr)
+        if queue is None:
+            self._logger.error(
+                f"Did not find queue for response with command_nr: {command_nr}"
+            )
+            self._logger.error(f"{command_nr} data: {data}")
+            return
+        await queue.put(data)
+
+    async def _send_command_wait_for_response(
+        self,
+        command: str,
+        data: str
+        | int
+        | float
+        | dict
+        | None
+        | tuple
+        | ParticipantSummaryDict
+        | ConnectionOfferDict
+        | MessageDict,
+        timeout: int | None = None,
+        retries: int = 1,
+    ) -> dict | None:
+        """Send a command including unique command_nr and wait for response.
+
+        Parameters
+        ----------
+        command : str
+            Command / operator for message.
+        data : ...
+            Data for command / operator.
+        timeout : int or None, default None
+            timeout for waiting for response
+        retries : int = 1
+            If > 0, the command will be send again after `timeout` expired.
+
+        Returns
+        -------
+        None or dict
+            None if no response was received, otherwise response
+
+        Raises
+        ------
+        ErrorDictException
+            If the subprocess returned an error custom_types.message.Message.
+        """
+        for attempt in range(retries + 1):
+            if attempt > 0:
+                self._logger.debug(
+                    f"Retry sending {command}. Attempt: {attempt + 1}/{retries + 1}"
+                )
+            command_nr = self._command_nr
+            self._command_nr += 1
+            responseQueue = asyncio.Queue(maxsize=2)
+            self._responses[command_nr] = responseQueue
+
+            # Send command and wait for response.  Response should be added to Queue
+            # in self._responses[command_num] using _set_answer
+            await self._send_command(command, data, command_nr)
+            try:
+                answer = await asyncio.wait_for(responseQueue.get(), timeout)
+            except asyncio.TimeoutError:
+                continue
+            finally:
+                # Remove queue from _responses
+                self._responses.pop(command_nr)
+
+            if "type" in answer and answer["type"] == "ERROR":
+                err: ErrorDict = answer["data"]
+                raise ErrorDictException(
+                    code=err["code"], type=err["type"], description=err["description"]
+                )
+
+            return answer
+
     async def _send_command(
         self,
         command: str,
@@ -326,8 +419,9 @@ class ConnectionSubprocess(ConnectionInterface):
         | None
         | tuple
         | ParticipantSummaryDict
-        | ConnectionAnswerDict
+        | ConnectionOfferDict
         | MessageDict,
+        command_nr: int = -1,
     ) -> None:
         """Send command to subprocess via stdin.
 
@@ -337,8 +431,11 @@ class ConnectionSubprocess(ConnectionInterface):
             Command / operator for message.
         data : ...
             Data for command / operator.
+        command_nr : int, optional
+            Command nr identifying commands with responses.  Only required if response
+            must be identified with request.
         """
-        data = json.dumps({"command": command, "data": data})
+        data = json.dumps({"command": command, "data": data, "command_nr": command_nr})
         if self._process is None:
             self._logger.error(f"Failed send {data}, _process is None")
             return
@@ -382,7 +479,6 @@ async def connection_subprocess_factory(
     tuple with aiortc.RTCSessionDescription, modules.connection_subprocess.ConnectionSubprocess
         WebRTC answer that should be send back to the client and a ConnectionSubprocess.
     """
-    # TODO change type of offer parameter to RTCSessionDescriptionDict
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore
 
     connection = ConnectionSubprocess(

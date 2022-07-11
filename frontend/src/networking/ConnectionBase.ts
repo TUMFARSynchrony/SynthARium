@@ -1,3 +1,4 @@
+import { ICE_SERVERS } from "../utils/constants";
 import { EventHandler } from "./EventHandler";
 import { ParticipantSummary } from "./typing";
 
@@ -7,10 +8,13 @@ import { ParticipantSummary } from "./typing";
  * 
  * @extends EventHandler
  */
-export default class ConnectionBase<T> extends EventHandler<T> {
+export default abstract class ConnectionBase<T> extends EventHandler<T> {
 
   readonly logging: boolean;
   protected _participantSummary: ParticipantSummary | string | null;
+  protected pc: RTCPeerConnection;
+  protected _remoteStream: MediaStream;
+
   private name: string;
 
   /**
@@ -24,6 +28,26 @@ export default class ConnectionBase<T> extends EventHandler<T> {
     this.logging = logging;
     this.name = name;
     this._participantSummary = null;
+
+    const config: any = {
+      sdpSemantics: "unified-plan",
+    };
+    if (ICE_SERVERS) {
+      config.iceServers = ICE_SERVERS;
+    }
+    console.log("config", config);
+    this.pc = new RTCPeerConnection(config);
+    this._remoteStream = new MediaStream();
+    this.addPcEventHandlers();
+  }
+
+  /**
+   * Get remote stream of this client. 
+   * 
+   * The remote stream is the stream received from the backend, based on the stream send from this client.
+   */
+  public get remoteStream(): MediaStream {
+    return this._remoteStream;
   }
 
   /**
@@ -71,4 +95,107 @@ export default class ConnectionBase<T> extends EventHandler<T> {
   protected logError(message: any, ...optionalParams: any[]): void {
     console.error(`[${this.name}] ${message}`, ...optionalParams);
   }
+
+  /** 
+   * Create a new Offer for this connection.
+   * 
+   * Calls `createOffer`, `setLocalDescription`, waits for iceGatheringState to be "complete"
+   * and returns `localDescription` of {@link pc}
+   * 
+   * @returns `localDescription` of {@link pc}
+   */
+  protected async createOffer(): Promise<RTCSessionDescription> {
+    const options = {
+      offerToReceiveVideo: true,
+      offerToReceiveAudio: true,
+    };
+
+    const offer = await this.pc.createOffer(options);
+    await this.pc.setLocalDescription(offer);
+
+    // Wait for iceGatheringState to be "complete".
+    await new Promise((resolve) => {
+      if (this.pc?.iceGatheringState === "complete") {
+        resolve(undefined);
+      } else {
+        const checkState = () => {
+          if (this.pc?.iceGatheringState === "complete") {
+            this.pc.removeEventListener(
+              "icegatheringstatechange",
+              checkState
+            );
+            resolve(undefined);
+          }
+        };
+        this.pc?.addEventListener("icegatheringstatechange", checkState);
+      }
+    });
+
+    return this.pc.localDescription;
+  }
+
+  /** 
+   * Add event handlers for {@link pc}.
+   */
+  private addPcEventHandlers() {
+    this.pc.addEventListener(
+      "icegatheringstatechange",
+      () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
+      false
+    );
+    this.pc.addEventListener(
+      "iceconnectionstatechange",
+      this.handleIceConnectionStateChange.bind(this),
+      false
+    );
+    this.pc.addEventListener(
+      "signalingstatechange",
+      this.handleSignalingStateChange.bind(this),
+      false
+    );
+
+    // handle incoming audio / video tracks
+    this.pc.addEventListener("track", (e) => {
+      this.log(`Received a ${e.track.kind}, track from remote`);
+      if (e.track.kind !== "video" && e.track.kind !== "audio") {
+        this.logError(`Received track with unknown kind: ${e.track.kind}`);
+        return;
+      }
+      this._remoteStream.addTrack(e.track);
+      this.emit("remoteStreamChange", this.remoteStream);
+
+      // Debug logging - when track state changes
+      e.track.onended = () => {
+        this.log(`${e.track.kind} track ended`);
+      };
+      e.track.onmute = () => {
+        this.log(`${e.track.kind} track muted`);
+      };
+      e.track.onunmute = () => {
+        this.log(`${e.track.kind} track un-muted`);
+      };
+    });
+  }
+
+  /** 
+   * Handle the `signalingstatechange` event on {@link pc}. 
+   */
+  protected handleSignalingStateChange(): void {
+    this.log(`SignalingState: ${this.pc.signalingState}`);
+    if (this.pc.signalingState === "closed") {
+      this.stop();
+    }
+  }
+
+  /** 
+   * Stop the connection. 
+   * 
+   * See documentation in implementations for details regarding effects and fired events.
+   */
+  public abstract stop(): void;
+
+  /** 
+   * Handle the `iceconnectionstatechange` event on {@link pc}. 
+   */
+  protected abstract handleIceConnectionStateChange(): void;
 }

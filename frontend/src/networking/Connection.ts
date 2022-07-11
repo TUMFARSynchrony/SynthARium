@@ -2,7 +2,13 @@ import { BACKEND, ENVIRONMENT } from "../utils/constants";
 import ConnectionBase from "./ConnectionBase";
 import ConnectionState from "./ConnectionState";
 import { EventHandler } from "./EventHandler";
-import { isValidConnectionOffer, isValidMessage, Message, ConnectedPeer } from "./typing";
+import {
+  isValidConnectionProposal,
+  isValidConnectionAnswer,
+  isValidMessage,
+  Message,
+  ConnectedPeer
+} from "./typing";
 import SubConnection from "./SubConnection";
 
 
@@ -44,8 +50,6 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   private _state: ConnectionState;
   private localStream: MediaStream;
-  private _remoteStream: MediaStream;
-  private mainPc: RTCPeerConnection;
   private dc: RTCDataChannel;
   private subConnections: Map<string, SubConnection>;
 
@@ -76,22 +80,12 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.userType = userType;
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
-    this._remoteStream = new MediaStream();
 
     this.api = new EventHandler();
-    this.api.on("CONNECTION_OFFER", this.handleConnectionOffer.bind(this));
+    this.api.on("CONNECTION_PROPOSAL", this.handleConnectionProposal.bind(this));
+    this.api.on("CONNECTION_ANSWER", this.handleConnectionAnswer.bind(this));
 
-    this.initMainPeerConnection();
     this.initDataChannel();
-  }
-
-  /**
-   * Get remote stream of this client. 
-   * 
-   * The remote stream is the stream received from the backend, based on the stream send from this client.
-   */
-  public get remoteStream(): MediaStream {
-    return this._remoteStream;
   }
 
   /**
@@ -152,7 +146,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.log("Stating -- Adding localStream:", this.localStream);
     this.localStream?.getTracks().forEach((track) => {
       this.log("Adding track", track);
-      this.mainPc.addTrack(track, this.localStream);
+      this.pc.addTrack(track, this.localStream);
     });
 
     await this.negotiate();
@@ -182,15 +176,12 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       return;
     }
     this.setState(state ?? ConnectionState.CLOSED);
-
     this.log("Stopping");
-
     this.subConnections.forEach(sc => sc.stop());
-
     this.dc.close();
 
     // close transceivers
-    this.mainPc.getTransceivers().forEach(function (transceiver) {
+    this.pc.getTransceivers().forEach(function (transceiver) {
       if (transceiver.currentDirection && transceiver.currentDirection !== "stopped") {
         transceiver.stop();
       }
@@ -198,7 +189,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
     // close local audio / video
     if (closeSenders) {
-      this.mainPc.getSenders().forEach(function (sender) {
+      this.pc.getSenders().forEach(function (sender) {
         if (sender && sender.track) {
           sender.track.stop();
         };
@@ -206,7 +197,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     }
 
     // close peer connection
-    this.mainPc.close();
+    this.pc.close();
   }
 
   /**
@@ -241,67 +232,21 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.emit("connectionStateChange", state);
   }
 
-  /** Initialize `this.mainPc` and add event listeners. */
-  private initMainPeerConnection() {
-    const config: any = {
-      sdpSemantics: "unified-plan",
-    };
-    this.mainPc = new RTCPeerConnection(config);
-
-    // register event listeners for pc
-    this.mainPc.addEventListener(
-      "icegatheringstatechange",
-      () => this.log(`IceGatheringStateChange: ${this.mainPc.iceGatheringState}`),
-      false
-    );
-    this.mainPc.addEventListener(
-      "iceconnectionstatechange",
-      this.handleIceConnectionStateChange.bind(this),
-      false
-    );
-    this.mainPc.addEventListener(
-      "signalingstatechange",
-      this.handleSignalingStateChange.bind(this),
-      false
-    );
-
-    // Receive audio / video
-    this.mainPc.addEventListener("track", (e) => {
-      this.logGroup(`Received ${e.track.kind} track from remote`, e, true);
-
-      if (e.track.kind !== "video" && e.track.kind !== "audio") {
-        this.logError("Received track with unknown kind:", e.track.kind);
-        return;
-      }
-
-      this._remoteStream.addTrack(e.track);
-      this.emit("remoteStreamChange", this._remoteStream);
-    });
-  }
-
-  /** Handle the `iceconnectionstatechange` event on `this.mainPc`. */
-  private handleIceConnectionStateChange() {
-    this.log(`IceConnectionState: ${this.mainPc.iceConnectionState}`);
-    if (["disconnected", "closed"].includes(this.mainPc.iceConnectionState)) {
+  /** Handle the `iceconnectionstatechange` event on `this.pc`. */
+  protected handleIceConnectionStateChange(): void {
+    this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
+    if (["disconnected", "closed"].includes(this.pc.iceConnectionState)) {
       this.stop();
       return;
     }
-    if (this.mainPc.iceConnectionState === "failed") {
+    if (this.pc.iceConnectionState === "failed") {
       this.internalStop(ConnectionState.FAILED);
-    }
-  }
-
-  /** Handle the `signalingstatechange` event on `this.mainPc`. */
-  private handleSignalingStateChange() {
-    this.log(`SignalingState: ${this.mainPc.signalingState}`);
-    if (this.mainPc.signalingState === "closed") {
-      this.stop();
     }
   }
 
   /** Initialize `this.dc` and add event listeners. */
   private initDataChannel() {
-    this.dc = this.mainPc.createDataChannel("API");
+    this.dc = this.pc.createDataChannel("API");
     this.dc.onclose = (_) => {
       this.log("datachannel closed");
       this.stop();
@@ -342,44 +287,21 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * Used to start the initial / main connection with the backend.
    */
   private async negotiate() {
-    const offer = await this.mainPc.createOffer({
-      offerToReceiveVideo: true,
-      offerToReceiveAudio: true,
-    });
-    await this.mainPc.setLocalDescription(offer);
+    const offer = await this.createOffer();
 
-    // Wait for iceGatheringState to be "complete".
-    await new Promise((resolve) => {
-      if (this.mainPc?.iceGatheringState === "complete") {
-        resolve(undefined);
-      } else {
-        const checkState = () => {
-          if (this.mainPc?.iceGatheringState === "complete") {
-            this.mainPc.removeEventListener(
-              "icegatheringstatechange",
-              checkState
-            );
-            resolve(undefined);
-          }
-        };
-        this.mainPc?.addEventListener("icegatheringstatechange", checkState);
-      }
-    });
-
-    const localDesc = this.mainPc.localDescription;
     let request;
     if (this.userType === "participant") {
       request = {
-        sdp: localDesc.sdp,
-        type: localDesc.type,
+        sdp: offer.sdp,
+        type: offer.type,
         user_type: "participant",
         session_id: this.sessionId,
         participant_id: this.participantId,
       };
     } else {
       request = {
-        sdp: localDesc.sdp,
-        type: localDesc.type,
+        sdp: offer.sdp,
+        type: offer.type,
         user_type: "experimenter",
       };
     }
@@ -407,7 +329,6 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       return;
     }
 
-
     const answer = await response.json();
     if (answer.type !== "SESSION_DESCRIPTION") {
       this.log("Received unexpected answer from backend. type:", answer.type);
@@ -415,23 +336,24 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     }
 
     this.log("Received answer:", answer);
-
     this._participantSummary = answer.data.participant_summary;
     const remoteDescription = answer.data;
-    await this.mainPc.setRemoteDescription(remoteDescription);
+    await this.pc.setRemoteDescription(remoteDescription);
   }
 
   /**
-   * Handle incoming CONNECTION_OFFER messages from the backend connection.
+   * Handle incoming `CONNECTION_PROPOSAL` messages from the backend.
    * 
-   * If the offer is valid, start a new SubConnection, add event listeners and store it in `this.subConnections`.
-   * @param data message data from the incoming message of type "CONNECTION_OFFER".
+   * If the proposal is valid, create a new SubConnection, add event listeners and store it in `this.subConnections`.
+   * Sends `CONNECTION_OFFER` for new SubConnection to backend.
    * 
-   * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
+   * @param data message data from the incoming message of type `CONNECTION_PROPOSAL`.
+   * 
+   * @see https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection Connection protocol - Adding a SubConnection.
    */
-  private async handleConnectionOffer(data: any): Promise<void> {
-    if (!isValidConnectionOffer(data)) {
-      this.logError("Received invalid CONNECTION_OFFER.");
+  private async handleConnectionProposal(data: any): Promise<void> {
+    if (!isValidConnectionProposal(data)) {
+      this.logError("Received invalid CONNECTION_PROPOSAL.");
       return;
     }
     const subConnection = new SubConnection(data, this, this.logging);
@@ -444,6 +366,28 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       this.subConnections.delete(id as string);
       this.emit("connectedPeersChange", this.connectedPeers);
     });
-    await subConnection.start();
+    await subConnection.sendOffer();
+  }
+
+  /**
+   * Handle incoming `CONNECTION_ANSWER` messages from the backend.
+   * 
+   * If the answer is valid, it will be passed to the corresponding SubConnection.  
+   * 
+   * @param data message data from the incoming message of type `CONNECTION_ANSWER`.
+   * 
+   * @see https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection Connection protocol - Adding a SubConnection.
+   */
+  private async handleConnectionAnswer(data: any): Promise<void> {
+    if (!isValidConnectionAnswer(data)) {
+      this.logError("Received invalid CONNECTION_ANSWER.");
+      return;
+    }
+    const subConnection: SubConnection | undefined = this.subConnections.get(data.id);
+    if (!subConnection) {
+      this.logError("Failed to handle answer, no subconnection found for id:", data.id);
+      return;
+    }
+    subConnection.handleAnswer(data);
   }
 }

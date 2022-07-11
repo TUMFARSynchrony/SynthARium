@@ -8,7 +8,10 @@ export type Message = {
 };
 
 /**
- * Checks if `data` is a valid {@link Message}. Does not check the type or contents of the `data` field in message.
+ * Check if `data` is a valid {@link Message}. 
+ * Does not check the type or contents of the `data` field in message.
+ * Only checks if the required fields exist, not for unwanted fields or invalid contents.
+ * 
  * @param data data that should be checked for {@link Message} type
  * @returns true if `data` is a valid {@link Message}
  */
@@ -17,28 +20,66 @@ export function isValidMessage(data: any): data is Message {
 }
 
 /**
- * ConnectionOffer received from the backend connection, offering a subconnection for a new user.
+ * Check if `data` is a valid {@link RTCSessionDescriptionInit}. 
+ * Only checks if the required fields exist, not for unwanted fields or invalid contents.
+ * 
+ * @param data data that should be checked for {@link RTCSessionDescriptionInit} type
+ * @returns true if `data` is a valid {@link RTCSessionDescriptionInit}
  */
-export type ConnectionOffer = {
+function isValidConnectionRTCSessionDescriptionInit(data: any): data is RTCSessionDescriptionInit {
+	return "sdp" in data && "type" in data;
+}
+
+/**
+ * Connection proposal.
+ * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#connectionproposal ConnectionProposal data type documentation.
+ */
+export type ConnectionProposal = {
 	id: string,
-	offer: {
-		sdp: string;
-		type: string;
-	};
 	participant_summary: ParticipantSummary | string | null;
 };
 
 /**
- * Checks if all fields of an {@link ConnectionOffer} exist in `data`.
- * Does currently not check the data types or contents of any fields.
+ * Check if `data` is a valid {@link ConnectionProposal}. 
+ * Only checks if the required fields exist, not for unwanted fields or invalid contents.
+ * 
+ * @param data data that should be checked for {@link ConnectionProposal} type
+ * @returns true if `data` is a valid {@link ConnectionProposal}
  */
-export function isValidConnectionOffer(data: any): data is ConnectionOffer {
+export function isValidConnectionProposal(data: any): data is ConnectionProposal {
+	return "id" in data && "participant_summary" in data;
+}
+
+/**
+ * Connection offer.
+ * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#connectionoffer ConnectionOffer data type documentation.
+ */
+export type ConnectionOffer = {
+	id: string,
+	offer: RTCSessionDescriptionInit;
+};
+
+/**
+ * Connection answer.
+ * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#connectionanswer ConnectionAnswer data type documentation.
+ */
+export type ConnectionAnswer = {
+	id: string;
+	answer: RTCSessionDescriptionInit;
+};
+
+/**
+ * Check if `data` is a valid {@link ConnectionAnswer}.
+ * Only checks if the required fields exist, not for unwanted fields or invalid contents. 
+ * 
+ * @param data data that should be checked for {@link ConnectionAnswer} type
+ * @returns true if `data` is a valid {@link ConnectionAnswer}
+ */
+export function isValidConnectionAnswer(data: any): data is ConnectionAnswer {
 	return (
 		"id" in data
-		&& "offer" in data
-		&& "sdp" in data.offer
-		&& "type" in data.offer
-		&& "participant_summary" in data
+		&& "answer" in data
+		&& isValidConnectionRTCSessionDescriptionInit(data.answer)
 	);
 }
 

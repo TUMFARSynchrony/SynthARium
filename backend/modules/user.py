@@ -22,10 +22,7 @@ import modules.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
-from custom_types.connection import (
-    ConnectionAnswerDict,
-    is_valid_connection_answer_dict,
-)
+from custom_types.connection import ConnectionOfferDict, is_valid_connection_offer_dict
 
 
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -56,8 +53,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         Send a custom_types.message.MessageDict to the connected client.
     disconnect()
         Closes the connection with the client.
-    subscribe_to(user)
-        Add incoming tracks from `user` to this User.
+    add_subscriber(user)
+        Add `user` as a subscriber to this User.
     set_muted(video, audio)
         Set the muted state for this user
     get_summary()
@@ -175,47 +172,62 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def add_subscriber(self, user: User) -> None:
         """Add `user` as a subscriber to this User.
 
-        Sends a `CONNECTION_OFFER` to `user` and waits for an `CONNECTION_ANSWER`.
-        After receiving the answer, the incoming streams from this user will also be
-        send to `user`.
+        Sends a `CONNECTION_PROPOSAL` to `user` and waits for an `CONNECTION_OFFER`.
+        Will respond with a `CONNECTION_ANSWER` to the `CONNECTION_OFFER` with the same
+        `id` as the send proposal.
 
         Parameters
         ----------
         user : modules.user.User
             New subscriber to this User.
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection
         """
         self._logger.debug(f"Adding subscriber: {repr(user)}")
         if isinstance(user, _experimenter.Experimenter):
-            offer = await self._connection.create_subscriber_offer(self.id)
+            proposal = await self._connection.create_subscriber_proposal(self.id)
         else:
-            offer = await self._connection.create_subscriber_offer(self.get_summary())
+            proposal = await self._connection.create_subscriber_proposal(
+                self.get_summary()
+            )
 
-        msg = MessageDict(type="CONNECTION_OFFER", data=offer)
+        msg = MessageDict(type="CONNECTION_PROPOSAL", data=proposal)
         await user.send(msg)
 
-        self.__subscribers[user.id] = offer["id"]
+        self.__subscribers[user.id] = proposal["id"]
 
-        @user.on("CONNECTION_ANSWER")
-        async def _handle_answer(answer: ConnectionAnswerDict):
-            if answer["id"] == offer["id"]:
-                await self._connection.handle_subscriber_answer(answer)
-                user.remove_listener("CONNECTION_ANSWER", _handle_answer)
+        @user.on("CONNECTION_OFFER")
+        async def _handle_offer(offer: ConnectionOfferDict):
+            if offer["id"] == proposal["id"]:
+                user.remove_listener("CONNECTION_OFFER", _handle_offer)
+                try:
+                    answer = await self._connection.handle_subscriber_offer(offer)
+                except ErrorDictException as err:
+                    await user.send(err.error_message)
+                    return
+                msg = MessageDict(type="CONNECTION_ANSWER", data=answer)
+                await user.send(msg)
 
         @self.on("disconnected")
         def _remove_listener(_):
             try:
-                user.remove_listener("CONNECTION_ANSWER", _handle_answer)
+                user.remove_listener("CONNECTION_OFFER", _handle_offer)
             except KeyError:
                 return
 
         @user.on("disconnected")
         async def _remove_subconnection(_):
-            await self._connection.stop_subconnection(offer["id"])
+            await self._connection.stop_subconnection(proposal["id"])
 
     async def remove_subscriber(self, user: User) -> None:
-        """Remove `users` from the subscribers to this User.
+        """Remove `user` from the subscribers to this User.
 
-        Stopps the SubConnection distributing the steam of this User to `user`.
+        Stops the SubConnection distributing the steam of this User to `user`.
+
+        Not required if `user` disconnects.
 
         Parameters
         ----------
@@ -268,17 +280,17 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         endpoint = message["type"]
 
-        if endpoint == "CONNECTION_ANSWER":
-            if not is_valid_connection_answer_dict(message["data"]):
-                self._logger.warning(f"Received invalid CONNECTION_ANSWER")
+        if endpoint == "CONNECTION_OFFER":
+            if not is_valid_connection_offer_dict(message["data"]):
+                self._logger.warning(f"Received invalid CONNECTION_OFFER")
                 err = ErrorDict(
                     code=400,
                     type="INVALID_DATATYPE",
-                    description="Invalid connection answer dict",
+                    description="Invalid connection offer dict",
                 )
                 await self.send(MessageDict(type="ERROR", data=err))
                 return
-            self.emit("CONNECTION_ANSWER", message["data"])
+            self.emit("CONNECTION_OFFER", message["data"])
             return
 
         handler_functions = self._handlers.get(endpoint, None)

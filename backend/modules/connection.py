@@ -15,6 +15,7 @@ import asyncio
 import logging
 import json
 
+from modules.exceptions import ErrorDictException
 from modules.connection_interface import ConnectionInterface
 from modules.tracks import AudioTrackHandler, VideoTrackHandler
 from modules.connection_state import ConnectionState, parse_connection_state
@@ -24,6 +25,7 @@ from custom_types.message import MessageDict, is_valid_messagedict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
     RTCSessionDescriptionDict,
+    ConnectionProposalDict,
     ConnectionOfferDict,
     ConnectionAnswerDict,
 )
@@ -158,9 +160,9 @@ class Connection(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         return self._state
 
-    async def create_subscriber_offer(
+    async def create_subscriber_proposal(
         self, participant_summary: ParticipantSummaryDict | str | None
-    ) -> ConnectionOfferDict:
+    ) -> ConnectionProposalDict:
         # For docstring see ConnectionInterface or hover over function declaration
 
         subconnection_id = shortuuid.uuid()
@@ -173,22 +175,26 @@ class Connection(ConnectionInterface):
         )
         sc.add_listener("connection_closed", self._handle_closed_subconnection)
         self._sub_connections[subconnection_id] = sc
-        offer = await sc.generate_offer()
-        return offer
+        return sc.proposal
 
-    async def handle_subscriber_answer(self, answer: ConnectionAnswerDict) -> None:
+    async def handle_subscriber_offer(
+        self, offer: ConnectionOfferDict
+    ) -> ConnectionAnswerDict:
         # For docstring see ConnectionInterface or hover over function declaration
-        subconnection_id = answer["id"]
+        subconnection_id = offer["id"]
         sc = self._sub_connections.get(subconnection_id)
         if sc is None:
-            # TODO error handling
             self._logger.error(f"SubConnection for ID: {subconnection_id} not found.")
-            return
+            raise ErrorDictException(
+                code=0,
+                type="UNKNOWN_SUBCONNECTION_ID",
+                description=f"Unknown offer ID {subconnection_id}",
+            )
 
-        answer_description = RTCSessionDescription(
-            answer["answer"]["sdp"], answer["answer"]["type"]
+        offer_description = RTCSessionDescription(
+            offer["offer"]["sdp"], offer["offer"]["type"]
         )
-        await sc.handle_answer(answer_description)
+        return await sc.handle_offer(offer_description)
 
     async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -425,33 +431,24 @@ class SubConnection(AsyncIOEventEmitter):
         self._pc = RTCPeerConnection()
         self._pc.addTrack(video_track)
         self._pc.addTrack(audio_track)
-        self._pc.on("connectionstatechange", f=self._on_connection_state_change)
+        self._pc.on("connectionstatechange", self._on_connection_state_change)
 
         # Stop SubConnection if one of the tracks ends
         # audio_track.on("ended", self.stop)
         # video_track.on("ended", self.stop)
 
-    async def generate_offer(self) -> ConnectionOfferDict:
-        """Generate offer for this subconnection.
-
-        This offer can then be send to a client, which should respond with an answer.
-        The answer should be passed to `handle_answer`.
+    @property
+    def proposal(self):
+        """Get a custom_types.connection.ConnectionProposalDict for this SubConnection.
 
         See Also
         --------
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol :
-            Connection protocol wiki.
+        Connection Protocol Wiki :
+            https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
         """
-        offer = await self._pc.createOffer()
-        await self._pc.setLocalDescription(offer)
-
-        offer = RTCSessionDescriptionDict(
-            sdp=self._pc.localDescription.sdp, type=self._pc.localDescription.type  # type: ignore
+        return ConnectionProposalDict(
+            id=self.id, participant_summary=self._participant_summary
         )
-        connection_offer = ConnectionOfferDict(
-            id=self.id, offer=offer, participant_summary=self._participant_summary
-        )
-        return connection_offer
 
     async def stop(self) -> None:
         """Stop the SubConnection and its associated tracks.
@@ -472,15 +469,32 @@ class SubConnection(AsyncIOEventEmitter):
         await self._pc.close()
         self.remove_all_listeners()
 
-    async def handle_answer(self, answer: RTCSessionDescription):
-        """Handle a `CONNECTION_ANSWER` message for this SubConnection.
+    async def handle_offer(self, offer: RTCSessionDescription) -> ConnectionAnswerDict:
+        """Handle a `CONNECTION_OFFER` message for this SubConnection.
 
         Parameters
         ----------
-        answer : aiortc.RTCSessionDescription
-            Answer to the initial offer by this SubConnection.
+        offer : aiortc.RTCSessionDescription
+
+        Returns
+        -------
+        custom_types.connection.ConnectionAnswerDict
+            Answer that should be send as a response to the offer.
+
+        See Also
+        --------
+        Connection Protocol Wiki :
+            https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
         """
-        await self._pc.setRemoteDescription(answer)
+        await self._pc.setRemoteDescription(offer)
+
+        answer = await self._pc.createAnswer()
+        await self._pc.setLocalDescription(answer)  # type: ignore
+
+        answer_dict = RTCSessionDescriptionDict(
+            sdp=self._pc.localDescription.sdp, type=self._pc.localDescription.type  # type: ignore
+        )
+        return ConnectionAnswerDict(id=self.id, answer=answer_dict)
 
     async def _on_connection_state_change(self):
         """Handle connection state change."""
