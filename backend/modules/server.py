@@ -70,7 +70,14 @@ class Server:
         # Serve frontend build
         # Redirect sub-pages to index (client handles routing -> single-page app)
         # Add new pages here!
-        pages = ["/", "/postProcessingRoom", "/sessionForm", "/connectionTest"]
+        pages = [
+            "/",
+            "/postProcessingRoom",
+            "/experimentRoom",
+            "/watchingRoom",
+            "/sessionForm",
+            "/connectionTest",
+        ]
         for page in pages:
             routes.append(self._app.router.add_get(page, self.get_index))
         routes.extend(self._app.add_routes([web.static("/", FRONTEND_BUILD_DIR)]))
