@@ -1,19 +1,16 @@
 """Provide AudioTrackHandler and VideoTrackHandler for handing and distributing tracks.
 """
 
-from typing import Optional
 from aiortc.mediastreams import (
     MediaStreamTrack,
     MediaStreamError,
     AudioStreamTrack,
     VideoStreamTrack,
 )
-from aiortc.contrib.media import MediaRelay
 from av import VideoFrame, AudioFrame
-from PIL import Image
-from os.path import join
+from aiortc.contrib.media import MediaRelay
 
-from modules import BACKEND_DIR
+from filters.mute import MuteVideoFilter, MuteAudioFilter
 
 
 class AudioTrackHandler(MediaStreamTrack):
@@ -21,9 +18,11 @@ class AudioTrackHandler(MediaStreamTrack):
 
     kind = "audio"
 
-    _track: MediaStreamTrack | AudioStreamTrack
     muted: bool
+
+    _track: MediaStreamTrack | AudioStreamTrack
     _relay: MediaRelay
+    _mute_audio_filter: MuteAudioFilter
 
     def __init__(
         self, track: MediaStreamTrack | None = None, muted: bool = False
@@ -42,6 +41,7 @@ class AudioTrackHandler(MediaStreamTrack):
         self._track = track if track is not None else AudioStreamTrack()
         self.muted = muted
         self._relay = MediaRelay()
+        self._mute_audio_filter = MuteAudioFilter("0", {})
 
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
@@ -120,15 +120,8 @@ class AudioTrackHandler(MediaStreamTrack):
         frame = await self.track.recv()
 
         if self.muted:
-            self.muted_frame = AudioFrame(
-                format="s16", layout="mono", samples=frame.samples
-            )
-            for p in self.muted_frame.planes:
-                p.update(bytes(p.buffer_size))
-            self.muted_frame.pts = frame.pts
-            self.muted_frame.sample_rate = frame.sample_rate
-            self.muted_frame.time_base = frame.time_base
-            return self.muted_frame
+            muted_frame = await self._mute_audio_filter.process(frame)
+            return muted_frame
 
         return frame
 
@@ -138,12 +131,11 @@ class VideoTrackHandler(MediaStreamTrack):
 
     kind = "video"
 
-    _track: MediaStreamTrack
     muted: bool
-    _relay: MediaRelay
 
-    _muted_frame_img: Image.Image
-    _muted_frame: VideoFrame
+    _track: MediaStreamTrack
+    _relay: MediaRelay
+    _mute_video_filter: MuteVideoFilter
 
     def __init__(
         self, track: MediaStreamTrack | None = None, muted: bool = False
@@ -163,14 +155,10 @@ class VideoTrackHandler(MediaStreamTrack):
         self._track = track if track is not None else VideoStreamTrack()
         self.muted = muted
         self._relay = MediaRelay()
+        self._mute_video_filter = MuteVideoFilter("0", {})
 
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
-
-        # Load image that will be broadcasted when track is muted.
-        img_path = join(BACKEND_DIR, "images/muted.png")
-        self._muted_frame_img = Image.open(img_path)
-        self.muted_frame = VideoFrame.from_image(self._muted_frame_img)
 
     @property
     def track(self):
@@ -246,12 +234,7 @@ class VideoTrackHandler(MediaStreamTrack):
         frame = await self.track.recv()
 
         if self.muted:
-            if self.muted_frame.format != frame.format:
-                self.muted_frame = self.muted_frame.reformat(format=frame.format)
-
-            self.muted_frame.pts = frame.pts
-            self.muted_frame.time_base = frame.time_base
-
-            return self.muted_frame
+            muted_frame = await self._mute_video_filter.process(frame)
+            return muted_frame
 
         return frame

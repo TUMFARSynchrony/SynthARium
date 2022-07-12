@@ -4,7 +4,7 @@ from PIL import Image
 from os.path import join
 from av import VideoFrame, AudioFrame
 
-from backend.modules import BACKEND_DIR
+from modules import BACKEND_DIR
 from filters.filter import VideoFilter, AudioFilter
 
 

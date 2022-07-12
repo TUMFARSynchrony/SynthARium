@@ -10,10 +10,10 @@ class Filter(ABC):
     _id: str
     _config: dict
 
-    @abstractmethod
     def __init__(self, id: str, config: dict) -> None:
         """TODO document"""
-        pass
+        self.id = id
+        self.config = config
 
     @property
     def id(self) -> str:
@@ -26,16 +26,14 @@ class Filter(ABC):
         return self._config
 
     @id.setter
-    @abstractmethod
     def id(self, value: str) -> None:
         """TODO document"""
-        pass
+        self.id = value
 
     @config.setter
-    @abstractmethod
     def config(self, value: dict) -> None:
         """TODO document"""
-        pass
+        self.config = value
 
     @abstractmethod
     async def process(self, frame: VideoFrame | AudioFrame) -> VideoFrame | AudioFrame:
