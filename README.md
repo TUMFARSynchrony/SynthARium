@@ -14,7 +14,10 @@ An online tool for researchers in the field of synchrony to host and conduct cus
 
 ## Building & Starting
 
+In case you want to build the frontend yourself, follow the steps in this section.
+
 For the general setup and prerequisites, please take a look at the [frontend](./frontend/README.md#configuration) and [backend](./backend/README.md#configuration) READMEs.
+Continue with the steps bellow after both the frontend and backend are set up.
 
 1. Build frontend
     - Skip this step if there where no changes to the frontend since the last build process
@@ -22,7 +25,7 @@ For the general setup and prerequisites, please take a look at the [frontend](./
     - Build the frontend: `npm run build`. Make sure the build process finishes without any errors
 2. (Re-) Start server
     - If the server is already running: stop the server
-    - Make sure to take a look at the settings. For more details see [backend README](./backend/README.md#configuration)
+    - Make sure to take a look at the settings. For more details see [backend configuration](./backend/README.md#configuration)
         - It is recommended to set `environment` to `prod` to disable [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
     - Start the server by executing `main.py` in the backend directory. For example from the root directory: `python backend/main.py`
 
