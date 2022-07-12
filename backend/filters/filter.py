@@ -38,7 +38,7 @@ class Filter(ABC):
         pass
 
     @abstractmethod
-    def process(self, frame: VideoFrame | AudioFrame) -> VideoFrame | AudioFrame:
+    async def process(self, frame: VideoFrame | AudioFrame) -> VideoFrame | AudioFrame:
         """TODO document"""
         pass
 
@@ -51,7 +51,7 @@ class VideoFilter(Filter):
     """TODO document"""
 
     @abstractmethod
-    def process(self, frame: VideoFrame) -> VideoFrame:
+    async def process(self, frame: VideoFrame) -> VideoFrame:
         """TODO document"""
         pass
 
@@ -60,6 +60,6 @@ class AudioFilter(Filter):
     """TODO document"""
 
     @abstractmethod
-    def process(self, frame: AudioFrame) -> AudioFrame:
+    async def process(self, frame: AudioFrame) -> AudioFrame:
         """TODO document"""
         pass
