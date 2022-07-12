@@ -17,7 +17,7 @@ import json
 
 from modules.exceptions import ErrorDictException
 from modules.connection_interface import ConnectionInterface
-from modules.tracks import AudioTrackHandler, VideoTrackHandler
+from modules.track_handler import TrackHandler
 from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
@@ -62,8 +62,8 @@ class Connection(ConnectionInterface):
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel | None
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
-    _incoming_audio: AudioTrackHandler
-    _incoming_video: VideoTrackHandler
+    _incoming_audio: TrackHandler
+    _incoming_video: TrackHandler
     _sub_connections: dict[str, SubConnection]
 
     def __init__(
@@ -100,8 +100,8 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = AudioTrackHandler()
-        self._incoming_video = VideoTrackHandler()
+        self._incoming_audio = TrackHandler("audio")
+        self._incoming_video = TrackHandler("video")
         self._dc = None
 
         # Register event handlers
@@ -351,14 +351,12 @@ class Connection(ConnectionInterface):
             """Handles tracks ended event."""
             self._logger.debug(f"{track.kind} track ended")
 
-    def _listen_to_track_close(
-        self, track: AudioTrackHandler | VideoTrackHandler, sender: RTCRtpSender
-    ):
+    def _listen_to_track_close(self, track: TrackHandler, sender: RTCRtpSender):
         """Add a handler to the `ended` event on `track` that closes its transceiver.
 
         Parameters
         ----------
-        track : modules.track.AudioTrackHandler or modules.track.VideoTrackHandler
+        track : modules.track_handler.TrackHandler
             Track to listen to the `ended` event.
         sender : aiortc.RTCRtpSender
             Sender of the track.  Used to find the correct transceiver.
