@@ -14,6 +14,7 @@ class Config:
     host: str
     port: int
     environment: Literal["dev", "prod"]
+    serve_frontend: bool
     https: bool
     ssl_cert: str | None
     ssl_key: str | None
@@ -44,6 +45,7 @@ class Config:
             "host": str,
             "port": int,
             "environment": str,  # Literal not supported here, check afterwards.
+            "serve_frontend": bool,
             "https": bool,
             "log": str,
             "log_dependencies": str,
@@ -76,6 +78,7 @@ class Config:
         self.host = config["host"]
         self.port = config["port"]
         self.environment = config["environment"]
+        self.serve_frontend = config["serve_frontend"]
         self.https = config["https"]
         self.log = config["log"]
         self.log_dependencies = config["log_dependencies"]
@@ -110,11 +113,12 @@ class Config:
         """Get string representation of parameters in this Config."""
         return (
             f"host={self.host}, port={self.port}, environment={self.environment}, "
-            f"https={self.https}, ssl_cert={self.ssl_cert}, ssl_key={self.ssl_key}, "
-            f"log={self.log}, log_dependencies={self.log_dependencies}, log_file="
-            f"{self.log_file}, ping_subprocesses={self.ping_subprocesses},"
-            f"experimenter_multiprocessing={self.experimenter_multiprocessing}, "
-            f"participant_multiprocessing={self.participant_multiprocessing}."
+            f"https={self.https}, serve_frontend={self.serve_frontend}, ssl_cert="
+            f"{self.ssl_cert}, ssl_key={self.ssl_key}, log={self.log}, log_dependencies"
+            f"={self.log_dependencies}, log_file={self.log_file}, ping_subprocesses="
+            f"{self.ping_subprocesses}, experimenter_multiprocessing="
+            f"{self.experimenter_multiprocessing}, participant_multiprocessing="
+            f"{self.participant_multiprocessing}."
         )
 
     def __repr__(self) -> str:
