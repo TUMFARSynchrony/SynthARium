@@ -12,7 +12,8 @@
 			"last_name": "Mustermann",
 			"muted_video": false,
 			"muted_audio": false,
-			"filters": [],
+			"audio_filters": [],
+			"video_filters": [],
 			"position": {
 				"x": 0,
 				"y": 10,
@@ -38,7 +39,8 @@
 			"last_name": "Mustermann",
 			"muted_video": false,
 			"muted_audio": true,
-			"filters": [],
+			"audio_filters": [],
+			"video_filters": [],
 			"position": {
 				"x": 0,
 				"y": 150,

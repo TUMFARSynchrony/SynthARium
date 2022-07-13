@@ -1,129 +1,165 @@
 {
-    "id": "bbbef1d7d0",
-    "title": "CONNECTION TEST SESSION",
-    "date": 1650380763073,
-    "record": false,
-    "time_limit": 300,
-    "description": "Test session for testing backend - frontend communication.",
-    "creation_time": 0,
-    "end_time": 0,
-    "start_time": 0,
-    "notes": [],
-    "participants": [
-        {
-            "id": "a",
-            "first_name": "Anna",
-            "last_name": "Anderson",
-            "banned": false,
-            "size": {
-                "width": 480,
-                "height": 320
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-            },
-            "chat": [],
-            "filters": []
-        },
-        {
-            "id": "b",
-            "first_name": "Brandon",
-            "last_name": "Brown",
-            "banned": false,
-            "size": {
-                "width": 480,
-                "height": 320
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 480,
-                "y": 0,
-                "z": 1
-            },
-            "chat": [],
-            "filters": []
-        },
-        {
-            "id": "c",
-            "first_name": "Christopher",
-            "last_name": "Cook",
-            "banned": false,
-            "size": {
-                "width": 480,
-                "height": 320
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 0,
-                "y": 320,
-                "z": 0
-            },
-            "chat": [],
-            "filters": []
-        },
-        {
-            "id": "d",
-            "first_name": "Daniel",
-            "last_name": "Dunn",
-            "banned": false,
-            "size": {
-                "width": 480,
-                "height": 320
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 480,
-                "y": 320,
-                "z": 0
-            },
-            "chat": [],
-            "filters": []
-        },
-        {
-            "id": "e",
-            "first_name": "Emily",
-            "last_name": "Edwards",
-            "banned": false,
-            "size": {
-                "width": 480,
-                "height": 320
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 960,
-                "y": 0,
-                "z": 35
-            },
-            "chat": [],
-            "filters": []
-        },
-        {
-            "id": "f",
-            "first_name": "Felix",
-            "last_name": "Freeman",
-            "banned": false,
-            "size": {
-                "width": 480,
-                "height": 320
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 960,
-                "y": 320,
-                "z": 35
-            },
-            "chat": [],
-            "filters": []
-        }
-    ],
-    "log": []
+	"id": "bbbef1d7d0",
+	"title": "CONNECTION TEST SESSION",
+	"date": 1689249266451,
+	"record": false,
+	"time_limit": 300,
+	"description": "Test session for testing backend - frontend communication.",
+	"creation_time": 0,
+	"end_time": 0,
+	"start_time": 0,
+	"notes": [],
+	"participants": [
+		{
+			"id": "a",
+			"first_name": "Anna",
+			"last_name": "Anderson",
+			"banned": false,
+			"size": {
+				"width": 480,
+				"height": 320
+			},
+			"muted_video": false,
+			"muted_audio": false,
+			"position": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"chat": [],
+			"audio_filters": [],
+			"video_filters": [
+				{
+					"type": "Rotation",
+					"id": ""
+				}
+			]
+		},
+		{
+			"id": "b",
+			"first_name": "Brandon",
+			"last_name": "Brown",
+			"banned": false,
+			"size": {
+				"width": 480,
+				"height": 320
+			},
+			"muted_video": false,
+			"muted_audio": false,
+			"position": {
+				"x": 480,
+				"y": 0,
+				"z": 1
+			},
+			"chat": [],
+			"audio_filters": [],
+			"video_filters": [
+				{
+					"type": "Rotation",
+					"id": ""
+				}
+			]
+		},
+		{
+			"id": "c",
+			"first_name": "Christopher",
+			"last_name": "Cook",
+			"banned": false,
+			"size": {
+				"width": 480,
+				"height": 320
+			},
+			"muted_video": false,
+			"muted_audio": false,
+			"position": {
+				"x": 0,
+				"y": 320,
+				"z": 0
+			},
+			"chat": [],
+			"audio_filters": [],
+			"video_filters": [
+				{
+					"type": "Rotation",
+					"id": ""
+				}
+			]
+		},
+		{
+			"id": "d",
+			"first_name": "Daniel",
+			"last_name": "Dunn",
+			"banned": false,
+			"size": {
+				"width": 480,
+				"height": 320
+			},
+			"muted_video": false,
+			"muted_audio": false,
+			"position": {
+				"x": 480,
+				"y": 320,
+				"z": 0
+			},
+			"chat": [],
+			"audio_filters": [],
+			"video_filters": [
+				{
+					"type": "Rotation",
+					"id": ""
+				}
+			]
+		},
+		{
+			"id": "e",
+			"first_name": "Emily",
+			"last_name": "Edwards",
+			"banned": false,
+			"size": {
+				"width": 480,
+				"height": 320
+			},
+			"muted_video": false,
+			"muted_audio": false,
+			"position": {
+				"x": 960,
+				"y": 0,
+				"z": 35
+			},
+			"chat": [],
+			"audio_filters": [],
+			"video_filters": [
+				{
+					"type": "Rotation",
+					"id": ""
+				}
+			]
+		},
+		{
+			"id": "f",
+			"first_name": "Felix",
+			"last_name": "Freeman",
+			"banned": false,
+			"size": {
+				"width": 480,
+				"height": 320
+			},
+			"muted_video": false,
+			"muted_audio": false,
+			"position": {
+				"x": 960,
+				"y": 320,
+				"z": 35
+			},
+			"chat": [],
+			"audio_filters": [],
+			"video_filters": [
+				{
+					"type": "Rotation",
+					"id": ""
+				}
+			]
+		}
+	],
+	"log": []
 }
