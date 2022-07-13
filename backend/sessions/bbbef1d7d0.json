@@ -28,12 +28,7 @@
 			},
 			"chat": [],
 			"audio_filters": [],
-			"video_filters": [
-				{
-					"type": "Rotation",
-					"id": ""
-				}
-			]
+			"video_filters": []
 		},
 		{
 			"id": "b",
@@ -53,12 +48,7 @@
 			},
 			"chat": [],
 			"audio_filters": [],
-			"video_filters": [
-				{
-					"type": "Rotation",
-					"id": ""
-				}
-			]
+			"video_filters": []
 		},
 		{
 			"id": "c",
@@ -78,12 +68,7 @@
 			},
 			"chat": [],
 			"audio_filters": [],
-			"video_filters": [
-				{
-					"type": "Rotation",
-					"id": ""
-				}
-			]
+			"video_filters": []
 		},
 		{
 			"id": "d",
@@ -103,12 +88,7 @@
 			},
 			"chat": [],
 			"audio_filters": [],
-			"video_filters": [
-				{
-					"type": "Rotation",
-					"id": ""
-				}
-			]
+			"video_filters": []
 		},
 		{
 			"id": "e",
@@ -128,12 +108,7 @@
 			},
 			"chat": [],
 			"audio_filters": [],
-			"video_filters": [
-				{
-					"type": "Rotation",
-					"id": ""
-				}
-			]
+			"video_filters": []
 		},
 		{
 			"id": "f",
@@ -153,12 +128,7 @@
 			},
 			"chat": [],
 			"audio_filters": [],
-			"video_filters": [
-				{
-					"type": "Rotation",
-					"id": ""
-				}
-			]
+			"video_filters": []
 		}
 	],
 	"log": []

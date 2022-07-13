@@ -7,10 +7,12 @@ here.  `is_valid_filter_dict` should then include checks for the additional Filt
 based on FilterDict.
 """
 
+import logging
 from typing import Literal, TypedDict, get_args
 
 import custom_types.util as util
 
+logger = logging.getLogger("Filters")
 
 FILTER_TYPES = Literal[
     "MUTE_AUDIO",
@@ -57,12 +59,14 @@ def is_valid_filter_dict(data) -> bool:
     bool
         True if `data` is a valid FilterDict.
     """
-    return (
-        util.check_valid_typeddict_keys(data, FilterDict)
-        and isinstance(data["type"], str)
-        and isinstance(data["id"], str)
-        and data["type"] in get_args(FILTER_TYPES)
-    )
+    if not util.check_valid_typeddict_keys(data, FilterDict):
+        return False
+
+    if data["type"] not in get_args(FILTER_TYPES):
+        logging.debug(f'Invalid filter type: "{data["type"]}".')
+        return False
+
+    return isinstance(data["type"], str) and isinstance(data["id"], str)
 
 
 class SetFiltersRequestDict(TypedDict):
@@ -110,10 +114,21 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
         return False
 
     if recursive:
+        ids = []
         for filter in data["audio_filters"]:
+            if filter["id"] in ids:
+                logger.debug(f'Duplicate id: "{filter["id"]}" in SetFiltersRequestDict')
+                return False
+            ids.append(filter["id"])
             if not is_valid_filter_dict(filter):
                 return False
+
+        ids = []
         for filter in data["video_filters"]:
+            if filter["id"] in ids:
+                logger.debug(f'Duplicate id: "{filter["id"]}" in SetFiltersRequestDict')
+                return False
+            ids.append(filter["id"])
             if not is_valid_filter_dict(filter):
                 return False
 

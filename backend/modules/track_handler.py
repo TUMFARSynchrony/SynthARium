@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import shortuuid
 from typing import Literal
 from aiortc.mediastreams import (
     MediaStreamTrack,
@@ -12,7 +11,7 @@ from aiortc.mediastreams import (
 )
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
-from backend.modules.connection_interface import ConnectionInterface
+from modules.connection_interface import ConnectionInterface
 
 from custom_types.filters import FilterDict
 from modules.exceptions import ErrorDictException
@@ -172,9 +171,9 @@ class TrackHandler(MediaStreamTrack):
         type = filter_config["type"]
 
         match type:
-            case "Rotation":
+            case "ROTATION":
                 return RotationFilter(id, filter_config, self._connection)
-            case "EdgeOutline":
+            case "EDGE_OUTLINE":
                 return EdgeOutlineFilter(id, filter_config, self._connection)
             case _:
                 raise ErrorDictException(
