@@ -262,7 +262,11 @@ async def participant_factory(
         )
     else:
         answer, connection = await connection_factory(
-            offer, participant.handle_message, log_name_suffix
+            offer,
+            participant.handle_message,
+            log_name_suffix,
+            participant_data.audio_filters,
+            participant_data.video_filters,
         )
 
     participant.set_connection(connection)

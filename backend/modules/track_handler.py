@@ -40,10 +40,13 @@ class TrackHandler(MediaStreamTrack):
         self,
         kind: Literal["audio", "video"],
         connection: modules.connection.Connection,
+        filters: list[FilterDict],
         track: MediaStreamTrack | None = None,
         muted: bool = False,
     ) -> None:
         """Initialize new TrackHandler for `track`.
+
+        TODO update docs
 
         Parameters
         ----------
@@ -83,6 +86,7 @@ class TrackHandler(MediaStreamTrack):
             else MuteVideoFilter("0", {"id": "0", "type": "MUTE_VIDEO"}, connection)
         )
         self._filters = {}
+        self._set_filters(filters)
 
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)

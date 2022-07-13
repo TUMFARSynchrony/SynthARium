@@ -73,11 +73,13 @@ class Connection(ConnectionInterface):
         pc: RTCPeerConnection,
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
         log_name_suffix: str,
+        audio_filters: list[FilterDict],
+        video_filters: list[FilterDict],
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
-        Add event listeners to `pc`.  Should be donne the remote description of `pc` is
-        set.
+        Add event listeners to `pc`.  Should be donne before the remote description of
+        `pc` is set.
 
         Parameters
         ----------
@@ -88,6 +90,7 @@ class Connection(ConnectionInterface):
             be parsed and type checked (only top level, not including contents of data).
         log_name_suffix : str
             Suffix for logger.  Format: Connection-<log_name_suffix>.
+        TODO add documentation for filters
 
         See Also
         --------
@@ -102,8 +105,12 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = modules.track_handler.TrackHandler("audio", self)
-        self._incoming_video = modules.track_handler.TrackHandler("video", self)
+        self._incoming_audio = modules.track_handler.TrackHandler(
+            "audio", self, audio_filters
+        )
+        self._incoming_video = modules.track_handler.TrackHandler(
+            "video", self, video_filters
+        )
         self._dc = None
         self._tasks = []
 
@@ -522,6 +529,8 @@ async def connection_factory(
     offer: RTCSessionDescription,
     message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
     log_name_suffix: str,
+    audio_filters: list[FilterDict],
+    video_filters: list[FilterDict],
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -534,6 +543,7 @@ async def connection_factory(
         this handler.
     log_name_suffix : str
         Suffix for logger used in Connection.  Format: Connection-<log_name_suffix>.
+    TODO add filters documentation
 
     Returns
     -------
@@ -541,7 +551,9 @@ async def connection_factory(
         WebRTC answer that should be send back to the client and a Connection.
     """
     pc = RTCPeerConnection()
-    connection = Connection(pc, message_handler, log_name_suffix)
+    connection = Connection(
+        pc, message_handler, log_name_suffix, audio_filters, video_filters
+    )
 
     # handle offer
     await pc.setRemoteDescription(offer)

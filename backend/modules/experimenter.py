@@ -805,7 +805,7 @@ async def experimenter_factory(
         )
     else:
         answer, connection = await connection_factory(
-            offer, experimenter.handle_message, log_name_suffix
+            offer, experimenter.handle_message, log_name_suffix, [], []
         )
 
     experimenter.set_connection(connection)
