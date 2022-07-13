@@ -7,7 +7,8 @@ from av import VideoFrame, AudioFrame
 from custom_types.filters import FilterDict
 from filters.filter import VideoFilter, AudioFilter
 from modules import BACKEND_DIR
-from modules.connection_interface import ConnectionInterface
+
+import modules
 
 
 class MuteVideoFilter(VideoFilter):
@@ -16,7 +17,7 @@ class MuteVideoFilter(VideoFilter):
     _muted_frame: VideoFrame
 
     def __init__(
-        self, id: str, config: FilterDict, connection: ConnectionInterface
+        self, id: str, config: FilterDict, connection: modules.connection.Connection
     ) -> None:
         """TODO document"""
         super().__init__(id, config, connection)
@@ -43,7 +44,7 @@ class MuteAudioFilter(AudioFilter):
     _muted_frame: AudioFrame | None
 
     def __init__(
-        self, id: str, config: FilterDict, connection: ConnectionInterface
+        self, id: str, config: FilterDict, connection: modules.connection.Connection
     ) -> None:
         """TODO document"""
         super().__init__(id, config, connection)

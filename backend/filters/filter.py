@@ -5,7 +5,10 @@ from av import VideoFrame, AudioFrame
 
 from custom_types.filters import FilterDict
 
-from modules.connection_interface import ConnectionInterface
+# Importing from modules in filter package can cause circular dependencies errors.
+# Importing the modules package can avoid this.
+# See: https://stackoverflow.com/a/37126790
+import modules
 
 
 class Filter(ABC):
@@ -13,10 +16,10 @@ class Filter(ABC):
 
     _id: str
     _config: FilterDict
-    _connection: ConnectionInterface
+    _connection: modules.connection.Connection
 
     def __init__(
-        self, id: str, config: FilterDict, connection: ConnectionInterface
+        self, id: str, config: FilterDict, connection: modules.connection.Connection
     ) -> None:
         """TODO document"""
         self._id = id

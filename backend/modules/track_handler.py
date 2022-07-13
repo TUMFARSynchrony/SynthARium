@@ -11,10 +11,11 @@ from aiortc.mediastreams import (
 )
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
-from modules.connection_interface import ConnectionInterface
+
+import modules
+from modules.exceptions import ErrorDictException
 
 from custom_types.filters import FilterDict
-from modules.exceptions import ErrorDictException
 from filters.rotate import RotationFilter
 from filters.edge_outline import EdgeOutlineFilter
 from filters.filter import Filter
@@ -28,7 +29,7 @@ class TrackHandler(MediaStreamTrack):
     muted: bool
 
     _track: MediaStreamTrack
-    _connection: ConnectionInterface
+    _connection: modules.connection.Connection
     _relay: MediaRelay
     _mute_filter: MuteAudioFilter | MuteVideoFilter
     _filters: dict[str, Filter]
@@ -38,7 +39,7 @@ class TrackHandler(MediaStreamTrack):
     def __init__(
         self,
         kind: Literal["audio", "video"],
-        connection: ConnectionInterface,
+        connection: modules.connection.Connection,
         track: MediaStreamTrack | None = None,
         muted: bool = False,
     ) -> None:
