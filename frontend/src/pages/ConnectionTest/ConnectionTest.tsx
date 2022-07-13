@@ -199,7 +199,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     <>
       {props.connection.userType === "participant"
         ? <p className="apiWarning"><b>Note:</b> API should only work for experimenters</p>
-        : <></>
+        : <p className="apiSubsectionHeader">API Testing:</p>
       }
       <div className="requestButtons">
         <button
@@ -295,6 +295,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
           </button>
         </div>
       </div>
+      <SetFilterPresets connection={props.connection} />
       <div className="basicTabs">
         <span className="tabsTitle">Responses:</span>
         {responses.map((response, index) => {
@@ -310,6 +311,67 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
   );
 }
 
+function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
+  return (
+    <>
+      <p className="apiSubsectionHeader">Filter Presets:</p>
+      <div className="requestButtons">
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          None
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "EdgeOutline", id: "" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Edge Outline
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "Rotation", id: "" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Rotation
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "EdgeOutline", id: "" }, { type: "Rotation", id: "" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Edge Outline + Rotation
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "Rotation", id: "" }, { type: "EdgeOutline", id: "" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Rotation + Edge Outline
+        </button>
+      </div>
+    </>
+  );
+}
+
+
 /**
  * Component to display an readable, indented version of `json`.
  */
@@ -322,11 +384,11 @@ function PrettyJson(props: { json: any; }) {
 }
 
 /**
- * Component with inputs to replace the current {@link Connection} with a new one. 
- * Used to change session-, participant-ids or user type.
- * 
- * Do not use after the connection has been started.  
- */
+ * Component with inputs to replace the current {@link Connection} with a new one.
+      * Used to change session-, participant-ids or user type.
+      *
+      * Do not use after the connection has been started.
+      */
 function ReplaceConnection(props: {
   connection: Connection,
   setConnection: (connection: Connection) => void,
