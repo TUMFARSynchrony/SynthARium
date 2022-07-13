@@ -12,7 +12,12 @@ from typing import Literal, TypedDict, get_args
 import custom_types.util as util
 
 
-FILTER_TYPES = Literal["Rotation", "EdgeOutline"]
+FILTER_TYPES = Literal[
+    "MUTE_AUDIO",
+    "MUTE_VIDEO",
+    "ROTATION",
+    "EDGE_OUTLINE",
+]
 """TODO document"""
 
 

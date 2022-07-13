@@ -4,8 +4,10 @@ from PIL import Image
 from os.path import join
 from av import VideoFrame, AudioFrame
 
-from modules import BACKEND_DIR
+from custom_types.filters import FilterDict
 from filters.filter import VideoFilter, AudioFilter
+from modules import BACKEND_DIR
+from modules.connection_interface import ConnectionInterface
 
 
 class MuteVideoFilter(VideoFilter):
@@ -13,9 +15,11 @@ class MuteVideoFilter(VideoFilter):
 
     _muted_frame: VideoFrame
 
-    def __init__(self, id: str, config: dict) -> None:
+    def __init__(
+        self, id: str, config: FilterDict, connection: ConnectionInterface
+    ) -> None:
         """TODO document"""
-        super().__init__(id, config)
+        super().__init__(id, config, connection)
 
         # Load image that will be broadcasted when track is muted.
         img_path = join(BACKEND_DIR, "images/muted.png")
@@ -38,9 +42,11 @@ class MuteAudioFilter(AudioFilter):
 
     _muted_frame: AudioFrame | None
 
-    def __init__(self, id: str, config: dict) -> None:
+    def __init__(
+        self, id: str, config: FilterDict, connection: ConnectionInterface
+    ) -> None:
         """TODO document"""
-        super().__init__(id, config)
+        super().__init__(id, config, connection)
 
         # Create a muted audio frame.
         self.muted_frame = AudioFrame(format="s16", layout="mono")

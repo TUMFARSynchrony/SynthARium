@@ -12,6 +12,7 @@ from aiortc.mediastreams import (
 )
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
+from backend.modules.connection_interface import ConnectionInterface
 
 from custom_types.filters import FilterDict
 from modules.exceptions import ErrorDictException
@@ -28,6 +29,7 @@ class TrackHandler(MediaStreamTrack):
     muted: bool
 
     _track: MediaStreamTrack
+    _connection: ConnectionInterface
     _relay: MediaRelay
     _mute_filter: MuteAudioFilter | MuteVideoFilter
     _filters: dict[str, Filter]
@@ -37,6 +39,7 @@ class TrackHandler(MediaStreamTrack):
     def __init__(
         self,
         kind: Literal["audio", "video"],
+        connection: ConnectionInterface,
         track: MediaStreamTrack | None = None,
         muted: bool = False,
     ) -> None:
@@ -72,9 +75,12 @@ class TrackHandler(MediaStreamTrack):
                 f'Invalid kind: "{kind}". Accepted values: "audio" or "video"'
             )
         self.muted = muted
+        self._connection = connection
         self._relay = MediaRelay()
         self._mute_filter = (
-            MuteAudioFilter("0", {}) if kind == "audio" else MuteVideoFilter("0", {})
+            MuteAudioFilter("0", {"id": "0", "type": "MUTE_AUDIO"}, connection)
+            if kind == "audio"
+            else MuteVideoFilter("0", {"id": "0", "type": "MUTE_VIDEO"}, connection)
         )
         self._filters = {}
 
@@ -143,41 +149,33 @@ class TrackHandler(MediaStreamTrack):
 
     def _set_filters(self, filter_configs: list[FilterDict]) -> None:
         """TODO document"""
-        updated_ids = [f["id"] for f in filter_configs if f["id"] != ""]
-        self._logger.debug(f"Updated filters: {updated_ids}")
-
-        # Check for invalid ids.
-        for config in filter_configs:
-            if config["id"] != "" and config["id"] not in self._filters:
-                raise ErrorDictException(
-                    code=404, type="UNKNOWN_FILTER_ID", description="Unknown filter ID."
-                )
 
         new_filters: dict[str, Filter] = {}
         for config in filter_configs:
-            # If id is not empty, reuse and update existing filter.
             id = config["id"]
-            if id != "":
+            # Reuse existing filter for matching id and type.
+            if (
+                id in self._filters
+                and self._filters[id].config["type"] == config["type"]
+            ):
                 new_filters[id] = self._filters[id]
                 new_filters[id].set_config(config)
                 continue
 
             # Create a new filter for configs with empty id.
-            filter = self._create_filter(config)
-            new_filters[filter.id] = filter
+            new_filters[id] = self._create_filter(id, config)
 
         self._filters = new_filters
 
-    def _create_filter(self, filter_config: FilterDict) -> Filter:
+    def _create_filter(self, id: str, filter_config: FilterDict) -> Filter:
         """TODO document"""
-        id = filter_config["id"] if filter_config["id"] != "" else shortuuid.uuid()
         type = filter_config["type"]
 
         match type:
             case "Rotation":
-                return RotationFilter(id, filter_config)
+                return RotationFilter(id, filter_config, self._connection)
             case "EdgeOutline":
-                return EdgeOutlineFilter(id, filter_config)
+                return EdgeOutlineFilter(id, filter_config, self._connection)
             case _:
                 raise ErrorDictException(
                     code=404,

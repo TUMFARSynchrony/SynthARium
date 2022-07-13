@@ -5,17 +5,23 @@ from av import VideoFrame, AudioFrame
 
 from custom_types.filters import FilterDict
 
+from modules.connection_interface import ConnectionInterface
+
 
 class Filter(ABC):
     """TODO document"""
 
     _id: str
     _config: FilterDict
+    _connection: ConnectionInterface
 
-    def __init__(self, id: str, config: FilterDict) -> None:
+    def __init__(
+        self, id: str, config: FilterDict, connection: ConnectionInterface
+    ) -> None:
         """TODO document"""
         self._id = id
         self._config = config
+        self._connection = connection
 
     @property
     def id(self) -> str:

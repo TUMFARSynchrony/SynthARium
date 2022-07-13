@@ -102,8 +102,8 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = TrackHandler("audio")
-        self._incoming_video = TrackHandler("video")
+        self._incoming_audio = TrackHandler("audio", self)
+        self._incoming_video = TrackHandler("video", self)
         self._dc = None
         self._tasks = []
 

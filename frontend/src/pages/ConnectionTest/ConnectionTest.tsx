@@ -330,7 +330,7 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
           onClick={() => props.connection.sendMessage("SET_FILTERS", {
             participant_id: "all",
             audio_filters: [],
-            video_filters: [{ type: "EdgeOutline", id: "" }],
+            video_filters: [{ type: "EDGE_OUTLINE", id: "" }],
           })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
@@ -340,7 +340,7 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
           onClick={() => props.connection.sendMessage("SET_FILTERS", {
             participant_id: "all",
             audio_filters: [],
-            video_filters: [{ type: "Rotation", id: "" }],
+            video_filters: [{ type: "ROTATION", id: "" }],
           })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
@@ -350,7 +350,7 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
           onClick={() => props.connection.sendMessage("SET_FILTERS", {
             participant_id: "all",
             audio_filters: [],
-            video_filters: [{ type: "EdgeOutline", id: "" }, { type: "Rotation", id: "" }],
+            video_filters: [{ type: "EDGE_OUTLINE", id: "" }, { type: "ROTATION", id: "" }],
           })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
