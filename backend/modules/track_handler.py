@@ -111,9 +111,11 @@ class TrackHandler(MediaStreamTrack):
             )
 
         async with self.__lock:
-            self._track.remove_listener("ended", self.stop)
+            previous = self._track
+            previous.remove_listener("ended", self.stop)
             self._track = value
             self._track.add_listener("ended", self.stop)
+            previous.stop()
 
     def subscribe(self) -> MediaStreamTrack:
         """Subscribe to the track managed by this handler.
@@ -204,8 +206,9 @@ class TrackHandler(MediaStreamTrack):
 
         frame = await self.track.recv()
 
-        for filter in self._filters.values():
-            frame = await filter.process(frame)
+        async with self.__lock:
+            for filter in self._filters.values():
+                frame = await filter.process(frame)
 
         if self.muted:
             muted_frame = await self._mute_filter.process(frame)
