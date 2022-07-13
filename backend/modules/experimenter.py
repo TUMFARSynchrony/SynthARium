@@ -671,8 +671,6 @@ class Experimenter(User):
 
         Check if data is a valid custom_types.filters.SetFiltersRequestDict.
 
-        Handling not yet implemented.
-
         Parameters
         ----------
         data : any or custom_types.filters.SetFiltersRequestDict
@@ -696,7 +694,6 @@ class Experimenter(User):
                 description="Message data is not a valid SetFiltersRequest.",
             )
 
-        # TODO implement handling for SET_FILTERS requests.
         participant_id = data["participant_id"]
         video_filters = data["video_filters"]
         audio_filters = data["audio_filters"]
@@ -734,12 +731,10 @@ class Experimenter(User):
 
         await asyncio.gather(*coros)
 
-        response = ErrorDict(
-            type="NOT_IMPLEMENTED",
-            code=501,
-            description="Received valid filters, but feature is not yet implemented.",
+        success = SuccessDict(
+            type="SET_FILTERS", description="Successfully changed filters."
         )
-        return MessageDict(type="ERROR", data=response)
+        return MessageDict(type="SUCCESS", data=success)
 
     def _get_experiment_or_raise(
         self, action_prefix: str = ""

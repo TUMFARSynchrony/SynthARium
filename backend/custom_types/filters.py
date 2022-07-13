@@ -105,7 +105,10 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
         return False
 
     if recursive:
-        for filter in data["filters"]:
+        for filter in data["audio_filters"]:
+            if not is_valid_filter_dict(filter):
+                return False
+        for filter in data["video_filters"]:
             if not is_valid_filter_dict(filter):
                 return False
 
