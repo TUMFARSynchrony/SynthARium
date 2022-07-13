@@ -3,14 +3,16 @@
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
+from custom_types.filters import FilterDict
+
 
 class Filter(ABC):
     """TODO document"""
 
     _id: str
-    _config: dict
+    _config: FilterDict
 
-    def __init__(self, id: str, config: dict) -> None:
+    def __init__(self, id: str, config: FilterDict) -> None:
         """TODO document"""
         self._id = id
         self._config = config
@@ -21,11 +23,11 @@ class Filter(ABC):
         return self._id
 
     @property
-    def config(self) -> dict:
+    def config(self) -> FilterDict:
         """TODO document"""
         return self._config
 
-    def set_config(self, config: dict) -> None:
+    def set_config(self, config: FilterDict) -> None:
         """TODO document"""
         self._config = config
 

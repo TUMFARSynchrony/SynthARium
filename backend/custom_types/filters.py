@@ -11,7 +11,9 @@ from typing import Literal, TypedDict, get_args
 
 import custom_types.util as util
 
-FILTER_TYPES = Literal[""]
+
+FILTER_TYPES = Literal["Rotation", "EdgeOutline"]
+"""TODO document"""
 
 
 class FilterDict(TypedDict):
