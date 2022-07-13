@@ -32,8 +32,10 @@ class ParticipantDict(TypedDict):
         Whether the participants' video is forcefully muted by the experimenter.
     muted_audio : bool
         Whether the participants' audio is forcefully muted by the experimenter.
-    filters : list of custom_types.filters.FilterDict
-        Active filters for this participant.
+    audio_filters : list of custom_types.filters.FilterDict
+        Active audio filters for this participant.
+    audio_filters : list of custom_types.filters.FilterDict
+        Active video filters for this participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
     size : custom_types.size.SizeDict
@@ -57,7 +59,8 @@ class ParticipantDict(TypedDict):
     last_name: str
     muted_video: bool
     muted_audio: bool
-    filters: list[FilterDict]
+    audio_filters: list[FilterDict]
+    video_filters: list[FilterDict]
     position: PositionDict
     size: SizeDict
     chat: list[ChatMessageDict]
@@ -87,7 +90,8 @@ def is_valid_participant(data, recursive: bool = True) -> bool:
 
     # Shallow checks for variables with recursive types
     if (
-        not isinstance(data["filters"], list)
+        not isinstance(data["audio_filters"], list)
+        or not isinstance(data["video_filters"], list)
         or not isinstance(data["chat"], list)
         or not isinstance(data["position"], dict)
         or not isinstance(data["size"], dict)
@@ -95,7 +99,10 @@ def is_valid_participant(data, recursive: bool = True) -> bool:
         return False
 
     if recursive:
-        for filter in data["filters"]:
+        for filter in data["audio_filters"]:
+            if not is_valid_filter_dict(filter):
+                return False
+        for filter in data["video_filters"]:
             if not is_valid_filter_dict(filter):
                 return False
         for message in data["chat"]:

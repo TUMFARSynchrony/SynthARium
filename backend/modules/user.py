@@ -116,6 +116,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """bool indicating if the users audio is muted."""
         return self._muted_audio
 
+    @property
+    def connection(self) -> ConnectionInterface:
+        """TODO document."""
+        return self._connection
+
     def get_summary(self) -> ParticipantSummaryDict | None:
         """Get summary of User for client.
 

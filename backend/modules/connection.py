@@ -21,6 +21,7 @@ from modules.track_handler import TrackHandler
 from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
+from custom_types.filters import FilterDict
 from custom_types.message import MessageDict, is_valid_messagedict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
@@ -215,6 +216,14 @@ class Connection(ConnectionInterface):
             self._incoming_video.muted = video
         if self._incoming_audio is not None:
             self._incoming_audio.muted = audio
+
+    async def set_video_filters(self, filters: list[FilterDict]) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._incoming_video.set_filters(filters)
+
+    async def set_audio_filters(self, filters: list[FilterDict]) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._incoming_audio.set_filters(filters)
 
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""

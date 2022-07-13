@@ -697,6 +697,42 @@ class Experimenter(User):
             )
 
         # TODO implement handling for SET_FILTERS requests.
+        participant_id = data["participant_id"]
+        video_filters = data["video_filters"]
+        audio_filters = data["audio_filters"]
+        experiment = self._get_experiment_or_raise("Failed to set filters.")
+        coros = []
+
+        if participant_id == "all":
+            # Update participant data
+            for p_data in experiment.session.participants.values():
+                p_data.video_filters = video_filters
+                p_data.audio_filters = audio_filters
+
+            # Update connected Participants
+            for p in experiment.participants.values():
+                coros.append(p.connection.set_video_filters(video_filters))
+                coros.append(p.connection.set_audio_filters(audio_filters))
+
+        elif participant_id in experiment.session.participants:
+            # Update participant data
+            p_data = experiment.session.participants[participant_id]
+            p_data.video_filters = video_filters
+            p_data.audio_filters = audio_filters
+
+            # Update connected Participant
+            p = experiment.participants.get(participant_id)
+            if p is not None:
+                coros.append(p.connection.set_video_filters(video_filters))
+                coros.append(p.connection.set_audio_filters(audio_filters))
+        else:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=f'Unknown participant ID: "{participant_id}".',
+            )
+
+        await asyncio.gather(*coros)
 
         response = ErrorDict(
             type="NOT_IMPLEMENTED",

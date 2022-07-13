@@ -228,8 +228,11 @@ class ParticipantData(_BaseDataClass):
     chat: list[ChatMessageDict] = field(repr=False)
     """Chat log between participant and experimenter."""
 
-    filters: list[FilterDict] = field(repr=False)
-    """Active filters for participant."""
+    audio_filters: list[FilterDict] = field(repr=False)
+    """Active audio filters for participant."""
+
+    video_filters: list[FilterDict] = field(repr=False)
+    """Active video filters for participant."""
 
     def __post_init__(self) -> None:
         """Add event listener to size and position."""
@@ -255,7 +258,8 @@ class ParticipantData(_BaseDataClass):
             "muted_audio": self.muted_audio,
             "position": self.position.asdict(),
             "chat": self.chat,
-            "filters": self.filters,
+            "audio_filters": self.audio_filters,
+            "video_filters": self.video_filters,
         }
 
     def as_summary_dict(self) -> ParticipantSummaryDict:
@@ -303,7 +307,8 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         participant_dict["muted_audio"],
         positionData,
         participant_dict["chat"],
-        participant_dict["filters"],
+        participant_dict["audio_filters"],
+        participant_dict["video_filters"],
     )
 
 

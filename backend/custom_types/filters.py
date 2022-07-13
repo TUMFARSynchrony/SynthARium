@@ -67,12 +67,15 @@ class SetFiltersRequestDict(TypedDict):
     ----------
     participant_id : str
         Participant ID for the requested endpoint.
-    filters : list of custom_types.filters.FilterDict
-        Active filters for participant with `participant_id`.
+    audio_filters : list of custom_types.filters.FilterDict
+        Active audio filters for participant with `participant_id`.
+    video_filters : list of custom_types.filters.FilterDict
+        Active video filters for participant with `participant_id`.
     """
 
     participant_id: str
-    filters: list[FilterDict]
+    audio_filters: list[FilterDict]
+    video_filters: list[FilterDict]
 
 
 def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
@@ -93,9 +96,12 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
     bool
         True if `data` is a valid FilterDict.
     """
-    if not util.check_valid_typeddict_keys(
-        data, SetFiltersRequestDict
-    ) or not isinstance(data["filters"], list):
+    if (
+        not util.check_valid_typeddict_keys(data, SetFiltersRequestDict)
+        or not isinstance(data["audio_filters"], list)
+        or not isinstance(data["video_filters"], list)
+        or not isinstance(data["participant_id"], str)
+    ):
         return False
 
     if recursive:
@@ -103,4 +109,4 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
             if not is_valid_filter_dict(filter):
                 return False
 
-    return isinstance(data["participant_id"], str)
+    return True
