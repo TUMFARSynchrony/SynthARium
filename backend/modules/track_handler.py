@@ -91,8 +91,7 @@ class TrackHandler(MediaStreamTrack):
         """
         return self._track
 
-    @track.setter
-    def track(self, value: MediaStreamTrack):
+    async def set_track(self, value: MediaStreamTrack):
         """Set source track for this TrackHandler.
 
         Parameters
@@ -110,10 +109,11 @@ class TrackHandler(MediaStreamTrack):
             raise ValueError(
                 f"Source track for TrackHandler must be of kind: {self.kind}"
             )
-        # TODO async with self.__lock:
-        self._track.remove_listener("ended", self.stop)
-        self._track = value
-        self._track.add_listener("ended", self.stop)
+
+        async with self.__lock:
+            self._track.remove_listener("ended", self.stop)
+            self._track = value
+            self._track.add_listener("ended", self.stop)
 
     def subscribe(self) -> MediaStreamTrack:
         """Subscribe to the track managed by this handler.

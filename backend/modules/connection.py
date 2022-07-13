@@ -66,6 +66,7 @@ class Connection(ConnectionInterface):
     _incoming_audio: TrackHandler
     _incoming_video: TrackHandler
     _sub_connections: dict[str, SubConnection]
+    _tasks: list[asyncio.Task]
 
     def __init__(
         self,
@@ -104,11 +105,12 @@ class Connection(ConnectionInterface):
         self._incoming_audio = TrackHandler("audio")
         self._incoming_video = TrackHandler("video")
         self._dc = None
+        self._tasks = []
 
         # Register event handlers
-        pc.on("datachannel", f=self._on_datachannel)
-        pc.on("connectionstatechange", f=self._on_connection_state_change)
-        pc.on("track", f=self._on_track)
+        pc.add_listener("datachannel", self._on_datachannel)
+        pc.add_listener("connectionstatechange", self._on_connection_state_change)
+        pc.add_listener("track", self._on_track)
 
     def __str__(self) -> str:
         """Get string representation of this Connection."""
@@ -134,7 +136,7 @@ class Connection(ConnectionInterface):
         coros: list[Coroutine] = []
         for sc in self._sub_connections.values():
             coros.append(sc.stop())
-        await asyncio.gather(*coros)
+        await asyncio.gather(*coros, *self._tasks)
 
         # Close main connection
         if self._dc is not None:
@@ -330,7 +332,9 @@ class Connection(ConnectionInterface):
         await self.stop()
 
     def _on_track(self, track: MediaStreamTrack):
-        """Handle incoming tracks.
+        """Synchronous wrapper for `_async_on_track`.
+
+        Creates a new task for to execute `_async_on_track`.
 
         Parameters
         ----------
@@ -340,20 +344,22 @@ class Connection(ConnectionInterface):
         Note
         ----
         This function can not be asynchronous, otherwise it will no longer function
-        correctly.
+        correctly.  See: https://github.com/aiortc/aiortc/issues/578.
         """
         self._logger.debug(f"{track.kind} track received")
         if track.kind == "audio":
-            self._incoming_audio.track = track
+            task = asyncio.create_task(self._incoming_audio.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
-            self._incoming_video.track = track
+            task = asyncio.create_task(self._incoming_video.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
             return
+
+        self._tasks.append(task)
 
         @track.on("ended")
         def _on_ended():
