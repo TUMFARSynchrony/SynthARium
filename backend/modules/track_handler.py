@@ -229,14 +229,11 @@ class TrackHandler(MediaStreamTrack):
 
         frame = await self.track.recv()
 
-        self._logger.info(f"execute_filters: {self._execute_filters}")
-        if not self._execute_filters:
-            return frame
-
-        if self.kind == "video":
-            frame = await self._apply_video_filters(frame)
-        else:
-            frame = await self._apply_audio_filters(frame)
+        if self._execute_filters:
+            if self.kind == "video":
+                frame = await self._apply_video_filters(frame)
+            else:
+                frame = await self._apply_audio_filters(frame)
 
         if self._muted:
             muted_frame = await self._mute_filter.process(frame)
