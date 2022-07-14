@@ -1,5 +1,6 @@
 """Provide TrackHandler for handing and distributing tracks."""
 
+import numpy
 import asyncio
 import logging
 from typing import Literal
@@ -208,12 +209,43 @@ class TrackHandler(MediaStreamTrack):
 
         frame = await self.track.recv()
 
-        async with self.__lock:
-            for filter in self._filters.values():
-                frame = await filter.process(frame)
+        if self.kind == "video":
+            frame = await self._apply_video_filters(frame)
+        else:
+            frame = await self._apply_audio_filters(frame)
 
         if self.muted:
             muted_frame = await self._mute_filter.process(frame)
             return muted_frame
 
         return frame
+
+    async def _apply_video_filters(self, frame: VideoFrame):
+        """TODO document"""
+        ndarray = frame.to_ndarray(format="bgr24")
+        ndarray = await self._apply_filters(frame, ndarray)
+
+        new_frame = VideoFrame.from_ndarray(ndarray, format="bgr24")
+        new_frame.time_base = frame.time_base
+        new_frame.pts = frame.pts
+        return new_frame
+
+    async def _apply_audio_filters(self, frame: AudioFrame):
+        """TODO document"""
+        ndarray = frame.to_ndarray()
+        ndarray = await self._apply_filters(frame, ndarray)
+
+        new_frame = AudioFrame.from_ndarray(ndarray)
+        new_frame.pts = frame.pts
+        new_frame.time_base = frame.time_base
+        new_frame.sample_rate = frame.sample_rate
+        return new_frame
+
+    async def _apply_filters(
+        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
+    ) -> numpy.ndarray:
+        """TODO document"""
+        async with self.__lock:
+            for filter in self._filters.values():
+                ndarray = await filter.process(original, ndarray)
+        return ndarray

@@ -1,5 +1,6 @@
 """TODO document"""
 
+import numpy
 from PIL import Image
 from os.path import join
 from av import VideoFrame, AudioFrame
@@ -15,6 +16,7 @@ class MuteVideoFilter(VideoFilter):
     """TODO document"""
 
     _muted_frame: VideoFrame
+    _muted_ndarray: numpy.ndarray
 
     def __init__(
         self, id: str, config: FilterDict, connection: modules.connection.Connection
@@ -25,23 +27,33 @@ class MuteVideoFilter(VideoFilter):
         # Load image that will be broadcasted when track is muted.
         img_path = join(BACKEND_DIR, "images/muted.png")
         muted_frame_img = Image.open(img_path)
-        self.muted_frame = VideoFrame.from_image(muted_frame_img)
+        self._muted_frame = VideoFrame.from_image(muted_frame_img)
+        self._muted_ndarray = self._muted_frame.to_ndarray(format="bgr24")
 
-    async def process(self, frame: VideoFrame) -> VideoFrame:
+    async def process(
+        self, original: VideoFrame, ndarray: numpy.ndarray | None = None
+    ) -> numpy.ndarray | VideoFrame:
         """TODO document"""
-        if self.muted_frame.format != frame.format:
-            self.muted_frame = self.muted_frame.reformat(format=frame.format)
-        # Update muted_frame metadata.
-        self.muted_frame.pts = frame.pts
-        self.muted_frame.time_base = frame.time_base
+        if self._muted_frame.format != original.format:
+            self._muted_frame = self._muted_frame.reformat(format=original.format)
+            self._muted_ndarray = self._muted_frame.to_ndarray(format="bgr24")
 
-        return self.muted_frame
+        # Return muted_ndarray if ndarray is defined
+        if ndarray is not None:
+            return self._muted_ndarray
+
+        # Update muted_frame metadata.
+        self._muted_frame.pts = original.pts
+        self._muted_frame.time_base = original.time_base
+
+        return self._muted_frame
 
 
 class MuteAudioFilter(AudioFilter):
     """TODO document"""
 
-    _muted_frame: AudioFrame | None
+    _muted_frame: AudioFrame
+    _muted_ndarray: numpy.ndarray
 
     def __init__(
         self, id: str, config: FilterDict, connection: modules.connection.Connection
@@ -50,20 +62,32 @@ class MuteAudioFilter(AudioFilter):
         super().__init__(id, config, connection)
 
         # Create a muted audio frame.
-        self.muted_frame = AudioFrame(format="s16", layout="mono")
-
-    async def process(self, frame: AudioFrame) -> AudioFrame:
-        """TODO document"""
-        if self.muted_frame.samples != frame.samples:
-            self.muted_frame = AudioFrame(
-                format="s16", layout="mono", samples=frame.samples
-            )
-        # Update muted_frame metadata.
-        for p in self.muted_frame.planes:
+        self._muted_frame = AudioFrame(format="s16", layout="mono", samples=1)
+        for p in self._muted_frame.planes:
             p.update(bytes(p.buffer_size))
+        self._muted_ndarray = self._muted_frame.to_ndarray()
 
-        self.muted_frame.pts = frame.pts
-        self.muted_frame.time_base = frame.time_base
-        self.muted_frame.sample_rate = frame.sample_rate
+    async def process(
+        self, original: AudioFrame, ndarray: numpy.ndarray | None = None
+    ) -> numpy.ndarray | AudioFrame:
+        """TODO document"""
+        if (
+            self._muted_frame.format != original.format
+            or self._muted_frame.samples != original.samples
+        ):
+            self._muted_frame = AudioFrame(
+                format=original.format, layout="mono", samples=original.samples
+            )
+            for p in self._muted_frame.planes:
+                p.update(bytes(p.buffer_size))
+            self._muted_ndarray = self._muted_frame.to_ndarray()
 
-        return self.muted_frame
+        # Return muted_ndarray if ndarray is defined
+        if ndarray is not None:
+            return self._muted_ndarray
+
+        self._muted_frame.pts = original.pts
+        self._muted_frame.time_base = original.time_base
+        self._muted_frame.sample_rate = original.sample_rate
+
+        return self._muted_frame

@@ -1,5 +1,6 @@
 """TODO document"""
 
+import numpy
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
@@ -41,7 +42,9 @@ class Filter(ABC):
         self._config = config
 
     @abstractmethod
-    async def process(self, frame: VideoFrame | AudioFrame) -> VideoFrame | AudioFrame:
+    async def process(
+        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
+    ) -> numpy.ndarray:
         """TODO document"""
         pass
 
@@ -54,7 +57,9 @@ class VideoFilter(Filter):
     """TODO document"""
 
     @abstractmethod
-    async def process(self, frame: VideoFrame) -> VideoFrame:
+    async def process(
+        self, original: VideoFrame, ndarray: numpy.ndarray
+    ) -> numpy.ndarray:
         """TODO document"""
         pass
 
@@ -63,6 +68,8 @@ class AudioFilter(Filter):
     """TODO document"""
 
     @abstractmethod
-    async def process(self, frame: AudioFrame) -> AudioFrame:
+    async def process(
+        self, original: AudioFrame, ndarray: numpy.ndarray
+    ) -> numpy.ndarray:
         """TODO document"""
         pass
