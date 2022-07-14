@@ -15,6 +15,13 @@ import modules
 class Filter(ABC):
     """TODO document"""
 
+    run_if_muted: bool
+    """Whether this filter should be executed if the TrackHandler is muted.
+
+    Call `TrackHandler.reset_execute_filters()` in case the value is changed manually
+    after initialization.
+    """
+
     _id: str
     _config: FilterDict
     _connection: modules.connection.Connection
@@ -23,6 +30,7 @@ class Filter(ABC):
         self, id: str, config: FilterDict, connection: modules.connection.Connection
     ) -> None:
         """TODO document"""
+        self.run_if_muted = False
         self._id = id
         self._config = config
         self._connection = connection
