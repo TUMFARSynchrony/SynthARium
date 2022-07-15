@@ -1,20 +1,24 @@
 """TODO document"""
 
+
+from __future__ import annotations
+
 import numpy
+from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
 from custom_types.filters import FilterDict
 
-# Importing from modules in filter package can cause circular dependencies errors.
-# Importing the modules package can avoid this.
-# See: https://stackoverflow.com/a/37126790
-import modules
+if TYPE_CHECKING:
+    from modules.track_handler import TrackHandler
 
 
 class Filter(ABC):
     """TODO document"""
 
+    audio_track_handler: TrackHandler
+    video_track_handler: TrackHandler
     run_if_muted: bool
     """Whether this filter should be executed if the TrackHandler is muted.
 
@@ -24,16 +28,20 @@ class Filter(ABC):
 
     _id: str
     _config: FilterDict
-    _connection: modules.connection.Connection
 
     def __init__(
-        self, id: str, config: FilterDict, connection: modules.connection.Connection
+        self,
+        id: str,
+        config: FilterDict,
+        audio_track_handler: TrackHandler,
+        video_track_handler: TrackHandler,
     ) -> None:
         """TODO document"""
         self.run_if_muted = False
         self._id = id
         self._config = config
-        self._connection = connection
+        self.audio_track_handler = audio_track_handler
+        self.video_track_handler = video_track_handler
 
     @property
     def id(self) -> str:

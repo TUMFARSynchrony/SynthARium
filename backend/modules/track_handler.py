@@ -27,10 +27,10 @@ class TrackHandler(MediaStreamTrack):
     """Handles and distributes an incoming audio track to multiple subscribers."""
 
     kind = Literal["unknown", "audio", "video"]
+    connection: modules.connection.Connection
 
     _muted: bool
     _track: MediaStreamTrack
-    _connection: modules.connection.Connection
     _relay: MediaRelay
     _mute_filter: MuteAudioFilter | MuteVideoFilter
     _filters: dict[str, Filter]
@@ -42,7 +42,7 @@ class TrackHandler(MediaStreamTrack):
         self,
         kind: Literal["audio", "video"],
         connection: modules.connection.Connection,
-        filters: list[FilterDict],
+        filters_list: list[FilterDict],
         track: MediaStreamTrack | None = None,
         muted: bool = False,
     ) -> None:
@@ -80,16 +80,26 @@ class TrackHandler(MediaStreamTrack):
                 f'Invalid kind: "{kind}". Accepted values: "audio" or "video"'
             )
         self._muted = muted
-        self._connection = connection
+        self.connection = connection
         self._relay = MediaRelay()
-        self._mute_filter = (
-            MuteAudioFilter("0", {"id": "0", "type": "MUTE_AUDIO"}, connection)
-            if kind == "audio"
-            else MuteVideoFilter("0", {"id": "0", "type": "MUTE_VIDEO"}, connection)
-        )
+        if kind == "audio":
+            self._mute_filter = MuteAudioFilter(
+                "0",
+                {"id": "0", "type": "MUTE_AUDIO"},
+                connection.incoming_audio,
+                connection.incoming_video,
+            )
+        else:
+            self._mute_filter = MuteVideoFilter(
+                "0",
+                {"id": "0", "type": "MUTE_VIDEO"},
+                connection.incoming_audio,
+                connection.incoming_video,
+            )
+
         self._execute_filters = True
         self._filters = {}
-        self._set_filters(filters)
+        self._set_filters(filters_list)
 
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
@@ -189,12 +199,14 @@ class TrackHandler(MediaStreamTrack):
     def _create_filter(self, id: str, filter_config: FilterDict) -> Filter:
         """TODO document"""
         type = filter_config["type"]
+        audio = self.connection.incoming_audio
+        video = self.connection.incoming_video
 
         match type:
             case "ROTATION":
-                return RotationFilter(id, filter_config, self._connection)
+                return RotationFilter(id, filter_config, audio, video)
             case "EDGE_OUTLINE":
-                return EdgeOutlineFilter(id, filter_config, self._connection)
+                return EdgeOutlineFilter(id, filter_config, audio, video)
             case _:
                 raise ErrorDictException(
                     code=404,

@@ -122,6 +122,16 @@ class Connection(ConnectionInterface):
         pc.add_listener("connectionstatechange", self._on_connection_state_change)
         pc.add_listener("track", self._on_track)
 
+    @property
+    def incoming_audio(self) -> modules.track_handler.TrackHandler:
+        """TODO document"""
+        return self._incoming_audio
+
+    @property
+    def incoming_video(self) -> modules.track_handler.TrackHandler:
+        """TODO document"""
+        return self._incoming_video
+
     def __str__(self) -> str:
         """Get string representation of this Connection."""
         return f"state={self._state}"

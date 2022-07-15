@@ -1,15 +1,19 @@
 """TODO document"""
 
+from __future__ import annotations
+
 import numpy
 from PIL import Image
 from os.path import join
+from typing import TYPE_CHECKING
 from av import VideoFrame, AudioFrame
 
+from modules import BACKEND_DIR
 from custom_types.filters import FilterDict
 from filters.filter import VideoFilter, AudioFilter
-from modules import BACKEND_DIR
 
-import modules
+if TYPE_CHECKING:
+    from modules.track_handler import TrackHandler
 
 
 class MuteVideoFilter(VideoFilter):
@@ -19,10 +23,14 @@ class MuteVideoFilter(VideoFilter):
     _muted_ndarray: numpy.ndarray
 
     def __init__(
-        self, id: str, config: FilterDict, connection: modules.connection.Connection
+        self,
+        id: str,
+        config: FilterDict,
+        audio_track_handler: TrackHandler,
+        video_track_handler: TrackHandler,
     ) -> None:
         """TODO document"""
-        super().__init__(id, config, connection)
+        super().__init__(id, config, audio_track_handler, video_track_handler)
 
         # Load image that will be broadcasted when track is muted.
         img_path = join(BACKEND_DIR, "images/muted.png")
@@ -56,10 +64,14 @@ class MuteAudioFilter(AudioFilter):
     _muted_ndarray: numpy.ndarray
 
     def __init__(
-        self, id: str, config: FilterDict, connection: modules.connection.Connection
+        self,
+        id: str,
+        config: FilterDict,
+        audio_track_handler: TrackHandler,
+        video_track_handler: TrackHandler,
     ) -> None:
         """TODO document"""
-        super().__init__(id, config, connection)
+        super().__init__(id, config, audio_track_handler, video_track_handler)
 
         # Create a muted audio frame.
         self._muted_frame = AudioFrame(format="s16", layout="mono", samples=1)
