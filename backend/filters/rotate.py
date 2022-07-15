@@ -1,7 +1,7 @@
 """TODO document"""
 
-import cv2  # TODO add to requirements
-import numpy  # TODO add to requirements
+import cv2
+import numpy
 from av import VideoFrame
 
 from filters.filter import VideoFilter

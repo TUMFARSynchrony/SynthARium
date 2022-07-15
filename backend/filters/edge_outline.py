@@ -1,6 +1,6 @@
 """TODO document"""
 
-import cv2  # TODO add to requirements
+import cv2
 import numpy
 from av import VideoFrame
 
