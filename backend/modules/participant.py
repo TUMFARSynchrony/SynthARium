@@ -19,7 +19,7 @@ from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
 from modules.config import Config
-import modules.experiment as _experiment
+import modules.experiment as _exp
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
@@ -50,13 +50,13 @@ class Participant(User):
         `offer`.  Use factory instead of initiating Participants directly.
     """
 
-    _experiment: _experiment.Experiment
+    _experiment: _exp.Experiment
     _participant_data: ParticipantData
 
     def __init__(
         self,
         id: str,
-        experiment: _experiment.Experiment,
+        experiment: _exp.Experiment,
         participant_data: ParticipantData,
     ) -> None:
         """Instantiate new Participant instance.
@@ -224,7 +224,7 @@ class Participant(User):
 async def participant_factory(
     offer: RTCSessionDescription,
     id: str,
-    experiment: _experiment.Experiment,
+    experiment: _exp.Experiment,
     participant_data: ParticipantData,
     config: Config,
 ) -> tuple[RTCSessionDescription, Participant]:

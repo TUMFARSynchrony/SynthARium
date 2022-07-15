@@ -12,7 +12,6 @@ import logging
 from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
-from custom_types.error import ErrorDict
 from custom_types.filters import SetFiltersRequestDict, is_valid_set_filters_request
 from custom_types.session import SessionDict, is_valid_session
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
@@ -31,8 +30,8 @@ from modules.connection import connection_factory
 from modules.connection_subprocess import connection_subprocess_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
-import modules.experiment as _experiment
-import modules.hub as _hub
+import modules.experiment as _exp
+import modules.hub as _h
 
 
 class Experimenter(User):
@@ -47,10 +46,10 @@ class Experimenter(User):
         WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
     """
 
-    _experiment: _experiment.Experiment | None
-    _hub: _hub.Hub
+    _experiment: _exp.Experiment | None
+    _hub: _h.Hub
 
-    def __init__(self, id: str, hub: _hub.Hub) -> None:
+    def __init__(self, id: str, hub: _h.Hub) -> None:
         """Instantiate new Experimenter instance.
 
         Parameters
@@ -736,9 +735,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    def _get_experiment_or_raise(
-        self, action_prefix: str = ""
-    ) -> _experiment.Experiment:
+    def _get_experiment_or_raise(self, action_prefix: str = "") -> _exp.Experiment:
         """Get `self._experiment` or raise ErrorDictException if it is None.
 
         Use to check if this Experimenter is connected to an
@@ -771,7 +768,7 @@ class Experimenter(User):
 
 
 async def experimenter_factory(
-    offer: RTCSessionDescription, id: str, hub: _hub.Hub
+    offer: RTCSessionDescription, id: str, hub: _h.Hub
 ) -> tuple[RTCSessionDescription, Experimenter]:
     """Instantiate connection with a new Experimenter based on WebRTC `offer`.
 
