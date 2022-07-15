@@ -801,7 +801,7 @@ async def experimenter_factory(
 
     if hub.config.experimenter_multiprocessing:
         answer, connection = await connection_subprocess_factory(
-            offer, experimenter.handle_message, log_name_suffix, hub.config
+            offer, experimenter.handle_message, log_name_suffix, hub.config, [], []
         )
     else:
         answer, connection = await connection_factory(

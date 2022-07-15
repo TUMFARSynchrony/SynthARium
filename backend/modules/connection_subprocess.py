@@ -18,6 +18,7 @@ from modules.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
 
 from custom_types.error import ErrorDict
+from custom_types.filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -40,6 +41,8 @@ class ConnectionSubprocess(ConnectionInterface):
     _offer: RTCSessionDescriptionDict
     _log_name_suffix: str
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
+    _initial_audio_filters: list[FilterDict]
+    _initial_video_filters: list[FilterDict]
 
     __lock: asyncio.Lock
     _running: bool
@@ -59,6 +62,8 @@ class ConnectionSubprocess(ConnectionInterface):
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
         log_name_suffix: str,
         config: Config,
+        audio_filters: list[FilterDict],
+        video_filters: list[FilterDict],
     ):
         """Create new ConnectionSubprocess.
 
@@ -73,6 +78,10 @@ class ConnectionSubprocess(ConnectionInterface):
             Suffix for logger.  Format: Connection-<log_name_suffix>.
         config : modules.config.Config
             Hub config.
+        audio_filters : list of custom_types.filter.FilterDict
+            Default audio filters for this connection.
+        video_filters : list of custom_types.filter.FilterDict
+            Default video filters for this connection.
 
         See Also
         --------
@@ -85,6 +94,8 @@ class ConnectionSubprocess(ConnectionInterface):
         self._offer = offer
         self._log_name_suffix = log_name_suffix
         self._message_handler = message_handler
+        self._initial_audio_filters = audio_filters
+        self._initial_video_filters = video_filters
 
         self.__lock = asyncio.Lock()
         self._running = True
@@ -159,6 +170,14 @@ class ConnectionSubprocess(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("SET_MUTED", (video, audio))
 
+    async def set_video_filters(self, filters: list[FilterDict]) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("SET_VIDEO_FILTERS", filters)
+
+    async def set_audio_filters(self, filters: list[FilterDict]) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("SET_AUDIO_FILTERS", filters)
+
     def _set_state(self, state: ConnectionState) -> None:
         """Set connection state and emit `state_change` event."""
         if self._state == state:
@@ -180,9 +199,13 @@ class ConnectionSubprocess(ConnectionInterface):
             sys.executable,
             join(BACKEND_DIR, "subprocess_main.py"),
             "-l",
-            f"{self._log_name_suffix}",
+            self._log_name_suffix,
             "-o",
-            f"{json.dumps(self._offer)}",
+            json.dumps(self._offer),
+            "--audio-filters",
+            json.dumps(self._initial_audio_filters),
+            "--video-filters",
+            json.dumps(self._initial_video_filters),
         ]
         program_summary = program[:5] + [
             program[5][:10] + ("..." if len(program[5]) >= 10 else "")
@@ -420,7 +443,8 @@ class ConnectionSubprocess(ConnectionInterface):
         | tuple
         | ParticipantSummaryDict
         | ConnectionOfferDict
-        | MessageDict,
+        | MessageDict
+        | list,
         command_nr: int = -1,
     ) -> None:
         """Send command to subprocess via stdin.
@@ -461,6 +485,8 @@ async def connection_subprocess_factory(
     message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
     log_name_suffix: str,
     config: Config,
+    audio_filters: list[FilterDict],
+    video_filters: list[FilterDict],
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 
@@ -473,6 +499,10 @@ async def connection_subprocess_factory(
         MessageDicts to this handler.
     log_name_suffix : str
         Suffix for logger used in Connection.  Format: Connection-<log_name_suffix>.
+    audio_filters : list of custom_types.filter.FilterDict
+        Default audio filters for this connection.
+    video_filters : list of custom_types.filter.FilterDict
+        Default video filters for this connection.
 
     Returns
     -------
@@ -482,7 +512,12 @@ async def connection_subprocess_factory(
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore
 
     connection = ConnectionSubprocess(
-        offer_dict, message_handler, log_name_suffix, config
+        offer_dict,
+        message_handler,
+        log_name_suffix,
+        config,
+        audio_filters,
+        video_filters,
     )
 
     local_description = await connection.get_local_description()

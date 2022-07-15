@@ -258,7 +258,12 @@ async def participant_factory(
 
     if config.participant_multiprocessing:
         answer, connection = await connection_subprocess_factory(
-            offer, participant.handle_message, log_name_suffix, config
+            offer,
+            participant.handle_message,
+            log_name_suffix,
+            config,
+            participant_data.audio_filters,
+            participant_data.video_filters,
         )
     else:
         answer, connection = await connection_factory(

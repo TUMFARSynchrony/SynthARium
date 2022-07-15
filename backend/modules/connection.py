@@ -90,7 +90,10 @@ class Connection(ConnectionInterface):
             be parsed and type checked (only top level, not including contents of data).
         log_name_suffix : str
             Suffix for logger.  Format: Connection-<log_name_suffix>.
-        TODO add documentation for filters
+        audio_filters : list of custom_types.filter.FilterDict
+            Default audio filters for this connection.
+        video_filters : list of custom_types.filter.FilterDict
+            Default video filters for this connection.
 
         See Also
         --------
@@ -543,7 +546,10 @@ async def connection_factory(
         this handler.
     log_name_suffix : str
         Suffix for logger used in Connection.  Format: Connection-<log_name_suffix>.
-    TODO add filters documentation
+    audio_filters : list of custom_types.filter.FilterDict
+        Default audio filters for this connection.
+    video_filters : list of custom_types.filter.FilterDict
+        Default video filters for this connection.
 
     Returns
     -------
