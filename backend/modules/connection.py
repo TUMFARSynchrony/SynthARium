@@ -15,7 +15,7 @@ import asyncio
 import logging
 import json
 
-import modules
+from modules.track_handler import TrackHandler
 from modules.exceptions import ErrorDictException
 from modules.connection_interface import ConnectionInterface
 from modules.connection_state import ConnectionState, parse_connection_state
@@ -63,8 +63,8 @@ class Connection(ConnectionInterface):
     _main_pc: RTCPeerConnection
     _dc: RTCDataChannel | None
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
-    _incoming_audio: modules.track_handler.TrackHandler
-    _incoming_video: modules.track_handler.TrackHandler
+    _incoming_audio: TrackHandler
+    _incoming_video: TrackHandler
     _sub_connections: dict[str, SubConnection]
     _tasks: list[asyncio.Task]
 
@@ -108,12 +108,10 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = modules.track_handler.TrackHandler(
-            "audio", self, audio_filters
-        )
-        self._incoming_video = modules.track_handler.TrackHandler(
-            "video", self, video_filters
-        )
+        self._incoming_audio = TrackHandler("audio", self)
+        self._incoming_video = TrackHandler("video", self)
+        self._incoming_audio.finish_setup(audio_filters)
+        self._incoming_video.finish_setup(video_filters)
         self._dc = None
         self._tasks = []
 
@@ -123,12 +121,12 @@ class Connection(ConnectionInterface):
         pc.add_listener("track", self._on_track)
 
     @property
-    def incoming_audio(self) -> modules.track_handler.TrackHandler:
+    def incoming_audio(self) -> TrackHandler:
         """TODO document"""
         return self._incoming_audio
 
     @property
-    def incoming_video(self) -> modules.track_handler.TrackHandler:
+    def incoming_video(self) -> TrackHandler:
         """TODO document"""
         return self._incoming_video
 
@@ -386,9 +384,7 @@ class Connection(ConnectionInterface):
             """Handles tracks ended event."""
             self._logger.debug(f"{track.kind} track ended")
 
-    def _listen_to_track_close(
-        self, track: modules.track_handler.TrackHandler, sender: RTCRtpSender
-    ):
+    def _listen_to_track_close(self, track: TrackHandler, sender: RTCRtpSender):
         """Add a handler to the `ended` event on `track` that closes its transceiver.
 
         Parameters

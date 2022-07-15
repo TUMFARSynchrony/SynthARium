@@ -1,9 +1,10 @@
 """Provide TrackHandler for handing and distributing tracks."""
 
+from __future__ import annotations
 import numpy
 import asyncio
 import logging
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 from aiortc.mediastreams import (
     MediaStreamTrack,
     MediaStreamError,
@@ -13,7 +14,6 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-import modules
 from modules.exceptions import ErrorDictException
 
 from custom_types.filters import FilterDict
@@ -22,12 +22,15 @@ from filters.edge_outline import EdgeOutlineFilter
 from filters.filter import Filter
 from filters.mute import MuteVideoFilter, MuteAudioFilter
 
+if TYPE_CHECKING:
+    from modules.connection import Connection
+
 
 class TrackHandler(MediaStreamTrack):
     """Handles and distributes an incoming audio track to multiple subscribers."""
 
     kind = Literal["unknown", "audio", "video"]
-    connection: modules.connection.Connection
+    connection: Connection
 
     _muted: bool
     _track: MediaStreamTrack
@@ -41,8 +44,7 @@ class TrackHandler(MediaStreamTrack):
     def __init__(
         self,
         kind: Literal["audio", "video"],
-        connection: modules.connection.Connection,
-        filters_list: list[FilterDict],
+        connection: Connection,
         track: MediaStreamTrack | None = None,
         muted: bool = False,
     ) -> None:
@@ -82,27 +84,29 @@ class TrackHandler(MediaStreamTrack):
         self._muted = muted
         self.connection = connection
         self._relay = MediaRelay()
-        if kind == "audio":
+        self._execute_filters = True
+        self._filters = {}
+
+        # Forward the ended event to this handler.
+        self._track.add_listener("ended", self.stop)
+
+    def finish_setup(self, filters: list[FilterDict]):
+        """TODO document"""
+        if self.kind == "audio":
             self._mute_filter = MuteAudioFilter(
                 "0",
                 {"id": "0", "type": "MUTE_AUDIO"},
-                connection.incoming_audio,
-                connection.incoming_video,
+                self.connection.incoming_audio,
+                self.connection.incoming_video,
             )
         else:
             self._mute_filter = MuteVideoFilter(
                 "0",
                 {"id": "0", "type": "MUTE_VIDEO"},
-                connection.incoming_audio,
-                connection.incoming_video,
+                self.connection.incoming_audio,
+                self.connection.incoming_video,
             )
-
-        self._execute_filters = True
-        self._filters = {}
-        self._set_filters(filters_list)
-
-        # Forward the ended event to this handler.
-        self._track.add_listener("ended", self.stop)
+        self._set_filters(filters)
 
     @property
     def track(self) -> MediaStreamTrack:
