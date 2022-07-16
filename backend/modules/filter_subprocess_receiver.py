@@ -22,8 +22,8 @@ class FilterSubprocessReceiver:
             return
 
         match command:
-            case "SEND_EXPERIMENT":
-                await self._filter_api.send_experiment(
+            case "EXPERIMENT_SEND":
+                await self._filter_api.experiment_send(
                     data["to"], data["data"], data["exclude"]
                 )
             case _:

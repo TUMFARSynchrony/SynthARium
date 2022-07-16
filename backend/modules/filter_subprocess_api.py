@@ -15,10 +15,10 @@ class FilterSubprocessAPI(FilterAPIInterface):
         super().__init__()
         self._relay_command = relay_command
 
-    async def send_experiment(self, to: str, data, exclude: str) -> None:
+    async def experiment_send(self, to: str, data, exclude: str) -> None:
         """TODO document"""
         self._send_command(
-            "SEND_EXPERIMENT", {"to": to, "data": data, "exclude": exclude}
+            "EXPERIMENT_SEND", {"to": to, "data": data, "exclude": exclude}
         )
 
     def _send_command(self, command: str, data) -> None:
