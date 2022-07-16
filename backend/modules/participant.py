@@ -20,6 +20,7 @@ from custom_types.success import SuccessDict
 
 from modules.config import Config
 import modules.experiment as _exp
+from modules.filter_api import FilterAPI
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
@@ -266,12 +267,14 @@ async def participant_factory(
             participant_data.video_filters,
         )
     else:
+        filter_api = FilterAPI(participant)
         answer, connection = await connection_factory(
             offer,
             participant.handle_message,
             log_name_suffix,
             participant_data.audio_filters,
             participant_data.video_filters,
+            filter_api,
         )
 
     participant.set_connection(connection)

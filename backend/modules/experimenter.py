@@ -25,6 +25,7 @@ from custom_types.session_id_request import (
     is_valid_session_id_request,
 )
 
+from modules.filter_api import FilterAPI
 from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
 from modules.connection_subprocess import connection_subprocess_factory
@@ -770,8 +771,9 @@ async def experimenter_factory(
             offer, experimenter.handle_message, log_name_suffix, hub.config, [], []
         )
     else:
+        filter_api = FilterAPI(experimenter)
         answer, connection = await connection_factory(
-            offer, experimenter.handle_message, log_name_suffix, [], []
+            offer, experimenter.handle_message, log_name_suffix, [], [], filter_api
         )
 
     experimenter.set_connection(connection)

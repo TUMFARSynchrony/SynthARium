@@ -22,6 +22,7 @@ from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
 from custom_types.filters import FilterDict
+from modules.filter_api_interface import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
@@ -75,6 +76,7 @@ class Connection(ConnectionInterface):
         log_name_suffix: str,
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
+        filter_api: FilterAPIInterface,
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -108,8 +110,8 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = TrackHandler("audio", self)
-        self._incoming_video = TrackHandler("video", self)
+        self._incoming_audio = TrackHandler("audio", self)  # TODO pass filter_api
+        self._incoming_video = TrackHandler("video", self)  # TODO pass filter_api
         self._incoming_audio.finish_setup(audio_filters)
         self._incoming_video.finish_setup(video_filters)
         self._dc = None
@@ -540,6 +542,7 @@ async def connection_factory(
     log_name_suffix: str,
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
+    filter_api: FilterAPIInterface,
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -564,7 +567,7 @@ async def connection_factory(
     """
     pc = RTCPeerConnection()
     connection = Connection(
-        pc, message_handler, log_name_suffix, audio_filters, video_filters
+        pc, message_handler, log_name_suffix, audio_filters, video_filters, filter_api
     )
 
     # handle offer
