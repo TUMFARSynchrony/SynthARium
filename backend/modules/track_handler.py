@@ -24,6 +24,7 @@ from filters.mute import MuteVideoFilter, MuteAudioFilter
 
 if TYPE_CHECKING:
     from modules.connection import Connection
+    from modules.filter_api_interface import FilterAPIInterface
 
 
 class TrackHandler(MediaStreamTrack):
@@ -31,6 +32,7 @@ class TrackHandler(MediaStreamTrack):
 
     kind = Literal["unknown", "audio", "video"]
     connection: Connection
+    filter_api: FilterAPIInterface
 
     _muted: bool
     _track: MediaStreamTrack
@@ -45,6 +47,7 @@ class TrackHandler(MediaStreamTrack):
         self,
         kind: Literal["audio", "video"],
         connection: Connection,
+        filter_api: FilterAPIInterface,
         track: MediaStreamTrack | None = None,
         muted: bool = False,
     ) -> None:
@@ -68,6 +71,7 @@ class TrackHandler(MediaStreamTrack):
             If kind is not "audio" or "video".
         """
         super().__init__()
+        self.filter_api = filter_api
         self._logger = logging.getLogger(f"{kind.capitalize()}TrackHandler")
         self.__lock = asyncio.Lock()
         self.kind = kind

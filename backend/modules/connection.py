@@ -110,8 +110,8 @@ class Connection(ConnectionInterface):
         self._state = ConnectionState.NEW
         self._main_pc = pc
         self._message_handler = message_handler
-        self._incoming_audio = TrackHandler("audio", self)  # TODO pass filter_api
-        self._incoming_video = TrackHandler("video", self)  # TODO pass filter_api
+        self._incoming_audio = TrackHandler("audio", self, filter_api)
+        self._incoming_video = TrackHandler("video", self, filter_api)
         self._incoming_audio.finish_setup(audio_filters)
         self._incoming_video.finish_setup(video_filters)
         self._dc = None
