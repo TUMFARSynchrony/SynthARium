@@ -19,6 +19,7 @@ FILTER_TYPES = Literal[
     "MUTE_VIDEO",
     "ROTATION",
     "EDGE_OUTLINE",
+    "FILTER_API_TEST",
 ]
 """TODO document"""
 

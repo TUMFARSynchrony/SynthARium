@@ -38,6 +38,7 @@ class MessageDict(TypedDict):
 
 
 MESSAGE_TYPES = Literal[
+    "TEST",
     "SUCCESS",
     "ERROR",
     "SESSION_DESCRIPTION",

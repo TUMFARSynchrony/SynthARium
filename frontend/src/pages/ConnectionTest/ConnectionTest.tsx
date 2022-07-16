@@ -169,26 +169,32 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     };
 
     // Message listeners to messages from the backend.
+    const handleTest = (data: any) => saveGenericApiResponse("TEST", data);
     const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
     const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
+    const handleExperimentCreated = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
     const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
 
     // Add listeners to connection
+    props.connection.api.on("TEST", handleTest);
     props.connection.api.on("SESSION_LIST", handleSessionList);
     props.connection.api.on("SUCCESS", handleSuccess);
     props.connection.api.on("ERROR", handleError);
+    props.connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
     props.connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
 
     return () => {
       // Remove listeners from connection
+      props.connection.api.off("TEST", handleTest);
       props.connection.api.off("SESSION_LIST", handleSessionList);
       props.connection.api.off("SUCCESS", handleSuccess);
       props.connection.api.off("ERROR", handleError);
+      props.connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
       props.connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
@@ -325,6 +331,16 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           None
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "FILTER_API_TEST", id: "test" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Filter API Test
         </button>
         <button
           onClick={() => props.connection.sendMessage("SET_FILTERS", {

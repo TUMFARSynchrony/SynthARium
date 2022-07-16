@@ -21,6 +21,7 @@ from filters.rotate import RotationFilter
 from filters.edge_outline import EdgeOutlineFilter
 from filters.filter import Filter
 from filters.mute import MuteVideoFilter, MuteAudioFilter
+from filters.api_test import FilterAPITestFilter
 
 if TYPE_CHECKING:
     from modules.connection import Connection
@@ -215,6 +216,8 @@ class TrackHandler(MediaStreamTrack):
                 return RotationFilter(id, filter_config, audio, video)
             case "EDGE_OUTLINE":
                 return EdgeOutlineFilter(id, filter_config, audio, video)
+            case "FILTER_API_TEST":
+                return FilterAPITestFilter(id, filter_config, audio, video)
             case _:
                 raise ErrorDictException(
                     code=404,
