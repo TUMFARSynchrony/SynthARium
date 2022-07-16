@@ -396,7 +396,7 @@ class Experimenter(User):
         ErrorDictException
             If this Experimenter is not connected to an modules.experiment.Experiment.
         """
-        experiment = self._get_experiment_or_raise("Failed to leave experiment.")
+        experiment = self.get_experiment_or_raise("Failed to leave experiment.")
         experiment.remove_experimenter(self)
 
         for participant in experiment.participants.values():
@@ -429,7 +429,7 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already started.
         """
-        experiment = self._get_experiment_or_raise("Cannot start experiment.")
+        experiment = self.get_experiment_or_raise("Cannot start experiment.")
         await experiment.start()
 
         success = SuccessDict(
@@ -457,7 +457,7 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already ended.
         """
-        experiment = self._get_experiment_or_raise("Cannot stop experiment.")
+        experiment = self.get_experiment_or_raise("Cannot stop experiment.")
         await experiment.stop()
 
         success = SuccessDict(
@@ -495,7 +495,7 @@ class Experimenter(User):
                 description="Message data is not a valid Note.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot add note.")
+        experiment = self.get_experiment_or_raise("Cannot add note.")
         experiment.session.notes.append(data)
 
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
@@ -539,7 +539,7 @@ class Experimenter(User):
                 description="Author of message must be experimenter.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot chat.")
+        experiment = self.get_experiment_or_raise("Cannot chat.")
         await experiment.handle_chat_message(data)
 
         success = SuccessDict(
@@ -577,7 +577,7 @@ class Experimenter(User):
                 description="Message data is not a valid KickRequest.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot kick participant.")
+        experiment = self.get_experiment_or_raise("Cannot kick participant.")
         await experiment.kick_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
@@ -615,7 +615,7 @@ class Experimenter(User):
                 description="Message data is not a valid KickRequest.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot ban participant.")
+        experiment = self.get_experiment_or_raise("Cannot ban participant.")
         await experiment.ban_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
@@ -653,7 +653,7 @@ class Experimenter(User):
                 description="Message data is not a valid MuteRequest.",
             )
 
-        experiment = self._get_experiment_or_raise("Failed to mute participant.")
+        experiment = self.get_experiment_or_raise("Failed to mute participant.")
         await experiment.mute_participant(
             data["participant_id"], data["mute_video"], data["mute_audio"]
         )
@@ -696,7 +696,7 @@ class Experimenter(User):
         participant_id = data["participant_id"]
         video_filters = data["video_filters"]
         audio_filters = data["audio_filters"]
-        experiment = self._get_experiment_or_raise("Failed to set filters.")
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
         coros = []
 
         if participant_id == "all":
@@ -734,37 +734,6 @@ class Experimenter(User):
             type="SET_FILTERS", description="Successfully changed filters."
         )
         return MessageDict(type="SUCCESS", data=success)
-
-    def _get_experiment_or_raise(self, action_prefix: str = "") -> _exp.Experiment:
-        """Get `self._experiment` or raise ErrorDictException if it is None.
-
-        Use to check if this Experimenter is connected to an
-        modules.experiment.Experiment.
-
-        Parameters
-        ----------
-        action_prefix : str, optional
-            Prefix for the error message.  If not set / default (empty string), the
-            error message is: *Experimenter is not connected to an experiment.*,
-            otherwise: *<action_prefix> Experimenter is not connected to an experiment.*
-            .
-
-        Raises
-        ------
-        ErrorDictException
-            If `self._experiment` is None
-        """
-        if self._experiment is not None:
-            return self._experiment
-
-        if action_prefix == "":
-            desc = "Experimenter is not connected to an experiment."
-        else:
-            desc = f"{action_prefix} Experimenter is not connected to an experiment."
-
-        raise ErrorDictException(
-            code=409, type="NOT_CONNECTED_TO_EXPERIMENT", description=desc
-        )
 
 
 async def experimenter_factory(
