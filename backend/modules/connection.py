@@ -74,8 +74,6 @@ class Connection(ConnectionInterface):
         pc: RTCPeerConnection,
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
         log_name_suffix: str,
-        audio_filters: list[FilterDict],
-        video_filters: list[FilterDict],
         filter_api: FilterAPIInterface,
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
@@ -92,10 +90,6 @@ class Connection(ConnectionInterface):
             be parsed and type checked (only top level, not including contents of data).
         log_name_suffix : str
             Suffix for logger.  Format: Connection-<log_name_suffix>.
-        audio_filters : list of custom_types.filter.FilterDict
-            Default audio filters for this connection.
-        video_filters : list of custom_types.filter.FilterDict
-            Default video filters for this connection.
 
         See Also
         --------
@@ -112,8 +106,7 @@ class Connection(ConnectionInterface):
         self._message_handler = message_handler
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
-        self._incoming_audio.finish_setup(audio_filters)
-        self._incoming_video.finish_setup(video_filters)
+
         self._dc = None
         self._tasks = []
 
@@ -121,6 +114,23 @@ class Connection(ConnectionInterface):
         pc.add_listener("datachannel", self._on_datachannel)
         pc.add_listener("connectionstatechange", self._on_connection_state_change)
         pc.add_listener("track", self._on_track)
+
+    async def complete_setup(
+        self, audio_filters: list[FilterDict], video_filters: list[FilterDict]
+    ):
+        """TODO document
+
+        Parameters
+        ----------
+        audio_filters : list of custom_types.filter.FilterDict
+            Default audio filters for this connection.
+        video_filters : list of custom_types.filter.FilterDict
+            Default video filters for this connection.
+        """
+        await asyncio.gather(
+            self._incoming_audio.complete_setup(audio_filters),
+            self._incoming_video.complete_setup(video_filters),
+        )
 
     @property
     def incoming_audio(self) -> TrackHandler:
@@ -162,9 +172,9 @@ class Connection(ConnectionInterface):
         if self._dc is not None:
             self._dc.close()
         if self._incoming_video is not None:
-            self._incoming_video.stop()
+            await self._incoming_video.stop()
         if self._incoming_audio is not None:
-            self._incoming_audio.stop()
+            await self._incoming_audio.stop()
         await self._main_pc.close()
         self.remove_all_listeners()
 
@@ -566,9 +576,8 @@ async def connection_factory(
         WebRTC answer that should be send back to the client and a Connection.
     """
     pc = RTCPeerConnection()
-    connection = Connection(
-        pc, message_handler, log_name_suffix, audio_filters, video_filters, filter_api
-    )
+    connection = Connection(pc, message_handler, log_name_suffix, filter_api)
+    await connection.complete_setup(audio_filters, video_filters)
 
     # handle offer
     await pc.setRemoteDescription(offer)

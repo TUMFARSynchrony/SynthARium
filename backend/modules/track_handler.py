@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy
 import asyncio
 import logging
-from typing import Literal, TYPE_CHECKING
+from typing import Coroutine, Literal, TYPE_CHECKING
 from aiortc.mediastreams import (
     MediaStreamTrack,
     MediaStreamError,
@@ -95,7 +95,7 @@ class TrackHandler(MediaStreamTrack):
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
 
-    def finish_setup(self, filters: list[FilterDict]):
+    async def complete_setup(self, filters: list[FilterDict]):
         """TODO document"""
         if self.kind == "audio":
             self._mute_filter = MuteAudioFilter(
@@ -111,7 +111,7 @@ class TrackHandler(MediaStreamTrack):
                 self.connection.incoming_audio,
                 self.connection.incoming_video,
             )
-        self._set_filters(filters)
+        await self.set_filters(filters)
 
     @property
     def track(self) -> MediaStreamTrack:
@@ -133,6 +133,12 @@ class TrackHandler(MediaStreamTrack):
         """TODO document"""
         self._muted = value
         self.reset_execute_filters()
+
+    async def stop(self) -> None:
+        """TODO document"""
+        super().stop()
+        coros = [f.cleanup() for f in self._filters.values()]
+        await asyncio.gather(*coros)
 
     async def set_track(self, value: MediaStreamTrack):
         """Set source track for this TrackHandler.
@@ -182,9 +188,9 @@ class TrackHandler(MediaStreamTrack):
     async def set_filters(self, filter_configs: list[FilterDict]) -> None:
         """TODO document"""
         async with self.__lock:
-            self._set_filters(filter_configs)
+            await self._set_filters(filter_configs)
 
-    def _set_filters(self, filter_configs: list[FilterDict]) -> None:
+    async def _set_filters(self, filter_configs: list[FilterDict]) -> None:
         """TODO document"""
 
         new_filters: dict[str, Filter] = {}
@@ -201,6 +207,12 @@ class TrackHandler(MediaStreamTrack):
 
             # Create a new filter for configs with empty id.
             new_filters[id] = self._create_filter(id, config)
+
+        coros: list[Coroutine] = []
+        for id, filter in self._filters.items():
+            if id not in new_filters:
+                coros.append(filter.cleanup())
+        await asyncio.gather(*coros)
 
         self._filters = new_filters
         self.reset_execute_filters()

@@ -57,6 +57,10 @@ class Filter(ABC):
         """TODO document"""
         self._config = config
 
+    async def cleanup(self) -> None:
+        """TODO document - cleanup called before filter is deleted, stop worker tasks here"""
+        return
+
     @abstractmethod
     async def process(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
