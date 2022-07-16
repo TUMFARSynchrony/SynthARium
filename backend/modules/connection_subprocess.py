@@ -12,10 +12,12 @@ from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from modules import BACKEND_DIR
 from modules.config import Config
+from modules.filter_api import FilterAPI
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
+from modules.filter_subprocess_receiver import FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
 from custom_types.filters import FilterDict
@@ -43,6 +45,7 @@ class ConnectionSubprocess(ConnectionInterface):
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
     _initial_audio_filters: list[FilterDict]
     _initial_video_filters: list[FilterDict]
+    _filter_receiver: FilterSubprocessReceiver
 
     __lock: asyncio.Lock
     _running: bool
@@ -64,6 +67,7 @@ class ConnectionSubprocess(ConnectionInterface):
         config: Config,
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
+        filter_api: FilterAPI,
     ):
         """Create new ConnectionSubprocess.
 
@@ -102,6 +106,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
+        self._filter_receiver = FilterSubprocessReceiver(filter_api)
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
@@ -310,6 +315,9 @@ class ConnectionSubprocess(ConnectionInterface):
         # )
 
         match command:
+            case "FILTER_API":
+                # Forward FILTER_API requests to FilterSubprocessReceiver
+                await self._filter_receiver.handle(data)
             case "SET_LOCAL_DESCRIPTION":
                 self._local_description = RTCSessionDescription(
                     data["sdp"], data["type"]
@@ -487,6 +495,7 @@ async def connection_subprocess_factory(
     config: Config,
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
+    filter_api: FilterAPI,
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 
@@ -518,6 +527,7 @@ async def connection_subprocess_factory(
         config,
         audio_filters,
         video_filters,
+        filter_api,
     )
 
     local_description = await connection.get_local_description()

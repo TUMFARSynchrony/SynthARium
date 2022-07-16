@@ -764,14 +764,20 @@ async def experimenter_factory(
         representing the client.
     """
     experimenter = Experimenter(id, hub)
+    filter_api = FilterAPI(experimenter)
     log_name_suffix = f"E-{id}"
 
     if hub.config.experimenter_multiprocessing:
         answer, connection = await connection_subprocess_factory(
-            offer, experimenter.handle_message, log_name_suffix, hub.config, [], []
+            offer,
+            experimenter.handle_message,
+            log_name_suffix,
+            hub.config,
+            [],
+            [],
+            filter_api,
         )
     else:
-        filter_api = FilterAPI(experimenter)
         answer, connection = await connection_factory(
             offer, experimenter.handle_message, log_name_suffix, [], [], filter_api
         )

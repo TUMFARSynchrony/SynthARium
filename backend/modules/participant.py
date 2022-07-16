@@ -255,6 +255,7 @@ async def participant_factory(
         representing the client.
     """
     participant = Participant(id, experiment, participant_data)
+    filter_api = FilterAPI(participant)
     log_name_suffix = f"P-{id}"
 
     if config.participant_multiprocessing:
@@ -265,9 +266,9 @@ async def participant_factory(
             config,
             participant_data.audio_filters,
             participant_data.video_filters,
+            filter_api,
         )
     else:
-        filter_api = FilterAPI(participant)
         answer, connection = await connection_factory(
             offer,
             participant.handle_message,

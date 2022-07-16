@@ -15,6 +15,7 @@ from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
 from modules.config import Config
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
+from modules.filter_subprocess_api import FilterSubprocessAPI
 from modules.connection import Connection, connection_factory
 from modules.subprocess_logging import SubprocessLoggingHandler
 
@@ -76,12 +77,14 @@ class ConnectionRunner:
             Suffix for logger used in Connection.
         """
         self._running = True
+        filter_api = FilterSubprocessAPI(self._send_command)
         answer, self._connection = await connection_factory(
             offer,
             self._relay_api_message,
             log_name_suffix,
             audio_filters,
             video_filters,
+            filter_api,
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self._send_command(
