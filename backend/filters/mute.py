@@ -1,4 +1,4 @@
-"""TODO document"""
+"""Provide `MuteVideoFilter` and `MuteAudioFilter` to mute audio / video tracks."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class MuteVideoFilter(VideoFilter):
-    """TODO document"""
+    """Filter returning still image in `process`."""
 
     _muted_frame: VideoFrame
     _muted_ndarray: numpy.ndarray
@@ -29,7 +29,15 @@ class MuteVideoFilter(VideoFilter):
         audio_track_handler: TrackHandler,
         video_track_handler: TrackHandler,
     ) -> None:
-        """TODO document"""
+        """Initialize new MuteVideoFilter.
+
+        Load the muted frame image `/images/muted.png` and store it as av.VideoFrame as
+        well as numpy.ndarray for quick access in `process`.
+
+        Parameters
+        ----------
+        See base class: filters.filter.Filter.
+        """
         super().__init__(id, config, audio_track_handler, video_track_handler)
 
         # Load image that will be broadcasted when track is muted.
@@ -41,7 +49,21 @@ class MuteVideoFilter(VideoFilter):
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray | None = None
     ) -> numpy.ndarray | VideoFrame:
-        """TODO document"""
+        """Return muted video frame.  Ignores input!
+
+        If `ndarray` is none, the return type is numpy.ndarray. Otherwise the return
+        value is av.VideoFrame.
+
+        This is an exception for mute filters, and not intended for other filters.  Mute
+        filters are used outside of the normal filter pipeline, where returning an
+        av.VideoFrame is quicker than numpy.ndarray. They can however also be used in
+        the normal filter pipeline.
+        See modules.track_handler.TrackHandler for details.
+
+        See Also
+        ----------
+        filters.filter.Filter : for parameters, return value, ... documentation.
+        """
         if self._muted_frame.format != original.format:
             self._muted_frame = self._muted_frame.reformat(format=original.format)
             self._muted_ndarray = self._muted_frame.to_ndarray(format="bgr24")
@@ -58,7 +80,7 @@ class MuteVideoFilter(VideoFilter):
 
 
 class MuteAudioFilter(AudioFilter):
-    """TODO document"""
+    """Filter returning silent audio frame in `process`."""
 
     _muted_frame: AudioFrame
     _muted_ndarray: numpy.ndarray
@@ -70,7 +92,14 @@ class MuteAudioFilter(AudioFilter):
         audio_track_handler: TrackHandler,
         video_track_handler: TrackHandler,
     ) -> None:
-        """TODO document"""
+        """Initialize new MuteAudioFilter.
+
+        Create new av.AudioFrame used as muted frame in `process()`.
+
+        Parameters
+        ----------
+        See base class: filters.filter.Filter.
+        """
         super().__init__(id, config, audio_track_handler, video_track_handler)
 
         # Create a muted audio frame.
@@ -82,7 +111,21 @@ class MuteAudioFilter(AudioFilter):
     async def process(
         self, original: AudioFrame, ndarray: numpy.ndarray | None = None
     ) -> numpy.ndarray | AudioFrame:
-        """TODO document"""
+        """Return muted audio frame.  Ignores input!
+
+        If `ndarray` is none, the return type is numpy.ndarray. Otherwise the return
+        value is av.AudioFrame.
+
+        This is an exception for mute filters, and not intended for other filters.  Mute
+        filters are used outside of the normal filter pipeline, where returning an
+        av.AudioFrame is quicker than numpy.ndarray.  They can however also be used in
+        the normal filter pipeline.
+        See modules.track_handler.TrackHandler for details.
+
+        See Also
+        ----------
+        filters.filter.Filter : for parameters, return value, ... documentation.
+        """
         if (
             self._muted_frame.format != original.format
             or self._muted_frame.samples != original.samples

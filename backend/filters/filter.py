@@ -1,4 +1,4 @@
-"""TODO document"""
+"""Provide abstract `Filter`, `VideoFilter` and `AudioFilter` classes."""
 
 
 from __future__ import annotations
@@ -15,10 +15,31 @@ if TYPE_CHECKING:
 
 
 class Filter(ABC):
-    """TODO document"""
+    """Abstract base class for all filters.
+
+    Attributes
+    ----------
+    audio_track_handler
+    video_track_handler
+    run_if_muted
+    """
 
     audio_track_handler: TrackHandler
+    """Audio modules.track_handler.TrackHandler for the stream this filter is part of.
+
+    Use to communicate with audio filters running on the same stream.  Depending on the
+    type of this filter, the filter is either managed by `audio_track_handler` or
+    `video_track_handler`.
+    """
+
     video_track_handler: TrackHandler
+    """Video modules.track_handler.TrackHandler for the stream this filter is part of.
+
+    Use to communicate with video filters running on the same stream.  Depending on the
+    type of this filter, the filter is either managed by `video_track_handler` or
+    `video_track_handler`.
+    """
+
     run_if_muted: bool
     """Whether this filter should be executed if the TrackHandler is muted.
 
@@ -36,7 +57,20 @@ class Filter(ABC):
         audio_track_handler: TrackHandler,
         video_track_handler: TrackHandler,
     ) -> None:
-        """TODO document"""
+        """Initialize new Filter.
+
+        Parameters
+        ----------
+        id : str
+            Id of this Filter.
+        config : custom_types.filter.FilterDict
+            Configuration for filter.  `config["type"]` must match the filter
+            implementation.
+        audio_track_handler : modules.track_handler.TrackHandler
+            Audio TrackHandler for the stream this filter is part of.
+        video_track_handler : modules.track_handler.TrackHandler
+            Video TrackHandler for the stream this filter is part of.
+        """
         self.run_if_muted = False
         self._id = id
         self._config = config
@@ -45,31 +79,64 @@ class Filter(ABC):
 
     @property
     def id(self) -> str:
-        """TODO document"""
+        """Get Filter id."""
         return self._id
 
     @property
     def config(self) -> FilterDict:
-        """TODO document"""
+        """Get Filter config."""
         return self._config
 
     def set_config(self, config: FilterDict) -> None:
-        """TODO document"""
+        """Update filter config.
+
+        Notes
+        -----
+        Provide a custom implementation for this function in a subclass in case the
+        filter should react to config changes.
+        """
         self._config = config
 
     async def cleanup(self) -> None:
-        """TODO document - cleanup called before filter is deleted, stop worker tasks here"""
+        """Cleanup, in case filter will no longer be used.
+
+        Called before the filter is deleted.  In case the filter spawned any
+        asyncio.Task tasks they should be stopped & awaited in a custom implementation
+        overriding this function.
+        """
         return
 
     @abstractmethod
     async def process(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
-        """TODO document"""
+        """Process audio/video frame.  Apply filter to frame.
+
+        Parameters
+        ----------
+        original: av.VideoFrame or av.AudioFrame
+            Original frame with metadata that can be useful to the filter.  Can be
+            ignored if metadata is not of interest.
+        ndarray : numpy.ndarray
+            Frame as numpy.ndarray.  If the filter modifies the frame, it should modify
+            and return `ndarray`.
+
+        Returns
+        -------
+        numpy.ndarray
+            Original or modified `ndarray`, based on input parameter.
+
+        Notes
+        -----
+        If the filter does not modify the frame, it should return `ndarray`.
+        If the filter modifies the frame, it should be based on `ndarray`.  Using
+        `original` will ignore filters executed before this filter.
+        Analysis of the frame contents should also be based on `ndarray`.
+        """
         pass
 
     def __repr__(self) -> str:
-        """TODO document"""
+        """Get string representation for this filter."""
         return f"{self.__class__.__name__}(id={self.id}, config={self.config})"
 
 
@@ -80,7 +147,6 @@ class VideoFilter(Filter):
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
-        """TODO document"""
         pass
 
 
@@ -91,5 +157,4 @@ class AudioFilter(Filter):
     async def process(
         self, original: AudioFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
-        """TODO document"""
         pass

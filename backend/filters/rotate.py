@@ -1,4 +1,4 @@
-"""TODO document"""
+"""Provide `RotationFilter` filter."""
 
 import cv2
 import numpy
@@ -8,12 +8,12 @@ from filters.filter import VideoFilter
 
 
 class RotationFilter(VideoFilter):
-    """TODO document"""
+    """Filter example rotating a video track."""
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
-        """TODO document"""
+        # For docstring see filters.filter.Filter or hover over function declaration
         # Example based on https://github.com/aiortc/aiortc/tree/main/examples/server
         rows, cols, _ = ndarray.shape
         M = cv2.getRotationMatrix2D((cols / 2, rows / 2), original.time * 45, 1)
