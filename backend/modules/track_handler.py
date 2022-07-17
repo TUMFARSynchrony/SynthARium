@@ -54,12 +54,14 @@ class TrackHandler(MediaStreamTrack):
     ) -> None:
         """Initialize new TrackHandler for `track`.
 
-        TODO update docs
-
         Parameters
         ----------
         kind : str, "audio" or "video"
             Kind of MediaStreamTrack this handler handles.
+        connection : modules.connection.Connection
+            Connection this track handler belongs to.
+        filter_api : subclass of modules.filter_api_interface.FilterAPIInterface
+            Filter API for filters.
         track : aiortc.mediastreams.MediaStreamTrack
             Track this handler should manage and distribute.  None if track is set
             later.
@@ -70,6 +72,11 @@ class TrackHandler(MediaStreamTrack):
         ------
         ValueError
             If kind is not "audio" or "video".
+
+        Notes
+        -----
+        Make sure to call `complete_setup` after initialization, when `incoming_audio`
+        and `incoming_video` of connection are initialized.
         """
         super().__init__()
         self.filter_api = filter_api
@@ -95,8 +102,16 @@ class TrackHandler(MediaStreamTrack):
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
 
-    async def complete_setup(self, filters: list[FilterDict]):
-        """TODO document"""
+    async def complete_setup(self, filters: list[FilterDict]) -> None:
+        """Complete setup of TrackHandler.
+
+        Initializes filter used to mute track and sets filter pipeline according to
+        `filters`.
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+        """
         if self.kind == "audio":
             self._mute_filter = MuteAudioFilter(
                 "0",
@@ -125,23 +140,23 @@ class TrackHandler(MediaStreamTrack):
 
     @property
     def muted(self) -> bool:
-        """TODO document"""
+        """Get muted state of TrackHandler."""
         return self._muted
 
     @muted.setter
     def muted(self, value: bool) -> None:
-        """TODO document"""
+        """Set muted state of TrackHandler."""
         self._muted = value
         self.reset_execute_filters()
 
     async def stop(self) -> None:
-        """TODO document"""
+        """Stop TrackHandler and associated track."""
         super().stop()
         coros = [f.cleanup() for f in self._filters.values()]
         await asyncio.gather(*coros)
 
     async def set_track(self, value: MediaStreamTrack):
-        """Set source track for this TrackHandler.
+        """Replace source track for this TrackHandler.
 
         Parameters
         ----------
@@ -186,12 +201,21 @@ class TrackHandler(MediaStreamTrack):
         return self._relay.subscribe(self, False)
 
     async def set_filters(self, filter_configs: list[FilterDict]) -> None:
-        """TODO document"""
+        """Set or update filters to `filter_configs`.
+
+        Parameters
+        ----------
+        filter_configs : list of custom_types.filters.FilterDict
+            List of filter configs used to modify filters for this TrackHandler.
+        """
         async with self.__lock:
             await self._set_filters(filter_configs)
 
     async def _set_filters(self, filter_configs: list[FilterDict]) -> None:
-        """TODO document"""
+        """Internal version of `set_filters`, without lock.
+
+        See `set_filters` for docs.
+        """
 
         new_filters: dict[str, Filter] = {}
         for config in filter_configs:
@@ -218,7 +242,20 @@ class TrackHandler(MediaStreamTrack):
         self.reset_execute_filters()
 
     def _create_filter(self, id: str, filter_config: FilterDict) -> Filter:
-        """TODO document"""
+        """Create a filter based on `type` of `filter_config`.
+
+        Parameters
+        ----------
+        id : str
+            Id for new filter.
+        filter_config : custom_types.filters.FilterDict
+            Filter config used to determine type of filter.  Also passed to new filter.
+
+        Raises
+        ------
+        modules.exceptions.ErrorDictException
+            If the filter type is unknown.
+        """
         type = filter_config["type"]
         audio = self.connection.incoming_audio
         video = self.connection.incoming_video
@@ -238,13 +275,18 @@ class TrackHandler(MediaStreamTrack):
                 )
 
     def reset_execute_filters(self):
-        """TODO document"""
+        """Reset `self._execute_filters`.
+
+        `self._execute_filters` indicates if the filter pipeline should be executed.
+        The pipeline is only executed filters exists and this TrackHandler is not muted
+        or any of the filters should be executed even if muted.
+        """
         self._execute_filters = len(self._filters) > 0 and (
             not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
 
     async def recv(self) -> AudioFrame | VideoFrame:
-        """Receive the next av.AudioFrame from this track.
+        """Receive the next av.AudioFrame from this track and apply filter pipeline.
 
         Checks if this track is muted and returns silence if so.
 
@@ -277,7 +319,7 @@ class TrackHandler(MediaStreamTrack):
         return frame
 
     async def _apply_video_filters(self, frame: VideoFrame):
-        """TODO document"""
+        """Parse video frame and pass it to `_apply_filters`."""
         ndarray = frame.to_ndarray(format="bgr24")
         ndarray = await self._apply_filters(frame, ndarray)
 
@@ -287,7 +329,7 @@ class TrackHandler(MediaStreamTrack):
         return new_frame
 
     async def _apply_audio_filters(self, frame: AudioFrame):
-        """TODO document"""
+        """Parse audio frame and pass it to `_apply_filters`."""
         ndarray = frame.to_ndarray()
         ndarray = await self._apply_filters(frame, ndarray)
 
@@ -300,7 +342,7 @@ class TrackHandler(MediaStreamTrack):
     async def _apply_filters(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
-        """TODO document"""
+        """Execute filter pipeline."""
         async with self.__lock:
             # Run all filters if not self._muted.
             if not self._muted:

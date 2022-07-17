@@ -155,10 +155,22 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     @abstractmethod
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
-        """TODO Document"""
+        """Set or update video filters to `filters`.
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+            List of video filter configs.
+        """
         pass
 
     @abstractmethod
     async def set_audio_filters(self, filters: list[FilterDict]) -> None:
-        """TODO Document"""
+        """Set or update audio filters to `filters`.
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+            List of audio filter configs.
+        """
         pass

@@ -95,6 +95,10 @@ class Connection(ConnectionInterface):
         --------
         connection_factory : use to create new Connection and answer for an WebRTC
             offer.
+
+        Notes
+        -----
+        Make sure to call `complete_setup` after initialization.
         """
         super().__init__()
         self._logger = logging.getLogger(f"Connection-{log_name_suffix}")
@@ -117,8 +121,8 @@ class Connection(ConnectionInterface):
 
     async def complete_setup(
         self, audio_filters: list[FilterDict], video_filters: list[FilterDict]
-    ):
-        """TODO document
+    ) -> None:
+        """Complete Connection setup.
 
         Parameters
         ----------
@@ -134,12 +138,12 @@ class Connection(ConnectionInterface):
 
     @property
     def incoming_audio(self) -> TrackHandler:
-        """TODO document"""
+        """Get modules.track_handler.TrackHandler for incoming audio track."""
         return self._incoming_audio
 
     @property
     def incoming_video(self) -> TrackHandler:
-        """TODO document"""
+        """Get modules.track_handler.TrackHandler for incoming video track."""
         return self._incoming_video
 
     def __str__(self) -> str:

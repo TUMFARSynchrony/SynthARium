@@ -21,7 +21,7 @@ FILTER_TYPES = Literal[
     "EDGE_OUTLINE",
     "FILTER_API_TEST",
 ]
-"""TODO document"""
+"""Valid filter types."""
 
 
 class FilterDict(TypedDict):

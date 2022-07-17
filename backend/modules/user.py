@@ -121,12 +121,22 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     @property
     def connection(self) -> ConnectionInterface:
-        """TODO document."""
+        """Get Connection of this User."""
         return self._connection
 
     @property
     def experiment(self) -> None | _exp.Experiment:
-        """TODO document."""
+        """Get Experiment this User is connected to.
+
+        Returns
+        -------
+        None or modules.experiment.Experiment
+            None if user is not connected to an experiment, otherwise experiment.
+
+        See Also
+        --------
+        get_experiment_or_raise : get experiment or raise if experiment is None
+        """
         return self._experiment
 
     def get_summary(self) -> ParticipantSummaryDict | None:
