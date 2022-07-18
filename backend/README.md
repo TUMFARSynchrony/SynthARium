@@ -18,7 +18,9 @@ The backend can be configured using the `backend/config.json`.
 -   `host` - str : host address the backend should use
 -   `port` - int : port the backend should use
 -   `environment` - str : `dev` or `prod`
--   `https` - bool : Weather the backend should use https
+-   `serve_frontend` - bool : Whether the server should serve the frontend. Set to `false` if the frontend is hosted by a different server (see note bellow)
+    -   Developer Note: A better way to host the frontend would be using a [Reverse Proxy](https://en.wikipedia.org/wiki/Reverse_proxy) like [nginx](https://nginx.org/) or [CDN](https://en.wikipedia.org/wiki/Content_delivery_network) services, as noted in [aiohttp](https://docs.aiohttp.org/en/stable/web_advanced.html?highlight=static#static-file-handling) which we use for hosting.
+-   `https` - bool : Whether the backend should use https
 -   `ssl_cert` - str : path to ssl certificate. Only used if https is true
 -   `ssl_key` - str : path to ssl private key. Only used if https is true
 -   `log` - str : Logging level for Hub. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `INFO`
