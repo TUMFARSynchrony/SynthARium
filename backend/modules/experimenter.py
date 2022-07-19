@@ -728,9 +728,13 @@ class Experimenter(User):
                 type="UNKNOWN_PARTICIPANT",
                 description=f'Unknown participant ID: "{participant_id}".',
             )
-
         await asyncio.gather(*coros)
 
+        # Notify Experimenters connected to the hub about the data change
+        message = MessageDict(type="SESSION_CHANGE", data=experiment.session.asdict())
+        await self._hub.send_to_experimenters(message)
+
+        # Respond with success message
         success = SuccessDict(
             type="SET_FILTERS", description="Successfully changed filters."
         )

@@ -170,16 +170,18 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
 
     // Message listeners to messages from the backend.
     const handleTest = (data: any) => saveGenericApiResponse("TEST", data);
+    const handleSessionChange = (data: any) => saveGenericApiResponse("SESSION_CHANGE", data);
     const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
     const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
-    const handleExperimentCreated = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
+    const handleExperimentCreated = (data: any) => saveGenericApiResponse("EXPERIMENT_CREATED", data);
     const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
     const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
 
     // Add listeners to connection
     props.connection.api.on("TEST", handleTest);
+    props.connection.api.on("SESSION_CHANGE", handleSessionChange);
     props.connection.api.on("SESSION_LIST", handleSessionList);
     props.connection.api.on("SUCCESS", handleSuccess);
     props.connection.api.on("ERROR", handleError);
@@ -191,6 +193,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     return () => {
       // Remove listeners from connection
       props.connection.api.off("TEST", handleTest);
+      props.connection.api.off("SESSION_CHANGE", handleSessionChange);
       props.connection.api.off("SESSION_LIST", handleSessionList);
       props.connection.api.off("SUCCESS", handleSuccess);
       props.connection.api.off("ERROR", handleError);
