@@ -20,6 +20,8 @@ class FilterSubprocessReceiver:
     modules.filter_api_interface.FilterAPIInterface : Filter API documentation.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Backend-Architecture
         Architecture UML Diagram.
+    https://github.com/TUMFARSynchrony/experimental-hub/wiki/Filters
+        Details about the filters, including Filter API section
     """
 
     _filter_api: FilterAPI

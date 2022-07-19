@@ -18,6 +18,8 @@ class FilterAPI(FilterAPIInterface):
     modules.filter_api_interface.FilterAPIInterface : further documentation.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Backend-Architecture
         Architecture UML Diagram.
+    https://github.com/TUMFARSynchrony/experimental-hub/wiki/Filters
+        Details about the filters, including Filter API section
     """
 
     _user: User
