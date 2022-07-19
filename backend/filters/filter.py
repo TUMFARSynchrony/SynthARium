@@ -67,6 +67,13 @@ class Filter(ABC):
             Audio TrackHandler for the stream this filter is part of.
         video_track_handler : modules.track_handler.TrackHandler
             Video TrackHandler for the stream this filter is part of.
+
+        Notes
+        -----
+        If other filters need to be accessed or the initiation contains an asynchronous
+        part, use `complete_setup`. The other filters may not be initialized when
+        __init__ is called. However, filters must be ready to be accessed by other
+        filters after __init__ (if they are designed to be).
         """
         self.run_if_muted = False
         self._config = config
@@ -87,6 +94,17 @@ class Filter(ABC):
         filter should react to config changes.
         """
         self._config = config
+
+    async def complete_setup(self) -> None:
+        """Complete setup, allowing for asynchronous setup and accessing other filters.
+
+        If the initiation / setup of a filter requires anything asynchronous or other
+        filters must be accessed, it should be donne in `complete_setup`.
+        `complete_setup` is called when all filters have been set up, therefore other
+        filters will be available (may not be the case in __init__, depending on the
+        position in the filter pipeline).
+        """
+        return
 
     async def cleanup(self) -> None:
         """Cleanup, in case filter will no longer be used.

@@ -114,14 +114,12 @@ class TrackHandler(MediaStreamTrack):
         """
         if self.kind == "audio":
             self._mute_filter = MuteAudioFilter(
-                "0",
                 {"id": "0", "type": "MUTE_AUDIO"},
                 self.connection.incoming_audio,
                 self.connection.incoming_video,
             )
         else:
             self._mute_filter = MuteVideoFilter(
-                "0",
                 {"id": "0", "type": "MUTE_VIDEO"},
                 self.connection.incoming_audio,
                 self.connection.incoming_video,
@@ -222,31 +220,34 @@ class TrackHandler(MediaStreamTrack):
         See `set_filters` for docs.
         """
 
-        new_filters: dict[str, Filter] = {}
+        old_filters = self._filters
+
+        self._filters = {}
         for config in filter_configs:
             id = config["id"]
             # Reuse existing filter for matching id and type.
-            if (
-                id in self._filters
-                and self._filters[id].config["type"] == config["type"]
-            ):
-                new_filters[id] = self._filters[id]
-                new_filters[id].set_config(config)
+            if id in old_filters and old_filters[id].config["type"] == config["type"]:
+                self._filters[id] = old_filters[id]
+                self._filters[id].set_config(config)
                 continue
 
             # Create a new filter for configs with empty id.
-            new_filters[id] = self._create_filter(id, config)
+            self._filters[id] = self._create_filter(config)
 
         coros: list[Coroutine] = []
-        for id, filter in self._filters.items():
-            if id not in new_filters:
+        # Cleanup old filters
+        for id, filter in old_filters.items():
+            if id not in self._filters:
                 coros.append(filter.cleanup())
-        await asyncio.gather(*coros)
 
-        self._filters = new_filters
+        # Complete setup for new filters
+        for filter in self._filters.values():
+            coros.append(filter.complete_setup())
+
+        await asyncio.gather(*coros)
         self.reset_execute_filters()
 
-    def _create_filter(self, id: str, filter_config: FilterDict) -> Filter:
+    def _create_filter(self, filter_config: FilterDict) -> Filter:
         """Create a filter based on `type` of `filter_config`.
 
         Parameters
@@ -267,11 +268,11 @@ class TrackHandler(MediaStreamTrack):
 
         match type:
             case "ROTATION":
-                return RotationFilter(id, filter_config, audio, video)
+                return RotationFilter(filter_config, audio, video)
             case "EDGE_OUTLINE":
-                return EdgeOutlineFilter(id, filter_config, audio, video)
+                return EdgeOutlineFilter(filter_config, audio, video)
             case "FILTER_API_TEST":
-                return FilterAPITestFilter(id, filter_config, audio, video)
+                return FilterAPITestFilter(filter_config, audio, video)
             case _:
                 raise ErrorDictException(
                     code=404,
