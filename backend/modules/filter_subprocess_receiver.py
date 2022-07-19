@@ -1,5 +1,7 @@
 """provide `FilterSubprocessReceiver` class."""
 
+import logging
+from backend.modules.exceptions import ErrorDictException
 from modules.filter_api import FilterAPI
 
 
@@ -21,6 +23,7 @@ class FilterSubprocessReceiver:
     """
 
     _filter_api: FilterAPI
+    _logger: logging.Logger
 
     def __init__(self, filter_api: FilterAPI) -> None:
         """Initialize new FilterSubprocessReceiver.
@@ -32,6 +35,7 @@ class FilterSubprocessReceiver:
             will be forwarded to.
         """
         self._filter_api = filter_api
+        self._logger = logging.getLogger("FilterSubprocessReceiver")
 
     async def handle(self, message: dict):
         """Handle a incoming message from a subprocess FilterSubprocessAPI.
@@ -47,15 +51,16 @@ class FilterSubprocessReceiver:
         data = message.get("data")
 
         if command is None or data is None:
-            # TODO handle
+            self._logger.error(f"Missing command or data in message: {message}")
             return
 
         match command:
             case "EXPERIMENT_SEND":
-                # TODO handle exception
-                await self._filter_api.experiment_send(
-                    data["to"], data["data"], data["exclude"]
-                )
+                try:
+                    await self._filter_api.experiment_send(
+                        data["to"], data["data"], data["exclude"]
+                    )
+                except ErrorDictException as e:
+                    self._logger.error(f"Failed experiment_send: {e}")
             case _:
-                # TODO handle unknown command
-                pass
+                self._logger.warning(f'Unknown command: "{command}"')

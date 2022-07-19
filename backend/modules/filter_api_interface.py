@@ -44,6 +44,7 @@ class FilterAPIInterface(ABC):
         Raises
         ------
         ErrorDictException
-            If the user is not connected to an experiment.
+            If the user is not connected to an experiment (only for FilterAPI,
+            FilterSubprocessAPI currently only logs the error).
         """
         pass
