@@ -1,7 +1,7 @@
 """provide `FilterSubprocessReceiver` class."""
 
 import logging
-from backend.modules.exceptions import ErrorDictException
+from modules.exceptions import ErrorDictException
 from modules.filter_api import FilterAPI
 
 
