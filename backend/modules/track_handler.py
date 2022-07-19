@@ -267,6 +267,10 @@ class TrackHandler(MediaStreamTrack):
         video = self.connection.incoming_video
 
         match type:
+            case "MUTE_AUDIO":
+                return MuteAudioFilter(filter_config, audio, video)
+            case "MUTE_VIDEO":
+                return MuteVideoFilter(filter_config, audio, video)
             case "ROTATION":
                 return RotationFilter(filter_config, audio, video)
             case "EDGE_OUTLINE":
