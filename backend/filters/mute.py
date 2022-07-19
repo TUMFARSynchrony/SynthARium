@@ -10,13 +10,13 @@ from av import VideoFrame, AudioFrame
 
 from modules import BACKEND_DIR
 from custom_types.filters import FilterDict
-from filters.filter import VideoFilter, AudioFilter
+from filters.filter import Filter
 
 if TYPE_CHECKING:
     from modules.track_handler import TrackHandler
 
 
-class MuteVideoFilter(VideoFilter):
+class MuteVideoFilter(Filter):
     """Filter returning still image in `process`."""
 
     _muted_frame: VideoFrame
@@ -24,7 +24,6 @@ class MuteVideoFilter(VideoFilter):
 
     def __init__(
         self,
-        id: str,
         config: FilterDict,
         audio_track_handler: TrackHandler,
         video_track_handler: TrackHandler,
@@ -38,7 +37,7 @@ class MuteVideoFilter(VideoFilter):
         ----------
         See base class: filters.filter.Filter.
         """
-        super().__init__(id, config, audio_track_handler, video_track_handler)
+        super().__init__(config, audio_track_handler, video_track_handler)
 
         # Load image that will be broadcasted when track is muted.
         img_path = join(BACKEND_DIR, "images/muted.png")
@@ -79,7 +78,7 @@ class MuteVideoFilter(VideoFilter):
         return self._muted_frame
 
 
-class MuteAudioFilter(AudioFilter):
+class MuteAudioFilter(Filter):
     """Filter returning silent audio frame in `process`."""
 
     _muted_frame: AudioFrame
@@ -87,7 +86,6 @@ class MuteAudioFilter(AudioFilter):
 
     def __init__(
         self,
-        id: str,
         config: FilterDict,
         audio_track_handler: TrackHandler,
         video_track_handler: TrackHandler,
@@ -100,7 +98,7 @@ class MuteAudioFilter(AudioFilter):
         ----------
         See base class: filters.filter.Filter.
         """
-        super().__init__(id, config, audio_track_handler, video_track_handler)
+        super().__init__(config, audio_track_handler, video_track_handler)
 
         # Create a muted audio frame.
         self._muted_frame = AudioFrame(format="s16", layout="mono", samples=1)

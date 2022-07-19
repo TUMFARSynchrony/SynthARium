@@ -139,6 +139,11 @@ class TrackHandler(MediaStreamTrack):
         return self._track
 
     @property
+    def filters(self) -> dict[str, Filter]:
+        """Get filters used by this TrackHandler."""
+        return self._filters
+
+    @property
     def muted(self) -> bool:
         """Get muted state of TrackHandler."""
         return self._muted

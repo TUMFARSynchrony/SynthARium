@@ -4,10 +4,10 @@ import cv2
 import numpy
 from av import VideoFrame
 
-from filters.filter import VideoFilter
+from filters.filter import Filter
 
 
-class EdgeOutlineFilter(VideoFilter):
+class EdgeOutlineFilter(Filter):
     """Filter example outlining corners using Canny edge detector algorithm.
 
     See Also

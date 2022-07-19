@@ -4,10 +4,10 @@ import cv2
 import numpy
 from av import VideoFrame
 
-from filters.filter import VideoFilter
+from filters.filter import Filter
 
 
-class RotationFilter(VideoFilter):
+class RotationFilter(Filter):
     """Filter example rotating a video track."""
 
     async def process(

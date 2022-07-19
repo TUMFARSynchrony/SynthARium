@@ -22,6 +22,7 @@ class Filter(ABC):
     audio_track_handler
     video_track_handler
     run_if_muted
+    config
     """
 
     audio_track_handler: TrackHandler
@@ -47,12 +48,10 @@ class Filter(ABC):
     after initialization.
     """
 
-    _id: str
     _config: FilterDict
 
     def __init__(
         self,
-        id: str,
         config: FilterDict,
         audio_track_handler: TrackHandler,
         video_track_handler: TrackHandler,
@@ -61,8 +60,6 @@ class Filter(ABC):
 
         Parameters
         ----------
-        id : str
-            Id of this Filter.
         config : custom_types.filter.FilterDict
             Configuration for filter.  `config["type"]` must match the filter
             implementation.
@@ -72,15 +69,9 @@ class Filter(ABC):
             Video TrackHandler for the stream this filter is part of.
         """
         self.run_if_muted = False
-        self._id = id
         self._config = config
         self.audio_track_handler = audio_track_handler
         self.video_track_handler = video_track_handler
-
-    @property
-    def id(self) -> str:
-        """Get Filter id."""
-        return self._id
 
     @property
     def config(self) -> FilterDict:
@@ -137,24 +128,4 @@ class Filter(ABC):
 
     def __repr__(self) -> str:
         """Get string representation for this filter."""
-        return f"{self.__class__.__name__}(id={self.id}, config={self.config})"
-
-
-class VideoFilter(Filter):
-    """TODO document"""
-
-    @abstractmethod
-    async def process(
-        self, original: VideoFrame, ndarray: numpy.ndarray
-    ) -> numpy.ndarray:
-        pass
-
-
-class AudioFilter(Filter):
-    """TODO document"""
-
-    @abstractmethod
-    async def process(
-        self, original: AudioFrame, ndarray: numpy.ndarray
-    ) -> numpy.ndarray:
-        pass
+        return f"{self.__class__.__name__}(run_if_muted={self.run_if_muted}, config={self.config})"
