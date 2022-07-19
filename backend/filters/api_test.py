@@ -5,10 +5,10 @@ from av import VideoFrame
 from datetime import datetime
 from custom_types.message import MessageDict
 
-from filters.filter import VideoFilter
+from filters.filter import Filter
 
 
-class FilterAPITestFilter(VideoFilter):
+class FilterAPITestFilter(Filter):
     """Filter testing filter API."""
 
     counter = 0
