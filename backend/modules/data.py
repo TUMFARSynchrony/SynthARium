@@ -16,7 +16,7 @@ from custom_types.position import PositionDict
 from custom_types.size import SizeDict
 from custom_types.participant import ParticipantDict
 from custom_types.chat_message import ChatMessageDict
-from custom_types.filters import BasicFilterDict
+from custom_types.filters import FilterDict
 from custom_types.note import NoteDict
 from custom_types.session import (
     SessionDict,
@@ -167,7 +167,7 @@ class ParticipantData(_BaseDataClass):
     muted_audio : bool
     position : PositionData
     chat : list or custom_types.chat_message.ChatMessageDict
-    filters : list or custom_types.filters.BasicFilterDict
+    filters : list or custom_types.filters.FilterDict
 
     Methods
     -------
@@ -228,8 +228,11 @@ class ParticipantData(_BaseDataClass):
     chat: list[ChatMessageDict] = field(repr=False)
     """Chat log between participant and experimenter."""
 
-    filters: list[BasicFilterDict] = field(repr=False)
-    """Active filters for participant."""
+    audio_filters: list[FilterDict] = field(repr=False)
+    """Active audio filters for participant."""
+
+    video_filters: list[FilterDict] = field(repr=False)
+    """Active video filters for participant."""
 
     def __post_init__(self) -> None:
         """Add event listener to size and position."""
@@ -255,7 +258,8 @@ class ParticipantData(_BaseDataClass):
             "muted_audio": self.muted_audio,
             "position": self.position.asdict(),
             "chat": self.chat,
-            "filters": self.filters,
+            "audio_filters": self.audio_filters,
+            "video_filters": self.video_filters,
         }
 
     def as_summary_dict(self) -> ParticipantSummaryDict:
@@ -303,7 +307,8 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         participant_dict["muted_audio"],
         positionData,
         participant_dict["chat"],
-        participant_dict["filters"],
+        participant_dict["audio_filters"],
+        participant_dict["video_filters"],
     )
 
 

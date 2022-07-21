@@ -6,3 +6,5 @@ Pillow
 av
 argparse 
 shortuuid
+opencv-python
+numpy

@@ -8,12 +8,14 @@ import time
 from typing import Any
 from aiortc import RTCSessionDescription
 
+from custom_types.filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
 
 from modules.config import Config
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
+from modules.filter_subprocess_api import FilterSubprocessAPI
 from modules.connection import Connection, connection_factory
 from modules.subprocess_logging import SubprocessLoggingHandler
 
@@ -62,6 +64,8 @@ class ConnectionRunner:
         self,
         offer: RTCSessionDescription,
         log_name_suffix: str,
+        audio_filters: list[FilterDict],
+        video_filters: list[FilterDict],
     ) -> None:
         """Run the ConnectionRunner.  Returns after the ConnectionRunner finished.
 
@@ -73,8 +77,14 @@ class ConnectionRunner:
             Suffix for logger used in Connection.
         """
         self._running = True
+        filter_api = FilterSubprocessAPI(self._send_command)
         answer, self._connection = await connection_factory(
-            offer, self._relay_api_message, log_name_suffix
+            offer,
+            self._relay_api_message,
+            log_name_suffix,
+            audio_filters,
+            video_filters,
+            filter_api,
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self._send_command(
@@ -151,6 +161,10 @@ class ConnectionRunner:
             case "SET_MUTED":
                 video, audio = data
                 await self._connection.set_muted(video, audio)
+            case "SET_VIDEO_FILTERS":
+                await self._connection.set_video_filters(data)
+            case "SET_AUDIO_FILTERS":
+                await self._connection.set_audio_filters(data)
             case _:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 

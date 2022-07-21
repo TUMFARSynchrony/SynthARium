@@ -169,26 +169,35 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     };
 
     // Message listeners to messages from the backend.
+    const handleTest = (data: any) => saveGenericApiResponse("TEST", data);
+    const handleSessionChange = (data: any) => saveGenericApiResponse("SESSION_CHANGE", data);
     const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
     const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
+    const handleExperimentCreated = (data: any) => saveGenericApiResponse("EXPERIMENT_CREATED", data);
     const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
     const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
 
     // Add listeners to connection
+    props.connection.api.on("TEST", handleTest);
+    props.connection.api.on("SESSION_CHANGE", handleSessionChange);
     props.connection.api.on("SESSION_LIST", handleSessionList);
     props.connection.api.on("SUCCESS", handleSuccess);
     props.connection.api.on("ERROR", handleError);
+    props.connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
     props.connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
 
     return () => {
       // Remove listeners from connection
+      props.connection.api.off("TEST", handleTest);
+      props.connection.api.off("SESSION_CHANGE", handleSessionChange);
       props.connection.api.off("SESSION_LIST", handleSessionList);
       props.connection.api.off("SUCCESS", handleSuccess);
       props.connection.api.off("ERROR", handleError);
+      props.connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
       props.connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
@@ -199,7 +208,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     <>
       {props.connection.userType === "participant"
         ? <p className="apiWarning"><b>Note:</b> API should only work for experimenters</p>
-        : <></>
+        : <p className="apiSubsectionHeader">API Testing:</p>
       }
       <div className="requestButtons">
         <button
@@ -295,6 +304,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
           </button>
         </div>
       </div>
+      <SetFilterPresets connection={props.connection} />
       <div className="basicTabs">
         <span className="tabsTitle">Responses:</span>
         {responses.map((response, index) => {
@@ -310,6 +320,77 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
   );
 }
 
+function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
+  return (
+    <>
+      <p className="apiSubsectionHeader">Filter Presets:</p>
+      <div className="requestButtons">
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          None
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "FILTER_API_TEST", id: "test" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Filter API Test
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Edge Outline
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "ROTATION", id: "rotation" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Rotation
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }, { type: "ROTATION", id: "rotation" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Edge Outline + Rotation
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "ROTATION", id: "rotation" }, { type: "EDGE_OUTLINE", id: "edge" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Rotation + Edge Outline
+        </button>
+      </div>
+    </>
+  );
+}
+
+
 /**
  * Component to display an readable, indented version of `json`.
  */
@@ -322,11 +403,11 @@ function PrettyJson(props: { json: any; }) {
 }
 
 /**
- * Component with inputs to replace the current {@link Connection} with a new one. 
- * Used to change session-, participant-ids or user type.
- * 
- * Do not use after the connection has been started.  
- */
+ * Component with inputs to replace the current {@link Connection} with a new one.
+      * Used to change session-, participant-ids or user type.
+      *
+      * Do not use after the connection has been started.
+      */
 function ReplaceConnection(props: {
   connection: Connection,
   setConnection: (connection: Connection) => void,

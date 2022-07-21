@@ -18,6 +18,7 @@ from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
+import modules.experiment as _exp
 import modules.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
@@ -73,6 +74,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     """
 
     id: str
+    _experiment: _exp.Experiment | None
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
@@ -100,6 +102,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         super().__init__()
         self._logger = logging.getLogger(f"User-{id}")
         self.id = id
+        self._experiment = None
         self._muted_video = muted_video
         self._muted_audio = muted_audio
         self._handlers = {}
@@ -115,6 +118,26 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     def muted_audio(self) -> bool:
         """bool indicating if the users audio is muted."""
         return self._muted_audio
+
+    @property
+    def connection(self) -> ConnectionInterface:
+        """Get Connection of this User."""
+        return self._connection
+
+    @property
+    def experiment(self) -> None | _exp.Experiment:
+        """Get Experiment this User is connected to.
+
+        Returns
+        -------
+        None or modules.experiment.Experiment
+            None if user is not connected to an experiment, otherwise experiment.
+
+        See Also
+        --------
+        get_experiment_or_raise : get experiment or raise if experiment is None
+        """
+        return self._experiment
 
     def get_summary(self) -> ParticipantSummaryDict | None:
         """Get summary of User for client.
@@ -321,6 +344,40 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
             if response is not None:
                 await self.send(response)
+
+    def get_experiment_or_raise(self, action_prefix: str = "") -> _exp.Experiment:
+        """Get `self._experiment` or raise ErrorDictException if it is None.
+
+        Use to check if this Experimenter is connected to an
+        modules.experiment.Experiment.
+
+        Parameters
+        ----------
+        action_prefix : str, optional
+            Prefix for the error message.  If not set / default (empty string), the
+            error message is: *<ClassName> is not connected to an experiment.*,
+            otherwise: *<action_prefix> <ClassName> is not connected to an experiment.*
+            .
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None
+        """
+        if self._experiment is not None:
+            return self._experiment
+
+        if action_prefix == "":
+            desc = f"{self.__class__.__name__} is not connected to an experiment."
+        else:
+            desc = (
+                f"{action_prefix} {self.__class__.__name__} is not connected to an "
+                "experiment."
+            )
+
+        raise ErrorDictException(
+            code=409, type="NOT_CONNECTED_TO_EXPERIMENT", description=desc
+        )
 
     async def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.

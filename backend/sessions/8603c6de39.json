@@ -27,7 +27,8 @@
 				"z": 0
 			},
 			"chat": [],
-			"filters": []
+			"audio_filters": [],
+			"video_filters": []
 		}
 	],
 	"log": ""

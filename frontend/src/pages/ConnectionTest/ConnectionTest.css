@@ -143,10 +143,15 @@ video {
 	align-items: center;
 }
 
-.apiWarning {
-	margin: 5px;
+.apiWarning,
+.apiSubsectionHeader {
+	margin: 2px;
 	border-bottom: 2px dashed goldenrod;
 	display: inline-block;
+}
+
+.apiSubsectionHeader {
+	font-weight: bold;
 }
 
 /* PrettyJson Component */

@@ -19,7 +19,8 @@ from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
 from modules.config import Config
-import modules.experiment as _experiment
+import modules.experiment as _exp
+from modules.filter_api import FilterAPI
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
@@ -50,13 +51,13 @@ class Participant(User):
         `offer`.  Use factory instead of initiating Participants directly.
     """
 
-    _experiment: _experiment.Experiment
+    _experiment: _exp.Experiment
     _participant_data: ParticipantData
 
     def __init__(
         self,
         id: str,
-        experiment: _experiment.Experiment,
+        experiment: _exp.Experiment,
         participant_data: ParticipantData,
     ) -> None:
         """Instantiate new Participant instance.
@@ -224,7 +225,7 @@ class Participant(User):
 async def participant_factory(
     offer: RTCSessionDescription,
     id: str,
-    experiment: _experiment.Experiment,
+    experiment: _exp.Experiment,
     participant_data: ParticipantData,
     config: Config,
 ) -> tuple[RTCSessionDescription, Participant]:
@@ -254,15 +255,27 @@ async def participant_factory(
         representing the client.
     """
     participant = Participant(id, experiment, participant_data)
+    filter_api = FilterAPI(participant)
     log_name_suffix = f"P-{id}"
 
     if config.participant_multiprocessing:
         answer, connection = await connection_subprocess_factory(
-            offer, participant.handle_message, log_name_suffix, config
+            offer,
+            participant.handle_message,
+            log_name_suffix,
+            config,
+            participant_data.audio_filters,
+            participant_data.video_filters,
+            filter_api,
         )
     else:
         answer, connection = await connection_factory(
-            offer, participant.handle_message, log_name_suffix
+            offer,
+            participant.handle_message,
+            log_name_suffix,
+            participant_data.audio_filters,
+            participant_data.video_filters,
+            filter_api,
         )
 
     participant.set_connection(connection)

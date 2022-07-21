@@ -6,6 +6,7 @@ from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.connection_state import ConnectionState
 
+from custom_types.filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
@@ -149,5 +150,27 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
             Whether the video track should be muted.
         audio : bool
             Whether the audio track should be muted.
+        """
+        pass
+
+    @abstractmethod
+    async def set_video_filters(self, filters: list[FilterDict]) -> None:
+        """Set or update video filters to `filters`.
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+            List of video filter configs.
+        """
+        pass
+
+    @abstractmethod
+    async def set_audio_filters(self, filters: list[FilterDict]) -> None:
+        """Set or update audio filters to `filters`.
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+            List of audio filter configs.
         """
         pass
