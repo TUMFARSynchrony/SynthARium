@@ -6,5 +6,5 @@ Pillow
 av
 argparse 
 shortuuid
-cv2
+opencv-python
 numpy
