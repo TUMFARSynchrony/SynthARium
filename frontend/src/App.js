@@ -6,6 +6,7 @@ import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
+import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionState from "./networking/ConnectionState";
 import {
   createSession,
@@ -78,8 +79,9 @@ function App() {
     const userType =
       sessionId && participantId ? "participant" : "experimenter";
 
+    const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage = (
-      window.location.pathname.toLowerCase() === "/connectiontest"
+      pathname === "/connectiontest" || pathname === "/connectionlatencytest"
     );
 
     const asyncStreamHelper = async (connection) => {
@@ -227,6 +229,22 @@ function App() {
             element={
               connection ? (
                 <ConnectionTest
+                  localStream={localStream}
+                  setLocalStream={setLocalStream}
+                  connection={connection}
+                  setConnection={setConnection}
+                />
+              ) : (
+                "loading"
+              )
+            }
+          />
+          <Route
+            exact
+            path="/connectionLatencyTest"
+            element={
+              connection ? (
+                <ConnectionLatencyTest
                   localStream={localStream}
                   setLocalStream={setLocalStream}
                   connection={connection}
