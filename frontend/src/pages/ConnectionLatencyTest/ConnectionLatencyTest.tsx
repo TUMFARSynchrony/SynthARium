@@ -23,7 +23,7 @@ const ConnectionLatencyTest = (props: {
   const [config, setConfig] = useState<TestConfigObj>({
     participantId: connection.participantId ?? "",
     sessionId: connection.sessionId ?? "",
-    fps: 25,
+    fps: 30,
     background: true,
     width: 640,
     height: 480,
@@ -62,18 +62,19 @@ const ConnectionLatencyTest = (props: {
     };
   }, [connection]);
 
+  /** Start the connection experiment */
   const start = async () => {
     console.log("Start Test. Config:", config);
 
     // Setup local canvas stream
-    const localCanvasStream = canvasLocalRef.current.captureStream(30);
+    const localCanvasStream = canvasLocalRef.current.captureStream();
     props.setLocalStream(localCanvasStream); // Note: setLocalStream is not executed / updated right away. See useState react docs 
 
     // Start update loop for local stream canvas
     try {
       await updateLocalCanvas();
     } catch (error) {
-      console.log("Aborting start");
+      console.warn("Aborting start");
       return;
     }
 
@@ -81,6 +82,51 @@ const ConnectionLatencyTest = (props: {
     connection.start(localCanvasStream);
   };
 
+  /** Stop the connection experiment */
+  const stop = async () => {
+    connection.stop();
+
+    setTimeout(() => {
+      evaluate();
+    }, 1000);
+  };
+
+  /** Small, in-browser evaluation */
+  const evaluate = () => {
+    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const median = (arr: number[]) => {
+      const sorted = arr.sort((a, b) => a - b);
+      const half = Math.floor(arr.length / 2);
+      if (arr.length % 2) {
+        return sorted[half];
+      }
+      return (sorted[half - 1] + sorted[half]) / 2;
+    };
+
+    const durationTotalMs = (data[data.length - 1].timestamp - data[0].timestamp);
+    const durationSec = Math.floor((durationTotalMs / 1000) % 60);
+    const durationMin = Math.floor((durationTotalMs / 1000) / 60);
+    const durationMs = durationTotalMs % 1000;
+
+    const latencyArr: number[] = data.map(entry => entry.latency);
+    const avgLatency = avg(latencyArr);
+    const medianLatency = median(latencyArr);
+
+    const fpsArr: number[] = data.map(entry => entry.fps);
+    const avgFps = avg(fpsArr);
+    const medianFps = median(fpsArr);
+
+    console.group("Evaluation");
+    console.log("Recorded Data Points:", data.length);
+    console.log(`Duration: ${durationMin}m, ${durationSec}s, ${durationMs}ms`);
+    console.log("Average Latency:", avgLatency, "ms");
+    console.log("Median Latency:", medianLatency, "ms");
+    console.log("Average FPS:", avgFps);
+    console.log("Median FPS:", medianFps);
+    console.groupEnd();
+  };
+
+  /** Measure latency between the remote stream QR-code and current time. */
   const getLatency = () => {
     const localTimestamp = window.performance.now(); // parseQRCode(canvasLocalRef.current);
     const remoteTimestamp = parseQRCode(canvasRemoteRef.current);
@@ -91,21 +137,24 @@ const ConnectionLatencyTest = (props: {
     }
     // console.log("Time diff:", diff, "ms");
     // console.log("checkLatency runtime: ", window.performance.now() - localTimestamp, "ms");
-    return diff;
+    return [diff, localTimestamp];
   };
 
+  /** Log a data point in `data`. */
   const makeLogEntry = async () => {
-    let latency: number;
+    let latency: number, timestamp: number;
     try {
-      latency = getLatency();
+      [latency, timestamp] = getLatency();
     } catch (error) {
       latency = -1;
+      timestamp = window.performance.now();
     }
     const remoteStreamSettings = connection.remoteStream.getVideoTracks()[0].getSettings();
     const entry = {
       latency: latency,
-      num: data.length,
       fps: remoteStreamSettings.frameRate,
+      timestamp: timestamp,
+      num: data.length,
       dimensions: {
         width: remoteStreamSettings.width,
         height: remoteStreamSettings.height
@@ -244,13 +293,26 @@ const ConnectionLatencyTest = (props: {
 
       <TestConfig config={config} setConfig={setConfig} start={start} disabled={connectionState !== ConnectionState.NEW} />
 
-      <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
+      <div className="container controls">
+        {connection.state === ConnectionState.NEW
+          ? <button onClick={start}>Start Experiment</button>
+          : <button onClick={stop} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Experiment</button>
+        }
+      </div>
+
+
       <button onClick={() => console.log(connection)}>Log Connection</button>
 
       <canvas ref={canvasQRRef} hidden />
       <div className="canvasWrapper">
-        <canvas ref={canvasLocalRef} width={640} height={480} />
-        <canvas ref={canvasRemoteRef} width={640} height={480} />
+        <div>
+          <label>Local Stream</label>
+          <canvas ref={canvasLocalRef} />
+        </div>
+        <div>
+          <label>Remote Stream</label>
+          <canvas ref={canvasRemoteRef} />
+        </div>
       </div>
 
       <p>Latency: <span ref={latencyRef}>unknown</span> ms</p>
@@ -259,7 +321,7 @@ const ConnectionLatencyTest = (props: {
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} ignoreAudio />
         <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} ignoreAudio />
       </div> */}
-    </div>
+    </div >
   );
 };
 
@@ -297,15 +359,14 @@ function TestConfig(props: {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="testConfig">
+    <form onSubmit={handleSubmit} className="testConfig container">
       <Input disabled={disabled} label="Session ID" defaultValue={config.sessionId} setValue={(v) => handleChange("sessionId", v)} />
       <Input disabled={disabled} label="Participant ID" defaultValue={config.participantId} setValue={(v) => handleChange("participantId", v)} />
       <Input disabled={disabled} label="Frames per Second" type="number" defaultValue={config.fps} setValue={(v) => handleChange("fps", v)} />
       <Input disabled={disabled} label="Background Video" type="checkbox" defaultChecked={config.background} setValue={(v) => handleChange("background", v)} />
       <Input disabled={disabled} label="Video width (px)" type="number" defaultValue={config.width} setValue={(v) => handleChange("width", v)} />
       <Input disabled={disabled} label="Video height (px)" type="number" defaultValue={config.height} setValue={(v) => handleChange("height", v)} />
-
-      <button type="submit" disabled={disabled} hidden={disabled}>Start</button>
+      <button type="submit" disabled={disabled} hidden />
     </form>
   );
 }
@@ -330,7 +391,7 @@ function Input(props: {
   };
   return (
     <>
-      <label>{props.label}:&nbsp;&nbsp;</label>
+      <label>{props.label}:</label>
       <input
         disabled={props.disabled}
         type={props.type ?? "text"}
