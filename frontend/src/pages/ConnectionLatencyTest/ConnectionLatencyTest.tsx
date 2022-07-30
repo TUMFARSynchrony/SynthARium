@@ -4,7 +4,6 @@ import { useRef, useEffect, useState } from "react";
 import "./ConnectionLatencyTest.css";
 import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
-import { getLocalStream } from "../../utils/utils";
 import jsQR from "jsqr";
 
 var QRCode = require('qrcode');
@@ -20,8 +19,15 @@ const ConnectionLatencyTest = (props: {
 }) => {
   const connection = props.connection;
   const [connectionState, setConnectionState] = useState(connection.state);
-  const [canvasStream, setCanvasStream] = useState(null);
   const [data, setData] = useState([]);
+  const [config, setConfig] = useState<TestConfigObj>({
+    participantId: connection.participantId ?? "",
+    sessionId: connection.sessionId ?? "",
+    fps: 25,
+    background: true,
+    width: 640,
+    height: 480,
+  });
   const canvasQRRef = useRef<HTMLCanvasElement>(null);
   const canvasLocalRef = useRef<HTMLCanvasElement>(null);
   const canvasRemoteRef = useRef<HTMLCanvasElement>(null);
@@ -56,23 +62,24 @@ const ConnectionLatencyTest = (props: {
     };
   }, [connection]);
 
-  useEffect(() => {
-    updateLocalCanvas();
-  }, []);
+  const start = async () => {
+    console.log("Start Test. Config:", config);
 
-  /** Set canvasStream state */
-  useEffect(() => {
-    if (canvasLocalRef.current && !canvasStream) {
-      console.log("setCanvasStream(...)");
-      setCanvasStream(canvasLocalRef.current.captureStream(30));
+    // Setup local canvas stream
+    const localCanvasStream = canvasLocalRef.current.captureStream(30);
+    props.setLocalStream(localCanvasStream); // Note: setLocalStream is not executed / updated right away. See useState react docs 
+
+    // Start update loop for local stream canvas
+    try {
+      await updateLocalCanvas();
+    } catch (error) {
+      console.log("Aborting start");
+      return;
     }
-  }, [canvasLocalRef, canvasStream]);
 
-  /** Update local stream when canvasStream state changes */
-  useEffect(() => {
-    console.log("props.setLocalStream(canvasStream);");
-    props.setLocalStream(canvasStream);
-  }, [canvasStream, props]);
+    // Start connection
+    connection.start(localCanvasStream);
+  };
 
   const getLatency = () => {
     const localTimestamp = window.performance.now(); // parseQRCode(canvasLocalRef.current);
@@ -87,13 +94,25 @@ const ConnectionLatencyTest = (props: {
     return diff;
   };
 
-  const makeLogEntry = () => {
-    const latency = getLatency();
+  const makeLogEntry = async () => {
+    let latency: number;
+    try {
+      latency = getLatency();
+    } catch (error) {
+      latency = -1;
+    }
+    const remoteStreamSettings = connection.remoteStream.getVideoTracks()[0].getSettings();
     const entry = {
       latency: latency,
-      num: data.length
+      num: data.length,
+      fps: remoteStreamSettings.frameRate,
+      dimensions: {
+        width: remoteStreamSettings.width,
+        height: remoteStreamSettings.height
+      }
+      // connectionStats: await connection.getStats()
     };
-    console.log("Store entry:", entry);
+    console.log(entry);
     data.push(entry);
   };
 
@@ -135,9 +154,7 @@ const ConnectionLatencyTest = (props: {
       value.close();
 
       // Calculate latency for current frame
-      try {
-        makeLogEntry();
-      } catch (_) { }
+      await makeLogEntry();
 
       if (!done && !stopped.current) {
         readFrame();
@@ -146,9 +163,27 @@ const ConnectionLatencyTest = (props: {
     readFrame();
   };
 
+  /** Get a video only local stream according to config */
+  const getLocalStream = async () => {
+    const constraints = {
+      video: {
+        width: { exact: config.width },
+        height: { exact: config.height },
+        frameRate: { exact: config.fps },
+      },
+      audio: false,
+    };
+    try {
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (error) {
+      console.error("Failed to open video camera. The constraints set in the config may be not possible.", error);
+    }
+  };
+
   const updateLocalCanvas = async () => {
     const context = canvasLocalRef.current.getContext("2d");
-    const track = (await getLocalStream()).getVideoTracks()[0];
+    const track = (await getLocalStream())?.getVideoTracks()[0];
+    if (!track) throw new Error("Failed to get local stream");
     const processor = new window.MediaStreamTrackProcessor(track);
     const reader = processor.readable.getReader();
 
@@ -206,7 +241,9 @@ const ConnectionLatencyTest = (props: {
       <p>Connection State:
         <span className={`connectionState ${ConnectionState[connectionState]}`}>{ConnectionState[connectionState]}</span>
       </p>
-      <button onClick={() => connection.start(props.localStream)} disabled={connection.state !== ConnectionState.NEW}>Start Connection</button>
+
+      <TestConfig config={config} setConfig={setConfig} start={start} disabled={connectionState !== ConnectionState.NEW} />
+
       <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
       <button onClick={() => console.log(connection)}>Log Connection</button>
 
@@ -228,3 +265,79 @@ const ConnectionLatencyTest = (props: {
 
 
 export default ConnectionLatencyTest;
+
+type TestConfigObj = {
+  participantId: string,
+  sessionId: string,
+  fps: number,
+  background: boolean,
+  width: number,
+  height: number,
+};
+
+function TestConfig(props: {
+  disabled?: boolean,
+  config: TestConfigObj,
+  setConfig: (config: TestConfigObj) => void,
+  start: () => void,
+}) {
+  const disabled = props.disabled ?? false;
+  const config = props.config;
+
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    props.start();
+  };
+
+  const handleChange = (key: keyof TestConfigObj, value: string | number | boolean) => {
+    const newConfig = { ...props.config };
+    // @ts-ignore
+    newConfig[key] = value;
+    props.setConfig(newConfig);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="testConfig">
+      <Input disabled={disabled} label="Session ID" defaultValue={config.sessionId} setValue={(v) => handleChange("sessionId", v)} />
+      <Input disabled={disabled} label="Participant ID" defaultValue={config.participantId} setValue={(v) => handleChange("participantId", v)} />
+      <Input disabled={disabled} label="Frames per Second" type="number" defaultValue={config.fps} setValue={(v) => handleChange("fps", v)} />
+      <Input disabled={disabled} label="Background Video" type="checkbox" defaultChecked={config.background} setValue={(v) => handleChange("background", v)} />
+      <Input disabled={disabled} label="Video width (px)" type="number" defaultValue={config.width} setValue={(v) => handleChange("width", v)} />
+      <Input disabled={disabled} label="Video height (px)" type="number" defaultValue={config.height} setValue={(v) => handleChange("height", v)} />
+
+      <button type="submit" disabled={disabled} hidden={disabled}>Start</button>
+    </form>
+  );
+}
+
+function Input(props: {
+  disabled: boolean,
+  label: string,
+  type?: string,
+  defaultValue?: string | number,
+  defaultChecked?: boolean,
+  setValue: (value: string | number | boolean) => void;
+}) {
+  const handleChange = (e: any) => {
+    let { value } = e.target;
+    // Parse value to correct type
+    if (props.type === "number") {
+      value = parseInt(value) || 0;
+    } else if (props.type === "checkbox") {
+      value = e.target.checked;
+    }
+    props.setValue(value);
+  };
+  return (
+    <>
+      <label>{props.label}:&nbsp;&nbsp;</label>
+      <input
+        disabled={props.disabled}
+        type={props.type ?? "text"}
+        defaultValue={props.defaultValue}
+        defaultChecked={props.defaultChecked}
+        onChange={handleChange}
+      />
+    </>
+  );
+}

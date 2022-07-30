@@ -44,3 +44,36 @@
 	border-color: hsl(212, 83%, 77%);
 	cursor: auto;
 }
+
+.testConfig {
+	display: grid;
+	grid-template-columns: [l] auto [r] 1fr;
+	grid-auto-flow: row;
+	grid-gap: .5rem;
+	padding: 1rem;
+
+	max-width: 720px;
+	margin: 0 auto;
+}
+
+.testConfig label, .testConfig input {
+	grid-row: auto;
+}
+
+.testConfig label {
+	grid-column: l;
+	text-align: right;
+}
+
+.testConfig input {
+	grid-column: r;
+	padding: .3rem 0 .3rem 5px;
+}
+
+.testConfig input[type="checkbox"] {
+	margin: 0;
+}
+
+.testConfig button {
+	grid-column: r;
+}
