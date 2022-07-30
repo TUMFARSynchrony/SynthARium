@@ -59,6 +59,15 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
   }
 
   /**
+   * Get statistics for main WebRTC peer connection.
+   * 
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats getStats method
+   */
+  public async getStats(): Promise<RTCStatsReport> {
+    return await this.pc.getStats();
+  }
+
+  /**
    * Log message in a group with contents inside, if `this.logging` is true.
    * @param message Message used as group header.
    * @param contents Contents of the group. Logged inside of the group.
