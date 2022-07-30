@@ -18,16 +18,19 @@ const ConnectionLatencyTest = (props: {
   setConnection: (connection: Connection) => void,
 }) => {
   const connection = props.connection;
-  const [connectionState, setConnectionState] = useState(connection.state);
-  const [data, setData] = useState([]);
-  const [config, setConfig] = useState<TestConfigObj>({
+  const defaultConfig = {
     participantId: connection.participantId ?? "",
     sessionId: connection.sessionId ?? "",
     fps: 30,
     background: true,
     width: 640,
     height: 480,
-  });
+    qrCodeSize: 200
+  };
+  const [connectionState, setConnectionState] = useState(connection.state);
+  const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
+  const [data, setData] = useState([]);
+  const [config, setConfig] = useState<TestConfigObj>(defaultConfig);
   const canvasQRRef = useRef<HTMLCanvasElement>(null);
   const canvasLocalRef = useRef<HTMLCanvasElement>(null);
   const canvasRemoteRef = useRef<HTMLCanvasElement>(null);
@@ -46,9 +49,13 @@ const ConnectionLatencyTest = (props: {
     }
   };
 
-  const streamChangeHandler = async (remoteStream: MediaStream) => {
+  const streamChangeHandler = async (_: MediaStream) => {
     console.log("%cRemote Stream Change Handler", "color:blue");
-    updateRemoteCanvas();
+    // Start update loop for remote canvas when remote stream is received;
+    if (!startedRemoteStreamLoop) {
+      setStartedRemoteStreamLoop(true);
+      updateRemoteCanvas();
+    }
   };
 
   // Register Connection event handlers 
@@ -60,7 +67,7 @@ const ConnectionLatencyTest = (props: {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
     };
-  }, [connection]);
+  }, [connection, config, startedRemoteStreamLoop]);
 
   /** Start the connection experiment */
   const start = async () => {
@@ -88,7 +95,10 @@ const ConnectionLatencyTest = (props: {
 
     setTimeout(() => {
       evaluate();
-    }, 1000);
+      if (latencyRef.current) {
+        latencyRef.current.innerText = "-";
+      }
+    }, 500);
   };
 
   /** Small, in-browser evaluation */
@@ -108,53 +118,71 @@ const ConnectionLatencyTest = (props: {
     const durationMin = Math.floor((durationTotalMs / 1000) / 60);
     const durationMs = durationTotalMs % 1000;
 
-    const latencyArr: number[] = data.map(entry => entry.latency);
+    const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === -1).length;
+    const invalidLatencyDataPointsPercent = Math.round((invalidLatencyDataPoints / data.length) * 100);
+    const latencyArr: number[] = data.map(entry => entry.latency).filter(l => l !== -1);
     const avgLatency = avg(latencyArr);
     const medianLatency = median(latencyArr);
+
+    const latencyMethodArr: number[] = data.map(entry => entry.latencyMethodRuntime);
+    const avgLatencyMethod = avg(latencyMethodArr);
+    const medianLatencyMethod = median(latencyMethodArr);
+
+    const latencyFilteredMethodArr: number[] = data.filter(e => {
+      return e.dimensions.width === config.width && e.dimensions.height === config.height;
+    }).map(entry => entry.latencyMethodRuntime);
+    const avgFilteredLatencyMethod = avg(latencyFilteredMethodArr);
+    const medianFilteredLatencyMethod = median(latencyFilteredMethodArr);
 
     const fpsArr: number[] = data.map(entry => entry.fps);
     const avgFps = avg(fpsArr);
     const medianFps = median(fpsArr);
 
     console.group("Evaluation");
-    console.log("Recorded Data Points:", data.length);
+    console.log(`Recorded Data Points: ${data.length}`);
     console.log(`Duration: ${durationMin}m, ${durationSec}s, ${durationMs}ms`);
+    console.log(`Invalid Latency Data Points: ${invalidLatencyDataPoints} (${invalidLatencyDataPointsPercent}%)`);
     console.log("Average Latency:", avgLatency, "ms");
     console.log("Median Latency:", medianLatency, "ms");
     console.log("Average FPS:", avgFps);
     console.log("Median FPS:", medianFps);
+    console.log("Average Latency Method Runtime:", avgLatencyMethod, "ms");
+    console.log("Median Latency Method Runtime:", medianLatencyMethod, "ms");
+    console.log("Average Filtered (Full-Resolution only) Latency Method Runtime:", avgFilteredLatencyMethod, "ms");
+    console.log("Median Filtered (Full-Resolution only) Latency Method Runtime:", medianFilteredLatencyMethod, "ms");
     console.groupEnd();
   };
 
   /** Measure latency between the remote stream QR-code and current time. */
   const getLatency = () => {
-    const localTimestamp = window.performance.now(); // parseQRCode(canvasLocalRef.current);
+    const localTimestamp = window.performance.now();
     const remoteTimestamp = parseQRCode(canvasRemoteRef.current);
-    // console.log("checkLatency - remoteTimestamp - runtime: ", window.performance.now() - localTimestamp, "ms");
     const diff = localTimestamp - remoteTimestamp;
     if (latencyRef.current) {
       latencyRef.current.innerText = `${diff.toFixed(4)}`;
     }
-    // console.log("Time diff:", diff, "ms");
-    // console.log("checkLatency runtime: ", window.performance.now() - localTimestamp, "ms");
     return [diff, localTimestamp];
   };
 
   /** Log a data point in `data`. */
   const makeLogEntry = async () => {
     let latency: number, timestamp: number;
+    const startTime = window.performance.now();
     try {
       [latency, timestamp] = getLatency();
     } catch (error) {
       latency = -1;
       timestamp = window.performance.now();
     }
+    const latencyMethodRuntime = window.performance.now() - startTime;
+
     const remoteStreamSettings = connection.remoteStream.getVideoTracks()[0].getSettings();
     const entry = {
       latency: latency,
       fps: remoteStreamSettings.frameRate,
       timestamp: timestamp,
       num: data.length,
+      latencyMethodRuntime: latencyMethodRuntime,
       dimensions: {
         width: remoteStreamSettings.width,
         height: remoteStreamSettings.height
@@ -165,8 +193,26 @@ const ConnectionLatencyTest = (props: {
     data.push(entry);
   };
 
+  /** Parse the QR code in `canvas`. */
   const parseQRCode = (canvas: HTMLCanvasElement) => {
-    const imageData = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
+    // Calculate position of QR code, in case transmitted image is scaled down.
+    const qrCodeWidth = Math.floor((canvas.width / config.width) * config.qrCodeSize);
+    const qrCodeHeight = Math.floor((canvas.height / config.height) * config.qrCodeSize);
+    const context = canvas.getContext("2d");
+
+    // Get image data for expected position of QR code. Getting only part of the image saves a lot of time in `jsQR` (optimization).
+    const imageData = context.getImageData(0, 0, qrCodeWidth, qrCodeHeight);
+
+    // Uncomment to draw a rectangle around the expected position of the QR code (debugging)
+    /*
+    console.log(qrCodeWidth, qrCodeHeight);
+    context.beginPath();
+    context.lineWidth = 2;
+    context.strokeStyle = "red";
+    context.rect(0, 0, qrCodeWidth, qrCodeHeight);
+    context.stroke();
+    */
+
     const code = jsQR(imageData.data, imageData.width, imageData.height, {
       inversionAttempts: "dontInvert",
     });
@@ -180,9 +226,11 @@ const ConnectionLatencyTest = (props: {
     const processor = new window.MediaStreamTrackProcessor(track);
     const reader = processor.readable.getReader();
 
-    const readFrame = async () => {
+    const readRemoteFrame = async () => {
       const { done, value } = await reader.read();
-
+      if (!value) {
+        return;
+      }
       // Resize canvas if necessary
       if (canvasRemoteRef.current.height !== value.displayHeight) {
         canvasRemoteRef.current.height = value.displayHeight;
@@ -193,23 +241,16 @@ const ConnectionLatencyTest = (props: {
 
       // context.clearRect(0, 0, canvasRemoteRef.current.width, canvasRemoteRef.current.height);
       context.drawImage(value, 0, 0);
-
-      // context.beginPath();
-      // context.lineWidth = 2;
-      // context.strokeStyle = "red";
-      // context.rect(0, 0, 200, 200);
-      // context.stroke();
-
       value.close();
 
       // Calculate latency for current frame
       await makeLogEntry();
 
       if (!done && !stopped.current) {
-        readFrame();
+        readRemoteFrame();
       }
     };
-    readFrame();
+    readRemoteFrame();
   };
 
   /** Get a video only local stream according to config */
@@ -236,7 +277,7 @@ const ConnectionLatencyTest = (props: {
     const processor = new window.MediaStreamTrackProcessor(track);
     const reader = processor.readable.getReader();
 
-    const readFrame = async () => {
+    const readLocalFrame = async () => {
       const { done, value } = await reader.read();
 
       // Resize canvas if necessary
@@ -249,22 +290,24 @@ const ConnectionLatencyTest = (props: {
 
       // Put current VideoFrame on canvas
       // context.clearRect(0, 0, canvasLocalRef.current.width, canvasLocalRef.current.height);
-      context.drawImage(value, 0, 0);
+      if (config.background) {
+        context.drawImage(value, 0, 0);
+      }
 
       // Put QRcode on canvas
       const timestamp = window.performance.now();
-      QRCode.toCanvas(canvasQRRef.current, `${timestamp}`, { width: 200 });
+      QRCode.toCanvas(canvasQRRef.current, `${timestamp}`, { width: config.qrCodeSize });
 
       context.drawImage(canvasQRRef.current, 0, 0);
-      context.font = "16px Arial";
-      context.fillText(timestamp.toFixed(10), 20, 20);
+      // context.font = "16px Arial";
+      // context.fillText(timestamp.toFixed(10), 20, 20);
 
       value.close(); // close the VideoFrame when we're done with it
       if (!done && !stopped.current) {
-        readFrame();
+        readLocalFrame();
       }
     };
-    readFrame();
+    readLocalFrame();
   };
 
   /** Get the title displayed in a {@link Video} element for the remote stream of this client. */
@@ -278,10 +321,24 @@ const ConnectionLatencyTest = (props: {
     return "remote stream";
   };
 
-
-
   if (!window.MediaStreamTrackProcessor) {
     return "This Page requires the MediaStreamTrackProcessor. See: https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrackProcessor#browser_compatibility";
+  }
+
+
+  // Get the main action button. Start, Stop or Reload button.
+  let mainActionBtn = <></>;
+  switch (connectionState) {
+    case ConnectionState.NEW:
+      mainActionBtn = <button onClick={start}>Start Experiment</button>;
+      break;
+    case ConnectionState.CONNECTING:
+    case ConnectionState.CONNECTED:
+      mainActionBtn = <button onClick={stop} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Experiment</button>;
+      break;
+    default:
+      mainActionBtn = <button onClick={() => window.location.reload()}>Reload Page</button>;;
+      break;
   }
 
   return (
@@ -290,16 +347,16 @@ const ConnectionLatencyTest = (props: {
       <p>Connection State:
         <span className={`connectionState ${ConnectionState[connectionState]}`}>{ConnectionState[connectionState]}</span>
       </p>
-
-      <TestConfig config={config} setConfig={setConfig} start={start} disabled={connectionState !== ConnectionState.NEW} />
-
+      <TestConfig
+        start={start}
+        config={config}
+        defaultConfig={defaultConfig}
+        setConfig={setConfig}
+        disabled={connectionState !== ConnectionState.NEW}
+      />
       <div className="container controls">
-        {connection.state === ConnectionState.NEW
-          ? <button onClick={start}>Start Experiment</button>
-          : <button onClick={stop} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Experiment</button>
-        }
+        {mainActionBtn}
       </div>
-
 
       <button onClick={() => console.log(connection)}>Log Connection</button>
 
@@ -335,11 +392,13 @@ type TestConfigObj = {
   background: boolean,
   width: number,
   height: number,
+  qrCodeSize: number,
 };
 
 function TestConfig(props: {
   disabled?: boolean,
   config: TestConfigObj,
+  defaultConfig: TestConfigObj,
   setConfig: (config: TestConfigObj) => void,
   start: () => void,
 }) {
@@ -356,7 +415,10 @@ function TestConfig(props: {
     // @ts-ignore
     newConfig[key] = value;
     props.setConfig(newConfig);
+    console.log("set", key, "to", value, newConfig);
   };
+
+  // TODO hotkeys & reset btn
 
   return (
     <form onSubmit={handleSubmit} className="testConfig container">
@@ -366,6 +428,7 @@ function TestConfig(props: {
       <Input disabled={disabled} label="Background Video" type="checkbox" defaultChecked={config.background} setValue={(v) => handleChange("background", v)} />
       <Input disabled={disabled} label="Video width (px)" type="number" defaultValue={config.width} setValue={(v) => handleChange("width", v)} />
       <Input disabled={disabled} label="Video height (px)" type="number" defaultValue={config.height} setValue={(v) => handleChange("height", v)} />
+      <Input disabled={disabled} label="QR Code Size (px)" type="number" defaultValue={config.qrCodeSize} setValue={(v) => handleChange("qrCodeSize", v)} />
       <button type="submit" disabled={disabled} hidden />
     </form>
   );
