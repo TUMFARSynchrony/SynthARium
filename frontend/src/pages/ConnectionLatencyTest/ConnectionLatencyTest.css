@@ -1,3 +1,8 @@
+input {
+	margin: 0 0.3rem;
+	padding: .3rem 0 .3rem 5px;
+}
+
 .ConnectionTestPageWrapper button {
 	background-color: hsl(212, 86%, 64%);
 	border: 3px solid hsl(212, 86%, 64%);
@@ -60,6 +65,20 @@
 	align-items: stretch;
 }
 
+
+.evaluationInput {
+	display: flex;
+	justify-content: center;
+}
+
+.evaluationInput input {
+	width: 120px;
+}
+
+.evaluationInput label {
+	margin-left: .3rem;
+}
+
 .testConfig {
 	display: grid;
 	grid-template-columns: [l] auto [r] 1fr;
@@ -68,19 +87,19 @@
 	padding: .5rem 0;
 }
 
-.testConfig label, .testConfig input {
+.testConfig label,
+.testConfig input {
 	grid-row: auto;
-	margin: 0 0.3rem;
 }
 
 .testConfig label {
+	margin: 0 0.3rem;
 	grid-column: l;
 	text-align: right;
 }
 
 .testConfig input {
 	grid-column: r;
-	padding: .3rem 0 .3rem 5px;
 }
 
 .testConfig input[type="checkbox"] {

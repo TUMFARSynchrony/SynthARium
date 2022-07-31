@@ -5,8 +5,9 @@ import "./ConnectionLatencyTest.css";
 import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import jsQR from "jsqr";
+import Chart from "chart.js/auto";
 
-var QRCode = require('qrcode');
+var QRCode = require("qrcode");
 
 /**
  * Test page for testing the {@link Connection} & api.
@@ -181,7 +182,7 @@ const ConnectionLatencyTest = (props: {
       latency: latency,
       fps: remoteStreamSettings.frameRate,
       timestamp: timestamp,
-      num: data.length,
+      frame: data.length,
       latencyMethodRuntime: latencyMethodRuntime,
       dimensions: {
         width: remoteStreamSettings.width,
@@ -299,10 +300,10 @@ const ConnectionLatencyTest = (props: {
       QRCode.toCanvas(canvasQRRef.current, `${timestamp}`, { width: config.qrCodeSize });
 
       context.drawImage(canvasQRRef.current, 0, 0);
-      // context.font = "16px Arial";
-      // context.fillText(timestamp.toFixed(10), 20, 20);
+      context.font = "16px Arial";
+      context.fillText(timestamp.toFixed(10), 20, 20);
 
-      value.close(); // close the VideoFrame when we're done with it
+      value.close();
       if (!done && !stopped.current) {
         readLocalFrame();
       }
@@ -310,21 +311,9 @@ const ConnectionLatencyTest = (props: {
     readLocalFrame();
   };
 
-  /** Get the title displayed in a {@link Video} element for the remote stream of this client. */
-  const getRemoteStreamTitle = () => {
-    if (connection.participantSummary) {
-      if (connection.participantSummary instanceof Object) {
-        return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
-      }
-      return `remote stream: ${connection.participantSummary}`;
-    }
-    return "remote stream";
-  };
-
   if (!window.MediaStreamTrackProcessor) {
     return "This Page requires the MediaStreamTrackProcessor. See: https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrackProcessor#browser_compatibility";
   }
-
 
   // Get the main action button. Start, Stop or Reload button.
   let mainActionBtn = <></>;
@@ -373,6 +362,8 @@ const ConnectionLatencyTest = (props: {
       </div>
 
       <p>Latency: <span ref={latencyRef}>unknown</span> ms</p>
+
+      {connectionState === ConnectionState.CLOSED ? <Evaluation data={data} /> : "<Evaluation data={data} />"}
 
       {/* <div className="canvasWrapper">
         <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} ignoreAudio />
@@ -434,13 +425,251 @@ function TestConfig(props: {
   );
 }
 
+function Evaluation(props: {
+  data: any[];
+}) {
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(props.data.length);
+  const [primaryChart, setPrimaryChart] = useState<Chart | undefined>();
+  const [fpsChart, setFpsChart] = useState<Chart | undefined>();
+  const [dimensionsChart, setDimensionsChart] = useState<Chart | undefined>();
+  const primaryChartCanvasRef = useRef<HTMLCanvasElement>();
+  const fpsChartCanvasRef = useRef<HTMLCanvasElement>();
+  const dimensionsChartCanvasRef = useRef<HTMLCanvasElement>();
+
+  useEffect(() => {
+    // From http://portal.mytum.de/corporatedesign/index_print/vorlagen/index_farben
+    const colors = {
+      TUMBlue: "#0065BD",
+      TUMSecondaryBlue: "#005293",
+      TUMSecondaryBlue2: "#003359",
+      TUMBlack: "#000000",
+      TUMWhite: "#FFFFFF",
+      TUMDarkGray: "#333333",
+      TUMGray: "#808080",
+      TUMLightGray: "#CCCCC6",
+      TUMAccentGray: "#DAD7CB",
+      TUMAccentOrange: "#E37222",
+      TUMAccentGreen: "#A2AD00",
+      TUMAccentLightBlue: "#98C6EA",
+      TUMAccentBlue: "#64A0C8",
+    };
+
+    /** Initialize Charts */
+    const initCharts = () => {
+      const { primaryData, primaryOptions, fpsData, fpsOptions, dimensionsData, dimensionsOptions } = getChartData();
+      const newPrimaryChart = new Chart(
+        primaryChartCanvasRef.current,
+        {
+          type: "line",
+          data: primaryData,
+          options: primaryOptions
+        }
+      );
+      const newFpsChart = new Chart(
+        fpsChartCanvasRef.current,
+        {
+          type: "line",
+          data: fpsData,
+          options: fpsOptions,
+        }
+      );
+      const newDimensionsChart = new Chart(
+        dimensionsChartCanvasRef.current,
+        {
+          type: "line",
+          data: dimensionsData,
+          options: dimensionsOptions
+        }
+      );
+      setPrimaryChart(newPrimaryChart);
+      setFpsChart(newFpsChart);
+      setDimensionsChart(newDimensionsChart);
+    };
+
+    /** Update existing Charts */
+    const updateCharts = () => {
+      const { primaryData, fpsData, dimensionsData } = getChartData();
+
+      primaryChart.data.labels = primaryData.labels;
+      primaryChart.data.datasets = primaryData.datasets;
+      primaryChart.update();
+
+      fpsChart.data.labels = fpsData.labels;
+      fpsChart.data.datasets = fpsData.datasets;
+      fpsChart.update();
+
+      dimensionsChart.data.labels = dimensionsData.labels;
+      dimensionsChart.data.datasets = dimensionsData.datasets;
+      dimensionsChart.update();
+    };
+
+    const getChartData = () => {
+      const slicedData = props.data.slice(from, to);
+      const labels = slicedData.map(d => d.frame);
+      const primaryData = {
+        labels: labels,
+        datasets: [
+          {
+            label: "Latency-Error (WIP based on wrong data)",
+            backgroundColor: colors.TUMAccentBlue,
+            borderColor: colors.TUMAccentBlue,
+            data: slicedData.map(d => d.latency - d.latencyMethodRuntime),
+            fill: false,
+          }, {
+            label: "Latency",
+            backgroundColor: colors.TUMAccentLightBlue,
+            borderColor: colors.TUMBlue,
+            data: slicedData.map(d => d.latency),
+            fill: 0,
+          }, {
+            label: "Latency Method Runtime",
+            backgroundColor: colors.TUMDarkGray,
+            borderColor: colors.TUMDarkGray,
+            data: slicedData.map(d => d.latencyMethodRuntime),
+          }
+        ],
+      };
+      const primaryOptions = {
+        animation: {
+          duration: 0
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: "Frame Number"
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: "Milliseconds (ms)"
+            },
+          }
+        }
+      };
+
+      const fpsData = {
+        labels: labels,
+        datasets: [{
+          label: "Frames Per Second",
+          backgroundColor: colors.TUMAccentGreen,
+          borderColor: colors.TUMAccentGreen,
+          data: slicedData.map(d => d.fps),
+        }],
+      };
+
+      const fpsOptions = {
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: "Frame Number"
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: "Current Frames Per Second"
+            },
+          }
+        }
+      };
+
+      const dimensionsData = {
+        labels: labels,
+        datasets: [{
+          label: "Width",
+          backgroundColor: colors.TUMBlue,
+          borderColor: colors.TUMBlue,
+          data: slicedData.map(d => d.dimensions.width),
+        }, {
+          label: "Height",
+          backgroundColor: colors.TUMAccentOrange,
+          borderColor: colors.TUMAccentOrange,
+          data: slicedData.map(d => d.dimensions.height),
+        }],
+      };
+
+      const dimensionsOptions = {
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: "Frame Number"
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: "Dimension in Pixel"
+            },
+          }
+        }
+      };
+
+      return { primaryData, primaryOptions, fpsData, fpsOptions, dimensionsData, dimensionsOptions };
+    };
+
+    if (!primaryChartCanvasRef.current || !fpsChartCanvasRef.current) {
+      return;
+    }
+
+    if (primaryChart) {
+      updateCharts();
+    } else {
+      initCharts();
+    }
+
+  }, [from, to, props.data, primaryChart, fpsChart, dimensionsChart]);
+
+  return (
+    <div>
+      <form className="evaluationInput">
+        <span><b>Data Interval:</b>&nbsp;</span>
+        <Input label="From" type="number" value={from} setValue={setFrom} min={0} max={to} />
+        <Input label="To" type="number" value={to} setValue={setTo} min={from} max={props.data.length} />
+      </form>
+      <p>Click the labels above the graphs to enable or disable the corresponding line.</p>
+      <h2>Latency</h2>
+      <canvas ref={primaryChartCanvasRef}></canvas>
+      <h2>Frames Per Second (FPS)</h2>
+      <div style={{ height: "min(250px, 30vh)", position: "relative" }}>
+        <canvas ref={fpsChartCanvasRef}></canvas>
+      </div>
+      <h2>Video Dimensions</h2>
+      <div style={{ height: "min(250px, 30vh)", position: "relative" }}>
+        <canvas ref={dimensionsChartCanvasRef}></canvas>
+      </div>
+    </div>
+  );
+}
+
 function Input(props: {
-  disabled: boolean,
   label: string,
+  setValue: (value: any) => void;
   type?: string,
+  disabled?: boolean,
+  value?: string | number,
   defaultValue?: string | number,
   defaultChecked?: boolean,
-  setValue: (value: string | number | boolean) => void;
+  min?: number,
+  max?: number,
 }) {
   const handleChange = (e: any) => {
     let { value } = e.target;
@@ -458,9 +687,12 @@ function Input(props: {
       <input
         disabled={props.disabled}
         type={props.type ?? "text"}
+        value={props.value}
         defaultValue={props.defaultValue}
         defaultChecked={props.defaultChecked}
         onChange={handleChange}
+        min={props.min}
+        max={props.max}
       />
     </>
   );
