@@ -97,65 +97,6 @@ const ConnectionLatencyTest = (props: {
   /** Stop the connection experiment */
   const stop = async () => {
     connection.stop();
-
-    setTimeout(() => {
-      evaluate();
-      if (latencyRef.current) {
-        latencyRef.current.innerText = "-";
-      }
-    }, 500);
-  };
-
-  /** Small, in-browser evaluation */
-  const evaluate = () => {
-    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
-    const median = (arr: number[]) => {
-      const sorted = arr.sort((a, b) => a - b);
-      const half = Math.floor(arr.length / 2);
-      if (arr.length % 2) {
-        return sorted[half];
-      }
-      return (sorted[half - 1] + sorted[half]) / 2;
-    };
-
-    const durationTotalMs = (data[data.length - 1].timestamp - data[0].timestamp);
-    const durationSec = Math.floor((durationTotalMs / 1000) % 60);
-    const durationMin = Math.floor((durationTotalMs / 1000) / 60);
-    const durationMs = durationTotalMs % 1000;
-
-    const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === null).length;
-    const invalidLatencyDataPointsPercent = Math.round((invalidLatencyDataPoints / data.length) * 100);
-    const latencyArr: number[] = data.map(entry => entry.latency).filter(l => l !== null);
-    const avgLatency = avg(latencyArr);
-    const medianLatency = median(latencyArr);
-
-    const latencyMethodArr: number[] = data.map(entry => entry.latencyMethodRuntime);
-    const avgLatencyMethod = avg(latencyMethodArr);
-    const medianLatencyMethod = median(latencyMethodArr);
-
-    const latencyFilteredMethodArr: number[] = data.filter(e => {
-      return e.dimensions.width === config.width && e.dimensions.height === config.height;
-    }).map(entry => entry.latencyMethodRuntime);
-    const avgFilteredLatencyMethod = avg(latencyFilteredMethodArr);
-    const medianFilteredLatencyMethod = median(latencyFilteredMethodArr);
-
-    const fpsArr: number[] = data.map(entry => entry.fps);
-    const avgFps = avg(fpsArr);
-    const medianFps = median(fpsArr);
-
-    console.group("Evaluation");
-    console.log(`Recorded Data Points: ${data.length}`);
-    console.log(`Duration: ${durationMin}m, ${durationSec}s, ${durationMs}ms`);
-    console.log(`Invalid Latency Data Points: ${invalidLatencyDataPoints} (${invalidLatencyDataPointsPercent}%)`);
-    console.log("Average Latency:", avgLatency, "ms");
-    console.log("Median Latency:", medianLatency, "ms");
-    console.log("Average FPS:", avgFps);
-    console.log("Median FPS:", medianFps);
-    console.log("Average Latency Method Runtime:", avgLatencyMethod, "ms");
-    console.log("Median Latency Method Runtime:", medianLatencyMethod, "ms");
-    console.log("Average Filtered (Full-Resolution only) Latency Method Runtime:", avgFilteredLatencyMethod, "ms");
-    console.log("Median Filtered (Full-Resolution only) Latency Method Runtime:", medianFilteredLatencyMethod, "ms");
-    console.groupEnd();
   };
 
   /** Measure latency between the remote stream QR-code and current time. */
@@ -329,6 +270,16 @@ const ConnectionLatencyTest = (props: {
     return "This Page requires the MediaStreamTrackProcessor. See: https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrackProcessor#browser_compatibility";
   }
 
+  /** Download `data` as json file. */
+  const downloadData = () => {
+    const dataString = JSON.stringify(data);
+    const aElem = document.createElement("a");
+    const file = new Blob([dataString], { type: "text/json" });
+    aElem.href = URL.createObjectURL(file);
+    aElem.download = `latency-test-${new Date().toLocaleDateString()}.json`;
+    aElem.click();
+  };
+
   // Get the main action button. Start, Stop or Reload button.
   let mainActionBtn = <></>;
   switch (connectionState) {
@@ -377,7 +328,12 @@ const ConnectionLatencyTest = (props: {
 
       <p>Latency: <span ref={latencyRef}>unknown</span> ms</p>
 
-      {connectionState === ConnectionState.CLOSED ? <Evaluation data={data} /> : "Start and Stop Experiment to see results here."}
+      {connectionState === ConnectionState.CLOSED ?
+        <>
+          <button onClick={downloadData}>Download Complete Dataset</button>
+          <Evaluation data={data} />
+        </>
+        : "Start and Stop Experiment to see results here."}
     </div >
   );
 };
@@ -438,9 +394,26 @@ function TestConfig(props: {
   );
 }
 
+type EvaluationResults = {
+  dataPoints: number;
+  durationTotalMs: number;
+  durationSec: number;
+  durationMin: number;
+  durationMs: number;
+  invalidLatencyDataPoints: number;
+  invalidLatencyDataPointsPercent: number;
+  avgLatency: number;
+  medianLatency: number;
+  avgLatencyMethod: number;
+  medianLatencyMethod: number;
+  avgFps: number;
+  medianFps: number;
+};
+
 function Evaluation(props: {
   data: any[];
 }) {
+  const [evaluation, setEvaluation] = useState<EvaluationResults | undefined>();
   const [from, setFrom] = useState(0);
   const [to, setTo] = useState(props.data.length);
   const [primaryChart, setPrimaryChart] = useState<Chart | undefined>();
@@ -651,13 +624,104 @@ function Evaluation(props: {
 
   }, [from, to, props.data, primaryChart, fpsChart, dimensionsChart]);
 
+  useEffect(() => {
+    if (from > to || from < 0 || to > props.data.length) {
+      console.warn(`Ignoring invalid data interval: ${from} - ${to}.`);
+      return;
+    }
+    const slicedData = props.data.slice(from, to);
+    setEvaluation(calculateEvaluation(slicedData));
+  }, [props.data, from, to]);
+
+
+  /** Calculates EvaluationResults based on `data`. Slice `data` to set interval. */
+  function calculateEvaluation(data: any[]): EvaluationResults {
+    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const median = (arr: number[]) => {
+      const sorted = arr.sort((a, b) => a - b);
+      const half = Math.floor(arr.length / 2);
+      if (arr.length % 2) {
+        return sorted[half];
+      }
+      return (sorted[half - 1] + sorted[half]) / 2;
+    };
+
+    const durationTotalMs = (data[data.length - 1].timestamp - data[0].timestamp);
+    const durationSec = Math.floor((durationTotalMs / 1000) % 60);
+    const durationMin = Math.floor((durationTotalMs / 1000) / 60);
+    const durationMs = durationTotalMs % 1000;
+
+    const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === null).length;
+    const invalidLatencyDataPointsPercent = Math.round((invalidLatencyDataPoints / data.length) * 100);
+    const latencyArr: number[] = data.map(entry => entry.latency).filter(l => l !== null);
+    const avgLatency = avg(latencyArr);
+    const medianLatency = median(latencyArr);
+
+    const latencyMethodArr: number[] = data.map(entry => entry.latencyMethodRuntime);
+    const avgLatencyMethod = avg(latencyMethodArr);
+    const medianLatencyMethod = median(latencyMethodArr);
+
+    const fpsArr: number[] = data.map(entry => entry.fps);
+    const avgFps = avg(fpsArr);
+    const medianFps = median(fpsArr);
+
+    console.group("Evaluation");
+    console.log(`Data Points: ${data.length}`);
+    console.log(`Duration: ${durationMin}m, ${durationSec}s, ${durationMs}ms`);
+    console.log(`Invalid Latency Data Points: ${invalidLatencyDataPoints} (${invalidLatencyDataPointsPercent}%)`);
+    console.log("Average Latency:", avgLatency, "ms");
+    console.log("Median Latency:", medianLatency, "ms");
+    console.log("Average FPS:", avgFps);
+    console.log("Median FPS:", medianFps);
+    console.log("Average Latency Method Runtime:", avgLatencyMethod, "ms");
+    console.log("Median Latency Method Runtime:", medianLatencyMethod, "ms");
+    console.groupEnd();
+
+    return {
+      dataPoints: data.length,
+      durationTotalMs,
+      durationSec,
+      durationMin,
+      durationMs,
+      invalidLatencyDataPoints,
+      invalidLatencyDataPointsPercent,
+      avgLatency,
+      medianLatency,
+      avgLatencyMethod,
+      medianLatencyMethod,
+      avgFps,
+      medianFps
+    };
+  }
+
   return (
     <div>
+      <h2>Evaluation</h2>
       <form className="evaluationInput">
         <span><b>Data Interval:</b>&nbsp;</span>
         <Input label="From" type="number" value={from} setValue={setFrom} min={0} max={to} />
         <Input label="To" type="number" value={to} setValue={setTo} min={from} max={props.data.length} />
       </form>
+      <h2>Overview</h2>
+      {evaluation ?
+        <>
+          <div className="evaluationOverview">
+            <label>Data Points: </label><span>{evaluation.dataPoints}</span>
+            <label>Duration: </label><span>{evaluation.durationMin}m,&nbsp;{evaluation.durationSec}s,&nbsp;{evaluation.durationMs}ms</span>
+            <label>Invalid Latency Data Points*: </label><span>{evaluation.invalidLatencyDataPoints} ({evaluation.invalidLatencyDataPointsPercent}%)</span>
+            <label>Average Latency: </label><span>{evaluation.avgLatency}ms</span>
+            <label>Median Latency: </label><span>{evaluation.medianLatency}ms</span>
+            <label>Average FPS: </label><span>{evaluation.avgFps}fps</span>
+            <label>Median FPS: </label><span>{evaluation.medianFps}fps</span>
+            <label>Average Latency Calculation Runtime**: </label><span>{evaluation.avgLatencyMethod}ms</span>
+            <label>Median Latency Calculation Runtime**: </label><span>{evaluation.medianLatencyMethod}ms</span>
+          </div>
+          <p className="note">*:&nbsp;Invalid latency measurements, likely caused by the QR-Code detection / parsing failing. The cause for a failing QR-Code detection could be its size, especially when WebRTC reduces the frame size.</p>
+          <p className="note">**:&nbsp;Runtime of latency calculation function, includes QR-Code parsing. Does not directly impact the measured latency, but can be an important factor for CPU utilization, which does impact the measured latency.</p>
+        </>
+        : ""
+      }
+
       <p>Click the labels above the graphs to enable or disable the corresponding line.</p>
       <h2>Latency</h2>
       <canvas ref={primaryChartCanvasRef}></canvas>

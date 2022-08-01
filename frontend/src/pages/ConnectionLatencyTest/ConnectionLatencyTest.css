@@ -3,6 +3,12 @@ input {
 	padding: .3rem 0 .3rem 5px;
 }
 
+p {
+	margin-block-start: .5em;
+	margin-block-end: .5em;
+}
+
+
 .ConnectionTestPageWrapper button {
 	background-color: hsl(212, 86%, 64%);
 	border: 3px solid hsl(212, 86%, 64%);
@@ -79,6 +85,22 @@ input {
 	margin-left: .3rem;
 }
 
+.evaluationOverview {
+	display: inline-grid;
+	grid-template-columns: 1fr 1fr;
+	grid-gap: .5rem;
+	padding: .5rem 0;
+	justify-content: center;
+}
+
+.evaluationOverview label {
+	text-align: right;
+}
+
+.evaluationOverview span {
+	text-align: left;
+}
+
 .testConfig {
 	display: grid;
 	grid-template-columns: [l] auto [r] 1fr;
@@ -108,4 +130,10 @@ input {
 
 .testConfig button {
 	grid-column: r;
+}
+
+.note {
+	color: gray;
+	font-size: 10px;
+	margin: 0;
 }
