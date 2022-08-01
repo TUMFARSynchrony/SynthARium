@@ -128,6 +128,9 @@ const ConnectionLatencyTest = (props: {
         trueLatency: e.latency - qrCodeGenerationTime
       };
     });
+    console.group("Merged Data");
+    console.log(newMergedData);
+    console.groupEnd();
     setMergedData(newMergedData);
   };
 
