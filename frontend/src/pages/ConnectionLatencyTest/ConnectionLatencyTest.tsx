@@ -6,6 +6,8 @@ import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import jsQR from "jsqr";
 import Chart from "chart.js/auto";
+import { avg, median } from "./util";
+import { EvaluationResults, LocalStreamData, MergedData, RemoteStreamData } from "./def";
 
 var QRCode = require("qrcode");
 
@@ -32,7 +34,9 @@ const ConnectionLatencyTest = (props: {
   };
   const [connectionState, setConnectionState] = useState(connection.state);
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
-  const [data, setData] = useState([]);
+  const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>([]);
+  const [localStreamData, setLocalStreamData] = useState<LocalStreamData[]>([]);
+  const [mergedData, setMergedData] = useState<MergedData[] | undefined>();
   const [config, setConfig] = useState<TestConfigObj>(defaultConfig);
   const canvasQRRef = useRef<HTMLCanvasElement>(null);
   const canvasLocalRef = useRef<HTMLCanvasElement>(null);
@@ -48,8 +52,13 @@ const ConnectionLatencyTest = (props: {
       setConnectionState(state);
       if (state === ConnectionState.CLOSED || state === ConnectionState.FAILED) {
         stopped.current = true;
-        console.group("data");
-        console.log(data);
+        console.group("Remote Stream Data");
+        console.log(remoteStreamData);
+        console.groupEnd();
+        console.group("Local Stream Data");
+        console.log(localStreamData);
+        console.log("avg", avg(localStreamData.map(d => d.qrCodeGenerationTime)));
+        console.log("median", median(localStreamData.map(d => d.qrCodeGenerationTime)));
         console.groupEnd();
       }
     };
@@ -59,7 +68,6 @@ const ConnectionLatencyTest = (props: {
       console.log("%cRemote Stream Change Handler", "color:blue");
       // Start update loop for remote canvas when remote stream is received;
       if (!startedRemoteStreamLoop) {
-        console.warn("START REMOTE LOOP", config);
         setStartedRemoteStreamLoop(true);
         updateRemoteCanvas();
       }
@@ -72,7 +80,8 @@ const ConnectionLatencyTest = (props: {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
     };
-  }, [connection, config, startedRemoteStreamLoop, data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection, config, startedRemoteStreamLoop, remoteStreamData]);
 
   /** Start the connection experiment */
   const start = async () => {
@@ -97,37 +106,62 @@ const ConnectionLatencyTest = (props: {
   /** Stop the connection experiment */
   const stop = async () => {
     connection.stop();
+    combineData();
+  };
+
+  /** 
+   * Combines data from `localStreamData` and `remoteStreamData`.
+   * Currently takes the `qrCodeGenerationTime` from `localStreamData` and matches and copies it into `remoteStreamData`.
+   */
+  const combineData = () => {
+    // Create lookup table based on localStreamData array (convert to object)
+    const lookup: { [key: number]: number; } = {};
+    localStreamData.forEach(e => {
+      lookup[e.timestamp] = e.qrCodeGenerationTime;
+    });
+
+    const newMergedData: MergedData[] = remoteStreamData.map(e => {
+      const qrCodeGenerationTime = lookup[e.qrCodeTimestamp];
+      return {
+        ...e,
+        qrCodeGenerationTime: qrCodeGenerationTime,
+        trueLatency: e.latency - qrCodeGenerationTime
+      };
+    });
+    setMergedData(newMergedData);
   };
 
   /** Measure latency between the remote stream QR-code and current time. */
   const getLatency = () => {
     const localTimestamp = window.performance.now();
-    const remoteTimestamp = parseQRCode(canvasRemoteRef.current);
-    const diff = localTimestamp - remoteTimestamp;
+    const qrCodeTimestamp = parseQRCode(canvasRemoteRef.current);
+    const diff = localTimestamp - qrCodeTimestamp;
     if (latencyRef.current) {
       latencyRef.current.innerText = `${diff.toFixed(4)}`;
     }
-    return [diff, localTimestamp];
+    return [diff, localTimestamp, qrCodeTimestamp];
   };
 
   /** Log a data point in `data`. */
   const makeLogEntry = async () => {
-    let latency: number, timestamp: number;
+    let latency: number, timestamp: number, qrCodeTimestamp: number;
     const startTime = window.performance.now();
     try {
-      [latency, timestamp] = getLatency();
+      [latency, timestamp, qrCodeTimestamp] = getLatency();
     } catch (error) {
       latency = null;
+      qrCodeTimestamp = null;
       timestamp = window.performance.now();
     }
     const latencyMethodRuntime = window.performance.now() - startTime;
 
     const remoteStreamSettings = connection.remoteStream.getVideoTracks()[0].getSettings();
-    const entry = {
+    const entry: RemoteStreamData = {
       latency: latency,
       fps: remoteStreamSettings.frameRate,
       timestamp: timestamp,
-      frame: data.length,
+      qrCodeTimestamp: qrCodeTimestamp,
+      frame: remoteStreamData.length,
       latencyMethodRuntime: latencyMethodRuntime,
       dimensions: {
         width: remoteStreamSettings.width,
@@ -135,8 +169,8 @@ const ConnectionLatencyTest = (props: {
       }
       // connectionStats: await connection.getStats()
     };
-    console.log(entry);
-    data.push(entry);
+    // console.log(entry);
+    remoteStreamData.push(entry);
   };
 
   /** Parse the QR code in `canvas`. */
@@ -219,8 +253,9 @@ const ConnectionLatencyTest = (props: {
 
   const updateLocalCanvas = async () => {
     const context = canvasLocalRef.current.getContext("2d");
-    const track = (await getLocalStream())?.getVideoTracks()[0];
-    if (!track) throw new Error("Failed to get local stream");
+    const localBackgroundStream = await getLocalStream();
+    if (!localBackgroundStream) throw new Error("Failed to get local stream");
+    const track = localBackgroundStream.getVideoTracks()[0];
     const processor = new window.MediaStreamTrackProcessor(track);
     const reader = processor.readable.getReader();
 
@@ -244,8 +279,14 @@ const ConnectionLatencyTest = (props: {
       // Put QRcode on canvas
       const timestamp = window.performance.now();
       QRCode.toCanvas(canvasQRRef.current, `${timestamp}`, { width: config.qrCodeSize });
-
       context.drawImage(canvasQRRef.current, 0, 0);
+
+      // Save time it toked to generate the code (latency error)
+      const qrCodeGenerationTime = window.performance.now() - timestamp;
+      localStreamData.push({
+        timestamp,
+        qrCodeGenerationTime
+      });
 
       // Print time on white background
       if (config.printTime) {
@@ -261,6 +302,8 @@ const ConnectionLatencyTest = (props: {
       value.close();
       if (!done && !stopped.current) {
         readLocalFrame();
+      } else {
+        localBackgroundStream.getTracks().forEach(track => track.stop());
       }
     };
     readLocalFrame();
@@ -272,7 +315,8 @@ const ConnectionLatencyTest = (props: {
 
   /** Download `data` as json file. */
   const downloadData = () => {
-    const dataString = JSON.stringify(data);
+    // TODO include other datasets
+    const dataString = JSON.stringify(mergedData);
     const aElem = document.createElement("a");
     const file = new Blob([dataString], { type: "text/json" });
     aElem.href = URL.createObjectURL(file);
@@ -329,10 +373,12 @@ const ConnectionLatencyTest = (props: {
       <p>Latency: <span ref={latencyRef}>unknown</span> ms</p>
 
       {connectionState === ConnectionState.CLOSED ?
-        <>
-          <button onClick={downloadData}>Download Complete Dataset</button>
-          <Evaluation data={data} />
-        </>
+        mergedData ?
+          <>
+            <button onClick={downloadData}>Download Complete Dataset</button>
+            <Evaluation mergedData={mergedData} />
+          </>
+          : "Waiting for Merged Data"
         : "Start and Stop Experiment to see results here."}
     </div >
   );
@@ -394,28 +440,13 @@ function TestConfig(props: {
   );
 }
 
-type EvaluationResults = {
-  dataPoints: number;
-  durationTotalMs: number;
-  durationSec: number;
-  durationMin: number;
-  durationMs: number;
-  invalidLatencyDataPoints: number;
-  invalidLatencyDataPointsPercent: number;
-  avgLatency: number;
-  medianLatency: number;
-  avgLatencyMethod: number;
-  medianLatencyMethod: number;
-  avgFps: number;
-  medianFps: number;
-};
 
 function Evaluation(props: {
-  data: any[];
+  mergedData: MergedData[];
 }) {
   const [evaluation, setEvaluation] = useState<EvaluationResults | undefined>();
   const [from, setFrom] = useState(0);
-  const [to, setTo] = useState(props.data.length);
+  const [to, setTo] = useState(props.mergedData.length);
   const [primaryChart, setPrimaryChart] = useState<Chart | undefined>();
   const [fpsChart, setFpsChart] = useState<Chart | undefined>();
   const [dimensionsChart, setDimensionsChart] = useState<Chart | undefined>();
@@ -491,28 +522,42 @@ function Evaluation(props: {
     };
 
     const getChartData = () => {
-      const slicedData = props.data.slice(from, to);
+      const slicedData = props.mergedData.slice(from, to);
       const labels = slicedData.map(d => d.frame);
       const primaryData = {
         labels: labels,
         datasets: [
+          // {
+          //   label: "Latency-Error (WIP based on wrong data)",
+          //   backgroundColor: colors.TUMAccentBlue,
+          //   borderColor: colors.TUMAccentBlue,
+          //   data: slicedData.map(d => d.latency - d.latencyMethodRuntime),
+          //   fill: false,
+          // }, 
           {
-            label: "Latency-Error (WIP based on wrong data)",
-            backgroundColor: colors.TUMAccentBlue,
-            borderColor: colors.TUMAccentBlue,
-            data: slicedData.map(d => d.latency - d.latencyMethodRuntime),
-            fill: false,
-          }, {
             label: "Latency",
-            backgroundColor: colors.TUMAccentLightBlue,
+            backgroundColor: colors.TUMBlue,
             borderColor: colors.TUMBlue,
             data: slicedData.map(d => d.latency),
-            fill: 0,
+            // fill: 0,
+          }, {
+            label: "True Latency",
+            backgroundColor: colors.TUMAccentLightBlue,
+            borderColor: colors.TUMAccentLightBlue,
+            data: slicedData.map(d => d.trueLatency),
+            hidden: true,
           }, {
             label: "Latency Method Runtime",
             backgroundColor: colors.TUMDarkGray,
             borderColor: colors.TUMDarkGray,
             data: slicedData.map(d => d.latencyMethodRuntime),
+            hidden: true,
+          }, {
+            label: "QR Code Generation Runtime",
+            backgroundColor: colors.TUMAccentOrange,
+            borderColor: colors.TUMAccentOrange,
+            data: slicedData.map(d => d.qrCodeGenerationTime),
+            hidden: true,
           }
         ],
       };
@@ -534,6 +579,7 @@ function Evaluation(props: {
               display: true,
               text: "Milliseconds (ms)"
             },
+            beginAtZero: true
           }
         }
       };
@@ -622,48 +668,55 @@ function Evaluation(props: {
       initCharts();
     }
 
-  }, [from, to, props.data, primaryChart, fpsChart, dimensionsChart]);
+  }, [from, to, props.mergedData, primaryChart, fpsChart, dimensionsChart]);
 
   useEffect(() => {
-    if (from > to || from < 0 || to > props.data.length) {
+    if (from > to || from < 0 || to > props.mergedData.length) {
       console.warn(`Ignoring invalid data interval: ${from} - ${to}.`);
       return;
     }
-    const slicedData = props.data.slice(from, to);
+    const slicedData = props.mergedData.slice(from, to);
     setEvaluation(calculateEvaluation(slicedData));
-  }, [props.data, from, to]);
+  }, [props.mergedData, from, to,]);
 
 
   /** Calculates EvaluationResults based on `data`. Slice `data` to set interval. */
-  function calculateEvaluation(data: any[]): EvaluationResults {
-    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
-    const median = (arr: number[]) => {
-      const sorted = arr.sort((a, b) => a - b);
-      const half = Math.floor(arr.length / 2);
-      if (arr.length % 2) {
-        return sorted[half];
-      }
-      return (sorted[half - 1] + sorted[half]) / 2;
-    };
-
+  function calculateEvaluation(data: MergedData[]): EvaluationResults {
+    // duration
     const durationTotalMs = (data[data.length - 1].timestamp - data[0].timestamp);
     const durationSec = Math.floor((durationTotalMs / 1000) % 60);
     const durationMin = Math.floor((durationTotalMs / 1000) / 60);
     const durationMs = durationTotalMs % 1000;
 
+    // latency
     const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === null).length;
     const invalidLatencyDataPointsPercent = Math.round((invalidLatencyDataPoints / data.length) * 100);
-    const latencyArr: number[] = data.map(entry => entry.latency).filter(l => l !== null);
+    const latencyArr = data.map(entry => entry.latency).filter(l => l !== null);
     const avgLatency = avg(latencyArr);
     const medianLatency = median(latencyArr);
 
-    const latencyMethodArr: number[] = data.map(entry => entry.latencyMethodRuntime);
-    const avgLatencyMethod = avg(latencyMethodArr);
-    const medianLatencyMethod = median(latencyMethodArr);
+    // True / corrected latency
+    const trueLatencyArr = data.map(entry => entry.trueLatency).filter(l => l !== null);
+    const avgTrueLatency = avg(trueLatencyArr);
+    const medianTrueLatency = median(trueLatencyArr);
 
-    const fpsArr: number[] = data.map(entry => entry.fps);
+    // fps
+    const fpsArr = data.map(entry => entry.fps);
     const avgFps = avg(fpsArr);
     const medianFps = median(fpsArr);
+
+    // QR code generation
+    const qrCodeGenTimeArr = data.map(d => d.qrCodeGenerationTime);
+    const qrCodeGenTimeArrFiltered = qrCodeGenTimeArr.filter(t => t !== null);
+    const missingQRCodeGenDataPoints = qrCodeGenTimeArr.length - qrCodeGenTimeArrFiltered.length;
+    const missingQRCodeGenDataPointsPercent = Math.round((missingQRCodeGenDataPoints / data.length) * 100);
+    const avgQrCodeGenTime = avg(qrCodeGenTimeArrFiltered);
+    const medianQrCodeGenTime = median(qrCodeGenTimeArrFiltered);
+
+    // Latency method / qr code parsing method
+    const latencyMethodArr = data.map(entry => entry.latencyMethodRuntime);
+    const avgLatencyMethod = avg(latencyMethodArr);
+    const medianLatencyMethod = median(latencyMethodArr);
 
     console.group("Evaluation");
     console.log(`Data Points: ${data.length}`);
@@ -673,8 +726,18 @@ function Evaluation(props: {
     console.log("Median Latency:", medianLatency, "ms");
     console.log("Average FPS:", avgFps);
     console.log("Median FPS:", medianFps);
+
+    console.group("QR Code Generation Time - Does affect latency");
+    console.log(`Missing QR Code generation Data Points: ${missingQRCodeGenDataPoints} (${missingQRCodeGenDataPointsPercent}%)`);
+    console.log("Average QR Code generation time:", avgQrCodeGenTime, "ms");
+    console.log("Median QR Code generation time:", medianQrCodeGenTime, "ms");
+    console.groupEnd();
+
+    console.group("QR Code Parsing Time - Does not directly affect latency");
     console.log("Average Latency Method Runtime:", avgLatencyMethod, "ms");
     console.log("Median Latency Method Runtime:", medianLatencyMethod, "ms");
+    console.groupEnd();
+
     console.groupEnd();
 
     return {
@@ -687,6 +750,12 @@ function Evaluation(props: {
       invalidLatencyDataPointsPercent,
       avgLatency,
       medianLatency,
+      avgTrueLatency,
+      medianTrueLatency,
+      missingQRCodeGenDataPoints,
+      missingQRCodeGenDataPointsPercent,
+      avgQrCodeGenTime,
+      medianQrCodeGenTime,
       avgLatencyMethod,
       medianLatencyMethod,
       avgFps,
@@ -696,11 +765,11 @@ function Evaluation(props: {
 
   return (
     <div>
-      <h2>Evaluation</h2>
+      <h1>Evaluation</h1>
       <form className="evaluationInput">
         <span><b>Data Interval:</b>&nbsp;</span>
         <Input label="From" type="number" value={from} setValue={setFrom} min={0} max={to} />
-        <Input label="To" type="number" value={to} setValue={setTo} min={from} max={props.data.length} />
+        <Input label="To" type="number" value={to} setValue={setTo} min={from} max={props.mergedData.length} />
       </form>
       <h2>Overview</h2>
       {evaluation ?
@@ -711,13 +780,19 @@ function Evaluation(props: {
             <label>Invalid Latency Data Points*: </label><span>{evaluation.invalidLatencyDataPoints} ({evaluation.invalidLatencyDataPointsPercent}%)</span>
             <label>Average Latency: </label><span>{evaluation.avgLatency}ms</span>
             <label>Median Latency: </label><span>{evaluation.medianLatency}ms</span>
+            <label>Average True Latency: </label><span>{evaluation.avgTrueLatency}ms</span>
+            <label>Median True Latency: </label><span>{evaluation.medianTrueLatency}ms</span>
             <label>Average FPS: </label><span>{evaluation.avgFps}fps</span>
             <label>Median FPS: </label><span>{evaluation.medianFps}fps</span>
-            <label>Average Latency Calculation Runtime**: </label><span>{evaluation.avgLatencyMethod}ms</span>
-            <label>Median Latency Calculation Runtime**: </label><span>{evaluation.medianLatencyMethod}ms</span>
+            <label>Missing QR Code generation Data Points**: </label><span>{evaluation.missingQRCodeGenDataPoints} ({evaluation.missingQRCodeGenDataPointsPercent}%)</span>
+            <label>Average QR Code generation Time**: </label><span>{evaluation.avgQrCodeGenTime}ms</span>
+            <label>Median QR Code generation Time**: </label><span>{evaluation.medianQrCodeGenTime}ms</span>
+            <label>Average Latency Calculation Runtime***: </label><span>{evaluation.avgQrCodeGenTime}ms</span>
+            <label>Median Latency Calculation Runtime***: </label><span>{evaluation.medianQrCodeGenTime}ms</span>
           </div>
           <p className="note">*:&nbsp;Invalid latency measurements, likely caused by the QR-Code detection / parsing failing. The cause for a failing QR-Code detection could be its size, especially when WebRTC reduces the frame size.</p>
-          <p className="note">**:&nbsp;Runtime of latency calculation function, includes QR-Code parsing. Does not directly impact the measured latency, but can be an important factor for CPU utilization, which does impact the measured latency.</p>
+          <p className="note">**:&nbsp;Runtime of QR Code generation before a frame is sent. Affects latency.</p>
+          <p className="note">***:&nbsp;Runtime of latency calculation function, includes QR-Code parsing. Does not directly impact the measured latency, but can be an important factor for CPU utilization, which does impact the measured latency.</p>
         </>
         : ""
       }
