@@ -21,3 +21,10 @@ export function median(arr: number[]) {
 	}
 	return (sorted[half - 1] + sorted[half]) / 2;
 }
+
+export function getDetailedTime(ms: number) {
+	const sec = Math.floor((ms / 1000) % 60);
+	const min = Math.floor((ms / 1000) / 60);
+	const remainingMs = ms % 1000;
+	return [min, sec, remainingMs];
+}
