@@ -38,29 +38,30 @@ const ConnectionLatencyTest = (props: {
   const latencyRef = useRef<HTMLSpanElement>(null);
   const stopped = useRef(false);
 
-  /** Handle `connectionStateChange` event of {@link Connection}. */
-  const stateChangeHandler = async (state: ConnectionState) => {
-    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
-    setConnectionState(state);
-    if (state === ConnectionState.CLOSED || state === ConnectionState.FAILED) {
-      stopped.current = true;
-      console.group("data");
-      console.log(data);
-      console.groupEnd();
-    }
-  };
-
-  const streamChangeHandler = async (_: MediaStream) => {
-    console.log("%cRemote Stream Change Handler", "color:blue");
-    // Start update loop for remote canvas when remote stream is received;
-    if (!startedRemoteStreamLoop) {
-      setStartedRemoteStreamLoop(true);
-      updateRemoteCanvas();
-    }
-  };
-
   // Register Connection event handlers 
   useEffect(() => {
+    /** Handle `connectionStateChange` event of {@link Connection}. */
+    const stateChangeHandler = async (state: ConnectionState) => {
+      console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
+      setConnectionState(state);
+      if (state === ConnectionState.CLOSED || state === ConnectionState.FAILED) {
+        stopped.current = true;
+        console.group("data");
+        console.log(data);
+        console.groupEnd();
+      }
+    };
+
+    /** Handle `remoteStreamChange` event of {@link Connection}. */
+    const streamChangeHandler = async (_: MediaStream) => {
+      console.log("%cRemote Stream Change Handler", "color:blue");
+      // Start update loop for remote canvas when remote stream is received;
+      if (!startedRemoteStreamLoop) {
+        setStartedRemoteStreamLoop(true);
+        updateRemoteCanvas();
+      }
+    };
+
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
     return () => {
