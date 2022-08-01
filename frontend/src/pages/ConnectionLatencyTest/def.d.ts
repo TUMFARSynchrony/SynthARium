@@ -1,3 +1,14 @@
+export interface TestConfigObj {
+	participantId: string;
+	sessionId: string;
+	fps: number;
+	background: boolean;
+	width: number;
+	height: number;
+	qrCodeSize: number;
+	printTime: boolean;
+	outlineQrCode: boolean;
+}
 
 export interface LocalStreamData {
 	timestamp: number;

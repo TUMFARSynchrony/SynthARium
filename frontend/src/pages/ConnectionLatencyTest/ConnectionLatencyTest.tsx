@@ -6,8 +6,8 @@ import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import jsQR from "jsqr";
 import Chart from "chart.js/auto";
-import { avg, getDetailedTime, median } from "./util";
-import { EvaluationResults, LocalStreamData, MergedData, RemoteStreamData } from "./def";
+import { avg, calculateEvaluation, download, getDetailedTime, median } from "./util";
+import { EvaluationResults, LocalStreamData, MergedData, RemoteStreamData, TestConfigObj } from "./def";
 
 var QRCode = require("qrcode");
 
@@ -104,9 +104,11 @@ const ConnectionLatencyTest = (props: {
   };
 
   /** Stop the connection experiment */
-  const stop = async () => {
+  const stop = async (upload?: boolean) => {
     connection.stop();
-    combineData();
+    if (!upload) {
+      combineData();
+    }
   };
 
   /** 
@@ -146,11 +148,11 @@ const ConnectionLatencyTest = (props: {
     if (!runtimeInfoRef.current) {
       return;
     }
-    const [min, sec, ms] = getDetailedTime(entry.timestamp - remoteStreamData[0].timestamp);
+    const [min, sec, ms] = getDetailedTime(entry.timestamp - (remoteStreamData[0]?.timestamp ?? entry.timestamp));
     const roundedLatency = (Math.round(entry.latency * 100) / 100).toFixed(2);
     const roundedFps = Math.round(entry.fps * 100) / 100;
     runtimeInfoRef.current.innerText = (
-      `Latency: ${roundedLatency}ms, ${roundedFps}FPS, Runtime: ${min}m ${sec}s ${Math.round(ms)}ms, Recorded ${entry.frame} frames`
+      `Latency: ${roundedLatency}ms, ${roundedFps}FPS, Runtime: ${min}m ${sec}s ${Math.round(ms)}ms, Recorded: ${entry.frame} frames`
     );
   };
 
@@ -326,14 +328,18 @@ const ConnectionLatencyTest = (props: {
   }
 
   /** Download `data` as json file. */
-  const downloadData = () => {
-    // TODO include other datasets
-    const dataString = JSON.stringify(mergedData);
-    const aElem = document.createElement("a");
-    const file = new Blob([dataString], { type: "text/json" });
-    aElem.href = URL.createObjectURL(file);
-    aElem.download = `latency-test-${new Date().toLocaleDateString()}.json`;
-    aElem.click();
+  const downloadRawData = () => {
+    download(mergedData, `latency-test-${new Date().toLocaleDateString()}.json`);
+  };
+
+  const handleDataUpload = (data: object) => {
+    // Waring, does not check data so don't upload invalid data.
+    const converted = data as MergedData[];
+    console.group("Data Upload:");
+    console.log(converted);
+    console.groupEnd();
+    setMergedData(converted);
+    stop(true);
   };
 
   // Get the main action button. Start, Stop or Reload button.
@@ -344,7 +350,7 @@ const ConnectionLatencyTest = (props: {
       break;
     case ConnectionState.CONNECTING:
     case ConnectionState.CONNECTED:
-      mainActionBtn = <button onClick={stop} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Experiment</button>;
+      mainActionBtn = <button onClick={() => stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Experiment</button>;
       break;
     default:
       mainActionBtn = <button onClick={() => window.location.reload()}>Reload Page</button>;;
@@ -382,32 +388,56 @@ const ConnectionLatencyTest = (props: {
           <canvas ref={canvasRemoteRef} />
         </div>
       </div>
+      {connectionState === ConnectionState.NEW
+        ? <div className="dataUpload">
+          <p className="note">Upload data from a previous test instead of running a new test:</p>
+          <Upload handleUpload={handleDataUpload} />
+        </div> : ""
+      }
       {connectionState === ConnectionState.CLOSED ?
-        mergedData ?
-          <>
-            <button onClick={downloadData}>Download Complete Dataset</button>
-            <Evaluation mergedData={mergedData} />
-          </>
+        mergedData ? <>
+          <button onClick={downloadRawData}>Download Raw Dataset</button>
+          <Evaluation mergedData={mergedData} />
+        </>
           : "Waiting for Merged Data"
         : "Start and Stop Experiment to see results here."}
     </div >
   );
 };
 
-
 export default ConnectionLatencyTest;
 
-type TestConfigObj = {
-  participantId: string,
-  sessionId: string,
-  fps: number,
-  background: boolean,
-  width: number,
-  height: number,
-  qrCodeSize: number,
-  printTime: boolean,
-  outlineQrCode: boolean,
-};
+/** JSON Upload field. */
+function Upload(props: {
+  handleUpload: (file: object) => void,
+  className?: string,
+}) {
+  const fileRef = useRef(null);
+
+  const parseFile = (e: ProgressEvent<FileReader>) => {
+    const obj = JSON.parse(e.target.result as string);
+    props.handleUpload(obj);
+  };
+
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!fileRef.current?.value.length) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = parseFile;
+    reader.readAsText(fileRef.current.files[0]);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className={props.className}>
+      <label>Upload Data</label>
+      <input type="file" id="file" accept=".json" ref={fileRef} />
+      <button type="submit">Upload</button>
+    </form>
+  );
+}
+
 
 function TestConfig(props: {
   disabled?: boolean,
@@ -455,6 +485,7 @@ function Evaluation(props: {
   mergedData: MergedData[];
 }) {
   const [evaluation, setEvaluation] = useState<EvaluationResults | undefined>();
+  const [showLines, setShowLines] = useState(props.mergedData.length < 500);
   const [from, setFrom] = useState(0);
   const [to, setTo] = useState(props.mergedData.length);
   const [primaryChart, setPrimaryChart] = useState<Chart | undefined>();
@@ -520,20 +551,36 @@ function Evaluation(props: {
 
       primaryChart.data.labels = primaryData.labels;
       primaryChart.data.datasets = primaryData.datasets;
+      // @ts-ignore - TS does not know the showLine attribute.
+      primaryChart.options.showLine = showLines;
       primaryChart.update();
 
       fpsChart.data.labels = fpsData.labels;
       fpsChart.data.datasets = fpsData.datasets;
+      // @ts-ignore - TS does not know the showLine attribute.
+      fpsChart.options.showLine = showLines;
       fpsChart.update();
 
       dimensionsChart.data.labels = dimensionsData.labels;
       dimensionsChart.data.datasets = dimensionsData.datasets;
+      // @ts-ignore - TS does not know the showLine attribute.
+      dimensionsChart.options.showLine = showLines;
       dimensionsChart.update();
     };
 
     const getChartData = () => {
       const slicedData = props.mergedData.slice(from, to);
       const labels = slicedData.map(d => d.frame);
+      const baseOptions = {
+        animation: {
+          duration: 0
+        },
+        showLine: showLines
+      };
+
+      console.log(baseOptions);
+
+
       const primaryData = {
         labels: labels,
         datasets: [
@@ -572,9 +619,7 @@ function Evaluation(props: {
         ],
       };
       const primaryOptions = {
-        animation: {
-          duration: 0
-        },
+        ...baseOptions,
         scales: {
           x: {
             display: true,
@@ -603,12 +648,9 @@ function Evaluation(props: {
           data: slicedData.map(d => d.fps),
         }],
       };
-
       const fpsOptions = {
+        ...baseOptions,
         maintainAspectRatio: false,
-        animation: {
-          duration: 0
-        },
         scales: {
           x: {
             display: true,
@@ -641,12 +683,9 @@ function Evaluation(props: {
           data: slicedData.map(d => d.dimensions.height),
         }],
       };
-
       const dimensionsOptions = {
+        ...baseOptions,
         maintainAspectRatio: false,
-        animation: {
-          duration: 0
-        },
         scales: {
           x: {
             display: true,
@@ -672,13 +711,15 @@ function Evaluation(props: {
       return;
     }
 
+    console.log("Update");
+
     if (primaryChart) {
       updateCharts();
     } else {
       initCharts();
     }
 
-  }, [from, to, props.mergedData, primaryChart, fpsChart, dimensionsChart]);
+  }, [from, to, props.mergedData, primaryChart, fpsChart, dimensionsChart, showLines]);
 
   useEffect(() => {
     if (from > to || from < 0 || to > props.mergedData.length) {
@@ -689,88 +730,6 @@ function Evaluation(props: {
     setEvaluation(calculateEvaluation(slicedData));
   }, [props.mergedData, from, to,]);
 
-
-  /** Calculates EvaluationResults based on `data`. Slice `data` to set interval. */
-  function calculateEvaluation(data: MergedData[]): EvaluationResults {
-    // Duration
-    const durationTotalMs = (data[data.length - 1].timestamp - data[0].timestamp);
-    const [durationSec, durationMin, durationMs] = getDetailedTime(durationTotalMs);
-
-    // Latency
-    const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === null).length;
-    const invalidLatencyDataPointsPercent = Math.round((invalidLatencyDataPoints / data.length) * 100);
-    const latencyArr = data.map(entry => entry.latency).filter(l => l !== null);
-    const avgLatency = avg(latencyArr);
-    const medianLatency = median(latencyArr);
-
-    // True / corrected latency
-    const trueLatencyArr = data.map(entry => entry.trueLatency).filter(l => l !== null);
-    const avgTrueLatency = avg(trueLatencyArr);
-    const medianTrueLatency = median(trueLatencyArr);
-
-    // Fps
-    const fpsArr = data.map(entry => entry.fps);
-    const avgFps = avg(fpsArr);
-    const medianFps = median(fpsArr);
-
-    // QR code generation
-    const qrCodeGenTimeArr = data.map(d => d.qrCodeGenerationTime);
-    const qrCodeGenTimeArrFiltered = qrCodeGenTimeArr.filter(t => t !== null);
-    const missingQRCodeGenDataPoints = qrCodeGenTimeArr.length - qrCodeGenTimeArrFiltered.length;
-    const missingQRCodeGenDataPointsPercent = Math.round((missingQRCodeGenDataPoints / data.length) * 100);
-    const avgQrCodeGenTime = avg(qrCodeGenTimeArrFiltered);
-    const medianQrCodeGenTime = median(qrCodeGenTimeArrFiltered);
-
-    // Latency method / qr code parsing method
-    const latencyMethodArr = data.map(entry => entry.latencyMethodRuntime);
-    const avgLatencyMethod = avg(latencyMethodArr);
-    const medianLatencyMethod = median(latencyMethodArr);
-
-    console.group("Evaluation");
-    console.log(`Data Points: ${data.length}`);
-    console.log(`Duration: ${durationMin}m, ${durationSec}s, ${durationMs}ms`);
-    console.log(`Invalid Latency Data Points: ${invalidLatencyDataPoints} (${invalidLatencyDataPointsPercent}%)`);
-    console.log("Average Latency:", avgLatency, "ms");
-    console.log("Median Latency:", medianLatency, "ms");
-    console.log("Average FPS:", avgFps);
-    console.log("Median FPS:", medianFps);
-
-    console.group("QR Code Generation Time - Does affect latency");
-    console.log(`Missing QR Code Generation Data Points: ${missingQRCodeGenDataPoints} (${missingQRCodeGenDataPointsPercent}%)`);
-    console.log("Average QR Code Generation time:", avgQrCodeGenTime, "ms");
-    console.log("Median QR Code Generation time:", medianQrCodeGenTime, "ms");
-    console.groupEnd();
-
-    console.group("QR Code Parsing Time - Does not directly affect latency");
-    console.log("Average Latency Method Runtime:", avgLatencyMethod, "ms");
-    console.log("Median Latency Method Runtime:", medianLatencyMethod, "ms");
-    console.groupEnd();
-
-    console.groupEnd();
-
-    return {
-      dataPoints: data.length,
-      durationTotalMs,
-      durationSec,
-      durationMin,
-      durationMs,
-      invalidLatencyDataPoints,
-      invalidLatencyDataPointsPercent,
-      avgLatency,
-      medianLatency,
-      avgTrueLatency,
-      medianTrueLatency,
-      missingQRCodeGenDataPoints,
-      missingQRCodeGenDataPointsPercent,
-      avgQrCodeGenTime,
-      medianQrCodeGenTime,
-      avgLatencyMethod,
-      medianLatencyMethod,
-      avgFps,
-      medianFps
-    };
-  }
-
   return (
     <div>
       <h1>Evaluation</h1>
@@ -778,6 +737,7 @@ function Evaluation(props: {
         <span><b>Data Interval:</b>&nbsp;</span>
         <Input label="From" type="number" value={from} setValue={setFrom} min={0} max={to} />
         <Input label="To" type="number" value={to} setValue={setTo} min={from} max={props.mergedData.length} />
+        <Input label="Draw Lines" type="checkbox" checked={showLines} setValue={setShowLines} />
       </form>
       <h2>Overview</h2>
       {evaluation ?
@@ -827,6 +787,7 @@ function Input(props: {
   disabled?: boolean,
   value?: string | number,
   defaultValue?: string | number,
+  checked?: boolean,
   defaultChecked?: boolean,
   min?: number,
   max?: number,
@@ -849,6 +810,7 @@ function Input(props: {
         type={props.type ?? "text"}
         value={props.value}
         defaultValue={props.defaultValue}
+        checked={props.checked}
         defaultChecked={props.defaultChecked}
         onChange={handleChange}
         min={props.min}
