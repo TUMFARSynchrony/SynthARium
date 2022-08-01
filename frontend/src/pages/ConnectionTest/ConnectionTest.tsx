@@ -385,6 +385,36 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
         >
           Rotation + Edge Outline
         </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
+            video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          60 Frame Video Delay
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+            video_filters: [],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          60 Frame Audio Delay
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+            video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          60 Frame audio + video Delay
+        </button>
       </div>
     </>
   );
