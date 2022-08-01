@@ -103,7 +103,7 @@ function App() {
     );
 
     setConnection(newConnection);
-    if (userType === "participant") {
+    if (userType === "participant" && pathname !== "/connectionlatencytest") {
       asyncStreamHelper(newConnection);
       return;
     }

@@ -26,7 +26,9 @@ const ConnectionLatencyTest = (props: {
     background: true,
     width: 640,
     height: 480,
-    qrCodeSize: 200
+    qrCodeSize: 200,
+    printTime: true,
+    outlineQrCode: false,
   };
   const [connectionState, setConnectionState] = useState(connection.state);
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
@@ -57,6 +59,7 @@ const ConnectionLatencyTest = (props: {
       console.log("%cRemote Stream Change Handler", "color:blue");
       // Start update loop for remote canvas when remote stream is received;
       if (!startedRemoteStreamLoop) {
+        console.warn("START REMOTE LOOP", config);
         setStartedRemoteStreamLoop(true);
         updateRemoteCanvas();
       }
@@ -69,7 +72,7 @@ const ConnectionLatencyTest = (props: {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
     };
-  }, [connection, config, startedRemoteStreamLoop]);
+  }, [connection, config, startedRemoteStreamLoop, data]);
 
   /** Start the connection experiment */
   const start = async () => {
@@ -120,9 +123,9 @@ const ConnectionLatencyTest = (props: {
     const durationMin = Math.floor((durationTotalMs / 1000) / 60);
     const durationMs = durationTotalMs % 1000;
 
-    const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === -1).length;
+    const invalidLatencyDataPoints = data.map(entry => entry.latency).filter(l => l === null).length;
     const invalidLatencyDataPointsPercent = Math.round((invalidLatencyDataPoints / data.length) * 100);
-    const latencyArr: number[] = data.map(entry => entry.latency).filter(l => l !== -1);
+    const latencyArr: number[] = data.map(entry => entry.latency).filter(l => l !== null);
     const avgLatency = avg(latencyArr);
     const medianLatency = median(latencyArr);
 
@@ -173,7 +176,7 @@ const ConnectionLatencyTest = (props: {
     try {
       [latency, timestamp] = getLatency();
     } catch (error) {
-      latency = -1;
+      latency = null;
       timestamp = window.performance.now();
     }
     const latencyMethodRuntime = window.performance.now() - startTime;
@@ -205,15 +208,16 @@ const ConnectionLatencyTest = (props: {
     // Get image data for expected position of QR code. Getting only part of the image saves a lot of time in `jsQR` (optimization).
     const imageData = context.getImageData(0, 0, qrCodeWidth, qrCodeHeight);
 
-    // Uncomment to draw a rectangle around the expected position of the QR code (debugging)
-    /*
-    console.log(qrCodeWidth, qrCodeHeight);
-    context.beginPath();
-    context.lineWidth = 2;
-    context.strokeStyle = "red";
-    context.rect(0, 0, qrCodeWidth, qrCodeHeight);
-    context.stroke();
-    */
+    // Draw a rectangle around the expected position of the QR code (debugging)
+    if (config.outlineQrCode) {
+      // console.log("canvas width:", canvas.width, "canvas height:", canvas.height, "config width:", config.width, "config height:", config.height, "config qrCodeSize:", config.qrCodeSize);
+      // console.log(qrCodeWidth, qrCodeHeight);
+      context.beginPath();
+      context.lineWidth = 2;
+      context.strokeStyle = "red";
+      context.rect(0, 0, qrCodeWidth, qrCodeHeight);
+      context.stroke();
+    }
 
     const code = jsQR(imageData.data, imageData.width, imageData.height, {
       inversionAttempts: "dontInvert",
@@ -301,8 +305,17 @@ const ConnectionLatencyTest = (props: {
       QRCode.toCanvas(canvasQRRef.current, `${timestamp}`, { width: config.qrCodeSize });
 
       context.drawImage(canvasQRRef.current, 0, 0);
-      context.font = "16px Arial";
-      context.fillText(timestamp.toFixed(10), 20, 20);
+
+      // Print time on white background
+      if (config.printTime) {
+        const text = timestamp.toFixed(10);
+        const textWidth = context.measureText(text).width;
+        context.fillStyle = "white";
+        context.fillRect(config.qrCodeSize, 0, textWidth + 20, 30);
+        context.font = "16px Arial";
+        context.fillStyle = "black";
+        context.fillText(text, 10 + config.qrCodeSize, 20);
+      }
 
       value.close();
       if (!done && !stopped.current) {
@@ -364,12 +377,7 @@ const ConnectionLatencyTest = (props: {
 
       <p>Latency: <span ref={latencyRef}>unknown</span> ms</p>
 
-      {connectionState === ConnectionState.CLOSED ? <Evaluation data={data} /> : "<Evaluation data={data} />"}
-
-      {/* <div className="canvasWrapper">
-        <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} ignoreAudio />
-        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} ignoreAudio />
-      </div> */}
+      {connectionState === ConnectionState.CLOSED ? <Evaluation data={data} /> : "Start and Stop Experiment to see results here."}
     </div >
   );
 };
@@ -385,6 +393,8 @@ type TestConfigObj = {
   width: number,
   height: number,
   qrCodeSize: number,
+  printTime: boolean,
+  outlineQrCode: boolean,
 };
 
 function TestConfig(props: {
@@ -421,6 +431,8 @@ function TestConfig(props: {
       <Input disabled={disabled} label="Video width (px)" type="number" defaultValue={config.width} setValue={(v) => handleChange("width", v)} />
       <Input disabled={disabled} label="Video height (px)" type="number" defaultValue={config.height} setValue={(v) => handleChange("height", v)} />
       <Input disabled={disabled} label="QR Code Size (px)" type="number" defaultValue={config.qrCodeSize} setValue={(v) => handleChange("qrCodeSize", v)} />
+      <Input disabled={disabled} label="Print Time" type="checkbox" defaultChecked={config.printTime} setValue={(v) => handleChange("printTime", v)} />
+      <Input disabled={disabled} label="Outline QR Code (Debug)" type="checkbox" defaultChecked={config.outlineQrCode} setValue={(v) => handleChange("outlineQrCode", v)} />
       <button type="submit" disabled={disabled} hidden />
     </form>
   );
