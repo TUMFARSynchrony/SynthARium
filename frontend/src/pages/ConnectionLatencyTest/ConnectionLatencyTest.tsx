@@ -32,6 +32,7 @@ const ConnectionLatencyTest = (props: {
     printTime: true,
     outlineQrCode: false,
     ping: true,
+    pingData: "",
   };
   const [connectionState, setConnectionState] = useState(connection.state);
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
@@ -350,9 +351,9 @@ const ConnectionLatencyTest = (props: {
 
       // Send ping if enabled
       if (config.ping && connection.state === ConnectionState.CONNECTED) {
-        const data = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
         connection.sendMessage("PING", {
           sent: timestamp,
+          data: config.pingData
         });
       }
 
@@ -521,6 +522,7 @@ function TestConfig(props: {
       <Input disabled={disabled} label="QR Code Size (px)" type="number" value={config.qrCodeSize} setValue={(v) => handleChange("qrCodeSize", v)} />
       <Input disabled={disabled} label="Print Time" type="checkbox" defaultChecked={config.printTime} setValue={(v) => handleChange("printTime", v)} />
       <Input disabled={disabled} label="Ping API (once per frame)" type="checkbox" defaultChecked={config.ping} setValue={(v) => handleChange("ping", v)} />
+      <Input disabled={disabled || !config.ping} label="Optional Ping Data" value={config.pingData} setValue={(v) => handleChange("pingData", v)} />
       <Input disabled={disabled} label="Outline QR Code (Debug)" type="checkbox" defaultChecked={config.outlineQrCode} setValue={(v) => handleChange("outlineQrCode", v)} />
       <button type="submit" disabled={disabled} hidden />
     </form>
@@ -878,7 +880,7 @@ function Evaluation(props: {
         : ""
       }
 
-      <p>Click the labels above the graphs to enable or disable the corresponding line.</p>
+      <p>Click the labels above the graphs to enable or disable the corresponding dataset.</p>
       <h2>Latency</h2>
       <canvas ref={primaryChartCanvasRef}></canvas>
       <h2>Frames Per Second (FPS)</h2>

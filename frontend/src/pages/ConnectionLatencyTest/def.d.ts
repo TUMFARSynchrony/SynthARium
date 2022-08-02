@@ -9,6 +9,7 @@ export interface TestConfigObj {
 	printTime: boolean;
 	outlineQrCode: boolean;
 	ping: boolean;
+	pingData: string;
 }
 
 export interface PingData {
