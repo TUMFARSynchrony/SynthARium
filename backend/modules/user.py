@@ -14,11 +14,13 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
 
+from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
 import modules.experiment as _exp
+from modules.util import timestamp
 import modules.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
@@ -108,6 +110,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._handlers = {}
         self.__subscribers = {}
         self.__disconnected = False
+        self.on_message("PING", self._handle_ping)
 
     @property
     def muted_video(self) -> bool:
@@ -419,6 +422,22 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             self._handle_disconnect()
+
+    async def _handle_ping(self, data: Any) -> MessageDict:
+        """Handle requests with type `PING`.
+
+        Parameters
+        ----------
+        data : any
+            Message data, can be anything.  Will be included in return message.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `PONG`, data: custom_types.ping.PongDict.
+        """
+        pong = PongDict(server_time=timestamp(), ping_data=data)
+        return MessageDict(type="PONG", data=pong)
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:

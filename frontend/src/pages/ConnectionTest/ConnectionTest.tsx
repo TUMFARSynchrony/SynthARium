@@ -178,6 +178,13 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
     const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
+    const handlePong = async (data: any) => {
+      saveGenericApiResponse("PONG", data);
+      if ("time" in data.ping_data) {
+        const rtt = new Date().getTime() - data.ping_data.time;
+        console.log("Ping RTT:", rtt, "ms");
+      }
+    };
 
     // Add listeners to connection
     props.connection.api.on("TEST", handleTest);
@@ -189,6 +196,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
     props.connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
+    props.connection.api.on("PONG", handlePong);
 
     return () => {
       // Remove listeners from connection
@@ -201,6 +209,7 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
       props.connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
+      props.connection.api.off("PONG", handlePong);
     };
   }, [props.connection.api, responses]);
 
@@ -303,6 +312,12 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             MUTE
           </button>
         </div>
+        <button
+          onClick={() => props.connection.sendMessage("PING", { "time": new Date().getTime() })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          PING
+        </button>
       </div>
       <SetFilterPresets connection={props.connection} />
       <div className="basicTabs">
