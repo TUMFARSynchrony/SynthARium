@@ -350,7 +350,10 @@ const ConnectionLatencyTest = (props: {
 
       // Send ping if enabled
       if (config.ping && connection.state === ConnectionState.CONNECTED) {
-        connection.sendMessage("PING", { sent: timestamp });
+        const data = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
+        connection.sendMessage("PING", {
+          sent: timestamp,
+        });
       }
 
       if (!done && !stopped.current) {
@@ -423,9 +426,6 @@ const ConnectionLatencyTest = (props: {
       <div className="container controls">
         {mainActionBtn}
       </div>
-
-      <button onClick={() => console.log(connection)}>Log Connection</button>
-
       <canvas ref={canvasQRRef} hidden />
       <div className="canvasWrapper">
         <div>
@@ -622,10 +622,9 @@ function Evaluation(props: {
         animation: {
           duration: 0
         },
-        showLine: showLines
+        showLine: showLines,
+        events: ["click"] as any, // Disables hover effects, which lag with large datasets
       };
-
-      console.log(baseOptions);
 
       const primaryData = {
         labels: labels,
@@ -669,24 +668,56 @@ function Evaluation(props: {
         primaryData.datasets.push(pingRttDataSet);
       }
 
+      const secondXAxis = {
+        grid: {
+          drawOnChartArea: false, // only want the grid lines for one axis to show up
+        },
+        title: {
+          display: true,
+          text: "Time"
+        },
+        ticks: {
+          callback: function (label: any) {
+            const frame = this.getLabelForValue(label);
+            const runtime = props.mergedData[frame].timestamp - props.mergedData[0].timestamp;
+            const [min, sec] = getDetailedTime(runtime);
+            if (min > 0) {
+              return `${min}m ${sec}s`;
+            } else {
+              return `${sec}s`;
+            }
+          }
+        },
+        beginAtZero: true
+      };
+
       const primaryOptions = {
         ...baseOptions,
         scales: {
           x: {
+            position: "top" as any,
             display: true,
             title: {
               display: true,
               text: "Frame Number"
-            }
+            },
           },
           y: {
             display: true,
             title: {
               display: true,
-              text: "Milliseconds (ms)"
+              text: "Latency / Runtime"
             },
-            beginAtZero: true
-          }
+            beginAtZero: true,
+            ticks: {
+              // Add "ms" to y-axis label
+              callback: function msAxisCallback(label: any) {
+                const ms = this.getLabelForValue(label);
+                return `${ms}ms`;
+              }
+            }
+          },
+          xAxis2: secondXAxis,
         }
       };
 
@@ -704,6 +735,7 @@ function Evaluation(props: {
         maintainAspectRatio: false,
         scales: {
           x: {
+            position: "top" as any,
             display: true,
             title: {
               display: true,
@@ -716,7 +748,15 @@ function Evaluation(props: {
               display: true,
               text: "Current Frames Per Second"
             },
-          }
+            ticks: {
+              // Add "ms" to y-axis label
+              callback: function msAxisCallback(label: any) {
+                const ms = this.getLabelForValue(label);
+                return `${ms}fps`;
+              }
+            }
+          },
+          xAxis2: secondXAxis,
         }
       };
 
@@ -739,6 +779,7 @@ function Evaluation(props: {
         maintainAspectRatio: false,
         scales: {
           x: {
+            position: "top" as any,
             display: true,
             title: {
               display: true,
@@ -749,9 +790,17 @@ function Evaluation(props: {
             display: true,
             title: {
               display: true,
-              text: "Dimension in Pixel"
+              text: "Video Dimensions"
             },
-          }
+            ticks: {
+              // Add "ms" to y-axis label
+              callback: function msAxisCallback(label: any) {
+                const ms = this.getLabelForValue(label);
+                return `${ms}px`;
+              }
+            }
+          },
+          xAxis2: secondXAxis,
         }
       };
 
@@ -773,7 +822,7 @@ function Evaluation(props: {
   }, [from, to, props.mergedData, primaryChart, fpsChart, dimensionsChart, showLines]);
 
   useEffect(() => {
-    if (from > to || from < 0 || to > props.mergedData.length) {
+    if (from >= to || from < 0 || to > props.mergedData.length) {
       console.warn(`Ignoring invalid data interval: ${from} - ${to}.`);
       return;
     }
