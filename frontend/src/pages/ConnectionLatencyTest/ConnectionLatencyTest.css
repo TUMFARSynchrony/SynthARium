@@ -8,6 +8,10 @@ p {
 	margin-block-end: .5em;
 }
 
+h2 {
+	margin-bottom: .2em;
+}
+
 input[type="checkbox"] {
 	margin-left: .5rem;
 }
@@ -122,6 +126,11 @@ input[type="checkbox"] {
 
 .evaluationOverview span {
 	text-align: left;
+}
+
+.evaluationOverview .evalSection {
+	margin: .5rem 0 0 0;
+	grid-column: 1 / 3;
 }
 
 .testConfig {

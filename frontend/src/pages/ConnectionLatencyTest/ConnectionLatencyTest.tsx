@@ -7,7 +7,7 @@ import ConnectionState from "../../networking/ConnectionState";
 import jsQR from "jsqr";
 import Chart from "chart.js/auto";
 import { avg, calculateEvaluation, download, getDetailedTime, median } from "./util";
-import { EvaluationResults, LocalStreamData, MergedData, RemoteStreamData, TestConfigObj } from "./def";
+import { EvaluationResults, LocalStreamData, MergedData, RemoteStreamData, PingData, TestConfigObj } from "./def";
 
 var QRCode = require("qrcode");
 
@@ -31,11 +31,13 @@ const ConnectionLatencyTest = (props: {
     qrCodeSize: 200,
     printTime: true,
     outlineQrCode: false,
+    ping: true,
   };
   const [connectionState, setConnectionState] = useState(connection.state);
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
-  const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>([]);
-  const [localStreamData, setLocalStreamData] = useState<LocalStreamData[]>([]);
+  const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [localStreamData, setLocalStreamData] = useState<LocalStreamData[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [pingData, setPingData] = useState<PingData[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [mergedData, setMergedData] = useState<MergedData[] | undefined>();
   const [config, setConfig] = useState<TestConfigObj>(defaultConfig);
   const canvasQRRef = useRef<HTMLCanvasElement>(null);
@@ -83,6 +85,27 @@ const ConnectionLatencyTest = (props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection, config, startedRemoteStreamLoop, remoteStreamData]);
 
+  // Handle API messages (ping / pong)
+  useEffect(() => {
+    const handlePong = async (msg: any) => {
+      const timeNow = performance.now();
+      const sent = msg.ping_data.sent;
+      const serverTime = msg.server_time - performance.timing.navigationStart;
+
+      const entry: PingData = {
+        sent: sent,
+        received: timeNow,
+        serverTime: serverTime
+      };
+      pingData.push(entry);
+    };
+
+    connection.api.on("PONG", handlePong);
+    return () => {
+      connection.api.off("PONG", handlePong);
+    };
+  }, [connection.api, pingData]);
+
   /** Start the connection experiment */
   const start = async () => {
     console.log("Start Test. Config:", config);
@@ -107,7 +130,8 @@ const ConnectionLatencyTest = (props: {
   const stop = async (upload?: boolean) => {
     connection.stop();
     if (!upload) {
-      combineData();
+      // Delay to wait for all ping responses.
+      setTimeout(combineData, 500);
     }
   };
 
@@ -116,18 +140,28 @@ const ConnectionLatencyTest = (props: {
    * Currently takes the `qrCodeGenerationTime` from `localStreamData` and matches and copies it into `remoteStreamData`.
    */
   const combineData = () => {
-    // Create lookup table based on localStreamData array (convert to object)
-    const lookup: { [key: number]: number; } = {};
+    // Create lookup tables/objects based on localStreamData and pingData
+    const localStreamLookup: { [key: number]: number; } = {};
     localStreamData.forEach(e => {
-      lookup[e.timestamp] = e.qrCodeGenerationTime;
+      localStreamLookup[e.timestamp] = e.qrCodeGenerationTime;
+    });
+    const pingLookup: { [key: number]: PingData; } = {};
+    pingData.forEach(e => {
+      pingLookup[e.sent] = e;
     });
 
     const newMergedData: MergedData[] = remoteStreamData.map(e => {
-      const qrCodeGenerationTime = lookup[e.qrCodeTimestamp];
+      const qrCodeGenerationTime = localStreamLookup[e.qrCodeTimestamp];
+      const pingData = pingLookup[e.qrCodeTimestamp];
       return {
         ...e,
         qrCodeGenerationTime: qrCodeGenerationTime,
-        trueLatency: (e.latency - qrCodeGenerationTime) || undefined
+        trueLatency: (e.latency - qrCodeGenerationTime) || undefined,
+        ping: pingData ? {
+          rtt: pingData.received - pingData.sent,
+          timeToServer: pingData.serverTime - pingData.sent,
+          timeBack: pingData.received - pingData.serverTime
+        } : undefined
       };
     });
     console.group("Merged Data");
@@ -312,8 +346,13 @@ const ConnectionLatencyTest = (props: {
         context.fillStyle = "black";
         context.fillText(text, 10 + config.qrCodeSize, 20);
       }
-
       value.close();
+
+      // Send ping if enabled
+      if (config.ping && connection.state === ConnectionState.CONNECTED) {
+        connection.sendMessage("PING", { sent: timestamp });
+      }
+
       if (!done && !stopped.current) {
         readLocalFrame();
       } else {
@@ -329,16 +368,27 @@ const ConnectionLatencyTest = (props: {
 
   /** Download `data` as json file. */
   const downloadRawData = () => {
-    download(mergedData, `latency-test-${new Date().toLocaleDateString()}.json`);
+    const data = { config, mergedData };
+    download(data, `latency-test-${new Date().toLocaleDateString()}.json`);
   };
 
-  const handleDataUpload = (data: object) => {
+  const handleDataUpload = (data: any) => {
     // Waring, does not check data so don't upload invalid data.
-    const converted = data as MergedData[];
+    let uploadedMergedData: MergedData[];
+    let uploadedConfig: TestConfigObj = null;
+    if (Array.isArray(data)) {
+      uploadedMergedData = data as MergedData[];
+    } else {
+      uploadedMergedData = data.mergedData as MergedData[];
+      uploadedConfig = data.config as TestConfigObj;
+      setConfig(uploadedConfig);
+    }
+
     console.group("Data Upload:");
-    console.log(converted);
+    console.log("config", uploadedConfig);
+    console.log("data", uploadedMergedData);
     console.groupEnd();
-    setMergedData(converted);
+    setMergedData(uploadedMergedData);
     stop(true);
   };
 
@@ -367,7 +417,6 @@ const ConnectionLatencyTest = (props: {
       <TestConfig
         start={start}
         config={config}
-        defaultConfig={defaultConfig}
         setConfig={setConfig}
         disabled={connectionState !== ConnectionState.NEW}
       />
@@ -442,7 +491,6 @@ function Upload(props: {
 function TestConfig(props: {
   disabled?: boolean,
   config: TestConfigObj,
-  defaultConfig: TestConfigObj,
   setConfig: (config: TestConfigObj) => void,
   start: () => void,
 }) {
@@ -462,18 +510,17 @@ function TestConfig(props: {
     console.log("set", key, "to", value, newConfig);
   };
 
-  // TODO hotkeys & reset btn
-
   return (
     <form onSubmit={handleSubmit} className="testConfig container">
-      <Input disabled={disabled} label="Session ID" defaultValue={config.sessionId} setValue={(v) => handleChange("sessionId", v)} />
-      <Input disabled={disabled} label="Participant ID" defaultValue={config.participantId} setValue={(v) => handleChange("participantId", v)} />
-      <Input disabled={disabled} label="Frames per Second" type="number" defaultValue={config.fps} setValue={(v) => handleChange("fps", v)} />
+      <Input disabled={disabled} label="Session ID" value={config.sessionId} setValue={(v) => handleChange("sessionId", v)} />
+      <Input disabled={disabled} label="Participant ID" value={config.participantId} setValue={(v) => handleChange("participantId", v)} />
+      <Input disabled={disabled} label="Frames per Second" type="number" value={config.fps} setValue={(v) => handleChange("fps", v)} />
       <Input disabled={disabled} label="Background Video" type="checkbox" defaultChecked={config.background} setValue={(v) => handleChange("background", v)} />
-      <Input disabled={disabled} label="Video width (px)" type="number" defaultValue={config.width} setValue={(v) => handleChange("width", v)} />
-      <Input disabled={disabled} label="Video height (px)" type="number" defaultValue={config.height} setValue={(v) => handleChange("height", v)} />
-      <Input disabled={disabled} label="QR Code Size (px)" type="number" defaultValue={config.qrCodeSize} setValue={(v) => handleChange("qrCodeSize", v)} />
+      <Input disabled={disabled} label="Video width (px)" type="number" value={config.width} setValue={(v) => handleChange("width", v)} />
+      <Input disabled={disabled} label="Video height (px)" type="number" value={config.height} setValue={(v) => handleChange("height", v)} />
+      <Input disabled={disabled} label="QR Code Size (px)" type="number" value={config.qrCodeSize} setValue={(v) => handleChange("qrCodeSize", v)} />
       <Input disabled={disabled} label="Print Time" type="checkbox" defaultChecked={config.printTime} setValue={(v) => handleChange("printTime", v)} />
+      <Input disabled={disabled} label="Ping API (once per frame)" type="checkbox" defaultChecked={config.ping} setValue={(v) => handleChange("ping", v)} />
       <Input disabled={disabled} label="Outline QR Code (Debug)" type="checkbox" defaultChecked={config.outlineQrCode} setValue={(v) => handleChange("outlineQrCode", v)} />
       <button type="submit" disabled={disabled} hidden />
     </form>
@@ -580,27 +627,18 @@ function Evaluation(props: {
 
       console.log(baseOptions);
 
-
       const primaryData = {
         labels: labels,
         datasets: [
-          // {
-          //   label: "Latency-Error (WIP based on wrong data)",
-          //   backgroundColor: colors.TUMAccentBlue,
-          //   borderColor: colors.TUMAccentBlue,
-          //   data: slicedData.map(d => d.latency - d.latencyMethodRuntime),
-          //   fill: false,
-          // }, 
           {
             label: "Latency",
             backgroundColor: colors.TUMBlue,
             borderColor: colors.TUMBlue,
             data: slicedData.map(d => d.latency),
-            // fill: 0,
           }, {
             label: "True Latency",
-            backgroundColor: colors.TUMAccentLightBlue,
-            borderColor: colors.TUMAccentLightBlue,
+            backgroundColor: colors.TUMAccentOrange,
+            borderColor: colors.TUMAccentOrange,
             data: slicedData.map(d => d.trueLatency),
             hidden: true,
           }, {
@@ -611,13 +649,26 @@ function Evaluation(props: {
             hidden: true,
           }, {
             label: "QR Code Generation Runtime",
-            backgroundColor: colors.TUMAccentOrange,
-            borderColor: colors.TUMAccentOrange,
+            backgroundColor: colors.TUMAccentGreen,
+            borderColor: colors.TUMAccentGreen,
             data: slicedData.map(d => d.qrCodeGenerationTime),
             hidden: true,
           }
         ],
       };
+
+      // Add ping dataset to the above primaryData, if recorded
+      const hasPingData = slicedData.find(d => !!d.ping) !== undefined;
+      if (hasPingData) {
+        const pingRttDataSet = {
+          label: "Ping RTT",
+          backgroundColor: colors.TUMSecondaryBlue2,
+          borderColor: colors.TUMSecondaryBlue2,
+          data: slicedData.map(d => d.ping?.rtt),
+        };
+        primaryData.datasets.push(pingRttDataSet);
+      }
+
       const primaryOptions = {
         ...baseOptions,
         scales: {
@@ -743,6 +794,7 @@ function Evaluation(props: {
       {evaluation ?
         <>
           <div className="evaluationOverview">
+            <h3 className="evalSection">Video Latency &amp; General</h3>
             <label>Data Points: </label><span>{evaluation.dataPoints}</span>
             <label>Duration: </label><span>{evaluation.durationMin}m,&nbsp;{evaluation.durationSec}s,&nbsp;{evaluation.durationMs}ms</span>
             <label>Invalid Latency Data Points*: </label><span>{evaluation.invalidLatencyDataPoints} ({evaluation.invalidLatencyDataPointsPercent}%)</span>
@@ -757,6 +809,18 @@ function Evaluation(props: {
             <label>Median QR Code Generation Time**: </label><span>{evaluation.medianQrCodeGenTime}ms</span>
             <label>Average Latency Calculation Runtime***: </label><span>{evaluation.avgQrCodeGenTime}ms</span>
             <label>Median Latency Calculation Runtime***: </label><span>{evaluation.medianQrCodeGenTime}ms</span>
+            {
+              evaluation.ping ? <>
+                <h3 className="evalSection">API Ping Data</h3>
+                <label>Missing Ping Data Points:</label><span>{evaluation.ping.missingPingDataPoints} ({evaluation.ping.missingPingDataPointsPercent}%)</span>
+                <label>Average RTT:</label><span>{evaluation.ping.avgPingRtt}</span>
+                <label>Median RTT:</label><span>{evaluation.ping.medianPingRtt}</span>
+                <label>Average Time To Server:</label><span>{evaluation.ping.avgPingTimeToServer}</span>
+                <label>Median Time To Server:</label><span>{evaluation.ping.medianPingTimeToServer}</span>
+                <label>Average Time Back:</label><span>{evaluation.ping.avgPingTimeBack}</span>
+                <label>Median Time Back:</label><span>{evaluation.ping.medianPingTimeBack}</span>
+              </> : <h3 className="evalSection">No API Ping Data</h3>
+            }
           </div>
           <p className="note">*:&nbsp;Invalid latency measurements, likely caused by the QR-Code detection / parsing failing. The cause for a failing QR-Code detection could be its size, especially when WebRTC reduces the frame size.</p>
           <p className="note">**:&nbsp;Runtime of QR Code generation before a frame is sent. Affects latency. Missing data points mean error(s) during mapping.</p>

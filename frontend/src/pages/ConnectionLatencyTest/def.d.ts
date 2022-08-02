@@ -8,6 +8,13 @@ export interface TestConfigObj {
 	qrCodeSize: number;
 	printTime: boolean;
 	outlineQrCode: boolean;
+	ping: boolean;
+}
+
+export interface PingData {
+	sent: number,
+	received: number,
+	serverTime: number,
 }
 
 export interface LocalStreamData {
@@ -31,6 +38,22 @@ export interface RemoteStreamData {
 export interface MergedData extends RemoteStreamData {
 	qrCodeGenerationTime: number;
 	trueLatency: number;
+	ping?: {
+		rtt: number;
+		timeToServer: number;
+		timeBack: number;
+	};
+}
+
+export interface PingEvaluation {
+	missingPingDataPoints: number;
+	missingPingDataPointsPercent: number;
+	avgPingRtt: number;
+	medianPingRtt: number;
+	avgPingTimeToServer: number;
+	medianPingTimeToServer: number;
+	avgPingTimeBack: number;
+	medianPingTimeBack: number;
 }
 
 export interface EvaluationResults {
@@ -53,6 +76,7 @@ export interface EvaluationResults {
 	medianLatencyMethod: number;
 	avgFps: number;
 	medianFps: number;
+	ping?: PingEvaluation;
 }
 
 declare global {

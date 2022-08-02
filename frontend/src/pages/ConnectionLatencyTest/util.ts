@@ -1,4 +1,4 @@
-import { EvaluationResults, MergedData } from "./def";
+import { EvaluationResults, MergedData, PingEvaluation } from "./def";
 
 /** Calculate average */
 export function avg(arr: number[]) {
@@ -71,10 +71,44 @@ export function calculateEvaluation(data: MergedData[], log = true): EvaluationR
 	const avgQrCodeGenTime = avg(qrCodeGenTimeArrFiltered);
 	const medianQrCodeGenTime = median(qrCodeGenTimeArrFiltered);
 
-	// Latency method / qr code parsing method
+	// Latency method / QR code parsing method
 	const latencyMethodArr = data.map(entry => entry.latencyMethodRuntime);
 	const avgLatencyMethod = avg(latencyMethodArr);
 	const medianLatencyMethod = median(latencyMethodArr);
+
+	// Ping data
+	const hasPingData = data.find(e => !!e.ping) !== undefined;
+	let ping: PingEvaluation | undefined;
+	if (hasPingData) {
+		const pingData = data.map(entry => entry.ping);
+		const pingDataFiltered = pingData.filter(d => d !== undefined);
+
+		const missingPingDataPoints = pingData.length - pingDataFiltered.length;
+		const missingPingDataPointsPercent = Math.round((missingPingDataPoints / data.length) * 100);
+
+		const rtt = pingDataFiltered.map(d => d.rtt);
+		const avgPingRtt = avg(rtt);
+		const medianPingRtt = median(rtt);
+
+		const timeToServer = pingDataFiltered.map(d => d.timeToServer);
+		const avgPingTimeToServer = avg(timeToServer);
+		const medianPingTimeToServer = median(timeToServer);
+
+		const timeBack = pingDataFiltered.map(d => d.timeBack);
+		const avgPingTimeBack = avg(timeBack);
+		const medianPingTimeBack = median(timeBack);
+
+		ping = {
+			missingPingDataPoints,
+			missingPingDataPointsPercent,
+			avgPingRtt,
+			medianPingRtt,
+			avgPingTimeToServer,
+			medianPingTimeToServer,
+			avgPingTimeBack,
+			medianPingTimeBack
+		};
+	}
 
 	if (log) {
 		console.group("Evaluation");
@@ -96,6 +130,22 @@ export function calculateEvaluation(data: MergedData[], log = true): EvaluationR
 		console.log("Average Latency Method Runtime:", avgLatencyMethod, "ms");
 		console.log("Median Latency Method Runtime:", medianLatencyMethod, "ms");
 		console.groupEnd();
+
+		if (hasPingData) {
+			console.group("Ping API");
+			console.log(`Missing Ping Data Points: ${ping.missingPingDataPoints} (${ping.missingPingDataPointsPercent}%)`);
+			console.log("Average RTT:", ping.avgPingRtt, "ms");
+			console.log("Median RTT:", ping.medianPingRtt, "ms");
+			console.log("Average Time To Server:", ping.avgPingTimeToServer, "ms");
+			console.log("Median Time To Server:", ping.medianPingTimeToServer, "ms");
+			console.log("Average Time Back:", ping.avgPingTimeBack, "ms");
+			console.log("Median Time Back:", ping.medianPingTimeBack, "ms");
+			console.groupEnd();
+		} else {
+			console.group("No ping data found");
+			console.groupEnd();
+		}
+
 		console.groupEnd();
 	}
 
@@ -118,6 +168,7 @@ export function calculateEvaluation(data: MergedData[], log = true): EvaluationR
 		avgLatencyMethod,
 		medianLatencyMethod,
 		avgFps,
-		medianFps
+		medianFps,
+		ping
 	};
 }
