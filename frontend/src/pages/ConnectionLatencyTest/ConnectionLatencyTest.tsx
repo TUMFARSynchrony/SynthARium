@@ -621,6 +621,7 @@ function Evaluation(props: {
       const slicedData = props.mergedData.slice(from, to);
       const labels = slicedData.map(d => d.frame);
       const baseOptions = {
+        maintainAspectRatio: false,
         animation: {
           duration: 0
         },
@@ -734,7 +735,6 @@ function Evaluation(props: {
       };
       const fpsOptions = {
         ...baseOptions,
-        maintainAspectRatio: false,
         scales: {
           x: {
             position: "top" as any,
@@ -778,7 +778,6 @@ function Evaluation(props: {
       };
       const dimensionsOptions = {
         ...baseOptions,
-        maintainAspectRatio: false,
         scales: {
           x: {
             position: "top" as any,
@@ -851,8 +850,8 @@ function Evaluation(props: {
             <label>Invalid Latency Data Points*: </label><span>{evaluation.invalidLatencyDataPoints} ({evaluation.invalidLatencyDataPointsPercent}%)</span>
             <label>Average Latency: </label><span>{evaluation.avgLatency}ms</span>
             <label>Median Latency: </label><span>{evaluation.medianLatency}ms</span>
-            <label>Average True Latency: </label><span>{evaluation.avgTrueLatency}ms</span>
-            <label>Median True Latency: </label><span>{evaluation.medianTrueLatency}ms</span>
+            <label title="True Latency = Latency - QR Code Generation Time">Average True Latency: </label><span>{evaluation.avgTrueLatency}ms</span>
+            <label title="True Latency = Latency - QR Code Generation Time">Median True Latency: </label><span>{evaluation.medianTrueLatency}ms</span>
             <label>Average FPS: </label><span>{evaluation.avgFps}fps</span>
             <label>Median FPS: </label><span>{evaluation.medianFps}fps</span>
             <label>Missing QR Code Generation Data Points**: </label><span>{evaluation.missingQRCodeGenDataPoints} ({evaluation.missingQRCodeGenDataPointsPercent}%)</span>
@@ -864,12 +863,12 @@ function Evaluation(props: {
               evaluation.ping ? <>
                 <h3 className="evalSection">API Ping Data</h3>
                 <label>Missing Ping Data Points:</label><span>{evaluation.ping.missingPingDataPoints} ({evaluation.ping.missingPingDataPointsPercent}%)</span>
-                <label>Average RTT:</label><span>{evaluation.ping.avgPingRtt}</span>
-                <label>Median RTT:</label><span>{evaluation.ping.medianPingRtt}</span>
-                <label>Average Time To Server:</label><span>{evaluation.ping.avgPingTimeToServer}</span>
-                <label>Median Time To Server:</label><span>{evaluation.ping.medianPingTimeToServer}</span>
-                <label>Average Time Back:</label><span>{evaluation.ping.avgPingTimeBack}</span>
-                <label>Median Time Back:</label><span>{evaluation.ping.medianPingTimeBack}</span>
+                <label>Average RTT:</label><span>{evaluation.ping.avgPingRtt}ms</span>
+                <label>Median RTT:</label><span>{evaluation.ping.medianPingRtt}ms</span>
+                <label>Average Time To Server:</label><span>{evaluation.ping.avgPingTimeToServer}ms</span>
+                <label>Median Time To Server:</label><span>{evaluation.ping.medianPingTimeToServer}ms</span>
+                <label>Average Time Back:</label><span>{evaluation.ping.avgPingTimeBack}ms</span>
+                <label>Median Time Back:</label><span>{evaluation.ping.medianPingTimeBack}ms</span>
               </> : <h3 className="evalSection">No API Ping Data</h3>
             }
           </div>
@@ -882,7 +881,9 @@ function Evaluation(props: {
 
       <p>Click the labels above the graphs to enable or disable the corresponding dataset.</p>
       <h2>Latency</h2>
-      <canvas ref={primaryChartCanvasRef}></canvas>
+      <div style={{ height: "90vh", position: "relative" }}>
+        <canvas ref={primaryChartCanvasRef}></canvas>
+      </div>
       <h2>Frames Per Second (FPS)</h2>
       <div style={{ height: "min(250px, 30vh)", position: "relative" }}>
         <canvas ref={fpsChartCanvasRef}></canvas>
