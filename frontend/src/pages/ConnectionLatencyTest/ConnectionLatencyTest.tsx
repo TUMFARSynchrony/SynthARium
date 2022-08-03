@@ -18,9 +18,8 @@ const ConnectionLatencyTest = (props: {
   localStream?: MediaStream,
   setLocalStream: (localStream: MediaStream) => void,
   connection: Connection,
-  setConnection: (connection: Connection) => void,
 }) => {
-  const connection = props.connection;
+  const [connection, setConnection] = useState(props.connection);
   const defaultConfig = {
     participantId: connection.participantId ?? "",
     sessionId: connection.sessionId ?? "",
@@ -31,6 +30,7 @@ const ConnectionLatencyTest = (props: {
     qrCodeSize: 200,
     printTime: true,
     outlineQrCode: false,
+    connectionLogging: false,
     ping: true,
     pingData: "",
   };
@@ -55,14 +55,18 @@ const ConnectionLatencyTest = (props: {
       setConnectionState(state);
       if (state === ConnectionState.CLOSED || state === ConnectionState.FAILED) {
         stopped.current = true;
-        console.group("Remote Stream Data");
-        console.log(remoteStreamData);
-        console.groupEnd();
-        console.group("Local Stream Data");
-        console.log(localStreamData);
-        console.log("avg", avg(localStreamData.map(d => d.qrCodeGenerationTime)));
-        console.log("median", median(localStreamData.map(d => d.qrCodeGenerationTime)));
-        console.groupEnd();
+        if (remoteStreamData.length > 0) {
+          console.group("Remote Stream Data");
+          console.log(remoteStreamData);
+          console.groupEnd();
+        }
+        if (localStreamData.length > 0) {
+          console.group("Local Stream Data");
+          console.log(localStreamData);
+          console.log("avg", avg(localStreamData.map(d => d.qrCodeGenerationTime)));
+          console.log("median", median(localStreamData.map(d => d.qrCodeGenerationTime)));
+          console.groupEnd();
+        }
       }
     };
 
@@ -110,6 +114,11 @@ const ConnectionLatencyTest = (props: {
   /** Start the connection experiment */
   const start = async () => {
     console.log("Start Test. Config:", config);
+
+    // Replace connection to set participantId, sessionId and logging
+    const userType = config.sessionId && config.participantId ? "participant" : "experimenter";
+    const connection = new Connection(userType, config.sessionId, config.participantId, config.connectionLogging);
+    setConnection(connection);
 
     // Setup local canvas stream
     const localCanvasStream = canvasLocalRef.current.captureStream();
@@ -404,7 +413,7 @@ const ConnectionLatencyTest = (props: {
       break;
     case ConnectionState.CONNECTING:
     case ConnectionState.CONNECTED:
-      mainActionBtn = <button onClick={() => stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Experiment</button>;
+      mainActionBtn = <button onClick={() => stop()} disabled={connectionState !== ConnectionState.CONNECTED}>Stop Experiment</button>;
       break;
     default:
       mainActionBtn = <button onClick={() => window.location.reload()}>Reload Page</button>;;
@@ -524,6 +533,7 @@ function TestConfig(props: {
       <Input disabled={disabled} label="Ping API (once per frame)" type="checkbox" defaultChecked={config.ping} setValue={(v) => handleChange("ping", v)} />
       <Input disabled={disabled || !config.ping} label="Optional Ping Data" value={config.pingData} setValue={(v) => handleChange("pingData", v)} />
       <Input disabled={disabled} label="Outline QR Code (Debug)" type="checkbox" defaultChecked={config.outlineQrCode} setValue={(v) => handleChange("outlineQrCode", v)} />
+      <Input disabled={disabled} label="Connection Log (Debug)" type="checkbox" defaultChecked={config.connectionLogging} setValue={(v) => handleChange("connectionLogging", v)} />
       <button type="submit" disabled={disabled} hidden />
     </form>
   );

@@ -8,6 +8,7 @@ export interface TestConfigObj {
 	qrCodeSize: number;
 	printTime: boolean;
 	outlineQrCode: boolean;
+	connectionLogging: boolean;
 	ping: boolean;
 	pingData: string;
 }

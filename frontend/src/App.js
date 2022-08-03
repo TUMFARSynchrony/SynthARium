@@ -248,7 +248,6 @@ function App() {
                   localStream={localStream}
                   setLocalStream={setLocalStream}
                   connection={connection}
-                  setConnection={setConnection}
                 />
               ) : (
                 "loading"
