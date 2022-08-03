@@ -70,7 +70,25 @@ class Server:
         # Serve frontend build
         # Redirect sub-pages to index (client handles routing -> single-page app)
         if self._config.serve_frontend:
-            routes.append(self._app.router.add_get("/{_:.*}", self.get_index))
+            # Add new pages bellow!
+
+            # Using a dynamic relay conflicts with the static hosting, if the same
+            # prefix is used.  Therefore pages must be added manually.
+
+            # The alternative, which would need a custom prefix for the frontend, is:
+            # routes.append(self._app.router.add_get("/<prefix>{_:.*}", self.get_index))
+            pages = [
+                "/",
+                "/postProcessingRoom",
+                "/experimentRoom",
+                "/watchingRoom",
+                "/sessionForm",
+                "/connectionTest",
+                "/connectionLatencyTest",
+            ]
+            for page in pages:
+                routes.append(self._app.router.add_get(page, self.get_index))
+
             routes.extend(self._app.add_routes([web.static("/", FRONTEND_BUILD_DIR)]))
         else:
             # If not serving frontend, server hello world on index
