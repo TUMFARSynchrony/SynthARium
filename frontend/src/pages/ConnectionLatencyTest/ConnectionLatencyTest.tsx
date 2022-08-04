@@ -612,19 +612,29 @@ function Evaluation(props: {
       primaryChart.data.datasets = primaryData.datasets;
       // @ts-ignore - TS does not know the showLine attribute.
       primaryChart.options.showLine = showLines;
+      primaryChart.options.elements.point.radius = getPointRadius(from, to);
       primaryChart.update();
 
       fpsChart.data.labels = fpsData.labels;
       fpsChart.data.datasets = fpsData.datasets;
       // @ts-ignore - TS does not know the showLine attribute.
       fpsChart.options.showLine = showLines;
+      fpsChart.options.elements.point.radius = getPointRadius(from, to);
       fpsChart.update();
 
       dimensionsChart.data.labels = dimensionsData.labels;
       dimensionsChart.data.datasets = dimensionsData.datasets;
       // @ts-ignore - TS does not know the showLine attribute.
       dimensionsChart.options.showLine = showLines;
+      dimensionsChart.options.elements.point.radius = getPointRadius(from, to);
       dimensionsChart.update();
+    };
+
+    const getPointRadius = (from: number, to: number) => {
+      const diff = to - from;
+      if (diff > 15000) return 1.5;
+      if (diff > 10000) return 2;
+      return 3;
     };
 
     const getChartData = () => {
@@ -636,7 +646,44 @@ function Evaluation(props: {
           duration: 0
         },
         showLine: showLines,
+        elements: { point: { radius: getPointRadius(from, to) } },
         events: ["click"] as any, // Disables hover effects, which lag with large datasets
+      };
+
+      const timeAxis = {
+        grid: {
+          drawOnChartArea: true, // only want the grid lines for one axis to show up
+        },
+        title: {
+          display: true,
+          text: "Time"
+        },
+        ticks: {
+          callback: function (label: any) {
+            const frame = this.getLabelForValue(label);
+            const runtime = props.mergedData[frame].timestamp - props.mergedData[0].timestamp;
+            const [min, sec] = getDetailedTime(runtime);
+            if (min > 0) {
+              return `${min}m ${sec}s`;
+            } else {
+              return `${sec}s`;
+            }
+          }
+        },
+        beginAtZero: true
+      };
+
+      const frameNumAxis = {
+        position: "top" as any,
+        grid: {
+          drawOnChartArea: false, // only want the grid lines for one axis to show up
+        },
+        display: true,
+        title: {
+          display: true,
+          text: "Frame Number"
+        },
+        beginAtZero: true,
       };
 
       const primaryData = {
@@ -681,47 +728,17 @@ function Evaluation(props: {
         primaryData.datasets.push(pingRttDataSet);
       }
 
-      const secondXAxis = {
-        grid: {
-          drawOnChartArea: false, // only want the grid lines for one axis to show up
-        },
-        title: {
-          display: true,
-          text: "Time"
-        },
-        ticks: {
-          callback: function (label: any) {
-            const frame = this.getLabelForValue(label);
-            const runtime = props.mergedData[frame].timestamp - props.mergedData[0].timestamp;
-            const [min, sec] = getDetailedTime(runtime);
-            if (min > 0) {
-              return `${min}m ${sec}s`;
-            } else {
-              return `${sec}s`;
-            }
-          }
-        },
-        beginAtZero: true
-      };
-
       const primaryOptions = {
         ...baseOptions,
         scales: {
-          x: {
-            position: "top" as any,
-            display: true,
-            title: {
-              display: true,
-              text: "Frame Number"
-            },
-          },
+          x: timeAxis,
           y: {
             display: true,
             title: {
               display: true,
               text: "Latency / Runtime"
             },
-            beginAtZero: true,
+            // beginAtZero: true,
             ticks: {
               // Add "ms" to y-axis label
               callback: function msAxisCallback(label: any) {
@@ -730,7 +747,7 @@ function Evaluation(props: {
               }
             }
           },
-          xAxis2: secondXAxis,
+          xAxis2: frameNumAxis,
         }
       };
 
@@ -746,14 +763,7 @@ function Evaluation(props: {
       const fpsOptions = {
         ...baseOptions,
         scales: {
-          x: {
-            position: "top" as any,
-            display: true,
-            title: {
-              display: true,
-              text: "Frame Number"
-            }
-          },
+          x: timeAxis,
           y: {
             display: true,
             title: {
@@ -762,13 +772,10 @@ function Evaluation(props: {
             },
             ticks: {
               // Add "ms" to y-axis label
-              callback: function msAxisCallback(label: any) {
-                const ms = this.getLabelForValue(label);
-                return `${ms}fps`;
-              }
+              callback: (v: any) => `${v}fps`
             }
           },
-          xAxis2: secondXAxis,
+          xAxis2: frameNumAxis,
         }
       };
 
@@ -789,14 +796,7 @@ function Evaluation(props: {
       const dimensionsOptions = {
         ...baseOptions,
         scales: {
-          x: {
-            position: "top" as any,
-            display: true,
-            title: {
-              display: true,
-              text: "Frame Number"
-            }
-          },
+          x: timeAxis,
           y: {
             display: true,
             title: {
@@ -805,13 +805,10 @@ function Evaluation(props: {
             },
             ticks: {
               // Add "ms" to y-axis label
-              callback: function msAxisCallback(label: any) {
-                const ms = this.getLabelForValue(label);
-                return `${ms}px`;
-              }
+              callback: (v: any) => `${v}px`
             }
           },
-          xAxis2: secondXAxis,
+          xAxis2: frameNumAxis,
         }
       };
 
