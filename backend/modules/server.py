@@ -58,7 +58,6 @@ class Server:
         self._logger = logging.getLogger("Server")
         self._hub_handle_offer = hub_handle_offer
         self._config = config
-        self._index = self._read_index()
 
         self._app = web.Application()
         self._app.on_shutdown.append(self._shutdown)
@@ -70,6 +69,7 @@ class Server:
         # Serve frontend build
         # Redirect sub-pages to index (client handles routing -> single-page app)
         if self._config.serve_frontend:
+            self._index = self._read_index()
             # Add new pages bellow!
 
             # Using a dynamic relay conflicts with the static hosting, if the same
@@ -91,6 +91,7 @@ class Server:
 
             routes.extend(self._app.add_routes([web.static("/", FRONTEND_BUILD_DIR)]))
         else:
+            self._index = ""
             # If not serving frontend, server hello world on index
             routes.append(self._app.router.add_get("/", self.get_hello_world))
 
