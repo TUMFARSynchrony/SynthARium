@@ -236,8 +236,8 @@ class Connection(ConnectionInterface):
     async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         if subconnection_id not in self._sub_connections:
-            self._logger.error(
-                "Failed to remove subconnection, unknown subconnection_id: "
+            self._logger.debug(
+                "Cannot remove subconnection, unknown subconnection_id: "
                 f"{subconnection_id}"
             )
             return
