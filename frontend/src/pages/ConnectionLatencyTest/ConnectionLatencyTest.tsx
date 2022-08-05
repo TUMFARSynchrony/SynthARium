@@ -126,7 +126,7 @@ const ConnectionLatencyTest = (props: {
 
     // Start update loop for local stream canvas
     try {
-      await updateLocalCanvas();
+      await updateLocalCanvas(connection);
     } catch (error) {
       console.warn("Aborting start");
       return;
@@ -309,7 +309,7 @@ const ConnectionLatencyTest = (props: {
     }
   };
 
-  const updateLocalCanvas = async () => {
+  const updateLocalCanvas = async (connection: Connection) => {
     const context = canvasLocalRef.current.getContext("2d");
     const localBackgroundStream = await getLocalStream();
     if (!localBackgroundStream) throw new Error("Failed to get local stream");
