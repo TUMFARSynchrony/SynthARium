@@ -6,7 +6,7 @@ import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import jsQR from "jsqr";
 import Chart from "chart.js/auto";
-import { avg, calculateEvaluation, download, getDetailedTime, median } from "./util";
+import { avg, calculateEvaluation, download, getDetailedTime, getRandomString, median } from "./util";
 import { EvaluationResults, LocalStreamData, MergedData, RemoteStreamData, PingData, TestConfigObj } from "./def";
 
 var QRCode = require("qrcode");
@@ -170,7 +170,7 @@ const ConnectionLatencyTest = (props: {
         ping: pingData ? {
           rtt: pingData.received - pingData.sent,
           timeToServer: pingData.serverTime - pingData.sent,
-          timeBack: pingData.received - pingData.serverTime
+          timeBack: Math.round(pingData.received) - pingData.serverTime // Round to adjust to missing accuracy in serverTime
         } : undefined
       };
     });
@@ -520,6 +520,11 @@ function TestConfig(props: {
     console.log("set", key, "to", value, newConfig);
   };
 
+  const setPingData = (length: number) => {
+    const str = getRandomString(length);
+    handleChange("pingData", str);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="testConfig container">
       <Input disabled={disabled} label="Session ID" value={config.sessionId} setValue={(v) => handleChange("sessionId", v)} />
@@ -531,7 +536,7 @@ function TestConfig(props: {
       <Input disabled={disabled} label="QR Code Size (px)" type="number" value={config.qrCodeSize} setValue={(v) => handleChange("qrCodeSize", v)} />
       <Input disabled={disabled} label="Print Time" type="checkbox" defaultChecked={config.printTime} setValue={(v) => handleChange("printTime", v)} />
       <Input disabled={disabled} label="Ping API (once per frame)" type="checkbox" defaultChecked={config.ping} setValue={(v) => handleChange("ping", v)} />
-      <Input disabled={disabled || !config.ping} label="Optional Ping Data" value={config.pingData} setValue={(v) => handleChange("pingData", v)} />
+      <Input disabled={disabled || !config.ping} label="Optional Ping Data Size (bytes)" type="number" value={config.pingData.length} setValue={setPingData} />
       <Input disabled={disabled} label="Outline QR Code (Debug)" type="checkbox" defaultChecked={config.outlineQrCode} setValue={(v) => handleChange("outlineQrCode", v)} />
       <Input disabled={disabled} label="Connection Log (Debug)" type="checkbox" defaultChecked={config.connectionLogging} setValue={(v) => handleChange("connectionLogging", v)} />
       <button type="submit" disabled={disabled} hidden />

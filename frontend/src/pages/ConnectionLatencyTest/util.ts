@@ -172,3 +172,12 @@ export function calculateEvaluation(data: MergedData[], log = true): EvaluationR
 		ping
 	};
 }
+
+export function getRandomString(length: number) {
+	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	let str = "";
+	for (let i = 0; i < length; i++) {
+		str += characters.charAt(Math.floor(Math.random() * characters.length));
+	}
+	return str;
+}
