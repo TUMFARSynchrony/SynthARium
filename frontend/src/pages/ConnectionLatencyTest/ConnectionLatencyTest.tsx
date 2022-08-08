@@ -862,15 +862,15 @@ function Evaluation(props: {
             <label>Invalid Latency Data Points*: </label><span>{evaluation.invalidLatencyDataPoints} ({evaluation.invalidLatencyDataPointsPercent}%)</span>
             <label>Average Latency: </label><span>{evaluation.avgLatency}ms</span>
             <label>Median Latency: </label><span>{evaluation.medianLatency}ms</span>
-            <label title="True Latency = Latency - QR Code Generation Time">Average True Latency: </label><span>{evaluation.avgTrueLatency}ms</span>
-            <label title="True Latency = Latency - QR Code Generation Time">Median True Latency: </label><span>{evaluation.medianTrueLatency}ms</span>
+            <label title="Error Corrected Latency = Latency - QR Code Generation Time">Average Error Corrected Latency: </label><span>{evaluation.avgTrueLatency}ms</span>
+            <label title="Error Corrected Latency = Latency - QR Code Generation Time">Median Error Corrected Latency: </label><span>{evaluation.medianTrueLatency}ms</span>
             <label>Average FPS: </label><span>{evaluation.avgFps}fps</span>
             <label>Median FPS: </label><span>{evaluation.medianFps}fps</span>
             <label>Missing QR Code Generation Data Points**: </label><span>{evaluation.missingQRCodeGenDataPoints} ({evaluation.missingQRCodeGenDataPointsPercent}%)</span>
             <label>Average QR Code Generation Time**: </label><span>{evaluation.avgQrCodeGenTime}ms</span>
             <label>Median QR Code Generation Time**: </label><span>{evaluation.medianQrCodeGenTime}ms</span>
-            <label>Average Latency Calculation Runtime***: </label><span>{evaluation.avgQrCodeGenTime}ms</span>
-            <label>Median Latency Calculation Runtime***: </label><span>{evaluation.medianQrCodeGenTime}ms</span>
+            <label>Average Latency Calculation Runtime***: </label><span>{evaluation.avgLatencyMethod}ms</span>
+            <label>Median Latency Calculation Runtime***: </label><span>{evaluation.medianLatencyMethod}ms</span>
             {
               evaluation.ping ? <>
                 <h3 className="evalSection">API Ping Data</h3>
