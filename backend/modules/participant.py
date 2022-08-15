@@ -21,6 +21,7 @@ from custom_types.success import SuccessDict
 from modules.config import Config
 import modules.experiment as _exp
 from modules.filter_api import FilterAPI
+from modules.experiment_state import ExperimentState
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
@@ -161,12 +162,50 @@ class Participant(User):
                 coros.append(self.add_subscriber(e))
 
             # Add stream to all participants and all participants streams to self
-            for p in self._experiment.participants.values():
-                if p is self:
-                    continue
-                coros.append(self.add_subscriber(p))
-                coros.append(p.add_subscriber(self))
+            if self._experiment.state == ExperimentState.RUNNING:
+                coros.append(self._subscribe_and_add_subscribers())
+            else:
+                # Wait for experiment to start (state = `RUNNING`) before subscribing
+                self._subscribe_later()
 
+            await asyncio.gather(*coros)
+
+    async def _subscribe_and_add_subscribers(self):
+        """Subscribe to all participants in experiment and add them as subscribers."""
+        coros: list[Coroutine] = []
+        for p in self._experiment.participants.values():
+            if p is self:
+                continue
+            coros.append(self.add_subscriber(p))
+            coros.append(p.add_subscriber(self))
+        await asyncio.gather(*coros)
+
+    def _subscribe_later(self):
+        """Wait for experiment state to be running, then subscribe to others.
+
+        Notes
+        -----
+        Uses event handlers for the connection `state` event and user (self)
+        `disconnected` event. The latter is used to remove the connection event handler.
+        """
+
+        @self.on("disconnected")
+        def _remove_subscribe_callback(_) -> None:
+            """Remove listeners from experiment when participant disconnects."""
+            try:
+                self._experiment.remove_listener("state", _subscribe_callback)
+            except KeyError:
+                pass
+
+        @self._experiment.on("state")
+        async def _subscribe_callback(state: ExperimentState) -> None:
+            """If `state` is `RUNNING`, subscribe to all participants in experiment."""
+            if state != ExperimentState.RUNNING:
+                return
+
+            _remove_subscribe_callback(None)
+            participants = self._experiment.participants.values()
+            coros = [p.add_subscriber(self) for p in participants if p != self]
             await asyncio.gather(*coros)
 
     async def _handle_chat(self, data: Any) -> MessageDict:
