@@ -2,10 +2,7 @@
 
 ## Prerequisites
 
--   python 3.10.x
-    -   Previous versions may work, but are not yet checked
-
-**TODO** check compatibility with older python versions
+-   At least Python 3.10.x
 
 ## Installing dependencies
 
@@ -15,6 +12,7 @@ Execute `pip install -r requirements.txt` inside the backend folder
 
 The backend can be configured using the `backend/config.json`.
 
+-   `experimenter_password` - str: password experimenters must provide to authenticate themselves
 -   `host` - str : host address the backend should use
 -   `port` - int : port the backend should use
 -   `environment` - str : `dev` or `prod`
