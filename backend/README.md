@@ -1,14 +1,26 @@
-# Setup
+# Setup & Usage
+
+The following steps only concern the backend (also referred to as server). In case you need to build the frontend yourself, see [root README](../README.md#building--starting), or see the [frontend README](../frontend/README.md) for running a frontend development server.
 
 ## Prerequisites
 
--   At least Python 3.10.x
+-   At least Python 3.10.x - [python.org](https://www.python.org/)
+-   pip - usually comes with python.
 
-## Installing dependencies
+## Setup
 
-Execute `pip install -r requirements.txt` inside the backend folder
+-   Execute `pip install -r requirements.txt` inside the backend folder. This will install all server requirements.
+-   Take a look at the config `backend/config.json` and change the `experimenter_password`. Details can be seen in the [configuration section](#configuration) bellow.
 
-## Configuration
+## Start
+
+To start the server, execute `python3 main.py` inside the `backend` folder.
+
+Depending on your python installation, `python3` may need to be replaced with `py` or `python`.
+
+For testing, the `testing_main.py` provides an alternative to the above `main.py`. It starts the server the same way `main.py` does, but also creates and starts an experiment for the session `bbbef1d7d0`. This was used for quick testing with participants, to avoid the need to connect as experimenter before each test.
+
+# Configuration
 
 The backend can be configured using the `backend/config.json`.
 
@@ -28,7 +40,7 @@ The backend can be configured using the `backend/config.json`.
 -   `experimenter_multiprocessing` - bool : If true, experimenter connections will be executed on independent processes
 -   `participant_multiprocessing` - bool : If true, participant connections will be executed on independent processes
 
-### Logging overview
+## Logging overview
 
 The following logging levels are available for `log` and `log_dependencies` in the [configuration](#configuration):
 
@@ -43,7 +55,7 @@ The following logging levels are available for `log` and `log_dependencies` in t
 -   If the logger is set to `INFO`, information with the debug level is ignored and only important events are logged, possibly with less detail.
 -   If the logger is set to `DEBUG` everything is logged. This also includes additional information that can be helpful in debugging.
 
-## Using a SSL Certificate
+# Using a SSL Certificate
 
 Most browsers only allow access to media devices (webcam, microphone, ...) if the website is localhost or HTTPS. Additionally, websites served over HTTPS can not make requests to HTTP servers. Therefore a SSL certificate is required to access the backend from other devices.
 
@@ -52,11 +64,11 @@ Then set `https` to `true` and start the server.
 
 In case the frontend dev server is used, make sure to update the backend server address there. See [frontend readme](./../frontend/README.md#configuring-the-development-server).
 
-### Acquiring a SSL Certificates
+## Acquiring a SSL Certificates
 
 If you want to conduct an experiment, you need to get a trusted SSL Certificate. One way to get free SSL certificates is [Let's Encrypt](https://letsencrypt.org/).
 
-### Using a Self Signed Certificate
+## Using a Self Signed Certificate
 
 For development and testing purposes, self signed certificates can be used. **Don't use self signed certificates for production!**
 
@@ -66,12 +78,6 @@ In case openssl is not an option, take a look at [Generating self-signed certifi
 
 When using a self signed certificate, your browser will likely warn you about it.
 To allow the frontend to connect to the server, you must manually "accept the risk" by directly opening the backend in the browser. The server will tell you its address after starting, it will look something like: https://127.0.0.1:8080.
-
-# Start
-
-Execute `python3 main.py`
-
-Depending on your system, `python3` can be replaced with `py` or `python`
 
 # Development Guidelines
 

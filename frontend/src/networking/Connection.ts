@@ -60,6 +60,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * @param userType type of user this connection identify as.
    * @param sessionId session Id. Only required / used if userType === "participant".
    * @param participantId participant Id. Only required / used if userType === "participant".
+   * @param experimenterPassword experimenter password, must match password set in `backend/config.json`. Only required / used if userType === "experimenter".
    * @param logging Whether logging should be enabled. passed to {@link ConnectionBase}
    * 
    * @throws Error if userType === "participant" and one of: participantId or sessionId are missing.  
