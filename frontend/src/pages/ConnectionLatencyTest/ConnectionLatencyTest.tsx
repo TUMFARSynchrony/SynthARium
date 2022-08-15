@@ -116,8 +116,8 @@ const ConnectionLatencyTest = (props: {
     console.log("Start Test. Config:", config);
 
     // Replace connection to set participantId, sessionId and logging
-    const userType = config.sessionId && config.participantId ? "participant" : "experimenter";
-    const connection = new Connection(userType, config.sessionId, config.participantId, config.connectionLogging);
+    const userType = "participant";
+    const connection = new Connection(userType, config.sessionId, config.participantId, undefined, config.connectionLogging,);
     setConnection(connection);
 
     // Setup local canvas stream

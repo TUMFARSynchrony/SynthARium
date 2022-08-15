@@ -46,6 +46,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   readonly api: EventHandler<any>;
   readonly sessionId?: string;
   readonly participantId?: string;
+  readonly experimenterPassword?: string;
   readonly userType: "participant" | "experimenter";
 
   private _state: ConnectionState;
@@ -69,14 +70,21 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     userType: "participant" | "experimenter",
     sessionId?: string,
     participantId?: string,
+    experimenterPassword?: string,
     logging: boolean = false
   ) {
     super(true, "Connection", logging);
+
+    // Check for missing parameters depending on userType
     if (userType === "participant" && (!participantId || !sessionId)) {
       throw new Error("userType participant requires the participantId and sessionId to be defined.");
+    } else if (userType === "experimenter" && !experimenterPassword) {
+      throw new Error("userType experimenter requires the experimenterPassword to be defined.");
     }
+
     this.sessionId = sessionId;
     this.participantId = participantId;
+    this.experimenterPassword = experimenterPassword;
     this.userType = userType;
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
@@ -303,6 +311,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
         sdp: offer.sdp,
         type: offer.type,
         user_type: "experimenter",
+        experimenter_password: this.experimenterPassword
       };
     }
     this.log("Sending initial offer");

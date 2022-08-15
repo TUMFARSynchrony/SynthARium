@@ -71,11 +71,14 @@ function App() {
 
     const sessionIdParam = searchParams.get("sessionId");
     const participantIdParam = searchParams.get("participantId");
+    const experimenterPasswordParam = searchParams.get("experimenterPassword");
     console.log("sessionIdParam", sessionIdParam);
     console.log("participantIdParam", participantIdParam);
+    console.log("experimenterPasswordParam", experimenterPasswordParam);
 
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
+    let experimenterPassword = experimenterPasswordParam ?? "";
     const userType =
       sessionId && participantId ? "participant" : "experimenter";
 
@@ -83,6 +86,12 @@ function App() {
     const isConnectionTestPage = (
       pathname === "/connectiontest" || pathname === "/connectionlatencytest"
     );
+
+    // TODO: get experimenter password before creating Connection, e.g. from "login" page
+    // The following solution using `prompt` is only a placeholder.
+    if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
+      experimenterPassword = prompt("Please insert experimenter password")
+    }
 
     const asyncStreamHelper = async (connection) => {
       const stream = await getLocalStream();
@@ -99,6 +108,7 @@ function App() {
       userType,
       sessionId,
       participantId,
+      experimenterPassword || "no-password-given", // "no-password-given" is a placeholder if experimenterPassword is an empty string
       true
     );
 
