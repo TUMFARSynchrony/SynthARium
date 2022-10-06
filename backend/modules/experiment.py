@@ -1,7 +1,7 @@
 """Provide the `Experiment` class."""
 import logging
-import time
 from typing import Any
+from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
@@ -14,8 +14,13 @@ import modules.experimenter as _experimenter
 import modules.participant as _participant
 
 
-class Experiment:
-    """Experiment representing a running session."""
+class Experiment(AsyncIOEventEmitter):
+    """Experiment representing a running session.
+
+    Extends AsyncIOEventEmitter, providing the following events:
+    - `state` : modules.experiment_state.ExperimentState
+        Emitted when the connection state changes.
+    """
 
     _logger: logging.Logger
     _state: ExperimentState
@@ -32,6 +37,7 @@ class Experiment:
             SessionData this experiment is based on. Will modify the session during
             execution.
         """
+        super().__init__()
         self._logger = logging.getLogger(f"Experiment-{session.id}")
         self._state = ExperimentState.WAITING
         self.session = session
@@ -47,6 +53,11 @@ class Experiment:
     def __repr__(self) -> str:
         """Get representation of this Experiment obj."""
         return f"Experiment({str(self)})"
+
+    @property
+    def state(self) -> ExperimentState:
+        """State the experiment is in."""
+        return self._state
 
     @property
     def participants(self):
@@ -79,7 +90,7 @@ class Experiment:
                 description="Experiment cant be started, state is not WAITING.",
             )
 
-        self._state = ExperimentState.RUNNING
+        self._set_state(ExperimentState.RUNNING)
         time = timestamp()
         self._logger.info(f"Experiment started. Start time: {time}")
         self.session.start_time = time
@@ -106,7 +117,7 @@ class Experiment:
                 description="Experiment is already stopped.",
             )
 
-        self._state = ExperimentState.ENDED
+        self._set_state(ExperimentState.ENDED)
         time = timestamp()
         self._logger.info(f"Experiment ended. End time: {time}")
         self.session.end_time = time
@@ -392,3 +403,19 @@ class Experiment:
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"
         )
+
+    def _set_state(self, state: ExperimentState) -> None:
+        """Change state and emit `state` event.
+
+        Aborts if current state is equal to the new state.
+
+        Parameters
+        ----------
+        state : modules.experiment_state.ExperimentState
+            New experiment state.
+        """
+        if self._state == state:
+            return
+
+        self._state = state
+        self.emit("state", self._state)

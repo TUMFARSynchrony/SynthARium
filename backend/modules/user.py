@@ -9,6 +9,7 @@ modules.experimenter.Experimenter : Experimenter implementation of User.
 from __future__ import annotations
 
 import logging
+import asyncio
 import traceback
 from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
@@ -86,6 +87,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __subscribers: dict[str, str]  # User ID -> subconnection_id
     __disconnected: bool
+    __lock: asyncio.Lock
 
     def __init__(
         self, id: str, muted_video: bool = False, muted_audio: bool = False
@@ -113,6 +115,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self.__subscribers = {}
         self.__disconnected = False
         self._connection = None
+        self.__lock = asyncio.Lock()
         self.on_message("PING", self._handle_ping)
 
     @property
@@ -250,23 +253,24 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             )
             return
 
-        # Avoid duplicate subscriptions
-        if user.id in self.__subscribers:
-            self._logger.debug(f"Avoid adding duplicate subscriber: {repr(user)}")
-            return
+        async with self.__lock:
+            # Avoid duplicate subscriptions
+            if user.id in self.__subscribers:
+                self._logger.debug(f"Avoid adding duplicate subscriber: {repr(user)}")
+                return
 
-        self._logger.debug(f"Adding subscriber: {repr(user)}")
-        if isinstance(user, _experimenter.Experimenter):
-            proposal = await self._connection.create_subscriber_proposal(self.id)
-        else:
-            proposal = await self._connection.create_subscriber_proposal(
-                self.get_summary()
-            )
+            self._logger.debug(f"Adding subscriber: {repr(user)}")
+            if isinstance(user, _experimenter.Experimenter):
+                proposal = await self._connection.create_subscriber_proposal(self.id)
+            else:
+                proposal = await self._connection.create_subscriber_proposal(
+                    self.get_summary()
+                )
 
-        msg = MessageDict(type="CONNECTION_PROPOSAL", data=proposal)
-        await user.send(msg)
+            msg = MessageDict(type="CONNECTION_PROPOSAL", data=proposal)
+            await user.send(msg)
 
-        self.__subscribers[user.id] = proposal["id"]
+            self.__subscribers[user.id] = proposal["id"]
 
         @user.once("disconnected")
         def _remove_subscriber(_):
