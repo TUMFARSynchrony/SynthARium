@@ -68,6 +68,8 @@ MESSAGE_TYPES = Literal[
     "BAN_NOTIFICATION",
     "MUTE",
     "SET_FILTERS",
+    "PING",
+    "PONG",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

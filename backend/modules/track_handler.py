@@ -20,6 +20,7 @@ from custom_types.filters import FilterDict
 from filters.rotate import RotationFilter
 from filters.edge_outline import EdgeOutlineFilter
 from filters.filter import Filter
+from filters.delay import DelayFilter
 from filters.mute import MuteVideoFilter, MuteAudioFilter
 from filters.api_test import FilterAPITestFilter
 
@@ -275,6 +276,8 @@ class TrackHandler(MediaStreamTrack):
                 return RotationFilter(filter_config, audio, video)
             case "EDGE_OUTLINE":
                 return EdgeOutlineFilter(filter_config, audio, video)
+            case "DELAY":
+                return DelayFilter(filter_config, audio, video)  # type: ignore
             case "FILTER_API_TEST":
                 return FilterAPITestFilter(filter_config, audio, video)
             case _:

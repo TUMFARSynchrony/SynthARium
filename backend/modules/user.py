@@ -14,16 +14,19 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
 
+from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
+from custom_types.filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
+from custom_types.connection import ConnectionOfferDict, is_valid_connection_offer_dict
 
 import modules.experiment as _exp
+from modules.util import timestamp
 import modules.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface
-from custom_types.connection import ConnectionOfferDict, is_valid_connection_offer_dict
 
 
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -36,6 +39,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         Emitted when the connection with the client closes.
     - `CONNECTION_ANSWER` : custom_types.connection.ConnectionAnswerDict
         CONNECTION_ANSWER message received from a client.
+    - `connection_set` : User (self)
 
     Attributes
     ----------
@@ -78,7 +82,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
-    _connection: ConnectionInterface
+    _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __subscribers: dict[str, str]  # User ID -> subconnection_id
     __disconnected: bool
@@ -108,6 +112,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._handlers = {}
         self.__subscribers = {}
         self.__disconnected = False
+        self._connection = None
+        self.on_message("PING", self._handle_ping)
 
     @property
     def muted_video(self) -> bool:
@@ -120,7 +126,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         return self._muted_audio
 
     @property
-    def connection(self) -> ConnectionInterface:
+    def connection(self) -> ConnectionInterface | None:
         """Get Connection of this User."""
         return self._connection
 
@@ -176,6 +182,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._connection.add_listener(
             "state_change", self._handle_connection_state_change_user
         )
+        self.emit("connection_set", self)
 
     async def send(self, message: MessageDict) -> None:
         """Send a custom_types.message.MessageDict to the connected client.
@@ -185,11 +192,17 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         message : custom_types.message.MessageDict
             Message for the client.
         """
-        await self._connection.send(message)
+        if self._connection is not None:
+            await self._connection.send(message)
+        else:
+            self._logger.debug(
+                f"Not sending {message['type']} message, connection is None"
+            )
 
     async def disconnect(self) -> None:
         """Disconnect.  Closes the connection with the client."""
-        await self._connection.stop()
+        if self._connection is not None:
+            await self._connection.stop()
         self._handle_disconnect()
 
     async def add_subscriber(self, user: User) -> None:
@@ -209,6 +222,39 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         Connection Protocol Wiki :
             https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection
         """
+        if self._connection is not None:
+            return await self.__add_subscriber(user)
+        else:
+            # wait for connection, then add subscriber
+            @self.once("connection_set")
+            async def __add_subscriber_later(_):
+                await self.__add_subscriber(user)
+
+    async def __add_subscriber(self, user: User) -> None:
+        """Inner, private add_subscriber function called when connection is set.
+
+        See add_subscriber for documentation.
+        """
+        if self._connection is None:
+            self._logger.error(
+                "Called __add_subscriber with connection == None. "
+                "Failed to add subscriber"
+            )
+            return
+
+        # Error handling in case multiple users connect simultaneously
+        # Abort if user is not yet fully connected
+        if user.connection is None:
+            self._logger.debug(
+                f"Avoid adding not fully connected subscriber: {repr(user)}"
+            )
+            return
+
+        # Avoid duplicate subscriptions
+        if user.id in self.__subscribers:
+            self._logger.debug(f"Avoid adding duplicate subscriber: {repr(user)}")
+            return
+
         self._logger.debug(f"Adding subscriber: {repr(user)}")
         if isinstance(user, _experimenter.Experimenter):
             proposal = await self._connection.create_subscriber_proposal(self.id)
@@ -222,8 +268,18 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         self.__subscribers[user.id] = proposal["id"]
 
+        @user.once("disconnected")
+        def _remove_subscriber(_):
+            self._logger.debug(f"subscribers: {self.__subscribers.keys()}")
+            if user.id in self.__subscribers:
+                self.__subscribers.pop(user.id)
+
         @user.on("CONNECTION_OFFER")
         async def _handle_offer(offer: ConnectionOfferDict):
+            if self._connection is None:
+                self._logger.error("Called _handle_offer with connection == None")
+                return
+
             if offer["id"] == proposal["id"]:
                 user.remove_listener("CONNECTION_OFFER", _handle_offer)
                 try:
@@ -243,7 +299,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         @user.on("disconnected")
         async def _remove_subconnection(_):
-            await self._connection.stop_subconnection(proposal["id"])
+            if self._connection is not None:
+                await self._connection.stop_subconnection(proposal["id"])
 
     async def remove_subscriber(self, user: User) -> None:
         """Remove `user` from the subscribers to this User.
@@ -264,6 +321,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 f"Failed to remove SubConnection, {repr(User)} not found in subscribers"
             )
             return
+
+        if self._connection is None:
+            self._logger.error("Can't remove subconnection, connection is None.")
+            return
+
         await self._connection.stop_subconnection(subconnection_id)
 
     def on_message(
@@ -395,7 +457,58 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._muted_video = video
         self._muted_audio = audio
 
-        await self._connection.set_muted(video, audio)
+        if self._connection is not None:
+            await self._connection.set_muted(video, audio)
+
+    async def set_video_filters(self, filters: list[FilterDict]) -> None:
+        """Set or update video filters to `filters`.
+
+        Wrapper for modules.connection_interface.ConnectionInterface `set_video_filters`
+        , with callback in case the connection is not set
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+            List of video filter configs.
+        """
+        if self._connection is not None:
+            await self._connection.set_video_filters(filters)
+        else:
+
+            @self.once("connection_set")
+            async def _set_video_filters_later(_):
+                if self._connection is None:
+                    self._logger.error(
+                        "__set_video_filters_later callback failed, _connection is "
+                        "None."
+                    )
+                    return
+                await self._connection.set_video_filters(filters)
+
+    async def set_audio_filters(self, filters: list[FilterDict]) -> None:
+        """Set or update audio filters to `filters`.
+
+        Wrapper for modules.connection_interface.ConnectionInterface `set_audio_filters`
+        , with callback in case the connection is not set
+
+        Parameters
+        ----------
+        filters : list of custom_types.filters.FilterDict
+            List of audio filter configs.
+        """
+        if self._connection is not None:
+            await self._connection.set_audio_filters(filters)
+        else:
+
+            @self.once("connection_set")
+            async def _set_audio_filters_later(_):
+                if self._connection is None:
+                    self._logger.error(
+                        "__set_audio_filters_later callback failed, _connection is "
+                        "None."
+                    )
+                    return
+                await self._connection.set_audio_filters(filters)
 
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.
@@ -419,6 +532,22 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             self._handle_disconnect()
+
+    async def _handle_ping(self, data: Any) -> MessageDict:
+        """Handle requests with type `PING`.
+
+        Parameters
+        ----------
+        data : any
+            Message data, can be anything.  Will be included in return message.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `PONG`, data: custom_types.ping.PongDict.
+        """
+        pong = PongDict(server_time=timestamp(), ping_data=data)
+        return MessageDict(type="PONG", data=pong)
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:

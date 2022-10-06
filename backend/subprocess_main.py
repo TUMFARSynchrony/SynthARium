@@ -6,10 +6,7 @@ from typing import Tuple
 from aiortc import RTCSessionDescription
 
 from custom_types.filters import FilterDict
-from custom_types.connection import (
-    is_valid_rtc_session_description_dict,
-    RTCSessionDescriptionDict,
-)
+from custom_types.connection import is_valid_rtc_session_description_dict
 
 from modules.connection_runner import ConnectionRunner
 

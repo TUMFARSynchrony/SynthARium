@@ -715,8 +715,9 @@ class Experimenter(User):
 
             # Update connected Participants
             for p in experiment.participants.values():
-                coros.append(p.connection.set_video_filters(video_filters))
-                coros.append(p.connection.set_audio_filters(audio_filters))
+                if p.connection is not None:
+                    coros.append(p.set_video_filters(video_filters))
+                    coros.append(p.set_audio_filters(audio_filters))
 
         elif participant_id in experiment.session.participants:
             # Update participant data
@@ -727,8 +728,8 @@ class Experimenter(User):
             # Update connected Participant
             p = experiment.participants.get(participant_id)
             if p is not None:
-                coros.append(p.connection.set_video_filters(video_filters))
-                coros.append(p.connection.set_audio_filters(audio_filters))
+                coros.append(p.set_video_filters(video_filters))
+                coros.append(p.set_audio_filters(audio_filters))
         else:
             raise ErrorDictException(
                 code=404,

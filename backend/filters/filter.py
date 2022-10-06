@@ -11,6 +11,7 @@ from av import VideoFrame, AudioFrame
 from custom_types.filters import FilterDict
 
 if TYPE_CHECKING:
+    # Import TrackHandler only for type checking to avoid circular import error
     from modules.track_handler import TrackHandler
 
 

@@ -57,7 +57,11 @@ export class EventHandler<T> {
 	 * @param handler event handler function that should be removed from the EventHandler. 
 	 */
 	public off(event: string, handler: EventHandlerFunction<T>): void {
-		this.eventHandlers.get(event)?.filter(h => h !== handler);
+		if (!this.eventHandlers.has(event)) {
+			return;
+		}
+		const filtered = this.eventHandlers.get(event).filter(h => h !== handler);
+		this.eventHandlers.set(event, filtered);
 	}
 
 	/**
