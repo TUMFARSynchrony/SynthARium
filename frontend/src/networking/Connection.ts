@@ -46,6 +46,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   readonly api: EventHandler<any>;
   readonly sessionId?: string;
   readonly participantId?: string;
+  readonly experimenterPassword?: string;
   readonly userType: "participant" | "experimenter";
 
   private _state: ConnectionState;
@@ -59,6 +60,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * @param userType type of user this connection identify as.
    * @param sessionId session Id. Only required / used if userType === "participant".
    * @param participantId participant Id. Only required / used if userType === "participant".
+   * @param experimenterPassword experimenter password, must match password set in `backend/config.json`. Only required / used if userType === "experimenter".
    * @param logging Whether logging should be enabled. passed to {@link ConnectionBase}
    * 
    * @throws Error if userType === "participant" and one of: participantId or sessionId are missing.  
@@ -69,14 +71,21 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     userType: "participant" | "experimenter",
     sessionId?: string,
     participantId?: string,
+    experimenterPassword?: string,
     logging: boolean = false
   ) {
     super(true, "Connection", logging);
+
+    // Check for missing parameters depending on userType
     if (userType === "participant" && (!participantId || !sessionId)) {
       throw new Error("userType participant requires the participantId and sessionId to be defined.");
+    } else if (userType === "experimenter" && !experimenterPassword) {
+      throw new Error("userType experimenter requires the experimenterPassword to be defined.");
     }
+
     this.sessionId = sessionId;
     this.participantId = participantId;
+    this.experimenterPassword = experimenterPassword;
     this.userType = userType;
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
@@ -303,6 +312,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
         sdp: offer.sdp,
         type: offer.type,
         user_type: "experimenter",
+        experimenter_password: this.experimenterPassword
       };
     }
     this.log("Sending initial offer");

@@ -11,6 +11,7 @@ from modules import BACKEND_DIR
 class Config:
     """Config for experimental hub backend."""
 
+    experimenter_password: str
     host: str
     port: int
     environment: Literal["dev", "prod"]
@@ -42,6 +43,7 @@ class Config:
 
         # Check if keys exist and types are correct.
         data_types = {
+            "experimenter_password": str,
             "host": str,
             "port": int,
             "environment": str,  # Literal not supported here, check afterwards.
@@ -75,6 +77,7 @@ class Config:
             raise ValueError(f'"log_dependencies" must be one of: {valid_log_levels}')
 
         # Load config into this class.
+        self.experimenter_password = config["experimenter_password"]
         self.host = config["host"]
         self.port = config["port"]
         self.environment = config["environment"]

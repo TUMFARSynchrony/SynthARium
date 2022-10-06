@@ -462,11 +462,13 @@ function ReplaceConnection(props: {
   const [userType, setUserType] = useState<"participant" | "experimenter">(props.connection.userType);
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
   const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
+  const [experimenterPassword, setExperimenterPassword] = useState(props.connection.experimenterPassword ?? "");
 
-  const updateConnection = async (userType: "participant" | "experimenter", sessionId: string, participantId: string) => {
+  const updateConnection = async (userType: "participant" | "experimenter", sessionId: string, participantId: string, experimenterPassword: string) => {
     if (userType === "participant") {
       if (sessionId === "") sessionId = "placeholderId";
       if (participantId === "") participantId = "placeholderId";
+      if (experimenterPassword === "") experimenterPassword = "placeholderId";
       // request local stream if it does not exist.
       if (!props.localStream) {
         const stream = await getLocalStream();
@@ -474,24 +476,33 @@ function ReplaceConnection(props: {
       }
     }
     console.log(`%c[ReplaceConnection] Replaced connection with new parameters: ${userType}, ${sessionId}, ${participantId}`, "color:darkgreen");
-    const connection = new Connection(userType, sessionId, participantId, props.connection.logging);
+    const connection = new Connection(userType, sessionId, participantId, experimenterPassword, props.connection.logging);
     props.setConnection(connection);
   };
 
   const handleUserType = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault();
     const newUserType = e.target.value as "participant" | "experimenter";
     setUserType(newUserType);
-    updateConnection(newUserType, sessionId, participantId);
+    updateConnection(newUserType, sessionId, participantId, experimenterPassword);
   };
 
   const handleSessionId = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
     setSessionId(e.target.value);
-    updateConnection(userType, e.target.value, participantId);
+    updateConnection(userType, e.target.value, participantId, experimenterPassword);
   };
 
   const handleParticipantId = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
     setParticipantId(e.target.value);
-    updateConnection(userType, sessionId, e.target.value);
+    updateConnection(userType, sessionId, e.target.value, experimenterPassword);
+  };
+
+  const handleExperimenterPassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setExperimenterPassword(e.target.value);
+    updateConnection(userType, sessionId, participantId, e.target.value);
   };
 
   const info = "Replace connection before connecting to change the user type, session id or participant id";
@@ -515,17 +526,24 @@ function ReplaceConnection(props: {
               <input
                 type="text"
                 onChange={handleSessionId}
-                defaultValue={props.connection.sessionId}
+                defaultValue={sessionId}
               />
             </label>
             <label>ParticipantID:&nbsp;&nbsp;
               <input
                 type="text"
                 onChange={handleParticipantId}
-                defaultValue={props.connection.participantId}
+                defaultValue={participantId}
               />
             </label>
-          </> : ""
+          </>
+            : <label>Experimenter Password:&nbsp;&nbsp;
+              <input
+                type="text"
+                onChange={handleExperimenterPassword}
+                defaultValue={experimenterPassword}
+              />
+            </label>
         }
       </form>
     </div>

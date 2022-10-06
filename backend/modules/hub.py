@@ -115,8 +115,9 @@ class Hub:
         self,
         offer: RTCSessionDescription,
         user_type: Literal["participant", "experimenter"],
-        participant_id: Optional[str],
-        session_id: Optional[str],
+        participant_id: str | None,
+        session_id: str | None,
+        experimenter_password: str | None,
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict | None]:
         """Handle incoming offer from a client.
 
@@ -129,11 +130,13 @@ class Hub:
             WebRTC offer.
         user_type : str, "participant" or "experimenter"
             Type of user that wants to connect.
-        participant_id : str, optional
+        participant_id : str or None
             ID of participant.
-        session_id : str, optional
+        session_id : str or None
             Session ID, defining what session a participant wants to connect to (if
             user_type is "participant").
+        experimenter_password : str or None
+            Experimenter password to authenticate experimenter.  Can be set in config.
 
         Returns
         -------
@@ -154,6 +157,17 @@ class Hub:
             )
 
         elif user_type == "experimenter":
+            # Check authentication
+            if (
+                experimenter_password is None
+                or experimenter_password != self.config.experimenter_password
+            ):
+                raise ErrorDictException(
+                    code=401,
+                    type="INVALID_REQUEST",
+                    description="Invalid or missing experimenter password.",
+                )
+
             id = "E" + generate_unique_id([e.id for e in self.experimenters])
             answer, experimenter = await _experimenter.experimenter_factory(
                 offer, id, self

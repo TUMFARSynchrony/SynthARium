@@ -24,8 +24,9 @@ _HANDLER = Callable[
     [
         RTCSessionDescription,
         Literal["participant", "experimenter"],
-        Optional[str],
-        Optional[str],
+        str | None,  # participant_id
+        str | None,  # session_id
+        str | None,  # experimenter_password
     ],
     Coroutine[Any, Any, tuple[RTCSessionDescription, ParticipantSummaryDict | None]],
 ]
@@ -217,6 +218,8 @@ class Server:
         required_keys = ["sdp", "type", "user_type"]
         if params.get("user_type") == "participant":
             required_keys.extend(["session_id", "participant_id"])
+        elif params.get("user_type") == "experimenter":
+            required_keys.append("experimenter_password")
 
         missing_keys = list(filter(lambda key: key not in params, required_keys))
 
@@ -254,7 +257,7 @@ class Server:
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
-            self._logger.warning("Failed to parse request.")
+            self._logger.warning(f"Failed to parse offer. {error.description}")
             return web.Response(
                 content_type="application/json",
                 status=error.code,
@@ -286,11 +289,10 @@ class Server:
                 params["user_type"],
                 params.get("participant_id"),
                 params.get("session_id"),
+                params.get("experimenter_password"),
             )
         except ErrorDictException as error:
-            self._logger.warning(
-                f"Hub raised ErrorDictException during handling of offer. {error}"
-            )
+            self._logger.warning(f"Failed to handle offer. {error.description}")
             return web.Response(
                 content_type="application/json",
                 status=error.code,
