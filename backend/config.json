@@ -1,11 +1,16 @@
 {
+	"experimenter_password": "Change-Me!",
 	"host": "127.0.0.1",
 	"port": 8080,
 	"environment": "dev",
+	"serve_frontend": true,
 	"log": "DEBUG",
 	"log_file": null,
 	"log_dependencies": "WARNING",
 	"https": false,
 	"ssl_cert": "./certificate/cert.crt",
-	"ssl_key": "./certificate/key.key"
+	"ssl_key": "./certificate/key.key",
+	"ping_subprocesses": 0.0,
+	"experimenter_multiprocessing": false,
+	"participant_multiprocessing": true
 }

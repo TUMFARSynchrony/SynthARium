@@ -103,7 +103,7 @@ video {
 .requestButtons {
 	display: flex;
 	justify-content: center;
-	align-items: stretch;
+	align-items: center;
 	flex-wrap: wrap;
 }
 
@@ -123,8 +123,7 @@ video {
 	background-color: antiquewhite;
 	padding: 2px;
 	border-radius: 5px;
-	margin-right: 5px;
-	margin-top: 5px;
+	margin: 2px 5px 2px 0;
 }
 
 .inputBtnBox>* {
@@ -144,10 +143,15 @@ video {
 	align-items: center;
 }
 
-.apiWarning {
-	margin: 5px;
+.apiWarning,
+.apiSubsectionHeader {
+	margin: 2px;
 	border-bottom: 2px dashed goldenrod;
 	display: inline-block;
+}
+
+.apiSubsectionHeader {
+	font-weight: bold;
 }
 
 /* PrettyJson Component */

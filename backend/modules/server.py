@@ -1,5 +1,6 @@
 """Provides the `Server` class, which serves the frontend and other endpoints."""
 
+import asyncio
 import logging
 import aiohttp_cors
 import json
@@ -8,30 +9,33 @@ from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
 from ssl import SSLContext
+from os.path import join
 
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 
 from modules.exceptions import ErrorDictException
+from modules import FRONTEND_BUILD_DIR
 from modules.config import Config
+
+
+_HANDLER = Callable[
+    [
+        RTCSessionDescription,
+        Literal["participant", "experimenter"],
+        str | None,  # participant_id
+        str | None,  # session_id
+        str | None,  # experimenter_password
+    ],
+    Coroutine[Any, Any, tuple[RTCSessionDescription, ParticipantSummaryDict | None]],
+]
 
 
 class Server:
     """Server providing the website and an endpoint to establish WebRTC connections."""
 
-    _HANDLER = Callable[
-        [
-            RTCSessionDescription,
-            Literal["participant", "experimenter"],
-            Optional[str],
-            Optional[str],
-        ],
-        Coroutine[
-            Any, Any, tuple[RTCSessionDescription, ParticipantSummaryDict | None]
-        ],
-    ]
-
+    _index: str
     _logger: logging.Logger
     _hub_handle_offer: _HANDLER
     _app: web.Application
@@ -58,16 +62,48 @@ class Server:
 
         self._app = web.Application()
         self._app.on_shutdown.append(self._shutdown)
-        routes = []
-        routes.append(self._app.router.add_get("/", self.get_hello_world))
-        routes.append(self._app.router.add_post("/offer", self.handle_offer))
+        routes = [
+            self._app.router.add_get("/hello-world", self.get_hello_world),
+            self._app.router.add_post("/offer", self.handle_offer),
+        ]
+
+        # Serve frontend build
+        # Redirect sub-pages to index (client handles routing -> single-page app)
+        if self._config.serve_frontend:
+            self._index = self._read_index()
+            # Add new pages bellow!
+
+            # Using a dynamic relay conflicts with the static hosting, if the same
+            # prefix is used.  Therefore pages must be added manually.
+
+            # The alternative, which would need a custom prefix for the frontend, is:
+            # routes.append(self._app.router.add_get("/<prefix>{_:.*}", self.get_index))
+            pages = [
+                "/",
+                "/postProcessingRoom",
+                "/experimentRoom",
+                "/watchingRoom",
+                "/sessionForm",
+                "/connectionTest",
+                "/connectionLatencyTest",
+            ]
+            for page in pages:
+                routes.append(self._app.router.add_get(page, self.get_index))
+
+            routes.extend(self._app.add_routes([web.static("/", FRONTEND_BUILD_DIR)]))
+        else:
+            self._index = ""
+            # If not serving frontend, server hello world on index
+            routes.append(self._app.router.add_get("/", self.get_hello_world))
+
+        self._logger.debug(f"Routes: {repr(routes)}")
 
         if config.environment != "dev":
             return
 
         # Using cors is only intended for development, when the client is not hosted by
         # this server but a separate development server.
-        self._logger.info("Using CORS. Only use for development!")
+        self._logger.warning("Using CORS. Only use for development!")
 
         cors = aiohttp_cors.setup(self._app)  # type: ignore
         for route in routes:
@@ -182,6 +218,8 @@ class Server:
         required_keys = ["sdp", "type", "user_type"]
         if params.get("user_type") == "participant":
             required_keys.extend(["session_id", "participant_id"])
+        elif params.get("user_type") == "experimenter":
+            required_keys.append("experimenter_password")
 
         missing_keys = list(filter(lambda key: key not in params, required_keys))
 
@@ -219,7 +257,7 @@ class Server:
         try:
             params = await self._parse_offer_request(request)
         except ErrorDictException as error:
-            self._logger.warning("Failed to parse request.")
+            self._logger.warning(f"Failed to parse offer. {error.description}")
             return web.Response(
                 content_type="application/json",
                 status=error.code,
@@ -251,11 +289,10 @@ class Server:
                 params["user_type"],
                 params.get("participant_id"),
                 params.get("session_id"),
+                params.get("experimenter_password"),
             )
         except ErrorDictException as error:
-            self._logger.warning(
-                f"Hub raised ErrorDictException during handling of offer. {error}"
-            )
+            self._logger.warning(f"Failed to handle offer. {error.description}")
             return web.Response(
                 content_type="application/json",
                 status=error.code,
@@ -271,14 +308,18 @@ class Server:
         answer = MessageDict(type="SESSION_DESCRIPTION", data=data)
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
-    def get_index(self):
-        """TODO document"""
-        pass
+    async def get_index(self, request: web.Request):
+        """Respond with index.html to an request."""
+        self._logger.info(f'Received "{request.path}" request from {request.remote}')
+        return web.Response(content_type="text/html", text=self._index)
 
-    def get_css(self):
-        """TODO document"""
-        pass
+    def _read_index(self) -> str:
+        """Read index.html from `FRONTEND_BUILD_DIR`.
 
-    def get_javascript(self):
-        """TODO document"""
-        pass
+        Notes
+        -----
+        Blocking IO.  Use asyncio's `run_in_executor` to avoid, if desired.
+        """
+        path = join(FRONTEND_BUILD_DIR, "index.html")
+        with open(path, "r") as file:
+            return file.read()

@@ -1,24 +1,39 @@
-"""Provide filter TypedDicts: `SetFiltersRequestDict` and `BasicFilterDict`.
+"""Provide filter TypedDicts: `SetFiltersRequestDict` and `FilterDict`.
 
 Use for type hints and static type checking without any overhead during runtime.
 
 When more complex filters with custom settings are implemented, they should be added
 here.  `is_valid_filter_dict` should then include checks for the additional Filters,
-based on BasicFilterDict.
+based on FilterDict.
 """
 
-from typing import TypedDict
+import logging
+from typing import Literal, TypeGuard, TypedDict, get_args
 
 import custom_types.util as util
 
+logger = logging.getLogger("Filters")
 
-class BasicFilterDict(TypedDict):
-    """TypedDict for basic filters without extra parameters other than a `type`.
+FILTER_TYPES = Literal[
+    "MUTE_AUDIO",
+    "MUTE_VIDEO",
+    "DELAY",
+    "ROTATION",
+    "EDGE_OUTLINE",
+    "FILTER_API_TEST",
+]
+"""Valid filter types."""
+
+
+class FilterDict(TypedDict):
+    """TypedDict for basic filters with only basic attributes.
 
     Attributes
     ----------
     type : str
         filter type (unique identifier / name)
+    id : str
+        Filter id.  Empty string if adding a new filter.  Read only for client.
 
     See Also
     --------
@@ -26,11 +41,12 @@ class BasicFilterDict(TypedDict):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
     """
 
-    type: str
+    type: FILTER_TYPES
+    id: str
 
 
-def is_valid_filter_dict(data) -> bool:
-    """Check if `data` is a valid BasicFilterDict.
+def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
+    """Check if `data` is a valid FilterDict.
 
     Checks if all required and no unknown keys exist in data as well as the data types
     of the values.
@@ -43,11 +59,31 @@ def is_valid_filter_dict(data) -> bool:
     Returns
     -------
     bool
-        True if `data` is a valid BasicFilterDict.
+        True if `data` is a valid FilterDict.
     """
-    return util.check_valid_typeddict_keys(data, BasicFilterDict) and isinstance(
-        data["type"], str
-    )
+    if "type" not in data:
+        logger.debug(f"Missing key: type")
+        return False
+
+    if not isinstance(data["type"], str):
+        logger.debug(f'Filter "type" must be of type str.')
+        return False
+
+    if data["type"] not in get_args(FILTER_TYPES):
+        logging.debug(f'Invalid filter type: "{data["type"]}".')
+        return False
+
+    # Add custom filter dicts here. They do not need to check `type` or `id`.
+    # Custom filter TypeGuard functions are expected to call `check_valid_typeddict_keys`.
+    valid_filter = False
+    match data["type"]:
+        case "DELAY":
+            valid_filter = is_valid_delay_filter_dict(data)
+        case _:
+            # Default case, no custom filter
+            valid_filter = util.check_valid_typeddict_keys(data, FilterDict)
+
+    return valid_filter and isinstance(data["id"], str)
 
 
 class SetFiltersRequestDict(TypedDict):
@@ -57,15 +93,20 @@ class SetFiltersRequestDict(TypedDict):
     ----------
     participant_id : str
         Participant ID for the requested endpoint.
-    filters : list of custom_types.filters.BasicFilterDict
-        Active filters for participant with `participant_id`.
+    audio_filters : list of custom_types.filters.FilterDict
+        Active audio filters for participant with `participant_id`.
+    video_filters : list of custom_types.filters.FilterDict
+        Active video filters for participant with `participant_id`.
     """
 
     participant_id: str
-    filters: list[BasicFilterDict]
+    audio_filters: list[FilterDict]
+    video_filters: list[FilterDict]
 
 
-def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
+def is_valid_set_filters_request(
+    data, recursive: bool = True
+) -> TypeGuard[SetFiltersRequestDict]:
     """Check if `data` is a valid custom_types.filters.SetFiltersRequest.
 
     Checks if all required and no unknown keys exist in data as well as the data types
@@ -81,16 +122,67 @@ def is_valid_set_filters_request(data, recursive: bool = True) -> bool:
     Returns
     -------
     bool
-        True if `data` is a valid BasicFilterDict.
+        True if `data` is a valid FilterDict.
     """
-    if not util.check_valid_typeddict_keys(
-        data, SetFiltersRequestDict
-    ) or not isinstance(data["filters"], list):
+    if (
+        not util.check_valid_typeddict_keys(data, SetFiltersRequestDict)
+        or not isinstance(data["audio_filters"], list)
+        or not isinstance(data["video_filters"], list)
+        or not isinstance(data["participant_id"], str)
+    ):
         return False
 
     if recursive:
-        for filter in data["filters"]:
+        ids = []
+        for filter in data["audio_filters"]:
+            if filter["id"] in ids:
+                logger.debug(f'Duplicate id: "{filter["id"]}" in SetFiltersRequestDict')
+                return False
+            ids.append(filter["id"])
             if not is_valid_filter_dict(filter):
                 return False
 
-    return isinstance(data["participant_id"], str)
+        ids = []
+        for filter in data["video_filters"]:
+            if filter["id"] in ids:
+                logger.debug(f'Duplicate id: "{filter["id"]}" in SetFiltersRequestDict')
+                return False
+            ids.append(filter["id"])
+            if not is_valid_filter_dict(filter):
+                return False
+
+    return True
+
+
+class DelayFilterDict(FilterDict):
+    """TypedDict for delay filter.
+
+    Attributes
+    ----------
+    type : str
+        filter type (unique identifier / name)
+    id : str
+        Filter id.  Empty string if adding a new filter.  Read only for client.
+    size : int
+        Amount of frames that should be delayed / buffer size.
+    """
+
+    size: int
+
+
+def is_valid_delay_filter_dict(data) -> TypeGuard[DelayFilterDict]:
+    """Check if `data` is a valid custom_types.filters.DelayFilterDict.
+
+    Does not check base class attributes.  Should only be called from
+    is_valid_filter_dict.
+
+    See Also
+    --------
+    is_valid_filter_dict
+    """
+    return (
+        util.check_valid_typeddict_keys(data, DelayFilterDict)
+        and "size" in data
+        and isinstance(data["size"], int)
+        and data["size"] > 0
+    )

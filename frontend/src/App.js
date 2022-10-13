@@ -6,6 +6,7 @@ import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
+import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionState from "./networking/ConnectionState";
 import {
   addNote,
@@ -94,17 +95,39 @@ function App() {
 
     const sessionIdParam = searchParams.get("sessionId");
     const participantIdParam = searchParams.get("participantId");
+    const experimenterPasswordParam = searchParams.get("experimenterPassword");
+    console.log("sessionIdParam", sessionIdParam);
+    console.log("participantIdParam", participantIdParam);
+    console.log("experimenterPasswordParam", experimenterPasswordParam);
 
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
+    let experimenterPassword = experimenterPasswordParam ?? "";
     const userType =
       sessionId && participantId ? "participant" : "experimenter";
+
+    const pathname = window.location.pathname.toLowerCase();
+    const isConnectionTestPage =
+      pathname === "/connectiontest" || pathname === "/connectionlatencytest";
+
+    // TODO: get experimenter password before creating Connection, e.g. from "login" page
+    // The following solution using `prompt` is only a placeholder.
+    if (
+      !isConnectionTestPage &&
+      userType === "experimenter" &&
+      !experimenterPassword
+    ) {
+      experimenterPassword = prompt("Please insert experimenter password");
+    }
 
     const asyncStreamHelper = async (connection) => {
       const stream = await getLocalStream();
       if (stream) {
         setLocalStream(stream);
-        connection.start(stream);
+        // Start connection if current page is not connection test page
+        if (!isConnectionTestPage) {
+          connection.start(stream);
+        }
       }
     };
 
@@ -112,16 +135,20 @@ function App() {
       userType,
       sessionId,
       participantId,
+      experimenterPassword || "no-password-given", // "no-password-given" is a placeholder if experimenterPassword is an empty string
       true
     );
 
     setConnection(newConnection);
-    if (userType === "participant") {
+    if (userType === "participant" && pathname !== "/connectionlatencytest") {
       asyncStreamHelper(newConnection);
       return;
     }
 
-    newConnection.start();
+    // Start connection if current page is not connection test page
+    if (!isConnectionTestPage) {
+      newConnection.start();
+    }
 
     window.addEventListener("beforeunload", closeConnection);
 
@@ -357,8 +384,24 @@ function App() {
               connection ? (
                 <ConnectionTest
                   localStream={localStream}
+                  setLocalStream={setLocalStream}
                   connection={connection}
                   setConnection={setConnection}
+                />
+              ) : (
+                "loading"
+              )
+            }
+          />
+          <Route
+            exact
+            path="/connectionLatencyTest"
+            element={
+              connection ? (
+                <ConnectionLatencyTest
+                  localStream={localStream}
+                  setLocalStream={setLocalStream}
+                  connection={connection}
                 />
               ) : (
                 "loading"

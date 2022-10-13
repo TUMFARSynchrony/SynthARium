@@ -1,0 +1,171 @@
+input {
+	margin: 0 0.3rem;
+	padding: .3rem 0 .3rem 5px;
+}
+
+p {
+	margin-block-start: .5em;
+	margin-block-end: .5em;
+}
+
+h2 {
+	margin-bottom: .2em;
+}
+
+input[type="checkbox"] {
+	margin-left: .5rem;
+}
+
+.ConnectionTestPageWrapper button {
+	background-color: hsl(212, 86%, 64%);
+	border: 3px solid hsl(212, 86%, 64%);
+	padding: .4rem .6em;
+	text-align: center;
+	font-size: 14px;
+	color: white;
+	border-radius: 4px;
+	text-transform: uppercase;
+	margin: .3rem;
+	cursor: pointer;
+	transition: color .3s, background-color .3s, border-color .3s;
+}
+
+.ConnectionTestPageWrapper .canvasWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow-y: auto;
+}
+
+.ConnectionTestPageWrapper .canvasWrapper>div {
+	display: grid;
+}
+
+.ConnectionTestPageWrapper .canvasWrapper canvas {
+	margin: 5px;
+	border: 2px solid hsl(212, 86%, 64%);
+	border-radius: 5px;
+}
+
+.ConnectionTestPageWrapper button.secondary {
+	background-color: transparent;
+	color: black;
+}
+
+.ConnectionTestPageWrapper button.secondary:hover {
+	background-color: hsl(212, 86%, 64%);
+	color: white;
+}
+
+.ConnectionTestPageWrapper button:not(.secondary):not(:disabled):hover {
+	background-color: hsl(212, 79%, 69%);
+	border-color: hsl(212, 86%, 64%);
+}
+
+.ConnectionTestPageWrapper button:disabled {
+	background-color: hsl(212, 83%, 77%);
+	border-color: hsl(212, 83%, 77%);
+	cursor: auto;
+}
+
+.dataUpload {
+	padding: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.dataUpload>form {
+	border: 2px solid hsl(212, 86%, 64%);
+	border-radius: 5px;
+	margin: .3rem
+}
+
+.dataUpload>form>label {
+	padding-left: 5px;
+}
+
+.container {
+	max-width: 720px;
+	margin: 0 auto;
+}
+
+.container.controls {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+
+.evaluationInput {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.evaluationInput input:not([type="checkbox"]) {
+	width: 120px;
+}
+
+.evaluationInput label {
+	margin-left: .3rem;
+}
+
+.evaluationOverview {
+	display: inline-grid;
+	grid-template-columns: 1fr 1fr;
+	grid-gap: .5rem;
+	padding: .5rem 0;
+	justify-content: center;
+}
+
+.evaluationOverview label {
+	text-align: right;
+}
+
+.evaluationOverview span {
+	text-align: left;
+}
+
+.evaluationOverview .evalSection {
+	margin: .5rem 0 0 0;
+	grid-column: 1 / 3;
+}
+
+.testConfig {
+	display: grid;
+	grid-template-columns: [l] auto [r] 1fr;
+	grid-auto-flow: row;
+	grid-gap: .5rem;
+	padding: .5rem 0;
+}
+
+.testConfig label,
+.testConfig input {
+	grid-row: auto;
+}
+
+.testConfig label {
+	margin: 0 0.3rem;
+	grid-column: l;
+	text-align: right;
+}
+
+.testConfig input {
+	grid-column: r;
+}
+
+.testConfig input[type="checkbox"] {
+	margin: 0 0.3rem;
+}
+
+.testConfig button {
+	grid-column: r;
+}
+
+.note {
+	color: gray;
+	font-size: 10px;
+	margin: 0;
+}

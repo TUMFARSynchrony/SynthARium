@@ -44,12 +44,42 @@ export const INITIAL_NOTE_DATA = {
   speakers: [],
   content: "",
 };
-export const BACKEND = process.env.REACT_APP_BACKEND;
 
 /**
  * Environment of the client. Set by CreateReactApp depending on how you start it.
  * @type {("development" | "test" | "production")}
  */
 export const ENVIRONMENT = process.env.NODE_ENV; // "development", "test" or "production"
+
+/**
+ * Backend address.
+ */
+export const BACKEND = (
+  ENVIRONMENT === "production"
+    ? window.location.origin
+    : process.env.REACT_APP_BACKEND
+);
+
+/**
+ * Optional ICE servers. 
+ * undefined or list of RTCIceServers 
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer
+ */
+export const ICE_SERVERS = parseIceServers();
+
+function parseIceServers() {
+  const servers = process.env.REACT_APP_ICE_SERVERS;
+  console.log("REACT_APP_ICE_SERVERS", servers)
+
+  if (!servers) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(servers);
+  } catch (error) {
+    console.error("Failed to parse ice servers.", error)
+    return undefined;
+  }
+}
 
 export const PARTICIPANT_HOST = "https://localhost:3000/experimentRoom/";

@@ -9,7 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -18,10 +18,14 @@ from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
-import modules.experiment as _experiment
+from modules.config import Config
+import modules.experiment as _exp
+from modules.filter_api import FilterAPI
+from modules.experiment_state import ExperimentState
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
+from modules.connection_subprocess import connection_subprocess_factory
 from modules.data import ParticipantData
 from modules.user import User
 
@@ -48,13 +52,13 @@ class Participant(User):
         `offer`.  Use factory instead of initiating Participants directly.
     """
 
-    _experiment: _experiment.Experiment
+    _experiment: _exp.Experiment
     _participant_data: ParticipantData
 
     def __init__(
         self,
         id: str,
-        experiment: _experiment.Experiment,
+        experiment: _exp.Experiment,
         participant_data: ParticipantData,
     ) -> None:
         """Instantiate new Participant instance.
@@ -152,21 +156,59 @@ class Participant(User):
         self._logger.debug(f"Handle state change. State: {state}")
         if state is ConnectionState.CONNECTED:
             self._logger.info(f"Participant connected. {self}")
-            tasks = []
+            coros: list[Coroutine] = []
             # Add stream to all experimenters
             for e in self._experiment.experimenters:
-                tasks.append(e.subscribe_to(self))
+                coros.append(self.add_subscriber(e))
 
             # Add stream to all participants and all participants streams to self
-            for p in self._experiment.participants.values():
-                if p is self:
-                    continue
-                tasks.append(self.subscribe_to(p))
-                tasks.append(p.subscribe_to(self))
+            if self._experiment.state == ExperimentState.RUNNING:
+                coros.append(self._subscribe_and_add_subscribers())
+            else:
+                # Wait for experiment to start (state = `RUNNING`) before subscribing
+                self._subscribe_later()
 
-            await asyncio.gather(*tasks)
+            await asyncio.gather(*coros)
 
-    async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
+    async def _subscribe_and_add_subscribers(self):
+        """Subscribe to all participants in experiment and add them as subscribers."""
+        coros: list[Coroutine] = []
+        for p in self._experiment.participants.values():
+            if p is self:
+                continue
+            coros.append(self.add_subscriber(p))
+            coros.append(p.add_subscriber(self))
+        await asyncio.gather(*coros)
+
+    def _subscribe_later(self):
+        """Wait for experiment state to be running, then subscribe to others.
+
+        Notes
+        -----
+        Uses event handlers for the connection `state` event and user (self)
+        `disconnected` event. The latter is used to remove the connection event handler.
+        """
+
+        @self.on("disconnected")
+        def _remove_subscribe_callback(_) -> None:
+            """Remove listeners from experiment when participant disconnects."""
+            try:
+                self._experiment.remove_listener("state", _subscribe_callback)
+            except KeyError:
+                pass
+
+        @self._experiment.on("state")
+        async def _subscribe_callback(state: ExperimentState) -> None:
+            """If `state` is `RUNNING`, subscribe to all participants in experiment."""
+            if state != ExperimentState.RUNNING:
+                return
+
+            _remove_subscribe_callback(None)
+            participants = self._experiment.participants.values()
+            coros = [p.add_subscriber(self) for p in participants if p != self]
+            await asyncio.gather(*coros)
+
+    async def _handle_chat(self, data: Any) -> MessageDict:
         """Handle requests with type `CHAT`.
 
         Check if data is a valid custom_types.chat_message.ChatMessageDict, target is
@@ -176,7 +218,8 @@ class Participant(User):
         Parameters
         ----------
         data : any or custom_types.chat_message.ChatMessageDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.chat_message.ChatMessageDict will result in a `ERROR` response.
 
         Returns
         -------
@@ -222,8 +265,9 @@ class Participant(User):
 async def participant_factory(
     offer: RTCSessionDescription,
     id: str,
-    experiment: _experiment.Experiment,
+    experiment: _exp.Experiment,
     participant_data: ParticipantData,
+    config: Config,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
@@ -241,6 +285,8 @@ async def participant_factory(
         Unique identifier for Participant.  Must exist in experiment.
     experiment : modules.experiment.Experiment
         Experiment the participant is part of.
+    config : modules.config.Config
+        Hub configuration / Config object.
 
     Returns
     -------
@@ -249,8 +295,28 @@ async def participant_factory(
         representing the client.
     """
     participant = Participant(id, experiment, participant_data)
-    answer, connection = await connection_factory(
-        offer, participant.handle_message, f"P-{id}"
-    )
+    filter_api = FilterAPI(participant)
+    log_name_suffix = f"P-{id}"
+
+    if config.participant_multiprocessing:
+        answer, connection = await connection_subprocess_factory(
+            offer,
+            participant.handle_message,
+            log_name_suffix,
+            config,
+            participant_data.audio_filters,
+            participant_data.video_filters,
+            filter_api,
+        )
+    else:
+        answer, connection = await connection_factory(
+            offer,
+            participant.handle_message,
+            log_name_suffix,
+            participant_data.audio_filters,
+            participant_data.video_filters,
+            filter_api,
+        )
+
     participant.set_connection(connection)
     return (answer, participant)

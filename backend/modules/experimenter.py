@@ -9,29 +9,28 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
-from custom_types.error import ErrorDict
-from custom_types.filters import SetFiltersRequestDict, is_valid_set_filters_request
-from custom_types.session import SessionDict, is_valid_session
-from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
-from custom_types.kick import KickRequestDict, is_valid_kickrequest
+from custom_types.filters import is_valid_set_filters_request
+from custom_types.session import is_valid_session
+from custom_types.chat_message import is_valid_chatmessage
+from custom_types.kick import is_valid_kickrequest
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
-from custom_types.note import NoteDict, is_valid_note
-from custom_types.mute import MuteRequestDict, is_valid_mute_request
-from custom_types.session_id_request import (
-    SessionIdRequestDict,
-    is_valid_session_id_request,
-)
+from custom_types.note import is_valid_note
+from custom_types.mute import is_valid_mute_request
+from custom_types.session_id_request import is_valid_session_id_request
 
+
+from modules.filter_api import FilterAPI
 from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
+from modules.connection_subprocess import connection_subprocess_factory
 from modules.exceptions import ErrorDictException
 from modules.user import User
-import modules.experiment as _experiment
-import modules.hub as _hub
+import modules.experiment as _exp
+import modules.hub as _h
 
 
 class Experimenter(User):
@@ -46,10 +45,10 @@ class Experimenter(User):
         WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
     """
 
-    _experiment: _experiment.Experiment | None
-    _hub: _hub.Hub
+    _experiment: _exp.Experiment | None
+    _hub: _h.Hub
 
-    def __init__(self, id: str, hub: _hub.Hub) -> None:
+    def __init__(self, id: str, hub: _h.Hub) -> None:
         """Instantiate new Experimenter instance.
 
         Parameters
@@ -75,6 +74,7 @@ class Experimenter(User):
         self.on_message("DELETE_SESSION", self._handle_delete_session)
         self.on_message("CREATE_EXPERIMENT", self._handle_create_experiment)
         self.on_message("JOIN_EXPERIMENT", self._handle_join_experiment)
+        self.on_message("LEAVE_EXPERIMENT", self._handle_leave_experiment)
         self.on_message("START_EXPERIMENT", self._handle_start_experiment)
         self.on_message("STOP_EXPERIMENT", self._handle_stop_experiment)
         self.on_message("ADD_NOTE", self._handle_add_note)
@@ -114,12 +114,12 @@ class Experimenter(User):
     async def _subscribe_to_participants_streams(self) -> None:
         """Subscribe to all participants in `self._experiment`."""
         if self._experiment is not None:
-            tasks = []
+            coros: list[Coroutine] = []
             for p in self._experiment.participants.values():
                 if p is self:
                     continue
-                tasks.append(self.subscribe_to(p))
-            await asyncio.gather(*tasks)
+                coros.append(p.add_subscriber(self))
+            await asyncio.gather(*coros)
 
     async def _handle_get_session_list(self, _) -> MessageDict:
         """Handle requests with type `GET_SESSION_LIST`.
@@ -141,20 +141,21 @@ class Experimenter(User):
         sessions = self._hub.session_manager.get_session_dict_list()
         return MessageDict(type="SESSION_LIST", data=sessions)
 
-    async def _handle_save_session(self, data: SessionDict | Any) -> None:
+    async def _handle_save_session(self, data: Any) -> MessageDict:
         """Handle requests with type `SAVE_SESSION`.
 
         Checks if received data is a valid SessionDict.  Try to update existing session,
         if `id` in data is not a empty string, otherwise try to create new session.
 
-        If the session was newly created, an `CREATED_SESSION` message is send to all
-        experimenters.  Otherwise, if the session was updated, an `UPDATED_SESSION` is
-        send to all experimenters.
+        As a response, `SAVED_SESSION` is send to the caller.  Additionally,
+        `SESSION_CHANGE` is send to all other experimenters connected to the hub.
 
         Parameters
         ----------
         data : any or custom_types.session.SessionDict
-            Message data.  Checks if data is valid custom_types.session.SessionDict.
+            Message data, can be anything.  Everything other than
+            custom_types.session_id_request.SessionIdRequestDict will raise an
+            modules.exceptions.ErrorDictException.
 
         Raises
         ------
@@ -163,7 +164,7 @@ class Experimenter(User):
             unknown session).
         """
         # Data check
-        if not is_valid_session(data, True):
+        if not is_valid_session(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_DATATYPE",
@@ -176,9 +177,10 @@ class Experimenter(User):
             session = sm.create_session(data)
 
             # Notify all experimenters about the change
-            message = MessageDict(type="CREATED_SESSION", data=session.asdict())
-            await self._hub.send_to_experimenters(message)
-            return
+            session_dict = session.asdict()
+            message = MessageDict(type="SESSION_CHANGE", data=session_dict)
+            await self._hub.send_to_experimenters(message, self)
+            return MessageDict(type="SAVED_SESSION", data=session_dict)
 
         # Update existing session
         session = sm.get_session(data["id"])
@@ -193,12 +195,21 @@ class Experimenter(User):
         if session.start_time != 0:
             raise ErrorDictException(
                 code=409,
-                type="SESSION_ALREADY_STARTED",
+                type="EXPERIMENT_ALREADY_STARTED",
                 description="Cannot edit session, session has already started.",
             )
 
         # Check if read only parameters where changed
         # Checks for participant IDs are included in session.update()
+        if data["creation_time"] != session.creation_time:
+            raise ErrorDictException(
+                code=409,
+                type="INVALID_PARAMETER",
+                description=(
+                    'Cannot change session "creation_time", field is read only.'
+                ),
+            )
+
         if data["start_time"] != session.start_time:
             raise ErrorDictException(
                 code=409,
@@ -216,10 +227,13 @@ class Experimenter(User):
         session.update(data)
 
         # Notify all experimenters about the change
-        message = MessageDict(type="UPDATED_SESSION", data=session.asdict())
-        await self._hub.send_to_experimenters(message)
+        session_dict = session.asdict()
+        message = MessageDict(type="SESSION_CHANGE", data=session_dict)
+        await self._hub.send_to_experimenters(message, self)
 
-    async def _handle_delete_session(self, data: SessionIdRequestDict | Any) -> None:
+        return MessageDict(type="SAVED_SESSION", data=session_dict)
+
+    async def _handle_delete_session(self, data: Any) -> None:
         """Handle requests with type `DELETE_SESSION`.
 
         Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
@@ -230,7 +244,9 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.session_id_request.SessionIdRequestDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.session_id_request.SessionIdRequestDict will raise an
+            modules.exceptions.ErrorDictException.
 
         Raises
         ------
@@ -260,22 +276,21 @@ class Experimenter(User):
         message = MessageDict(type="DELETED_SESSION", data=session_id)
         await self._hub.send_to_experimenters(message)
 
-    async def _handle_create_experiment(
-        self, data: SessionIdRequestDict | Any
-    ) -> MessageDict:
+    async def _handle_create_experiment(self, data: Any) -> MessageDict:
         """Handle requests with type `CREATE_EXPERIMENT`.
 
         Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
         If found, try to create a new modules.experiment.Experiment based on the session
         with the `session_id` in `data`.
 
-        Sends a `CREATED_EXPERIMENT` message to all experimenters, if experiment was
-        successfully started.
+        Experimenters are notified using a `EXPERIMENT_CREATED` message by the hub.
 
         Parameters
         ----------
         data : any or custom_types.session_id_request.SessionIdRequestDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.session_id_request.SessionIdRequestDict will raise an
+            modules.exceptions.ErrorDictException.
 
         Returns
         -------
@@ -296,12 +311,8 @@ class Experimenter(User):
                 description="Message data is not a valid SessionIdRequest.",
             )
 
-        self._experiment = self._hub.create_experiment(data["session_id"])
+        self._experiment = await self._hub.create_experiment(data["session_id"])
         self._experiment.add_experimenter(self)
-
-        # Notify all experimenters about the new experiment
-        message = MessageDict(type="CREATED_EXPERIMENT", data=data)
-        await self._hub.send_to_experimenters(message)
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
@@ -313,9 +324,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_join_experiment(
-        self, data: SessionIdRequestDict | Any
-    ) -> MessageDict:
+    async def _handle_join_experiment(self, data: Any) -> MessageDict:
         """Handle requests with type `JOIN_EXPERIMENT`.
 
         Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
@@ -325,7 +334,9 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.session_id_request.SessionIdRequestDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.session_id_request.SessionIdRequestDict will raise an
+            modules.exceptions.ErrorDictException.
 
         Returns
         -------
@@ -337,13 +348,24 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid dict with a `session_id` str or if there is no
-            Experiment with `session_id`.
+            Experiment with `session_id`. Also raises if this experimenter is already
+            part of an experiment.
         """
         if not is_valid_session_id_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_DATATYPE",
                 description="Message data is not a valid SessionIdRequest.",
+            )
+
+        if self._experiment is not None:
+            raise ErrorDictException(
+                code=409,
+                type="ALREADY_JOINED_EXPERIMENT",
+                description=(
+                    "Can not join an experiment while already connected to an "
+                    "experiment."
+                ),
             )
 
         experiment = self._hub.experiments.get(data["session_id"])
@@ -363,6 +385,30 @@ class Experimenter(User):
 
         success = SuccessDict(
             type="JOIN_EXPERIMENT", description="Successfully joined experiment."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_leave_experiment(self, _) -> MessageDict:
+        """Handle requests with type `LEAVE_EXPERIMENT`.
+
+        If part of an experiment, remove self from experiment and set `self._experiment`
+        to None.
+
+        Raises
+        ------
+        ErrorDictException
+            If this Experimenter is not connected to an modules.experiment.Experiment.
+        """
+        experiment = self.get_experiment_or_raise("Failed to leave experiment.")
+        experiment.remove_experimenter(self)
+
+        for participant in experiment.participants.values():
+            await participant.remove_subscriber(self)
+
+        self._experiment = None
+
+        success = SuccessDict(
+            type="LEAVE_EXPERIMENT", description="Successfully left experiment."
         )
         return MessageDict(type="SUCCESS", data=success)
 
@@ -386,17 +432,8 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already started.
         """
-        if not self._experiment:
-            raise ErrorDictException(
-                code=409,
-                type="INVALID_REQUEST",
-                description=(
-                    "Cannot start experiment. Experimenter is not connected to an "
-                    "experiment."
-                ),
-            )
-
-        await self._experiment.start()
+        experiment = self.get_experiment_or_raise("Cannot start experiment.")
+        await experiment.start()
 
         success = SuccessDict(
             type="START_EXPERIMENT", description="Successfully started experiment."
@@ -423,7 +460,7 @@ class Experimenter(User):
             If this Experimenter is not connected to an modules.experiment.Experiment or
             the Experiment has already ended.
         """
-        experiment = self._get_experiment_or_raise("Cannot stop experiment.")
+        experiment = self.get_experiment_or_raise("Cannot stop experiment.")
         await experiment.stop()
 
         success = SuccessDict(
@@ -431,7 +468,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_add_note(self, data: NoteDict | Any) -> MessageDict:
+    async def _handle_add_note(self, data: Any) -> MessageDict:
         """Handle requests with type `ADD_NOTE`.
 
         Check if data is a valid custom_types.note.NoteDict and adds the note to the
@@ -440,7 +477,9 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.note.NoteDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.note.NoteDict will raise an
+            modules.exceptions.ErrorDictException.
 
         Returns
         -------
@@ -461,13 +500,13 @@ class Experimenter(User):
                 description="Message data is not a valid Note.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot add note.")
+        experiment = self.get_experiment_or_raise("Cannot add note.")
         experiment.session.notes.append(data)
 
         success = SuccessDict(type="ADD_NOTE", description="Successfully added note.")
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_chat(self, data: ChatMessageDict | Any) -> MessageDict:
+    async def _handle_chat(self, data: Any) -> MessageDict:
         """Handle requests with type `CHAT`.
 
         Check if data is a valid custom_types.chat_message.ChatMessageDict, `target` is
@@ -476,7 +515,8 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.chat_message.ChatMessageDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.chat_message.ChatMessageDict will raise an ErrorDictException.
 
         Returns
         -------
@@ -505,7 +545,7 @@ class Experimenter(User):
                 description="Author of message must be experimenter.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot chat.")
+        experiment = self.get_experiment_or_raise("Cannot send chat message.")
         await experiment.handle_chat_message(data)
 
         success = SuccessDict(
@@ -513,7 +553,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_kick(self, data: KickRequestDict | Any) -> MessageDict:
+    async def _handle_kick(self, data: Any) -> MessageDict:
         """Handle requests with type `KICK`.
 
         Check if data is a valid custom_types.kick.KickRequestDict and pass the request
@@ -522,7 +562,8 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.kick.KickRequestDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.kick.KickRequestDict will raise an ErrorDictException.
 
         Returns
         -------
@@ -543,7 +584,7 @@ class Experimenter(User):
                 description="Message data is not a valid KickRequest.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot kick participant.")
+        experiment = self.get_experiment_or_raise("Cannot kick participant.")
         await experiment.kick_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
@@ -551,7 +592,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_ban(self, data: KickRequestDict | Any) -> MessageDict:
+    async def _handle_ban(self, data: Any) -> MessageDict:
         """Handle requests with type `BAN`.
 
         Check if data is a valid custom_types.kick.KickRequestDict and pass the request
@@ -560,7 +601,8 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.kick.KickRequestDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.kick.KickRequestDict will raise an ErrorDictException.
 
         Returns
         -------
@@ -581,7 +623,7 @@ class Experimenter(User):
                 description="Message data is not a valid KickRequest.",
             )
 
-        experiment = self._get_experiment_or_raise("Cannot ban participant.")
+        experiment = self.get_experiment_or_raise("Cannot ban participant.")
         await experiment.ban_participant(data["participant_id"], data["reason"])
 
         success = SuccessDict(
@@ -589,7 +631,7 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_mute(self, data: MuteRequestDict | Any) -> MessageDict:
+    async def _handle_mute(self, data: Any) -> MessageDict:
         """Handle requests with type `MUTE`.
 
         Check if data is a valid custom_types.mute.MuteRequestDict, parse and pass the
@@ -598,7 +640,8 @@ class Experimenter(User):
         Parameters
         ----------
         data : any or custom_types.mute.MuteRequestDict
-            Message data.
+            Message data, can be anything.  Everything other than
+            custom_types.mute.MuteRequestDict will raise an ErrorDictException.
 
         Returns
         -------
@@ -619,8 +662,8 @@ class Experimenter(User):
                 description="Message data is not a valid MuteRequest.",
             )
 
-        experiment = self._get_experiment_or_raise("Failed to mute participant.")
-        experiment.mute_participant(
+        experiment = self.get_experiment_or_raise("Failed to mute participant.")
+        await experiment.mute_participant(
             data["participant_id"], data["mute_video"], data["mute_audio"]
         )
 
@@ -629,19 +672,16 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_set_filters(
-        self, data: SetFiltersRequestDict | Any
-    ) -> MessageDict:
+    async def _handle_set_filters(self, data: Any) -> MessageDict:
         """Handle requests with type `SET_FILTERS`.
 
         Check if data is a valid custom_types.filters.SetFiltersRequestDict.
 
-        Handling not yet implemented.
-
         Parameters
         ----------
         data : any or custom_types.filters.SetFiltersRequestDict
-            Message data.
+            Message data.  Checks if data is a valid SetFiltersRequestDict and raises
+            an ErrorDictException if not.
 
         Returns
         -------
@@ -661,51 +701,56 @@ class Experimenter(User):
                 description="Message data is not a valid SetFiltersRequest.",
             )
 
-        # TODO implement handling for SET_FILTERS requests.
+        participant_id = data["participant_id"]
+        video_filters = data["video_filters"]
+        audio_filters = data["audio_filters"]
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
+        coros = []
 
-        response = ErrorDict(
-            type="NOT_IMPLEMENTED",
-            code=501,
-            description="Received valid filters, but feature is not yet implemented.",
-        )
-        return MessageDict(type="ERROR", data=response)
+        if participant_id == "all":
+            # Update participant data
+            for p_data in experiment.session.participants.values():
+                p_data.video_filters = video_filters
+                p_data.audio_filters = audio_filters
 
-    def _get_experiment_or_raise(
-        self, action_prefix: str = ""
-    ) -> _experiment.Experiment:
-        """Get `self._experiment` or raise ErrorDictException if it is None.
+            # Update connected Participants
+            for p in experiment.participants.values():
+                if p.connection is not None:
+                    coros.append(p.set_video_filters(video_filters))
+                    coros.append(p.set_audio_filters(audio_filters))
 
-        Use to check if this Experimenter is connected to an
-        modules.experiment.Experiment.
+        elif participant_id in experiment.session.participants:
+            # Update participant data
+            p_data = experiment.session.participants[participant_id]
+            p_data.video_filters = video_filters
+            p_data.audio_filters = audio_filters
 
-        Parameters
-        ----------
-        action_prefix : str, optional
-            Prefix for the error message.  If not set / default (empty string), the
-            error message is: *Experimenter is not connected to an experiment.*,
-            otherwise: *<action_prefix> Experimenter is not connected to an experiment.*
-            .
-
-        Raises
-        ------
-        ErrorDictException
-            If `self._experiment` is None
-        """
-        if self._experiment is not None:
-            return self._experiment
-
-        if action_prefix == "":
-            desc = "Experimenter is not connected to an experiment."
+            # Update connected Participant
+            p = experiment.participants.get(participant_id)
+            if p is not None:
+                coros.append(p.set_video_filters(video_filters))
+                coros.append(p.set_audio_filters(audio_filters))
         else:
-            desc = f"{action_prefix} Experimenter is not connected to an experiment."
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=f'Unknown participant ID: "{participant_id}".',
+            )
+        await asyncio.gather(*coros)
 
-        raise ErrorDictException(
-            code=409, type="NOT_CONNECTED_TO_EXPERIMENT", description=desc
+        # Notify Experimenters connected to the hub about the data change
+        message = MessageDict(type="SESSION_CHANGE", data=experiment.session.asdict())
+        await self._hub.send_to_experimenters(message)
+
+        # Respond with success message
+        success = SuccessDict(
+            type="SET_FILTERS", description="Successfully changed filters."
         )
+        return MessageDict(type="SUCCESS", data=success)
 
 
 async def experimenter_factory(
-    offer: RTCSessionDescription, id: str, hub: _hub.Hub
+    offer: RTCSessionDescription, id: str, hub: _h.Hub
 ) -> tuple[RTCSessionDescription, Experimenter]:
     """Instantiate connection with a new Experimenter based on WebRTC `offer`.
 
@@ -731,8 +776,23 @@ async def experimenter_factory(
         representing the client.
     """
     experimenter = Experimenter(id, hub)
-    answer, connection = await connection_factory(
-        offer, experimenter.handle_message, f"E-{id}"
-    )
+    filter_api = FilterAPI(experimenter)
+    log_name_suffix = f"E-{id}"
+
+    if hub.config.experimenter_multiprocessing:
+        answer, connection = await connection_subprocess_factory(
+            offer,
+            experimenter.handle_message,
+            log_name_suffix,
+            hub.config,
+            [],
+            [],
+            filter_api,
+        )
+    else:
+        answer, connection = await connection_factory(
+            offer, experimenter.handle_message, log_name_suffix, [], [], filter_api
+        )
+
     experimenter.set_connection(connection)
     return (answer, experimenter)

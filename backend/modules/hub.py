@@ -12,6 +12,7 @@ from modules.experiment import Experiment
 from modules.config import Config
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
+from modules.util import get_system_specs
 
 import modules.server as _server
 import modules.experiment as _experiment
@@ -51,11 +52,12 @@ class Hub:
         # Setup logging
         logging.basicConfig(
             level=logging.getLevelName(self.config.log),
-            format="%(levelname)s:%(name)s: %(message)s",
+            format="%(asctime)s:%(levelname)s:%(name)s: %(message)s",
             filename=self.config.log_file,
         )
         self._logger = logging.getLogger("Hub")
         self._logger.debug("Initializing Hub")
+        self._logger.debug(f"System: {get_system_specs()}")
 
         # Set logging level for libraries
         dependencies_log_level = logging.getLevelName(self.config.log_dependencies)
@@ -79,7 +81,11 @@ class Hub:
         """Stop the hub, close all connection and stop the server."""
         self._logger.info("Stopping Hub")
         for experiment in self.experiments.values():
-            await experiment.stop()
+            try:
+                await experiment.stop()
+            except ErrorDictException:
+                pass
+            experiment.session.creation_time = 0
         tasks = [self.server.stop()]
         for experimenter in self.experimenters:
             tasks.append(experimenter.disconnect())
@@ -109,8 +115,9 @@ class Hub:
         self,
         offer: RTCSessionDescription,
         user_type: Literal["participant", "experimenter"],
-        participant_id: Optional[str],
-        session_id: Optional[str],
+        participant_id: str | None,
+        session_id: str | None,
+        experimenter_password: str | None,
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict | None]:
         """Handle incoming offer from a client.
 
@@ -123,11 +130,13 @@ class Hub:
             WebRTC offer.
         user_type : str, "participant" or "experimenter"
             Type of user that wants to connect.
-        participant_id : str, optional
+        participant_id : str or None
             ID of participant.
-        session_id : str, optional
+        session_id : str or None
             Session ID, defining what session a participant wants to connect to (if
             user_type is "participant").
+        experimenter_password : str or None
+            Experimenter password to authenticate experimenter.  Can be set in config.
 
         Returns
         -------
@@ -148,7 +157,18 @@ class Hub:
             )
 
         elif user_type == "experimenter":
-            id = generate_unique_id([e.id for e in self.experimenters])
+            # Check authentication
+            if (
+                experimenter_password is None
+                or experimenter_password != self.config.experimenter_password
+            ):
+                raise ErrorDictException(
+                    code=401,
+                    type="INVALID_REQUEST",
+                    description="Invalid or missing experimenter password.",
+                )
+
+            id = "E" + generate_unique_id([e.id for e in self.experimenters])
             answer, experimenter = await _experimenter.experimenter_factory(
                 offer, id, self
             )
@@ -251,13 +271,16 @@ class Hub:
             )
 
         answer, _ = await _participant.participant_factory(
-            offer, participant_id, experiment, participantData
+            offer, participant_id, experiment, participantData, self.config
         )
 
         return (answer, participantData.as_summary_dict())
 
-    def create_experiment(self, session_id: str) -> Experiment:
+    async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
+
+        Also send a `EXPERIMENT_CREATED` message to all experimenters, if experiment was
+        successfully created.
 
         Parameters
         ----------
@@ -286,11 +309,25 @@ class Hub:
                 description="No session with the given ID found.",
             )
 
+        # Create Experiment
         experiment = Experiment(session)
         self.experiments[session_id] = experiment
+
+        # Notify all experimenters about the new experiment
+        message = MessageDict(
+            type="EXPERIMENT_CREATED",
+            data={
+                "session_id": session_id,
+                "creation_time": experiment.session.creation_time,
+            },
+        )
+        await self.send_to_experimenters(message)
+
         return experiment
 
-    async def send_to_experimenters(self, data: MessageDict):
+    async def send_to_experimenters(
+        self, data: MessageDict, exclude: _experimenter.Experimenter | None = None
+    ):
         """Send `data` to all connected experimenters.
 
         Can be used to inform experimenters about changes to sessions.
@@ -299,6 +336,9 @@ class Hub:
         ----------
         data : custom_types.message.MessageDict
             Message for the experimenters.
+        exclude : modules.experimenter.Experimenter, default None
+            Optional `Experimenter` that will be ignored.
         """
         for experimenter in self.experimenters:
-            await experimenter.send(data)
+            if experimenter is not exclude:
+                await experimenter.send(data)

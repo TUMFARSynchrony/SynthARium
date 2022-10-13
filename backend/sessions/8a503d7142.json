@@ -12,7 +12,8 @@
 			"last_name": "Mustermann",
 			"muted_video": false,
 			"muted_audio": false,
-			"filters": [],
+			"audio_filters": [],
+			"video_filters": [],
 			"position": {
 				"x": 0,
 				"y": 10,
@@ -38,7 +39,8 @@
 			"last_name": "Mustermann",
 			"muted_video": false,
 			"muted_audio": true,
-			"filters": [],
+			"audio_filters": [],
+			"video_filters": [],
 			"position": {
 				"x": 0,
 				"y": 150,
@@ -71,6 +73,7 @@
 			"banned": false
 		}
 	],
+	"creation_time": 0,
 	"start_time": 1650380763076,
 	"end_time": 1650380864076,
 	"notes": [

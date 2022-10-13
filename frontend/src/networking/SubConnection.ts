@@ -1,6 +1,6 @@
 import Connection from "./Connection";
 import ConnectionBase from "./ConnectionBase";
-import { ConnectionOffer } from "./typing";
+import { ConnectionAnswer, ConnectionOffer, ConnectionProposal } from "./typing";
 
 /**
  * SubConnection class used by {@link Connection} to get streams of other users from the backend.
@@ -12,96 +12,50 @@ import { ConnectionOffer } from "./typing";
  */
 export default class SubConnection extends ConnectionBase<MediaStream | string> {
   readonly id: string;
-  readonly remoteStream: MediaStream;
 
-  private pc: RTCPeerConnection;
-  private initialOffer: ConnectionOffer;
   private connection: Connection;
   private stopped: boolean;
 
   /**
    * Initialize new SubConnection.
-   * @param offer ConnectionOffer received from the backend, with information on how to open the SubConnection.
+   * @param proposal ConnectionProposal received from the backend.
    * @param connection parent Connection, used to send data to the backend.
    * @param logging Whether logging should be enabled.
    * 
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
-  constructor(offer: ConnectionOffer, connection: Connection, logging: boolean) {
-    super(true, `SubConnection - ${offer.id}`, logging);
-    this.id = offer.id;
-    this.remoteStream = new MediaStream();
-    const config: any = {
-      sdpSemantics: "unified-plan",
-    };
-    this.pc = new RTCPeerConnection(config);
-    this.initialOffer = offer;
+  constructor(proposal: ConnectionProposal, connection: Connection, logging: boolean) {
+    super(true, `SubConnection - ${proposal.id}`, logging);
+    this.id = proposal.id;
     this.connection = connection;
     this.stopped = false;
-    this._participantSummary = offer.participant_summary;
+    this._participantSummary = proposal.participant_summary;
 
     this.log("Initiating SubConnection");
-
-    // Register event listeners for peer connection (pc)
-    this.pc.addEventListener(
-      "icegatheringstatechange",
-      () => this.log(`IceGatheringStateChange: ${this.pc.iceGatheringState}`),
-      false
-    );
-    this.pc.addEventListener(
-      "iceconnectionstatechange",
-      this.handleIceConnectionStateChange.bind(this),
-      false
-    );
-    this.pc.addEventListener(
-      "signalingstatechange",
-      this.handleSignalingStateChange.bind(this),
-      false
-    );
-
-    // handle incoming audio / video tracks
-    this.pc.addEventListener("track", (e) => {
-      this.log(`Received a ${e.track.kind}, track from remote`);
-      if (e.track.kind !== "video" && e.track.kind !== "audio") {
-        this.logError(`Received track with unknown kind: ${e.track.kind}`);
-        return;
-      }
-      this.remoteStream.addTrack(e.track);
-      this.emit("remoteStreamChange", this.remoteStream);
-
-      // Debug logging - when track state changes
-      e.track.onended = () => {
-        this.log(`${e.track.kind} track ended`);
-      };
-      e.track.onmute = () => {
-        this.log(`${e.track.kind} track muted`);
-      };
-      e.track.onunmute = () => {
-        this.log(`${e.track.kind} track un-muted`);
-      };
-    });
   }
 
   /**
-   * Start the subconnection.
+   * Send offer for this SubConnection to the backend.
    * 
-   * Create and send an Answer to the initial offer set in the constructor and send 
-   * it to the backend using the connection set in the constructor.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
-  public async start() {
-    this.log("Starting SubConnection");
-    await this.pc.setRemoteDescription(this.initialOffer.offer as RTCSessionDescriptionInit);
-    const answer = await this.pc.createAnswer();
-    await this.pc.setLocalDescription(answer);
-    const connectionAnswer = {
+  public async sendOffer() {
+    this.log("Generating & sending offer");
+    const offer = await this.createOffer();
+    const connectionOffer: ConnectionOffer = {
       id: this.id,
-      answer: {
-        type: answer.type,
-        sdp: answer.sdp
-      }
+      offer: offer
     };
-    this.connection.sendMessage("CONNECTION_ANSWER", connectionAnswer);
+    this.connection.sendMessage("CONNECTION_OFFER", connectionOffer);
+  }
+
+  /** 
+   * Handle `CONNECTION_ANSWER` message from the backend.
+   * 
+   * The answer is set as remote description for {@link pc}.
+   */
+  public async handleAnswer(answer: ConnectionAnswer) {
+    await this.pc.setRemoteDescription(answer.answer);
   }
 
   /**
@@ -130,14 +84,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.emit("connectionClosed", this.id);
   }
 
-  private handleSignalingStateChange() {
-    this.log(`SignalingState: ${this.pc.signalingState}`);
-    if (this.pc.signalingState === "closed") {
-      this.stop();
-    }
-  }
-
-  private handleIceConnectionStateChange() {
+  protected handleIceConnectionStateChange(): void {
     this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
     if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {
       this.stop();

@@ -1,11 +1,12 @@
 """Provide the `Experiment` class."""
 import logging
-import time
 from typing import Any
+from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
 
+from modules.util import timestamp
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 from modules.data import SessionData
@@ -13,8 +14,13 @@ import modules.experimenter as _experimenter
 import modules.participant as _participant
 
 
-class Experiment:
-    """Experiment representing a running session."""
+class Experiment(AsyncIOEventEmitter):
+    """Experiment representing a running session.
+
+    Extends AsyncIOEventEmitter, providing the following events:
+    - `state` : modules.experiment_state.ExperimentState
+        Emitted when the connection state changes.
+    """
 
     _logger: logging.Logger
     _state: ExperimentState
@@ -31,12 +37,14 @@ class Experiment:
             SessionData this experiment is based on. Will modify the session during
             execution.
         """
+        super().__init__()
         self._logger = logging.getLogger(f"Experiment-{session.id}")
         self._state = ExperimentState.WAITING
         self.session = session
         self._experimenters = []
         self._participants = {}
         self._logger.info(f"Experiment created: {self}")
+        self.session.creation_time = timestamp()
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -45,6 +53,11 @@ class Experiment:
     def __repr__(self) -> str:
         """Get representation of this Experiment obj."""
         return f"Experiment({str(self)})"
+
+    @property
+    def state(self) -> ExperimentState:
+        """State the experiment is in."""
+        return self._state
 
     @property
     def participants(self):
@@ -62,6 +75,9 @@ class Experiment:
         If state is `WAITING`, save the current time in `session.start_time` and set
         state to `RUNNING`.  If state is not `WAITING`, an ErrorDictException is raised.
 
+        Also send a `EXPERIMENT_STARTED` message to all users connected to the
+        experiment, if experiment was successfully started.
+
         Raises
         ------
         ErrorDictException
@@ -74,20 +90,20 @@ class Experiment:
                 description="Experiment cant be started, state is not WAITING.",
             )
 
-        self._state = ExperimentState.RUNNING
-        timestamp = round(time.time() * 1000)
-        self._logger.info(f"Experiment started. Start time: {timestamp}")
-        self.session.start_time = timestamp
+        self._set_state(ExperimentState.RUNNING)
+        time = timestamp()
+        self._logger.info(f"Experiment started. Start time: {time}")
+        self.session.start_time = time
 
         # Notify all users
-        end_message = MessageDict(type="EXPERIMENT_STARTED", data={})
+        end_message = MessageDict(type="EXPERIMENT_STARTED", data={"start_time": time})
         await self.send("all", end_message, secure_origin=True)
 
     async def stop(self):
         """Stop the experiment.
 
-        If state is not already `ENDED`, save the current time in `session.end_time` and
-        set state to `ENDED`.
+        If state is not already `ENDED`, save the current time in `session.end_time`
+        and in `session.start_time`, if not already set, and set state to `ENDED`.
 
         Raises
         ------
@@ -101,13 +117,18 @@ class Experiment:
                 description="Experiment is already stopped.",
             )
 
-        self._state = ExperimentState.ENDED
-        timestamp = round(time.time() * 1000)
-        self._logger.info(f"Experiment ended. End time: {timestamp}")
-        self.session.end_time = timestamp
+        self._set_state(ExperimentState.ENDED)
+        time = timestamp()
+        self._logger.info(f"Experiment ended. End time: {time}")
+        self.session.end_time = time
+        if self.session.start_time == 0:
+            self.session.start_time = time
 
         # Notify all users
-        end_message = MessageDict(type="EXPERIMENT_ENDED", data={})
+        end_message = MessageDict(
+            type="EXPERIMENT_ENDED",
+            data={"end_time": time, "start_time": self.session.start_time},
+        )
         await self.send("all", end_message, secure_origin=True)
 
     async def send(
@@ -317,7 +338,7 @@ class Experiment:
         # Save banned state in session / participant data
         participant_data.banned = True
 
-    def mute_participant(self, participant_id: str, video: bool, audio: bool):
+    async def mute_participant(self, participant_id: str, video: bool, audio: bool):
         """Set the muted state for the participant with `participant_id`.
 
         Parameters
@@ -329,9 +350,23 @@ class Experiment:
         audio : bool
             Whether the participants audio should be muted.
         """
+        # Save muted state in session data
+        participantData = self.session.participants.get(participant_id)
+        if participantData is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=(
+                    "Failed to mute participant, requested participantId is not part "
+                    "of this experiment."
+                ),
+            )
+        participantData.muted_audio = audio
+        participantData.muted_video = video
+
         # Mute participant if participant is already connected
         if participant_id in self._participants:
-            self._participants[participant_id].set_muted(video, audio)
+            await self._participants[participant_id].set_muted(video, audio)
 
     def add_experimenter(self, experimenter: _experimenter.Experimenter):
         """Add experimenter to experiment.
@@ -362,7 +397,25 @@ class Experiment:
             If the given `experimenter` is not part of this experiment.
         """
         self._experimenters.remove(experimenter)
+        experimenter.remove_listener("disconnected", self.remove_experimenter)
+
         self._logger.info(f"Experimenter ({str(experimenter)}) left Experiment")
         self._logger.debug(
             f"Experimenters connected to experiment: {self._experimenters}"
         )
+
+    def _set_state(self, state: ExperimentState) -> None:
+        """Change state and emit `state` event.
+
+        Aborts if current state is equal to the new state.
+
+        Parameters
+        ----------
+        state : modules.experiment_state.ExperimentState
+            New experiment state.
+        """
+        if self._state == state:
+            return
+
+        self._state = state
+        self.emit("state", self._state)
