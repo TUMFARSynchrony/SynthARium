@@ -1,64 +1,50 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { Image } from "react-konva";
+import { useUserStream } from "./streams";
 
-function Video({ title, srcObject, ignoreAudio }) {
-  const refVideo = useRef(null);
-  const [info, setInfo] = useState("");
+const Video = ({ src, participantData }) => {
+  const useVideo = (stream) => {
+    const video = useMemo(() => {
+      return document.createElement("video");
+    });
 
-  useEffect(() => {
-    const setSrcObj = (srcObj) => {
-      if (refVideo.current && srcObj.active) {
-        if (ignoreAudio) {
-          refVideo.current.srcObject = new MediaStream(srcObj.getVideoTracks());
-        } else {
-          refVideo.current.srcObject = srcObj;
-        }
+    useEffect(() => {
+      if (!stream) {
+        return;
       }
-    };
+      video.srcObject = src;
+      video.onloadedmetadata = function (e) {
+        video.play();
+      };
+    }, [stream, video]);
 
-    setSrcObj(srcObject);
+    return video;
+  };
 
-    const handler = () => setSrcObj(srcObject);
-    srcObject.addEventListener("active", handler);
-    return () => {
-      srcObject.removeEventListener("active", handler);
-    };
-  }, [ignoreAudio, srcObject]);
+  const stream = useUserStream();
+  const video = useVideo(stream);
+  const shapeRef = useRef();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (refVideo.current?.srcObject === null) return;
-
-      const videoTracks = srcObject.getVideoTracks();
-      if (videoTracks.length === 0) return;
-
-      const fps = videoTracks[0].getSettings().frameRate;
-      if (!fps) {
-        if (info !== "") {
-          setInfo("");
-        }
-        return;
-      }
-      const newInfo = `${fps.toFixed(3)} fps`;
-      if (info !== newInfo) {
-        setInfo(newInfo);
-      }
-    }, 1000);
+      shapeRef?.current.getLayer()?.batchDraw();
+    }, 1000 / 50);
 
     return () => {
       clearInterval(interval);
     };
-  }, [info, srcObject]);
+  }, [video]);
 
   return (
-    <div className={"videoWrapper"}>
-      <p>
-        {title}
-        {srcObject.active ? "" : " [inactive]"}
-      </p>
-      <video ref={refVideo} autoPlay playsInline width={300}></video>
-      <div className="fpsCounter">{info}</div>
-    </div>
+    <Image
+      ref={shapeRef}
+      image={video}
+      width={participantData.size.width}
+      height={participantData.size.height}
+      x={participantData.position.x}
+      y={participantData.position.y}
+    />
   );
-}
+};
 
 export default Video;
