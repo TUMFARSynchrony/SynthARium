@@ -96,9 +96,6 @@ function App() {
     const sessionIdParam = searchParams.get("sessionId");
     const participantIdParam = searchParams.get("participantId");
     const experimenterPasswordParam = searchParams.get("experimenterPassword");
-    console.log("sessionIdParam", sessionIdParam);
-    console.log("participantIdParam", participantIdParam);
-    console.log("experimenterPasswordParam", experimenterPasswordParam);
 
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";

@@ -98,6 +98,8 @@ function SessionForm({ onSendSessionToBackend }) {
     }
 
     onSendSessionToBackend(sessionData);
+
+    console.log("sessionData", sessionData);
   };
 
   const addRandomSessionData = () => {
@@ -118,7 +120,8 @@ function SessionForm({ onSendSessionToBackend }) {
           muted_audio: true,
           muted_video: true,
           banned: false,
-          filters: [],
+          audio_filters: [],
+          video_filters: [],
           chat: [],
           position: {
             x: 10,
