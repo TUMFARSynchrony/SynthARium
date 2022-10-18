@@ -13,7 +13,6 @@ function JoinedParticipantModal({
   setShowModal,
   sessionId,
   onMuteParticipant,
-  onSendChat,
 }) {
   const dispatch = useDispatch();
 

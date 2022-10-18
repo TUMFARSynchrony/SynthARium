@@ -38,27 +38,6 @@ export const sessionsListSlice = createSlice({
       state.value = sortArray(state.value);
     },
 
-    sendChat: (state, { payload }) => {
-      const session = getSessionById(payload.sessionId, state.value)[0];
-      const participant = getSessionById(
-        payload.participantId,
-        session.participants
-      )[0];
-      participant.chat.push(payload.message);
-
-      const newParticipantList = filterListById(
-        session.participants,
-        payload.participantId
-      );
-      newParticipantList.push(participant);
-
-      session.participants = newParticipantList;
-
-      const newSessionsList = filterListById(state.value, payload.sessionId);
-      state.value = [...newSessionsList, session];
-      state.value = sortArray(state.value);
-    },
-
     banMuteUnmuteParticipant: (state, { payload }) => {
       const session = getSessionById(payload.sessionId, state.value)[0];
       const participant = getSessionById(

@@ -316,10 +316,6 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
-  const onSendChat = (chatMessage) => {
-    connection.sendMessage("STOP_EXPERIMENT", chatMessage);
-  };
-
   return (
     <div className="App">
       <ToastContainer />
@@ -363,7 +359,6 @@ function App() {
                 onMuteParticipant={onMuteParticipant}
                 onStartExperiment={onStartExperiment}
                 onEndExperiment={onEndExperiment}
-                onSendChat={onSendChat}
               />
             }
           />
