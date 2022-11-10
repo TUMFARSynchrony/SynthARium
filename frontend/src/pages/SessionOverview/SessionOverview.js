@@ -54,7 +54,7 @@ function SessionOverview({
   return (
     <>
       <NavigationBar />
-      <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
+      <h2 className="sessionOverviewHeadline">Welcome! Get started with conducting your user studies here!</h2>
       <div className="sessionOverviewDescription">
         Create a new session to create your own experimental design template.
         You can hold these sessions for each experiment you would like to
