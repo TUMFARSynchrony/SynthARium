@@ -1,12 +1,13 @@
 .sessionOverviewHeadline {
-  padding-top: 1rem;
-  margin: 0;
+  margin-top: 2rem;
 }
 
 .sessionOverviewDescription {
-  margin-top: 1rem;
+  margin-top: 2rem;
+  margin-right: 2rem;
+  margin-bottom: 2rem;
+  margin-left: 2rem;
   text-decoration: none;
-  margin-bottom: 3rem;
 }
 
 .sessionOverviewContainer {
@@ -23,4 +24,8 @@
 
 .sessionOverviewCreateNewSession {
   margin-bottom: 2rem;
+}
+
+h2 {
+  font-weight: 800;
 }
