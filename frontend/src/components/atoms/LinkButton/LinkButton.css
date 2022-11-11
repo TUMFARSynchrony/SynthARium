@@ -14,6 +14,7 @@
   font-weight: 00;
   height: fit-content;
   cursor: pointer;
+  display: inline-block;
 }
 
 .linkButton:hover {
