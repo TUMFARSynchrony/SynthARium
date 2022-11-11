@@ -55,6 +55,11 @@ function SessionOverview({
     <>
       <NavigationBar />
       <h2 className="sessionOverviewHeadline">Welcome! Get started with conducting your user studies here!</h2>
+      <LinkButton
+        name="CREATE NEW SESSION"
+        to="/sessionForm"
+        onClick={() => onCreateNewSession()}
+      />
       <div className="sessionOverviewDescription">
         Create a new session to create your own experimental design template.
         You can hold these sessions for each experiment you would like to
@@ -63,12 +68,6 @@ function SessionOverview({
       </div>
       <div className="sessionOverviewContainer">
         <div className="sessionOverviewCards">
-          <LinkButton
-            name="CREATE NEW SESSION"
-            to="/sessionForm"
-            onClick={() => onCreateNewSession()}
-          />
-
           <Label title={"Upcoming sessions:"} />
           {future.length !== 0 ? (
             future.map((session, index) => {
