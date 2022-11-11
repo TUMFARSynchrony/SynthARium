@@ -48,3 +48,12 @@
 .ongoingExperiment > h2 {
   color: rgb(136, 0, 0);
 }
+.wrapper {
+  width: auto;
+  height: fit-content;
+  border: 0.1rem solid hsl(229, 6%, 90%);
+  text-align: left;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}

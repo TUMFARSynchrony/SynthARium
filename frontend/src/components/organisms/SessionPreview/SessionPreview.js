@@ -41,11 +41,15 @@ function SessionPreview({
             )}
         </div>
         <h3 className="sessionPreviewTitles">Title: {selectedSession.title}</h3>
-        <h4 className="sessionPreviewTitles">
+        <hr />
+        <h4 className="sessionPreviewTitles wrapper">
           Date: {integerToDateTime(selectedSession.date)}
         </h4>
-        <h4 className="sessionPreviewTitles">
+        <h4 className="sessionPreviewTitles wrapper">
           Duration: {selectedSession.time_limit / 60000} minutes
+        </h4>
+        <h4 className="sessionPreviewTitles wrapper">
+          Participant count: {selectedSession.participants.length}
         </h4>
       </div>
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
