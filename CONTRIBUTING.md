@@ -23,8 +23,7 @@ Branch names are in lowercase. If the change regards the frontend or backend sta
 The following conventions should be followed when working on experimental-hub.
 
 ### Git Commit Messages
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
+- Use the past tense ("Added feature" not "Add feature")
 - Limit the first line to 72 characters or less
 - Provide a more detailed description in the next line, if the first line is not descriptive enough
 
