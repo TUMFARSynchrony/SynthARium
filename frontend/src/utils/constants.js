@@ -82,4 +82,4 @@ function parseIceServers() {
   }
 }
 
-export const PARTICIPANT_HOST = "https://localhost:3000/experimentRoom/";
+export const PARTICIPANT_HOST = "http://localhost:3000/experimentRoom/";

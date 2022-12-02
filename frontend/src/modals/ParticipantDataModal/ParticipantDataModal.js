@@ -111,7 +111,7 @@ function ParticipantDataModal({
           <InputTextField
             title="Link"
             value={
-              !(participantCopy.id.empty && sessionId.empty)
+              !(participantCopy.id.length === 0 || sessionId.length === 0)
                 ? `${PARTICIPANT_HOST}?participantId=${participantCopy.id}&sessionId=${sessionId}`
                 : "Save session to generate link."
             }
