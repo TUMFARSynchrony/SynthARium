@@ -8,7 +8,6 @@ import { useDispatch } from "react-redux";
 import { copySession, initializeSession } from "../../../features/openSession";
 import Heading from "../../atoms/Heading/Heading";
 
-import { FaRegCopy, FaRegEdit, FaRegPlayCircle, FaRegTrashAlt } from "react-icons/fa";
 
 function SessionPreview({
   selectedSession,
