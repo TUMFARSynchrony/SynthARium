@@ -1,11 +1,13 @@
 import { integerToDateTime, isFutureSession } from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import LinkButton from "../../atoms/LinkButton/LinkButton";
+import IconButton from "../../atoms/IconButton/IconButton";
 import "./SessionPreview.css";
 
 import { useDispatch } from "react-redux";
 import { copySession, initializeSession } from "../../../features/openSession";
 import Heading from "../../atoms/Heading/Heading";
+
 
 function SessionPreview({
   selectedSession,
@@ -38,12 +40,16 @@ function SessionPreview({
             )}
         </div>
         <h3 className="sessionPreviewTitles">Title: {selectedSession.title}</h3>
-        <h3 className="sessionPreviewTitles">
+        <hr />
+        <h4 className="sessionPreviewTitles wrapper">
           Date: {integerToDateTime(selectedSession.date)}
-        </h3>
-        <h3 className="sessionPreviewTitles">
-          Time Limit: {selectedSession.time_limit / 60000} minutes
-        </h3>
+        </h4>
+        <h4 className="sessionPreviewTitles wrapper">
+          Duration: {selectedSession.time_limit / 60000} minutes
+        </h4>
+        <h4 className="sessionPreviewTitles wrapper">
+          Participant count: {selectedSession.participants.length}
+        </h4>
       </div>
       <p className="sessionPreviewInformation">{selectedSession.description}</p>
       <>

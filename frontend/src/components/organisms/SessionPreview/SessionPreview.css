@@ -3,8 +3,8 @@
   transition: 0.3s;
   border-top: 3px solid hsl(212, 86%, 64%);
   border-radius: 4px;
-  padding: 2rem;
-  margin: 1rem;
+  padding: 1.5rem;
+  margin: 0rem 2rem;
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -33,7 +33,7 @@
 
 .sessionPreviewButtons {
   display: flex;
-  align-items: center;
+  justify-content: center;
 }
 
 .ongoing {
@@ -47,4 +47,14 @@
 
 .ongoingExperiment > h2 {
   color: rgb(136, 0, 0);
+}
+
+.wrapper {
+  width: auto;
+  height: fit-content;
+  border: 0.1rem solid hsl(229, 6%, 90%);
+  text-align: left;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
 }
