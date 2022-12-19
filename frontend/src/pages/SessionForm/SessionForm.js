@@ -96,7 +96,10 @@ function SessionForm({ onSendSessionToBackend }) {
       toast.error("Failed to save session since required fields are missing!");
       return;
     }
+
     onSendSessionToBackend(sessionData);
+
+    console.log("sessionData", sessionData);
   };
 
   const addRandomSessionData = () => {
@@ -117,7 +120,8 @@ function SessionForm({ onSendSessionToBackend }) {
           muted_audio: true,
           muted_video: true,
           banned: false,
-          filters: [],
+          audio_filters: [],
+          video_filters: [],
           chat: [],
           position: {
             x: 10,
@@ -132,6 +136,7 @@ function SessionForm({ onSendSessionToBackend }) {
       ],
       start_time: 0,
       end_time: 0,
+      creation_time: 0,
       notes: [],
       log: "",
     };

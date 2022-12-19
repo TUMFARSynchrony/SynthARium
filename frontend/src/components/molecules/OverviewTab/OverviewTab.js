@@ -1,23 +1,40 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { integerToDateTime } from "../../../utils/utils";
+import EndVerificationModal from "../../../modals/EndVerificationModal/EndVerificationModal";
+import StartVerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
+import {
+  getSessionById,
+  integerToDateTime,
+  useBackListener,
+} from "../../../utils/utils";
 import Button from "../../atoms/Button/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
+import LinkButton from "../../atoms/LinkButton/LinkButton";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import "./OverviewTab.css";
 
-function OverviewTab() {
+function OverviewTab({
+  onLeaveExperiment,
+  onStartExperiment,
+  onEndExperiment,
+}) {
   const [message, setMessage] = useState("");
-  const sessionData = useSelector((state) => state.ongoingExperiment.value);
+  const [startVerificationModal, setStartVerificationModal] = useState(false);
+  const [endVerificationModal, setEndVerificationModal] = useState(false);
 
-  const onEnterMessage = (newMessage) => {
-    setMessage(newMessage);
-  };
+  const ongoingExperiment = useSelector(
+    (state) => state.ongoingExperiment.value
+  );
+  const sessionId = ongoingExperiment.sessionId;
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const sessionData = getSessionById(sessionId, sessionsList)[0];
+
+  useBackListener(() => onLeaveExperiment());
 
   return (
     <div className="overviewTabContainer">
-      <Heading heading={"Session 1"} />
+      <Heading heading={sessionData.title} />
       <hr className="separatorLine"></hr>
       <div className="sessionInformation">
         <h3>Session Information</h3>
@@ -45,10 +62,49 @@ function OverviewTab() {
         <TextAreaField
           placeholder={"Enter your message here"}
           value={message}
-          onChange={(newMessage) => onEnterMessage(newMessage)}
+          onChange={(newMessage) => setMessage(newMessage)}
         />
         <Button name={"Send"} design={"secondary"} />
       </div>
+      <hr className="separatorLine"></hr>
+
+      <LinkButton
+        name={"LEAVE EXPERIMENT"}
+        design={"secondary"}
+        to={"/"}
+        onClick={() => onLeaveExperiment()}
+      />
+      {sessionData.start_time === 0 ? (
+        <Button
+          name={"START EXPERIMENT"}
+          design={"positive"}
+          onClick={() => {
+            setStartVerificationModal(true);
+          }}
+        />
+      ) : (
+        <Button
+          name={"END EXPERIMENT"}
+          design={"negative"}
+          onClick={() => {
+            setEndVerificationModal(true);
+          }}
+        />
+      )}
+
+      {startVerificationModal && (
+        <StartVerificationModal
+          setShowModal={setStartVerificationModal}
+          onStartExperiment={onStartExperiment}
+        />
+      )}
+
+      {endVerificationModal && (
+        <EndVerificationModal
+          setShowModal={setEndVerificationModal}
+          onEndExperiment={onEndExperiment}
+        />
+      )}
     </div>
   );
 }

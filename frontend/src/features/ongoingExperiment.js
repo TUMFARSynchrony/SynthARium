@@ -3,27 +3,28 @@ import { createSlice } from "@reduxjs/toolkit";
 export const ongoingExperimentSlice = createSlice({
   name: "ongoingExperiment",
   initialState: {
-    value: {
-      id: "",
-      title: "",
-      description: "",
-      date: 0,
-      time_limit: 0,
-      record: false,
-      participants: [],
-      start_time: 0,
-      end_time: 0,
-      notes: [],
-      log: "",
-    },
+    value: { sessionId: "", experimentState: "" },
   },
   reducers: {
     createExperiment: (state, { payload }) => {
-      state.value = payload;
+      const session = { sessionId: payload, experimentState: "WAITING" };
+      state.value = session;
+    },
+
+    joinExperiment: (state, { payload }) => {
+      const session = { ...state.value };
+      session.sessionId = payload;
+
+      state.value = session;
+    },
+
+    changeExperimentState: (state, { payload }) => {
+      state.value.experimentState = payload;
     },
   },
 });
 
-export const { createExperiment } = ongoingExperimentSlice.actions;
+export const { createExperiment, changeExperimentState, joinExperiment } =
+  ongoingExperimentSlice.actions;
 
 export default ongoingExperimentSlice.reducer;

@@ -1,27 +1,39 @@
 import Heading from "../../atoms/Heading/Heading";
-import { getJoinedParticipants } from "../../../utils/mockServer";
-import { useState } from "react";
 import JoinedParticipantCard from "../../atoms/JoinedParticipantCard/JoinedParticipantCard";
 import { useSelector } from "react-redux";
+import "./ParticipantsTab.css";
+import { getSessionById } from "../../../utils/utils";
 
-function ParticipantsTab() {
-  const [participants, setParticipants] = useState(getJoinedParticipants());
-  const sessionData = useSelector((state) => state.ongoingExperiment.value);
+function ParticipantsTab({
+  connectedParticipants,
+  onKickBanParticipant,
+  onMuteParticipant,
+}) {
+  const ongoingExperiment = useSelector(
+    (state) => state.ongoingExperiment.value
+  );
+  const sessionId = ongoingExperiment.sessionId;
+  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const sessionData = getSessionById(sessionId, sessionsList)[0];
 
   return (
     <>
       <Heading heading={"Joined participants"} />
-      {participants.length > 0
-        ? participants.map((participantData, index) => {
-            return (
-              <JoinedParticipantCard
-                participantData={participantData}
-                key={index}
-                sessionId={sessionData.id}
-              />
-            );
-          })
-        : "No participant joined yet."}
+      <div className="joinedParticipants">
+        {connectedParticipants.length > 0
+          ? connectedParticipants.map((participant, index) => {
+              return (
+                <JoinedParticipantCard
+                  participantId={participant.summary}
+                  key={index}
+                  sessionData={sessionData}
+                  onKickBanParticipant={onKickBanParticipant}
+                  onMuteParticipant={onMuteParticipant}
+                />
+              );
+            })
+          : "No participants joined yet."}
+      </div>
     </>
   );
 }

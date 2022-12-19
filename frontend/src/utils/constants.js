@@ -8,6 +8,7 @@ export const INITIAL_SESSION_DATA = {
   participants: [],
   start_time: 0,
   end_time: 0,
+  creation_time: 0,
   notes: [],
   log: "",
 };
@@ -25,7 +26,8 @@ export const INITIAL_PARTICIPANT_DATA = {
   muted_audio: true,
   muted_video: true,
   banned: false,
-  filters: [],
+  video_filters: [],
+  audio_filters: [],
   chat: [],
   position: {
     x: 10,
@@ -53,22 +55,21 @@ export const ENVIRONMENT = process.env.NODE_ENV; // "development", "test" or "pr
 /**
  * Backend address.
  */
-export const BACKEND = (
+export const BACKEND =
   ENVIRONMENT === "production"
     ? window.location.origin
-    : process.env.REACT_APP_BACKEND
-);
+    : process.env.REACT_APP_BACKEND;
 
 /**
- * Optional ICE servers. 
- * undefined or list of RTCIceServers 
+ * Optional ICE servers.
+ * undefined or list of RTCIceServers
  * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer
  */
 export const ICE_SERVERS = parseIceServers();
 
 function parseIceServers() {
   const servers = process.env.REACT_APP_ICE_SERVERS;
-  console.log("REACT_APP_ICE_SERVERS", servers)
+  console.log("REACT_APP_ICE_SERVERS", servers);
 
   if (!servers) {
     return undefined;
@@ -76,9 +77,9 @@ function parseIceServers() {
   try {
     return JSON.parse(servers);
   } catch (error) {
-    console.error("Failed to parse ice servers.", error)
+    console.error("Failed to parse ice servers.", error);
     return undefined;
   }
 }
 
-export const PARTICIPANT_HOST = "https://localhost:3000/experimentRoom/";
+export const PARTICIPANT_HOST = "http://localhost:3000/experimentRoom/";

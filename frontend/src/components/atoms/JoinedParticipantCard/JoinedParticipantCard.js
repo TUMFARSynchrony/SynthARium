@@ -1,32 +1,67 @@
 import { useState } from "react";
 import JoinedParticipantModal from "../../../modals/JoinedParticipantModal/JoinedParticipantModal";
+import KickParticipantModal from "../../../modals/KickParticipantModal/KickParticipantModal";
+import { getParticipantById } from "../../../utils/utils";
 import Button from "../Button/Button";
 import Label from "../Label/Label";
 import "./JoinedParticipantCard.css";
 
-function JoinedParticipant({ participantData, sessionId }) {
+function JoinedParticipant({
+  participantId,
+  sessionData,
+  onKickBanParticipant,
+  onMuteParticipant,
+}) {
   const [showModal, setShowModal] = useState(false);
-
-  const onClick = () => {
-    setShowModal(!showModal);
-  };
+  const [showKickBanReason, setShowKickBanReason] = useState(false);
+  const [action, setAction] = useState("");
+  const participantData = getParticipantById(participantId, sessionData);
 
   return (
     <div className="joinedParticipantContainer">
-      <Label
-        title={participantData.first_name + " " + participantData.last_name}
-      />
-      <Button
-        name={"More info"}
-        design={"secondary"}
-        onClick={() => onClick()}
-      />
+      <div className="participantSummary">
+        <Label
+          title={participantData.first_name + " " + participantData.last_name}
+        />
+        <Button
+          name={"More info"}
+          design={"secondary"}
+          onClick={() => setShowModal(!showModal)}
+        />
+        <Button
+          name={"Kick"}
+          design={"negative"}
+          onClick={() => {
+            setShowKickBanReason(true);
+            setAction("Kick");
+          }}
+        />
+        <Button
+          name={"Ban"}
+          design={"negative"}
+          onClick={() => {
+            setShowKickBanReason(true);
+            setAction("Ban");
+          }}
+        />
+      </div>
       {showModal && (
         <JoinedParticipantModal
           participantData={participantData}
           showModal={showModal}
           setShowModal={setShowModal}
-          sessionId={sessionId}
+          sessionId={sessionData.id}
+          onMuteParticipant={onMuteParticipant}
+        />
+      )}
+      {showKickBanReason && (
+        <KickParticipantModal
+          participantId={participantData.id}
+          showModal={showKickBanReason}
+          setShowModal={setShowKickBanReason}
+          onKickBanParticipant={onKickBanParticipant}
+          action={action}
+          sessionId={sessionData.id}
         />
       )}
     </div>

@@ -1,3 +1,6 @@
+import { useContext, useEffect } from "react";
+import { UNSAFE_NavigationContext } from "react-router-dom";
+
 export const getRandomColor = () => {
   let letters = "0123456789ABCDEF";
   let color = "#";
@@ -21,6 +24,14 @@ export const filterListById = (list, id) => {
   });
 
   return filteredList;
+};
+
+export const getSessionById = (id, list) => {
+  let session = list.filter((obj) => {
+    return obj.id === id;
+  });
+
+  return session;
 };
 
 export const integerToDateTime = (integerDate) => {
@@ -119,14 +130,16 @@ export const getPastAndFutureSessions = (sessionsList) => {
   let today = new Date().getTime();
 
   sessionsList.forEach((session, _) => {
-    if (session.date < today) {
+    // Sessions in the past are in the past and cannot be started.
+    // end_time needs to be > 0 for a session to be past as well.
+    if (session.date < today || session.end_time > 0) {
       pastSessions.push(session);
     } else {
       futureSessions.push(session);
     }
   });
 
-  return { past: pastSessions, future: futureSessions };
+  return { pastSession: pastSessions, futureSession: futureSessions };
 };
 
 // Required: "title", "description", "date", "time_limit"
@@ -143,4 +156,32 @@ export const isFutureSession = (sessionData) => {
   let today = new Date().getTime();
 
   return today < sessionData.date;
+};
+
+export const useBackListener = (callback) => {
+  const navigator = useContext(UNSAFE_NavigationContext).navigator;
+
+  useEffect(() => {
+    const listener = ({ location, action }) => {
+      if (action === "POP") {
+        callback({ location, action });
+      }
+    };
+
+    const unlisten = navigator.listen(listener);
+    return unlisten;
+  }, [callback, navigator]);
+};
+
+export const getVideoTitle = (peer, index) => {
+  if (peer) {
+    return `${peer.first_name} ${peer.last_name}`;
+  }
+  return `Peer stream ${index + 1}`;
+};
+
+export const getParticipantById = (participantId, sessionData) => {
+  let participants = sessionData.participants;
+
+  return getSessionById(participantId, participants)[0];
 };

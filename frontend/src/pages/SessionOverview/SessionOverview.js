@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { initializeSession } from "../../features/openSession";
@@ -14,10 +14,24 @@ import { getPastAndFutureSessions } from "../../utils/utils";
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
 
-function SessionOverview({ onDeleteSession, onCreateExperiment }) {
+function SessionOverview({
+  onDeleteSession,
+  onJoinExperiment,
+  onCreateExperiment,
+}) {
   const dispatch = useDispatch();
   const sessionsList = useSelector((state) => state.sessionsList.value);
-  const { past, future } = getPastAndFutureSessions(sessionsList);
+  const [past, setPast] = useState([]);
+  const [future, setFuture] = useState([]);
+
+  // const { past, future } = getPastAndFutureSessions(sessionsList);
+  useEffect(() => {
+    const { pastSession, futureSession } =
+      getPastAndFutureSessions(sessionsList);
+    setPast(pastSession);
+    setFuture(futureSession);
+    setSelectedSession(futureSession.length !== 0 ? futureSession[0] : null);
+  }, [sessionsList]);
 
   const [selectedSession, setSelectedSession] = useState(
     future.length !== 0 ? future[0] : null
@@ -40,7 +54,12 @@ function SessionOverview({ onDeleteSession, onCreateExperiment }) {
   return (
     <>
       <NavigationBar />
-      <h2 className="sessionOverviewHeadline">Planned Sessions</h2>
+      <h2 className="sessionOverviewHeadline">Welcome! Get started with conducting your user studies here!</h2>
+      <LinkButton
+        name="CREATE NEW SESSION"
+        to="/sessionForm"
+        onClick={() => onCreateNewSession()}
+      />
       <div className="sessionOverviewDescription">
         Create a new session to create your own experimental design template.
         You can hold these sessions for each experiment you would like to
@@ -49,12 +68,6 @@ function SessionOverview({ onDeleteSession, onCreateExperiment }) {
       </div>
       <div className="sessionOverviewContainer">
         <div className="sessionOverviewCards">
-          <LinkButton
-            name="CREATE NEW SESSION"
-            to="/sessionForm"
-            onClick={() => onCreateNewSession()}
-          />
-
           <Label title={"Upcoming sessions:"} />
           {future.length !== 0 ? (
             future.map((session, index) => {
@@ -104,6 +117,7 @@ function SessionOverview({ onDeleteSession, onCreateExperiment }) {
               setSelectedSession={setSelectedSession}
               onDeleteSession={onDeleteSession}
               onCreateExperiment={onCreateExperiment}
+              onJoinExperiment={onJoinExperiment}
             />
           ) : (
             <h2>No session selected.</h2>
