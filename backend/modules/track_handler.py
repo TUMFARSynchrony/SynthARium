@@ -14,10 +14,8 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
+from filters import *
 from custom_types.filters import FilterDict
-import filters.filter_factory as filter_factory
-from filters.filter import Filter
-from filters.mute import MuteVideoFilter, MuteAudioFilter
 
 if TYPE_CHECKING:
     from modules.connection import Connection
@@ -108,24 +106,10 @@ class TrackHandler(MediaStreamTrack):
         ----------
         filters : list of custom_types.filters.FilterDict
         """
-        # TODO: refactor this
-        # filter_type = "MUTE_AUDIO" if self.kind == "audio" else "MUTE_VIDEO"
-        # self._mute_filter = filter_factory.create_filter({"id": "", "type": filter_type},
-        #                                                  self.connection.incoming_audio,
-        #                                                  self.connection.incoming_video)
+        self._mute_filter = filter_factory.init_mute_filter(self.kind,
+                                                            self.connection.incoming_audio,
+                                                            self.connection.incoming_video)
 
-        if self.kind == "audio":
-            self._mute_filter = MuteAudioFilter(
-                {"id": "0", "type": "MUTE_AUDIO"},
-                self.connection.incoming_audio,
-                self.connection.incoming_video,
-            )
-        else:
-            self._mute_filter = MuteVideoFilter(
-                {"id": "0", "type": "MUTE_VIDEO"},
-                self.connection.incoming_audio,
-                self.connection.incoming_video,
-            )
         await self.set_filters(filters)
 
     @property

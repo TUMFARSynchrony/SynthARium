@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
+from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from modules.track_handler import TrackHandler
@@ -51,3 +50,22 @@ def create_filter(filter_config: FilterDict,
                 type="UNKNOWN_FILTER_TYPE",
                 description=f'Unknown filter type "{filter_type}".',
             )
+
+
+def init_mute_filter(
+        kind: Literal["audio", "video"],
+        audio_track_handler: TrackHandler,
+        video_track_handler: TrackHandler) -> MuteAudioFilter | MuteVideoFilter:
+
+    if kind == "audio":
+        return MuteAudioFilter(
+            {"id": "0", "type": "MUTE_AUDIO"},
+            audio_track_handler,
+            video_track_handler,
+        )
+    else:
+        return MuteVideoFilter(
+            {"id": "0", "type": "MUTE_VIDEO"},
+            audio_track_handler,
+            video_track_handler,
+        )
