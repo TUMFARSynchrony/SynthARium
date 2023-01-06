@@ -1,13 +1,15 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from modules.track_handler import TrackHandler
+
+from filters import *
 
 from custom_types.filters import FilterDict
 from filters.HelloWorldFilter import HelloWorldFilter
 from filters.api_test import FilterAPITestFilter
-from filters.edge_outline import EdgeOutlineFilter
 from filters.filter import Filter
 from filters.mute import MuteAudioFilter, MuteVideoFilter
 from filters.rotate import RotationFilter
@@ -48,8 +50,6 @@ def create_filter(filter_config: FilterDict,
             return DelayFilter(filter_config, audio_track_handler, video_track_handler)  # type: ignore
         case "FILTER_API_TEST":
             return FilterAPITestFilter(filter_config, audio_track_handler, video_track_handler)
-        case "HELLO_WORLD":
-            return HelloWorldFilter(filter_config, audio_track_handler, video_track_handler)
         case _:
             raise ErrorDictException(
                 code=404,

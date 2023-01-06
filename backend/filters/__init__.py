@@ -1,1 +1,3 @@
-"""Filter modules."""
+# __all__ = []
+
+from .edge_outline import EdgeOutlineFilter
