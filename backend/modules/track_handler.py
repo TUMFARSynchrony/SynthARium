@@ -14,10 +14,8 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from modules.exceptions import ErrorDictException
-
 from custom_types.filters import FilterDict
-import filters.filter_factory as filterFactory
+import filters.filter_factory as filter_factory
 from filters.filter import Filter
 from filters.mute import MuteVideoFilter, MuteAudioFilter
 
@@ -222,28 +220,28 @@ class TrackHandler(MediaStreamTrack):
 
         self._filters = {}
         for config in filter_configs:
-            id = config["id"]
+            filter_id = config["id"]
             # Reuse existing filter for matching id and type.
-            if id in old_filters and old_filters[id].config["type"] == config["type"]:
-                self._filters[id] = old_filters[id]
-                self._filters[id].set_config(config)
+            if filter_id in old_filters and old_filters[filter_id].config["type"] == config["type"]:
+                self._filters[filter_id] = old_filters[filter_id]
+                self._filters[filter_id].set_config(config)
                 continue
 
             # Create a new filter for configs with empty id.
-            self._filters[id] = filterFactory.create_filter(config, self.connection.incoming_audio,
-                                                            self.connection.incoming_video)
+            self._filters[filter_id] = filter_factory.create_filter(config, self.connection.incoming_audio,
+                                                                    self.connection.incoming_video)
 
-        coros: list[Coroutine] = []
+        coroutines: list[Coroutine] = []
         # Cleanup old filters
-        for id, filter in old_filters.items():
-            if id not in self._filters:
-                coros.append(filter.cleanup())
+        for filter_id, old_filter in old_filters.items():
+            if filter_id not in self._filters:
+                coroutines.append(old_filter.cleanup())
 
         # Complete setup for new filters
-        for filter in self._filters.values():
-            coros.append(filter.complete_setup())
+        for new_filter in self._filters.values():
+            coroutines.append(new_filter.complete_setup())
 
-        await asyncio.gather(*coros)
+        await asyncio.gather(*coroutines)
         self.reset_execute_filters()
 
     def reset_execute_filters(self):
@@ -254,7 +252,7 @@ class TrackHandler(MediaStreamTrack):
         or any of the filters should be executed even if muted.
         """
         self._execute_filters = len(self._filters) > 0 and (
-            not self._muted or any([f.run_if_muted for f in self._filters.values()])
+                not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
 
     async def recv(self) -> AudioFrame | VideoFrame:
@@ -312,19 +310,19 @@ class TrackHandler(MediaStreamTrack):
         return new_frame
 
     async def _apply_filters(
-        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
+            self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
         """Execute filter pipeline."""
         async with self.__lock:
             # Run all filters if not self._muted.
             if not self._muted:
-                for filter in self._filters.values():
-                    ndarray = await filter.process(original, ndarray)
+                for active_filter in self._filters.values():
+                    ndarray = await active_filter.process(original, ndarray)
                 return ndarray
 
             # Muted. Only execute filters where run_if_muted is True.
-            for filter in self._filters.values():
-                if filter.run_if_muted:
-                    ndarray = await filter.process(original, ndarray)
+            for active_filter in self._filters.values():
+                if active_filter.run_if_muted:
+                    ndarray = await active_filter.process(original, ndarray)
 
         return ndarray
