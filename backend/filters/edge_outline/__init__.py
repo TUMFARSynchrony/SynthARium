@@ -1,3 +1,3 @@
-__all__ = ["EdgeOutlineFilter"]
+# __all__ = ["EdgeOutlineFilter"]
 
 from .edge_outline_filter import EdgeOutlineFilter
