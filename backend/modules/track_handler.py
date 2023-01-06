@@ -108,6 +108,12 @@ class TrackHandler(MediaStreamTrack):
         ----------
         filters : list of custom_types.filters.FilterDict
         """
+        # TODO: refactor this
+        # filter_type = "MUTE_AUDIO" if self.kind == "audio" else "MUTE_VIDEO"
+        # self._mute_filter = filter_factory.create_filter({"id": "", "type": filter_type},
+        #                                                  self.connection.incoming_audio,
+        #                                                  self.connection.incoming_video)
+
         if self.kind == "audio":
             self._mute_filter = MuteAudioFilter(
                 {"id": "0", "type": "MUTE_AUDIO"},
