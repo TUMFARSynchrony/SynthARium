@@ -6,9 +6,7 @@ if TYPE_CHECKING:
     from modules.track_handler import TrackHandler
 
 from filters import *
-from filters.filter import Filter
 from filters.mute import MuteAudioFilter, MuteVideoFilter
-from filters.rotate import RotationFilter
 
 from custom_types.filters import FilterDict
 from modules.exceptions import ErrorDictException
