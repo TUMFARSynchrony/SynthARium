@@ -17,12 +17,9 @@ from aiortc.contrib.media import MediaRelay
 from modules.exceptions import ErrorDictException
 
 from custom_types.filters import FilterDict
-from filters.rotate import RotationFilter
-from filters.edge_outline import EdgeOutlineFilter
+import filters.filter_factory as filterFactory
 from filters.filter import Filter
-from filters.delay import DelayFilter
 from filters.mute import MuteVideoFilter, MuteAudioFilter
-from filters.api_test import FilterAPITestFilter
 
 if TYPE_CHECKING:
     from modules.connection import Connection
@@ -233,7 +230,8 @@ class TrackHandler(MediaStreamTrack):
                 continue
 
             # Create a new filter for configs with empty id.
-            self._filters[id] = self._create_filter(config)
+            self._filters[id] = filterFactory.create_filter(config, self.connection.incoming_audio,
+                                                            self.connection.incoming_video)
 
         coros: list[Coroutine] = []
         # Cleanup old filters
@@ -247,45 +245,6 @@ class TrackHandler(MediaStreamTrack):
 
         await asyncio.gather(*coros)
         self.reset_execute_filters()
-
-    def _create_filter(self, filter_config: FilterDict) -> Filter:
-        """Create a filter based on `type` of `filter_config`.
-
-        Parameters
-        ----------
-        id : str
-            Id for new filter.
-        filter_config : custom_types.filters.FilterDict
-            Filter config used to determine type of filter.  Also passed to new filter.
-
-        Raises
-        ------
-        modules.exceptions.ErrorDictException
-            If the filter type is unknown.
-        """
-        type = filter_config["type"]
-        audio = self.connection.incoming_audio
-        video = self.connection.incoming_video
-
-        match type:
-            case "MUTE_AUDIO":
-                return MuteAudioFilter(filter_config, audio, video)
-            case "MUTE_VIDEO":
-                return MuteVideoFilter(filter_config, audio, video)
-            case "ROTATION":
-                return RotationFilter(filter_config, audio, video)
-            case "EDGE_OUTLINE":
-                return EdgeOutlineFilter(filter_config, audio, video)
-            case "DELAY":
-                return DelayFilter(filter_config, audio, video)  # type: ignore
-            case "FILTER_API_TEST":
-                return FilterAPITestFilter(filter_config, audio, video)
-            case _:
-                raise ErrorDictException(
-                    code=404,
-                    type="UNKNOWN_FILTER_TYPE",
-                    description=f'Unknown filter type "{type}".',
-                )
 
     def reset_execute_filters(self):
         """Reset `self._execute_filters`.
