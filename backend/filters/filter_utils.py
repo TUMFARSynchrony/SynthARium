@@ -1,5 +1,6 @@
 import logging
 from typing import Literal, TypeGuard, get_args
+from .filter import Filter
 from .filter_dict import FilterDict
 from .filters_request_dict import SetFiltersRequestDict
 from .delay.delay_filter_dict import is_valid_delay_filter_dict
@@ -108,3 +109,12 @@ def is_valid_set_filters_request(
                 return False
 
     return True
+
+
+def get_filter_list() -> list[str]:
+    result = []
+
+    for myClass in Filter.__subclasses__():
+        result.append(myClass.name(myClass))
+
+    return result

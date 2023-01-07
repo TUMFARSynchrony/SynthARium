@@ -7,7 +7,7 @@ from typing import TypeGuard, TypedDict
 
 import custom_types.util as util
 
-from filters import validation_api
+from filters import filter_utils
 from custom_types.size import SizeDict, is_valid_size
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.position import PositionDict, is_valid_position
@@ -100,10 +100,10 @@ def is_valid_participant(data, recursive: bool = True) -> TypeGuard[ParticipantD
 
     if recursive:
         for filter in data["audio_filters"]:
-            if not validation_api.is_valid_filter_dict(filter):
+            if not filter_utils.is_valid_filter_dict(filter):
                 return False
         for filter in data["video_filters"]:
-            if not validation_api.is_valid_filter_dict(filter):
+            if not filter_utils.is_valid_filter_dict(filter):
                 return False
         for message in data["chat"]:
             if not is_valid_chatmessage(message):

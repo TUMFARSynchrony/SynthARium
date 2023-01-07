@@ -15,7 +15,6 @@ from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
 from filters import *
-from filters import FilterDict
 
 if TYPE_CHECKING:
     from modules.connection import Connection
