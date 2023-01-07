@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from filters import *
 
-from custom_types.filters import FilterDict
+from .filter_dict import FilterDict
 from modules.exceptions import ErrorDictException
 
 
@@ -17,7 +17,7 @@ def create_filter(filter_config: FilterDict,
 
     Parameters
     ----------
-    filter_config : custom_types.filters.FilterDict
+    filter_config : filters.FilterDict
         Filter config used to determine type of filter.  Also passed to new filter.
     audio_track_handler : TrackHandler
         The audio TrackHandler to assign
@@ -41,7 +41,7 @@ def create_filter(filter_config: FilterDict,
         case "EDGE_OUTLINE":
             return EdgeOutlineFilter(filter_config, audio_track_handler, video_track_handler)
         case "DELAY":
-            return DelayFilter(filter_config, audio_track_handler, video_track_handler)  # type: ignore
+            return DelayFilter(filter_config, audio_track_handler, video_track_handler)
         case "FILTER_API_TEST":
             return FilterAPITestFilter(filter_config, audio_track_handler, video_track_handler)
         case _:

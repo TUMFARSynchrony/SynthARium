@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
-from custom_types.filters import FilterDict
+from .filter_dict import FilterDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error

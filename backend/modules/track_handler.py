@@ -15,7 +15,7 @@ from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
 from filters import *
-from custom_types.filters import FilterDict
+from filters import FilterDict
 
 if TYPE_CHECKING:
     from modules.connection import Connection
@@ -104,7 +104,7 @@ class TrackHandler(MediaStreamTrack):
 
         Parameters
         ----------
-        filters : list of custom_types.filters.FilterDict
+        filters : list of filters.FilterDict
         """
         self._mute_filter = filter_factory.init_mute_filter(self.kind,
                                                             self.connection.incoming_audio,
@@ -194,7 +194,7 @@ class TrackHandler(MediaStreamTrack):
 
         Parameters
         ----------
-        filter_configs : list of custom_types.filters.FilterDict
+        filter_configs : list of filters.FilterDict
             List of filter configs used to modify filters for this TrackHandler.
         """
         async with self.__lock:

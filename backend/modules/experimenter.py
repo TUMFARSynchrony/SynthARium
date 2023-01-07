@@ -12,7 +12,7 @@ import logging
 from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
-from custom_types.filters import is_valid_set_filters_request
+from filters import validation_api
 from custom_types.session import is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
@@ -679,7 +679,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any or custom_types.filters.SetFiltersRequestDict
+        data : any or filters.SetFiltersRequestDict
             Message data.  Checks if data is a valid SetFiltersRequestDict and raises
             an ErrorDictException if not.
 
@@ -694,7 +694,7 @@ class Experimenter(User):
         ErrorDictException
             If data is not a valid custom_types.filters.SetFiltersRequestDict.
         """
-        if not is_valid_set_filters_request(data):
+        if not validation_api.is_valid_set_filters_request(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_DATATYPE",

@@ -5,7 +5,7 @@ from queue import Queue
 from av import VideoFrame, AudioFrame
 
 from filters.filter import Filter
-from custom_types.filters import DelayFilterDict
+from .delay_filter_dict import DelayFilterDict
 
 
 class DelayFilter(Filter):

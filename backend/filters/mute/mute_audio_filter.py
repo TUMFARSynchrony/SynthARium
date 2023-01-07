@@ -4,8 +4,8 @@ import numpy
 from typing import TYPE_CHECKING
 from av import AudioFrame
 
-from custom_types.filters import FilterDict
 from filters.filter import Filter
+from filters.filter_dict import FilterDict
 
 if TYPE_CHECKING:
     from modules.track_handler import TrackHandler

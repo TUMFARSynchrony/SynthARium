@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from av import VideoFrame
 
 from modules import BACKEND_DIR
-from custom_types.filters import FilterDict
+from filters.filter_dict import FilterDict
 from filters.filter import Filter
 
 if TYPE_CHECKING:

@@ -1,14 +1,8 @@
-"""Provide filter TypedDicts: `SetFiltersRequestDict` and `FilterDict`.
-
-Use for type hints and static type checking without any overhead during runtime.
-
-When more complex filters with custom settings are implemented, they should be added
-here.  `is_valid_filter_dict` should then include checks for the additional Filters,
-based on FilterDict.
-"""
-
 import logging
-from typing import Literal, TypeGuard, TypedDict, get_args
+from typing import Literal, TypeGuard, get_args
+from .filter_dict import FilterDict
+from .filters_request_dict import SetFiltersRequestDict
+from .delay.delay_filter_dict import is_valid_delay_filter_dict
 
 import custom_types.util as util
 
@@ -20,29 +14,9 @@ FILTER_TYPES = Literal[
     "DELAY",
     "ROTATION",
     "EDGE_OUTLINE",
-    "FILTER_API_TEST",
+    "FILTER_API_TEST"
 ]
 """Valid filter types."""
-
-
-class FilterDict(TypedDict):
-    """TypedDict for basic filters with only basic attributes.
-
-    Attributes
-    ----------
-    type : str
-        filter type (unique identifier / name)
-    id : str
-        Filter id.  Empty string if adding a new filter.  Read only for client.
-
-    See Also
-    --------
-    Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
-    """
-
-    type: FILTER_TYPES
-    id: str
 
 
 def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
@@ -84,24 +58,6 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
             valid_filter = util.check_valid_typeddict_keys(data, FilterDict)
 
     return valid_filter and isinstance(data["id"], str)
-
-
-class SetFiltersRequestDict(TypedDict):
-    """TypedDict for `SET_FILTERS` requests.
-
-    Attributes
-    ----------
-    participant_id : str
-        Participant ID for the requested endpoint.
-    audio_filters : list of custom_types.filters.FilterDict
-        Active audio filters for participant with `participant_id`.
-    video_filters : list of custom_types.filters.FilterDict
-        Active video filters for participant with `participant_id`.
-    """
-
-    participant_id: str
-    audio_filters: list[FilterDict]
-    video_filters: list[FilterDict]
 
 
 def is_valid_set_filters_request(
@@ -152,37 +108,3 @@ def is_valid_set_filters_request(
                 return False
 
     return True
-
-
-class DelayFilterDict(FilterDict):
-    """TypedDict for delay filter.
-
-    Attributes
-    ----------
-    type : str
-        filter type (unique identifier / name)
-    id : str
-        Filter id.  Empty string if adding a new filter.  Read only for client.
-    size : int
-        Amount of frames that should be delayed / buffer size.
-    """
-
-    size: int
-
-
-def is_valid_delay_filter_dict(data) -> TypeGuard[DelayFilterDict]:
-    """Check if `data` is a valid custom_types.filters.DelayFilterDict.
-
-    Does not check base class attributes.  Should only be called from
-    is_valid_filter_dict.
-
-    See Also
-    --------
-    is_valid_filter_dict
-    """
-    return (
-        util.check_valid_typeddict_keys(data, DelayFilterDict)
-        and "size" in data
-        and isinstance(data["size"], int)
-        and data["size"] > 0
-    )
