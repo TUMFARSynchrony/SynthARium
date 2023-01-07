@@ -4,7 +4,6 @@ from typing import TypeGuard
 from .filter import Filter
 from .filter_dict import FilterDict
 from .filters_request_dict import SetFiltersRequestDict
-from .delay.delay_filter_dict import is_valid_delay_filter_dict
 
 import custom_types.util as util
 
@@ -32,25 +31,19 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
         logger.debug(f"Missing key: type")
         return False
 
-    if not isinstance(data["type"], str):
+    filter_type = data["type"]
+
+    if not isinstance(filter_type, str):
         logger.debug(f'Filter "type" must be of type str.')
         return False
 
-    if data["type"] not in get_filter_list():
-        logging.debug(f'Invalid filter type: "{data["type"]}".')
+    filters = get_filter_dict()
+
+    if filter_type not in filters:
+        logging.debug(f'Invalid filter type: "{filter_type}".')
         return False
 
-    # Add custom filter dicts here. They do not need to check `type` or `id`.
-    # Custom filter TypeGuard functions are expected to call `check_valid_typeddict_keys`.
-    valid_filter = False
-    match data["type"]:
-        case "DELAY":
-            valid_filter = is_valid_delay_filter_dict(data)
-        case _:
-            # Default case, no custom filter
-            valid_filter = util.check_valid_typeddict_keys(data, FilterDict)
-
-    return valid_filter and isinstance(data["id"], str)
+    return isinstance(data["id"], str) and filters[filter_type].validate_dict(data)
 
 
 def is_valid_set_filters_request(

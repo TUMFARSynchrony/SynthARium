@@ -4,10 +4,11 @@
 from __future__ import annotations
 
 import numpy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
+from custom_types import util
 from .filter_dict import FilterDict
 
 if TYPE_CHECKING:
@@ -149,6 +150,10 @@ class Filter(ABC):
         Analysis of the frame contents should also be based on `ndarray`.
         """
         pass
+
+    @staticmethod
+    def validate_dict(data) -> TypeGuard[FilterDict]:
+        return util.check_valid_typeddict_keys(data, FilterDict)
 
     def __repr__(self) -> str:
         """Get string representation for this filter."""

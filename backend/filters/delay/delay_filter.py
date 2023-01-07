@@ -1,9 +1,11 @@
 """Provide `DelayFilter` filter."""
+from typing import TypeGuard
 
 import numpy
 from queue import Queue
 from av import VideoFrame, AudioFrame
 
+from custom_types import util
 from filters.filter import Filter
 from .delay_filter_dict import DelayFilterDict
 
@@ -42,3 +44,12 @@ class DelayFilter(Filter):
         if self.buffer.full():
             return self.buffer.get()
         return self.buffer.queue[0]
+
+    @staticmethod
+    def validate_dict(data) -> TypeGuard[DelayFilterDict]:
+        return (
+                util.check_valid_typeddict_keys(data, DelayFilterDict)
+                and "size" in data
+                and isinstance(data["size"], int)
+                and data["size"] > 0
+        )
