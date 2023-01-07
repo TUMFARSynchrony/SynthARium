@@ -8,6 +8,7 @@ from .delay.delay_filter_dict import is_valid_delay_filter_dict
 
 import custom_types.util as util
 
+
 logger = logging.getLogger("Filters")
 
 
@@ -109,3 +110,16 @@ def get_filter_list() -> list[str]:
         result.append(myClass.name(myClass))
 
     return result
+
+
+def get_filter_dict() -> dict:
+    filter_dict = {}
+
+    for concrete_filter in Filter.__subclasses__():
+        filter_name = concrete_filter.name(concrete_filter)
+        if filter_name in filter_dict:
+            logger.warning(f"Filter name {filter_name} already exists for class {concrete_filter.__name__}")
+        else:
+            filter_dict[filter_name] = concrete_filter
+
+    return filter_dict

@@ -1,28 +1,14 @@
 from __future__ import annotations
 from typing import Literal, TYPE_CHECKING
 
+from filters.filter_utils import get_filter_dict
+
 if TYPE_CHECKING:
     from modules.track_handler import TrackHandler
 
 from filters import *
 
 from modules.exceptions import ErrorDictException
-import logging
-
-
-logger = logging.getLogger("Filters")
-
-filter_dict = {}
-
-for concrete_filter in Filter.__subclasses__():
-    filter_name = concrete_filter.name(concrete_filter)
-    if filter_name in filter_dict:
-        # Error handling
-        # Doesn't exactly work right now because of import order issues, but not problematic for now
-        logger.warning(f"WARNING:Filters: Filter name {filter_name} "
-                       f"already exists for class {concrete_filter.__name__}")
-    else:
-        filter_dict[filter_name] = concrete_filter
 
 
 def create_filter(filter_config: FilterDict,
@@ -46,14 +32,16 @@ def create_filter(filter_config: FilterDict,
     """
     filter_type = filter_config["type"]
 
-    if filter_type not in filter_dict:
+    filters = get_filter_dict()
+
+    if filter_type not in filters:
         raise ErrorDictException(
             code=404,
             type="UNKNOWN_FILTER_TYPE",
             description=f'Unknown filter type "{filter_type}".',
         )
 
-    return filter_dict[filter_type](filter_config, audio_track_handler, video_track_handler)
+    return filters[filter_type](filter_config, audio_track_handler, video_track_handler)
 
 
 def init_mute_filter(
