@@ -1,15 +1,4 @@
-from typing import Literal, TypedDict
-
-FILTER_TYPES = Literal[
-    "MUTE_AUDIO",
-    "MUTE_VIDEO",
-    "DELAY",
-    "ROTATION",
-    "EDGE_OUTLINE",
-    "FILTER_API_TEST",
-    "HELLO_WORLD"
-]
-"""Valid filter types."""
+from typing import TypedDict
 
 
 class FilterDict(TypedDict):
@@ -28,5 +17,5 @@ class FilterDict(TypedDict):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
     """
 
-    type: FILTER_TYPES
+    type: str
     id: str

@@ -1,5 +1,6 @@
 import logging
-from typing import Literal, TypeGuard, get_args
+from typing import TypeGuard
+
 from .filter import Filter
 from .filter_dict import FilterDict
 from .filters_request_dict import SetFiltersRequestDict
@@ -8,16 +9,6 @@ from .delay.delay_filter_dict import is_valid_delay_filter_dict
 import custom_types.util as util
 
 logger = logging.getLogger("Filters")
-
-FILTER_TYPES = Literal[
-    "MUTE_AUDIO",
-    "MUTE_VIDEO",
-    "DELAY",
-    "ROTATION",
-    "EDGE_OUTLINE",
-    "FILTER_API_TEST"
-]
-"""Valid filter types."""
 
 
 def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
@@ -44,7 +35,7 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
         logger.debug(f'Filter "type" must be of type str.')
         return False
 
-    if data["type"] not in get_args(FILTER_TYPES):
+    if data["type"] not in get_filter_list():
         logging.debug(f'Invalid filter type: "{data["type"]}".')
         return False
 
