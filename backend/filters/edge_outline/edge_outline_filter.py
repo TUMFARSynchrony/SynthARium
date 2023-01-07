@@ -16,6 +16,10 @@ class EdgeOutlineFilter(Filter):
     https://en.wikipedia.org/wiki/Canny_edge_detector : Canny edge detector.
     """
 
+    @staticmethod
+    def name(self) -> str:
+        return "EDGE_OUTLINE"
+
     async def process(self, _: VideoFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
         # For docstring see filters.filter.Filter or hover over function declaration
         # Example based on https://github.com/aiortc/aiortc/tree/main/examples/server

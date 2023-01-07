@@ -39,6 +39,10 @@ class MuteAudioFilter(Filter):
             p.update(bytes(p.buffer_size))
         self._muted_ndarray = self._muted_frame.to_ndarray()
 
+    @staticmethod
+    def name(self) -> str:
+        return "MUTE_AUDIO"
+
     async def process(
         self, original: AudioFrame, ndarray: numpy.ndarray | None = None
     ) -> numpy.ndarray | AudioFrame:

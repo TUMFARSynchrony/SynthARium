@@ -13,7 +13,6 @@ class DelayFilter(Filter):
 
     Works for audio or video input.
     """
-
     buffer: Queue[numpy.ndarray]
     _config: DelayFilterDict
 
@@ -31,6 +30,10 @@ class DelayFilter(Filter):
         """
         super().__init__(config, audio_track_handler, video_track_handler)
         self.buffer = Queue(config["size"])
+
+    @staticmethod
+    def name(self) -> str:
+        return "DELAY"
 
     async def process(
         self, _: VideoFrame | AudioFrame, ndarray: numpy.ndarray

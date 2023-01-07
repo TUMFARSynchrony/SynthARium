@@ -43,6 +43,10 @@ class MuteVideoFilter(Filter):
         self._muted_frame = VideoFrame.from_image(muted_frame_img)
         self._muted_ndarray = self._muted_frame.to_ndarray(format="bgr24")
 
+    @staticmethod
+    def name(self) -> str:
+        return "MUTE_VIDEO"
+
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray | None = None
     ) -> numpy.ndarray | VideoFrame:

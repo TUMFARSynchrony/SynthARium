@@ -10,6 +10,10 @@ from filters.filter import Filter
 class RotationFilter(Filter):
     """Filter example rotating a video track."""
 
+    @staticmethod
+    def name(self) -> str:
+        return "ROTATION"
+
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:

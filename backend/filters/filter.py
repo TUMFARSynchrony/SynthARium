@@ -116,6 +116,11 @@ class Filter(ABC):
         """
         return
 
+    @staticmethod
+    @abstractmethod
+    def name(self) -> str:
+        pass
+
     @abstractmethod
     async def process(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
