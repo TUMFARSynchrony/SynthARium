@@ -9,3 +9,6 @@ __pycache__
 *.key
 *.crt
 *.pem
+
+# PyCharm IDE
+.idea
