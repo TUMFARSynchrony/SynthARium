@@ -22,7 +22,7 @@ class ZMQFilter(Filter):
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
         self.socket.bind("tcp://127.0.0.1:5555")
-        self.data = None
+        self.data = {"intensity": {"AU06": 0.4, "AU12": 0.5}}
 
     @staticmethod
     def name(self) -> str:
@@ -54,11 +54,13 @@ class ZMQFilter(Filter):
         origin = (50, 50)
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_size = 1
-        color = (0, 1, 0)
-        if self.data is not None:
-            # Put text on image
-            au06 = self.data["intensity"]["AU06"]
-            ndarray = cv2.putText(ndarray, str(au06), origin, font, font_size, color)
+        color = (0, 255, 0)
+        thickness = 2
+        # Put text on image
+        au06 = self.data["intensity"]["AU06"]
+        au12 = self.data["intensity"]["AU12"]
+        ndarray = cv2.putText(ndarray, f"AU06: {au06}", origin, font, font_size, color, thickness)
+        ndarray = cv2.putText(ndarray, f"AU12: {au12}", (50, 100), font, font_size, color, thickness)
 
         return ndarray
 
