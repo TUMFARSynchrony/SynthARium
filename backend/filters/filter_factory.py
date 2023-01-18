@@ -11,9 +11,11 @@ from filters import *
 from modules.exceptions import ErrorDictException
 
 
-def create_filter(filter_config: FilterDict,
-                  audio_track_handler: TrackHandler,
-                  video_track_handler: TrackHandler) -> Filter:
+def create_filter(
+    filter_config: FilterDict,
+    audio_track_handler: TrackHandler,
+    video_track_handler: TrackHandler,
+) -> Filter:
     """Create a filter based on `type` of `filter_config`.
 
     Parameters
@@ -45,9 +47,10 @@ def create_filter(filter_config: FilterDict,
 
 
 def init_mute_filter(
-        kind: Literal["audio", "video"],
-        audio_track_handler: TrackHandler,
-        video_track_handler: TrackHandler) -> MuteAudioFilter | MuteVideoFilter:
+    kind: Literal["audio", "video"],
+    audio_track_handler: TrackHandler,
+    video_track_handler: TrackHandler,
+) -> MuteAudioFilter | MuteVideoFilter:
 
     if kind == "audio":
         return MuteAudioFilter(

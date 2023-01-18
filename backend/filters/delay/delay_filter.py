@@ -15,6 +15,7 @@ class DelayFilter(Filter):
 
     Works for audio or video input.
     """
+
     buffer: Queue[numpy.ndarray]
     _config: DelayFilterDict
 
@@ -48,8 +49,8 @@ class DelayFilter(Filter):
     @staticmethod
     def validate_dict(data) -> TypeGuard[DelayFilterDict]:
         return (
-                util.check_valid_typeddict_keys(data, DelayFilterDict)
-                and "size" in data
-                and isinstance(data["size"], int)
-                and data["size"] > 0
+            util.check_valid_typeddict_keys(data, DelayFilterDict)
+            and "size" in data
+            and isinstance(data["size"], int)
+            and data["size"] > 0
         )

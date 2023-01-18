@@ -14,7 +14,7 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from filters import *
+from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
 
 if TYPE_CHECKING:
     from modules.connection import Connection
@@ -105,9 +105,9 @@ class TrackHandler(MediaStreamTrack):
         ----------
         filters : list of filters.FilterDict
         """
-        self._mute_filter = filter_factory.init_mute_filter(self.kind,
-                                                            self.connection.incoming_audio,
-                                                            self.connection.incoming_video)
+        self._mute_filter = filter_factory.init_mute_filter(
+            self.kind, self.connection.incoming_audio, self.connection.incoming_video
+        )
 
         await self.set_filters(filters)
 
@@ -211,14 +211,18 @@ class TrackHandler(MediaStreamTrack):
         for config in filter_configs:
             filter_id = config["id"]
             # Reuse existing filter for matching id and type.
-            if filter_id in old_filters and old_filters[filter_id].config["type"] == config["type"]:
+            if (
+                filter_id in old_filters
+                and old_filters[filter_id].config["type"] == config["type"]
+            ):
                 self._filters[filter_id] = old_filters[filter_id]
                 self._filters[filter_id].set_config(config)
                 continue
 
             # Create a new filter for configs with empty id.
-            self._filters[filter_id] = filter_factory.create_filter(config, self.connection.incoming_audio,
-                                                                    self.connection.incoming_video)
+            self._filters[filter_id] = filter_factory.create_filter(
+                config, self.connection.incoming_audio, self.connection.incoming_video
+            )
 
         coroutines: list[Coroutine] = []
         # Cleanup old filters
@@ -241,7 +245,7 @@ class TrackHandler(MediaStreamTrack):
         or any of the filters should be executed even if muted.
         """
         self._execute_filters = len(self._filters) > 0 and (
-                not self._muted or any([f.run_if_muted for f in self._filters.values()])
+            not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
 
     async def recv(self) -> AudioFrame | VideoFrame:
@@ -299,7 +303,7 @@ class TrackHandler(MediaStreamTrack):
         return new_frame
 
     async def _apply_filters(
-            self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
+        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
         """Execute filter pipeline."""
         async with self.__lock:
