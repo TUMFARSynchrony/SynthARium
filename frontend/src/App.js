@@ -81,10 +81,30 @@ function App() {
     connection.on("connectionStateChange", stateChangeHandler);
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
 
+    connection.api.on("SESSION_LIST", handleSessionList);
+    connection.api.on("DELETED_SESSION", handleDeletedSession);
+    connection.api.on("SAVED_SESSION", handleSavedSession);
+    connection.api.on("SESSION_CHANGE", handleSessionChange);
+    connection.api.on("SUCCESS", handleSuccess);
+    connection.api.on("ERROR", handleError);
+    connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
+    connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
+    connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
+
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
+
+      connection.api.off("SESSION_LIST", handleSessionList);
+      connection.api.off("DELETED_SESSION", handleDeletedSession);
+      connection.api.off("SAVED_SESSION", handleSavedSession);
+      connection.api.off("SESSION_CHANGE", handleSessionChange);
+      connection.api.off("SUCCESS", handleSuccess);
+      connection.api.off("ERROR", handleError);
+      connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
+      connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
+      connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
     };
   }, [connection]);
 
@@ -154,34 +174,6 @@ function App() {
       closeConnection();
     };
   }, []);
-
-  useEffect(() => {
-    if (!connection) {
-      return;
-    }
-
-    connection.api.on("SESSION_LIST", handleSessionList);
-    connection.api.on("DELETED_SESSION", handleDeletedSession);
-    connection.api.on("SAVED_SESSION", handleSavedSession);
-    connection.api.on("SESSION_CHANGE", handleSessionChange);
-    connection.api.on("SUCCESS", handleSuccess);
-    connection.api.on("ERROR", handleError);
-    connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
-    connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
-    connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
-
-    return () => {
-      connection.api.off("SESSION_LIST", handleSessionList);
-      connection.api.off("DELETED_SESSION", handleDeletedSession);
-      connection.api.off("SAVED_SESSION", handleSavedSession);
-      connection.api.off("SESSION_CHANGE", handleSessionChange);
-      connection.api.off("SUCCESS", handleSuccess);
-      connection.api.off("ERROR", handleError);
-      connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
-      connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
-      connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
-    };
-  }, [connection]);
 
   useEffect(() => {
     if (!connection || connectionState !== ConnectionState.CONNECTED) {
@@ -316,6 +308,10 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
+  const onJoinExperimentParticipant = () => {
+    dispatch(changeExperimentState("WAITING"));
+  };
+
   return (
     <div className="App">
       <ToastContainer />
@@ -341,10 +337,15 @@ function App() {
             exact
             path="/experimentRoom"
             element={
-              <ExperimentRoom
-                localStream={localStream}
-                connectedParticipants={connectedParticipants}
-              />
+              connection ? (
+                <ExperimentRoom
+                  localStream={localStream}
+                  onJoinExperimentParticipant={onJoinExperimentParticipant}
+                  connection={connection}
+                />
+              ) : (
+                "Loading..."
+              )
             }
           />
           <Route
