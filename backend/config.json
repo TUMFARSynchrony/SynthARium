@@ -1,5 +1,5 @@
 {
-	"experimenter_password": "Change-Me!",
+	"experimenter_password": "no-password-given",
 	"host": "127.0.0.1",
 	"port": 8080,
 	"environment": "dev",

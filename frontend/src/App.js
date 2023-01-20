@@ -114,7 +114,8 @@ function App() {
       userType === "experimenter" &&
       !experimenterPassword
     ) {
-      experimenterPassword = prompt("Please insert experimenter password");
+      //experimenterPassword = prompt("Please insert experimenter password");
+      experimenterPassword = "no-password-given";
     }
 
     const asyncStreamHelper = async (connection) => {
