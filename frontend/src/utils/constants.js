@@ -14,7 +14,8 @@ export const INITIAL_SESSION_DATA = {
 };
 
 export const CANVAS_SIZE = {
-  width: 1138.333, // 1366
+  // width: 1138.333, // 1366
+  width: 1040,
   height: 640, //768
   scale: 1.2,
 };
