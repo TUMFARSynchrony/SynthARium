@@ -62,3 +62,27 @@
   background: hsl(212, 86%, 64%);
   color: white;
 }
+
+.small-secondary {
+  border: 1px solid hsl(212, 86%, 64%);
+  color: hsl(212, 86%, 64%);
+  box-shadow: none;
+  background-color: white;
+  text-transform: none;
+  padding: 0.5rem 0.6rem;
+}
+
+.small-secondary:hover {
+  background: hsl(212, 86%, 64%);
+  color: white;
+}
+
+.small-negative {
+  background-color: #de4040;
+  text-transform: none;
+  padding: 0.5rem 0.6rem;
+}
+
+.small-negative:hover {
+  background: #aa3131;
+}

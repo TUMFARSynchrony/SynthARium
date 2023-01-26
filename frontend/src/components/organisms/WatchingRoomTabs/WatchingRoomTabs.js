@@ -19,7 +19,7 @@ function WatchingRoomTabs({
         <TabList>
           <Tab>Overview</Tab>
           <Tab>Notes</Tab>
-          <Tab>Paticipants</Tab>
+          <Tab>Participants</Tab>
         </TabList>
 
         <TabPanel>
