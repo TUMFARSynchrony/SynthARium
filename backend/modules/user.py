@@ -129,6 +129,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         return self._muted_audio
 
     @property
+    def recorded(self) -> bool:
+        """bool indicating if the users video is recorded."""
+        return self._recorded
+
+    @property
     def connection(self) -> ConnectionInterface | None:
         """Get Connection of this User."""
         return self._connection
@@ -513,6 +518,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     )
                     return
                 await self._connection.set_audio_filters(filters)
+
+    async def start_recording(self) -> None:
+        """Start recording for this user."""
+        if self._connection is not None:
+            await self._connection.start_recording()
 
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.

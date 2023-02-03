@@ -19,6 +19,7 @@ from modules.track_handler import TrackHandler
 from modules.exceptions import ErrorDictException
 from modules.connection_interface import ConnectionInterface
 from modules.connection_state import ConnectionState, parse_connection_state
+from modules.record_handler import RecordHandler
 
 from custom_types.error import ErrorDict
 from custom_types.filters import FilterDict
@@ -31,7 +32,6 @@ from custom_types.connection import (
     ConnectionOfferDict,
     ConnectionAnswerDict,
 )
-
 
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
@@ -68,6 +68,8 @@ class Connection(ConnectionInterface):
     _incoming_video: TrackHandler
     _sub_connections: dict[str, SubConnection]
     _tasks: list[asyncio.Task]
+    _audio_recorder: RecordHandler
+    _video_recorder: RecordHandler
 
     def __init__(
         self,
@@ -75,6 +77,7 @@ class Connection(ConnectionInterface):
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
         log_name_suffix: str,
         filter_api: FilterAPIInterface,
+        record_data: tuple
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -111,6 +114,10 @@ class Connection(ConnectionInterface):
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
 
+        (record, record_to) = record_data
+        self._audio_recorder = RecordHandler(self._incoming_audio, record, record_to)
+        self._video_recorder = RecordHandler(self._incoming_video, record, record_to)
+
         self._dc = None
         self._tasks = []
 
@@ -118,6 +125,7 @@ class Connection(ConnectionInterface):
         pc.add_listener("datachannel", self._on_datachannel)
         pc.add_listener("connectionstatechange", self._on_connection_state_change)
         pc.add_listener("track", self._on_track)
+
 
     async def complete_setup(
         self, audio_filters: list[FilterDict], video_filters: list[FilterDict]
@@ -133,7 +141,7 @@ class Connection(ConnectionInterface):
         """
         await asyncio.gather(
             self._incoming_audio.complete_setup(audio_filters),
-            self._incoming_video.complete_setup(video_filters),
+            self._incoming_video.complete_setup(video_filters)
         )
 
     @property
@@ -172,6 +180,8 @@ class Connection(ConnectionInterface):
             coros.append(sc.stop())
         await asyncio.gather(*coros, *self._tasks)
 
+        await asyncio.gather(self._video_recorder.stop(), self._audio_recorder.stop())
+
         # Close main connection
         if self._dc is not None:
             self._dc.close()
@@ -179,6 +189,7 @@ class Connection(ConnectionInterface):
             await self._incoming_video.stop()
         if self._incoming_audio is not None:
             await self._incoming_audio.stop()
+
         await self._main_pc.close()
         self.remove_all_listeners()
 
@@ -252,6 +263,10 @@ class Connection(ConnectionInterface):
             self._incoming_video.muted = video
         if self._incoming_audio is not None:
             self._incoming_audio.muted = audio
+
+    async def start_recording(self) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await asyncio.gather(self._video_recorder.start(), self._audio_recorder.start())
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -384,10 +399,12 @@ class Connection(ConnectionInterface):
         if track.kind == "audio":
             task = asyncio.create_task(self._incoming_audio.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
+            self._audio_recorder.add_track(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
             task = asyncio.create_task(self._incoming_video.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
+            self._video_recorder.add_track(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
@@ -399,6 +416,12 @@ class Connection(ConnectionInterface):
         def _on_ended():
             """Handles tracks ended event."""
             self._logger.debug(f"{track.kind} track ended")
+            if track.kind == "audio":
+                task = asyncio.create_task(self._audio_recorder.stop())
+            else:
+                task = asyncio.create_task(self._video_recorder.stop())
+
+            self._tasks.append(task)
 
     def _listen_to_track_close(self, track: TrackHandler, sender: RTCRtpSender):
         """Add a handler to the `ended` event on `track` that closes its transceiver.
@@ -557,6 +580,7 @@ async def connection_factory(
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
     filter_api: FilterAPIInterface,
+    record_data: list
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -580,7 +604,8 @@ async def connection_factory(
         WebRTC answer that should be send back to the client and a Connection.
     """
     pc = RTCPeerConnection()
-    connection = Connection(pc, message_handler, log_name_suffix, filter_api)
+    record_data = (record_data[0], record_data[1])
+    connection = Connection(pc, message_handler, log_name_suffix, filter_api, record_data)
     await connection.complete_setup(audio_filters, video_filters)
 
     # handle offer

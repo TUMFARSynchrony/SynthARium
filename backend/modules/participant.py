@@ -9,6 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
+import os
 from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
@@ -164,6 +165,8 @@ class Participant(User):
             # Add stream to all participants and all participants streams to self
             if self._experiment.state == ExperimentState.RUNNING:
                 coros.append(self._subscribe_and_add_subscribers())
+                if self.experiment.session.record:
+                    coros.append(self.start_recording())
             else:
                 # Wait for experiment to start (state = `RUNNING`) before subscribing
                 self._subscribe_later()
@@ -200,13 +203,18 @@ class Participant(User):
         @self._experiment.on("state")
         async def _subscribe_callback(state: ExperimentState) -> None:
             """If `state` is `RUNNING`, subscribe to all participants in experiment."""
-            if state != ExperimentState.RUNNING:
+            if state == ExperimentState.ENDED:
+                await self.disconnect()
+            elif state == ExperimentState.RUNNING:
+                _remove_subscribe_callback(None)
+                participants = self._experiment.participants.values()
+                coros = [p.add_subscriber(self) for p in participants if p != self]
+                if self.experiment.session.record:
+                    await self.start_recording()
+                await asyncio.gather(*coros)
+            else:
                 return
 
-            _remove_subscribe_callback(None)
-            participants = self._experiment.participants.values()
-            coros = [p.add_subscriber(self) for p in participants if p != self]
-            await asyncio.gather(*coros)
 
     async def _handle_chat(self, data: Any) -> MessageDict:
         """Handle requests with type `CHAT`.
@@ -261,6 +269,19 @@ class Participant(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
+    def get_recording_path(self):
+        """Get the recording path for current participant.
+
+        Notes
+        -----
+        All recordings will be saved in output by default.
+        The format: ./output/<session_id>/<participant_id>
+        """
+        record_directory_path = "./output/" + self.experiment.session.id
+        if not os.path.isdir(record_directory_path):
+            os.mkdir(record_directory_path)
+        return record_directory_path + "/" + self.id
+
 
 async def participant_factory(
     offer: RTCSessionDescription,
@@ -296,6 +317,7 @@ async def participant_factory(
     """
     participant = Participant(id, experiment, participant_data)
     filter_api = FilterAPI(participant)
+    record_data = (experiment.session.record, participant.get_recording_path())
     log_name_suffix = f"P-{id}"
 
     if config.participant_multiprocessing:
@@ -307,6 +329,7 @@ async def participant_factory(
             participant_data.audio_filters,
             participant_data.video_filters,
             filter_api,
+            record_data
         )
     else:
         answer, connection = await connection_factory(
@@ -316,6 +339,7 @@ async def participant_factory(
             participant_data.audio_filters,
             participant_data.video_filters,
             filter_api,
+            record_data
         )
 
     participant.set_connection(connection)

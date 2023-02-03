@@ -22,7 +22,6 @@ from custom_types.note import is_valid_note
 from custom_types.mute import is_valid_mute_request
 from custom_types.session_id_request import is_valid_session_id_request
 
-
 from modules.filter_api import FilterAPI
 from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
@@ -788,10 +787,11 @@ async def experimenter_factory(
             [],
             [],
             filter_api,
+            (False, '')
         )
     else:
         answer, connection = await connection_factory(
-            offer, experimenter.handle_message, log_name_suffix, [], [], filter_api
+            offer, experimenter.handle_message, log_name_suffix, [], [], filter_api, (False, '')
         )
 
     experimenter.set_connection(connection)
