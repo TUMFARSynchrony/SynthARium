@@ -96,11 +96,11 @@ def is_valid_set_filters_request(
 
 
 def get_filter_list() -> list[str]:
-    """Get a list of filter classes.
+    """Get a list of filter by class name.
 
     Returns
     -------
-    A list of filters classes.
+    A list of filters by class name.
     """
     result = []
 
