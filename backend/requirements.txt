@@ -1,3 +1,4 @@
+cryptography==38.0.0
 aiortc
 aiohttp
 pyee

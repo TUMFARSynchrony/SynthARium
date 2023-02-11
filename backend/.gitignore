@@ -10,7 +10,9 @@ __pycache__
 *.crt
 *.pem
 
-# misc
-.idea/
+# PyCharm IDE
+.idea
+
+# Misc
 .DS_Store
 output/
