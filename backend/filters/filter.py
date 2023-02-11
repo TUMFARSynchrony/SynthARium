@@ -119,6 +119,12 @@ class Filter(ABC):
     @staticmethod
     @abstractmethod
     def name(self) -> str:
+        """Provide name of the filter.
+
+        The given name must be unique among all filters.
+        The given name is used as the unique ID for communicating the active filters
+        between frontend and backend.
+        """
         raise NotImplementedError(
             f"{self} is missing it's implementation of the static abstract name() method."
         )

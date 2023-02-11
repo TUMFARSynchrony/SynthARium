@@ -51,7 +51,21 @@ def init_mute_filter(
     audio_track_handler: TrackHandler,
     video_track_handler: TrackHandler,
 ) -> MuteAudioFilter | MuteVideoFilter:
+    """Initialize audio and video mute filter.
 
+    Parameters
+    ----------
+    kind : Literal["audio", "video"]
+        Decides which kind of mute filter is returned.
+    audio_track_handler : TrackHandler
+        The audio TrackHandler to assign
+    video_track_handler : TrackHandler
+        The video TrackHandler to assign
+
+    Returns
+    -------
+    A MuteAudioFilter or MuteVideoFilter, depending on the given "kind".
+    """
     if kind == "audio":
         return MuteAudioFilter(
             {"id": "0", "type": "MUTE_AUDIO"},

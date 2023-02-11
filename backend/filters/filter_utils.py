@@ -7,7 +7,6 @@ from .filters_request_dict import SetFiltersRequestDict
 
 import custom_types.util as util
 
-
 logger = logging.getLogger("Filters")
 
 
@@ -97,6 +96,12 @@ def is_valid_set_filters_request(
 
 
 def get_filter_list() -> list[str]:
+    """Get a list of filter classes.
+
+    Returns
+    -------
+    A list of filters classes.
+    """
     result = []
 
     for myClass in Filter.__subclasses__():
@@ -106,6 +111,14 @@ def get_filter_list() -> list[str]:
 
 
 def get_filter_dict() -> dict:
+    """Get a dictionary of filters:
+    Key: Return value of concrete_filter.name()
+    Value: The corresponding filter class
+
+    Returns
+    -------
+    A dictionary of filters
+    """
     filter_dict = {}
 
     for concrete_filter in Filter.__subclasses__():
