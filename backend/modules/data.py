@@ -16,7 +16,7 @@ from custom_types.position import PositionDict
 from custom_types.size import SizeDict
 from custom_types.participant import ParticipantDict
 from custom_types.chat_message import ChatMessageDict
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from custom_types.note import NoteDict
 from custom_types.session import (
     SessionDict,
@@ -167,7 +167,7 @@ class ParticipantData(_BaseDataClass):
     muted_audio : bool
     position : PositionData
     chat : list or custom_types.chat_message.ChatMessageDict
-    filters : list or custom_types.filters.FilterDict
+    filters : list or filters.FilterDict
 
     Methods
     -------

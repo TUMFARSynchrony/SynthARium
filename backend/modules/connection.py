@@ -21,7 +21,7 @@ from modules.connection_interface import ConnectionInterface
 from modules.connection_state import ConnectionState, parse_connection_state
 
 from custom_types.error import ErrorDict
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from modules.filter_api_interface import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from custom_types.participant_summary import ParticipantSummaryDict

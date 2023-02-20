@@ -14,15 +14,7 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from modules.exceptions import ErrorDictException
-
-from custom_types.filters import FilterDict
-from filters.rotate import RotationFilter
-from filters.edge_outline import EdgeOutlineFilter
-from filters.filter import Filter
-from filters.delay import DelayFilter
-from filters.mute import MuteVideoFilter, MuteAudioFilter
-from filters.api_test import FilterAPITestFilter
+from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
 
 if TYPE_CHECKING:
     from modules.connection import Connection
@@ -111,20 +103,12 @@ class TrackHandler(MediaStreamTrack):
 
         Parameters
         ----------
-        filters : list of custom_types.filters.FilterDict
+        filters : list of filters.FilterDict
         """
-        if self.kind == "audio":
-            self._mute_filter = MuteAudioFilter(
-                {"id": "0", "type": "MUTE_AUDIO"},
-                self.connection.incoming_audio,
-                self.connection.incoming_video,
-            )
-        else:
-            self._mute_filter = MuteVideoFilter(
-                {"id": "0", "type": "MUTE_VIDEO"},
-                self.connection.incoming_audio,
-                self.connection.incoming_video,
-            )
+        self._mute_filter = filter_factory.init_mute_filter(
+            self.kind, self.connection.incoming_audio, self.connection.incoming_video
+        )
+
         await self.set_filters(filters)
 
     @property
@@ -209,7 +193,7 @@ class TrackHandler(MediaStreamTrack):
 
         Parameters
         ----------
-        filter_configs : list of custom_types.filters.FilterDict
+        filter_configs : list of filters.FilterDict
             List of filter configs used to modify filters for this TrackHandler.
         """
         async with self.__lock:
@@ -225,67 +209,33 @@ class TrackHandler(MediaStreamTrack):
 
         self._filters = {}
         for config in filter_configs:
-            id = config["id"]
+            filter_id = config["id"]
             # Reuse existing filter for matching id and type.
-            if id in old_filters and old_filters[id].config["type"] == config["type"]:
-                self._filters[id] = old_filters[id]
-                self._filters[id].set_config(config)
+            if (
+                filter_id in old_filters
+                and old_filters[filter_id].config["type"] == config["type"]
+            ):
+                self._filters[filter_id] = old_filters[filter_id]
+                self._filters[filter_id].set_config(config)
                 continue
 
             # Create a new filter for configs with empty id.
-            self._filters[id] = self._create_filter(config)
+            self._filters[filter_id] = filter_factory.create_filter(
+                config, self.connection.incoming_audio, self.connection.incoming_video
+            )
 
-        coros: list[Coroutine] = []
+        coroutines: list[Coroutine] = []
         # Cleanup old filters
-        for id, filter in old_filters.items():
-            if id not in self._filters:
-                coros.append(filter.cleanup())
+        for filter_id, old_filter in old_filters.items():
+            if filter_id not in self._filters:
+                coroutines.append(old_filter.cleanup())
 
         # Complete setup for new filters
-        for filter in self._filters.values():
-            coros.append(filter.complete_setup())
+        for new_filter in self._filters.values():
+            coroutines.append(new_filter.complete_setup())
 
-        await asyncio.gather(*coros)
+        await asyncio.gather(*coroutines)
         self.reset_execute_filters()
-
-    def _create_filter(self, filter_config: FilterDict) -> Filter:
-        """Create a filter based on `type` of `filter_config`.
-
-        Parameters
-        ----------
-        id : str
-            Id for new filter.
-        filter_config : custom_types.filters.FilterDict
-            Filter config used to determine type of filter.  Also passed to new filter.
-
-        Raises
-        ------
-        modules.exceptions.ErrorDictException
-            If the filter type is unknown.
-        """
-        type = filter_config["type"]
-        audio = self.connection.incoming_audio
-        video = self.connection.incoming_video
-
-        match type:
-            case "MUTE_AUDIO":
-                return MuteAudioFilter(filter_config, audio, video)
-            case "MUTE_VIDEO":
-                return MuteVideoFilter(filter_config, audio, video)
-            case "ROTATION":
-                return RotationFilter(filter_config, audio, video)
-            case "EDGE_OUTLINE":
-                return EdgeOutlineFilter(filter_config, audio, video)
-            case "DELAY":
-                return DelayFilter(filter_config, audio, video)  # type: ignore
-            case "FILTER_API_TEST":
-                return FilterAPITestFilter(filter_config, audio, video)
-            case _:
-                raise ErrorDictException(
-                    code=404,
-                    type="UNKNOWN_FILTER_TYPE",
-                    description=f'Unknown filter type "{type}".',
-                )
 
     def reset_execute_filters(self):
         """Reset `self._execute_filters`.
@@ -359,13 +309,13 @@ class TrackHandler(MediaStreamTrack):
         async with self.__lock:
             # Run all filters if not self._muted.
             if not self._muted:
-                for filter in self._filters.values():
-                    ndarray = await filter.process(original, ndarray)
+                for active_filter in self._filters.values():
+                    ndarray = await active_filter.process(original, ndarray)
                 return ndarray
 
             # Muted. Only execute filters where run_if_muted is True.
-            for filter in self._filters.values():
-                if filter.run_if_muted:
-                    ndarray = await filter.process(original, ndarray)
+            for active_filter in self._filters.values():
+                if active_filter.run_if_muted:
+                    ndarray = await active_filter.process(original, ndarray)
 
         return ndarray

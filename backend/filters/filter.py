@@ -1,14 +1,14 @@
 """Provide abstract `Filter`, `VideoFilter` and `AudioFilter` classes."""
 
-
 from __future__ import annotations
 
 import numpy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
-from custom_types.filters import FilterDict
+from custom_types import util
+from .filter_dict import FilterDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error
@@ -116,6 +116,19 @@ class Filter(ABC):
         """
         return
 
+    @staticmethod
+    @abstractmethod
+    def name(self) -> str:
+        """Provide name of the filter.
+
+        The given name must be unique among all filters.
+        The given name is used as the unique ID for communicating the active filters
+        between frontend and backend.
+        """
+        raise NotImplementedError(
+            f"{self} is missing it's implementation of the static abstract name() method."
+        )
+
     @abstractmethod
     async def process(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
@@ -144,6 +157,10 @@ class Filter(ABC):
         Analysis of the frame contents should also be based on `ndarray`.
         """
         pass
+
+    @staticmethod
+    def validate_dict(data) -> TypeGuard[FilterDict]:
+        return util.check_valid_typeddict_keys(data, FilterDict)
 
     def __repr__(self) -> str:
         """Get string representation for this filter."""

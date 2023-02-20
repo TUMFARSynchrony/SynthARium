@@ -7,11 +7,11 @@ from typing import TypeGuard, TypedDict
 
 import custom_types.util as util
 
-from custom_types.filters import is_valid_filter_dict
+from filters import filter_utils
 from custom_types.size import SizeDict, is_valid_size
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.position import PositionDict, is_valid_position
-from custom_types.filters import FilterDict
+from filters import FilterDict
 
 
 class ParticipantDict(TypedDict):
@@ -32,9 +32,9 @@ class ParticipantDict(TypedDict):
         Whether the participants' video is forcefully muted by the experimenter.
     muted_audio : bool
         Whether the participants' audio is forcefully muted by the experimenter.
-    audio_filters : list of custom_types.filters.FilterDict
+    audio_filters : list of filters.FilterDict
         Active audio filters for this participant.
-    audio_filters : list of custom_types.filters.FilterDict
+    audio_filters : list of filters.FilterDict
         Active video filters for this participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
@@ -100,10 +100,10 @@ def is_valid_participant(data, recursive: bool = True) -> TypeGuard[ParticipantD
 
     if recursive:
         for filter in data["audio_filters"]:
-            if not is_valid_filter_dict(filter):
+            if not filter_utils.is_valid_filter_dict(filter):
                 return False
         for filter in data["video_filters"]:
-            if not is_valid_filter_dict(filter):
+            if not filter_utils.is_valid_filter_dict(filter):
                 return False
         for message in data["chat"]:
             if not is_valid_chatmessage(message):
