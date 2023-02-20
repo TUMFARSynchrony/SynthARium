@@ -203,9 +203,7 @@ class Participant(User):
         @self._experiment.on("state")
         async def _subscribe_callback(state: ExperimentState) -> None:
             """If `state` is `RUNNING`, subscribe to all participants in experiment."""
-            if state == ExperimentState.ENDED:
-                await self.disconnect()
-            elif state == ExperimentState.RUNNING:
+            if state == ExperimentState.RUNNING:
                 _remove_subscribe_callback(None)
                 participants = self._experiment.participants.values()
                 coros = [p.add_subscriber(self) for p in participants if p != self]
