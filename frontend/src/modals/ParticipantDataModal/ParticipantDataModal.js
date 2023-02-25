@@ -84,7 +84,7 @@ function ParticipantDataModal({
 
   return (
     <div className="additionalParticipantInfoContainer">
-      <ToastContainer />
+      <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true}/>
 
       <div className="additionalParticipantInfo">
         <div className="additionalParticipantInfoCard">
@@ -153,9 +153,9 @@ function ParticipantDataModal({
               <Label title={"Height: "} /> {participantCopy.size.height}
             </div>
           </div>
-          <Button name="Save" onClick={() => onSaveParticipantData()} />
+          <Button name="Save Participant" onClick={() => onSaveParticipantData()} />
           <Button
-            name="Back"
+            name="BACK"
             design={"negative"}
             onClick={() => {
               onCloseModalWithoutData();
