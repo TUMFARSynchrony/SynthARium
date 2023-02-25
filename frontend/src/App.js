@@ -314,7 +314,7 @@ function App() {
 
   return (
     <div className="App">
-      <ToastContainer />
+      <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true}/>
       {sessionsList ? (
         <Routes>
           <Route

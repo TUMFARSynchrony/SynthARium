@@ -1,15 +1,14 @@
 .headerContainer {
   background-color: #f3f3f3;
   display: flex;
-  height: 4.4em;
+  height: 2.7rem;
   align-items: center;
   border: 1px solid #e7e7e7;
 }
 
 .pageNavigation {
   color: #666;
-  padding: 1.4rem;
-  font-size: 1.1em;
+  padding: 0.8rem;
   text-decoration: none;
 }
 
