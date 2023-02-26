@@ -77,7 +77,7 @@ function SessionPreview({
                   onClick={() => dispatch(initializeSession(selectedSession))}
                 />
                 <LinkButton
-                  name={"START"}
+                  name={"JOIN"}
                   to="/watchingRoom"
                   onClick={() => onCreateExperiment(selectedSession.id)}
                 />

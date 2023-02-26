@@ -24,13 +24,13 @@ function JoinedParticipant({
           title={participantData.first_name + " " + participantData.last_name}
         />
         <Button
-          name={"More info"}
-          design={"secondary"}
+          name={"Info"}
+          design={"small-secondary"}
           onClick={() => setShowModal(!showModal)}
         />
         <Button
           name={"Kick"}
-          design={"negative"}
+          design={"small-negative"}
           onClick={() => {
             setShowKickBanReason(true);
             setAction("Kick");
@@ -38,7 +38,7 @@ function JoinedParticipant({
         />
         <Button
           name={"Ban"}
-          design={"negative"}
+          design={"small-negative"}
           onClick={() => {
             setShowKickBanReason(true);
             setAction("Ban");

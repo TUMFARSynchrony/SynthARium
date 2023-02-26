@@ -14,7 +14,11 @@ export const INITIAL_SESSION_DATA = {
 };
 
 export const CANVAS_SIZE = {
-  width: 1138.333, // 1366
+  // TODO: make the CANVAS_SIZE responsive
+  // after PR #43 making video canvas size static (suited to macbook 13.3 inch) as a temporary workaround 
+  // for properly alinged display of the konva elements
+  // old width: 1138.333, // 1366
+  width: 1040,
   height: 640, //768
   scale: 1.2,
 };
