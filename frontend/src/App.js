@@ -309,10 +309,6 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
-  const onJoinExperimentParticipant = () => {
-    dispatch(changeExperimentState("WAITING"));
-  };
-
   return (
     <div className="App">
       <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true}/>
@@ -341,7 +337,6 @@ function App() {
               connection ? (
                 <ExperimentRoom
                   localStream={localStream}
-                  onJoinExperimentParticipant={onJoinExperimentParticipant}
                   connection={connection}
                 />
               ) : (
