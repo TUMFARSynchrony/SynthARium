@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 import Video from "../../components/atoms/Video/Video";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { CANVAS_SIZE } from "../../utils/constants";
-import { getSessionById } from "../../utils/utils";
+import { getSessionById, getParticipantById } from "../../utils/utils";
 import "./ExperimentRoom.css";
 
-function ExperimentRoom({ localStream, connectedParticipants }) {
+function ExperimentRoom({ localStream, onJoinExperimentParticipant, connection }) {
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
   );
@@ -18,30 +18,28 @@ function ExperimentRoom({ localStream, connectedParticipants }) {
     sessionsList
   )[0];
   const [participantStream, setParticipantStream] = useState(localStream);
-  console.log("connectedParticipants", connectedParticipants);
-  console.log("state", state);
 
   useEffect(() => {
     setParticipantStream(localStream);
+    onJoinExperimentParticipant();
   }, [localStream]);
 
   return (
     <>
       <h1>Experiment Room</h1>
-      {state === "WAITING" && participantStream && (
+      {state === "WAITING" && participantStream && connection.participantSummary && (
         <Stage width={CANVAS_SIZE.width} height={CANVAS_SIZE.height}>
           <Layer>
-            {connectedParticipants?.map((peer, i) => (
-              <Video src={localStream} />
-            ))}
+            <Video
+              src={participantStream}
+              participantData={connection.participantSummary}
+            />
           </Layer>
         </Stage>
       )}
       {state === "ONGOING" && (
-        <VideoCanvas
-          connectedParticipants={connectedParticipants}
-          sessionData={sessionData}
-        />
+        // TODO: Redirect to watching room when experiment state is ONGOING
+        <p>Redirect to watching room please.</p>
       )}
     </>
   );

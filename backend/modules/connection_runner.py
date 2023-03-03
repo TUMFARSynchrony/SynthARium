@@ -8,7 +8,7 @@ import time
 from typing import Any
 from aiortc import RTCSessionDescription
 
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
 

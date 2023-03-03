@@ -41,7 +41,7 @@ function WatchingRoom({
                 />
               </div>
               <hr className="separatorLine"></hr>
-              <div className="applieadFilters">
+              <div className="appliedFilters">
                 Filters applied on all participants
               </div>
             </div>

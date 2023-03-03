@@ -20,7 +20,7 @@ from modules.subprocess_logging import handle_log_from_subprocess
 from modules.filter_subprocess_receiver import FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
 from custom_types.participant_summary import ParticipantSummaryDict

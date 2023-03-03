@@ -11,6 +11,10 @@ from filters.filter import Filter
 class FilterAPITestFilter(Filter):
     """Filter testing filter API."""
 
+    @staticmethod
+    def name(self) -> str:
+        return "FILTER_API_TEST"
+
     counter = 0
 
     async def process(self, _: VideoFrame, ndarray: numpy.ndarray) -> numpy.ndarray:

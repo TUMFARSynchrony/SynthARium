@@ -6,7 +6,7 @@ from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.connection_state import ConnectionState
 
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
@@ -159,7 +159,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        filters : list of custom_types.filters.FilterDict
+        filters : list of filters.FilterDict
             List of video filter configs.
         """
         pass
@@ -170,7 +170,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        filters : list of custom_types.filters.FilterDict
+        filters : list of filters.FilterDict
             List of audio filter configs.
         """
         pass

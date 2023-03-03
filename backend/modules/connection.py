@@ -22,7 +22,7 @@ from modules.connection_state import ConnectionState, parse_connection_state
 from modules.record_handler import RecordHandler
 
 from custom_types.error import ErrorDict
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from modules.filter_api_interface import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from custom_types.participant_summary import ParticipantSummaryDict
@@ -414,6 +414,11 @@ class Connection(ConnectionInterface):
             return
 
         self._tasks.append(task)
+
+        @track.on("ended")
+        def _on_ended():
+            """Handles tracks ended event."""
+            self._logger.debug(f"{track.kind} track ended")
 
     def _listen_to_track_close(self, track: TrackHandler, sender: RTCRtpSender):
         """Add a handler to the `ended` event on `track` that closes its transceiver.

@@ -1,14 +1,13 @@
 .joinedParticipantContainer {
-  margin: 1rem;
+  margin: 0.5rem;
   border: 1px solid black;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 15px;
   background-color: aliceblue;
-  width: fit-content;
 }
 
 .participantSummary {
   display: flex;
-  text-align: left;
+  justify-content: space-between;
   align-items: center;
 }

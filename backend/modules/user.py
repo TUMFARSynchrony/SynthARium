@@ -17,7 +17,7 @@ from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
-from custom_types.filters import FilterDict
+from filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.connection import ConnectionOfferDict, is_valid_connection_offer_dict
@@ -477,7 +477,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        filters : list of custom_types.filters.FilterDict
+        filters : list of filters.FilterDict
             List of video filter configs.
         """
         if self._connection is not None:
@@ -502,7 +502,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        filters : list of custom_types.filters.FilterDict
+        filters : list of filters.FilterDict
             List of audio filter configs.
         """
         if self._connection is not None:
