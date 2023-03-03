@@ -68,8 +68,8 @@ class Connection(ConnectionInterface):
     _incoming_video: TrackHandler
     _sub_connections: dict[str, SubConnection]
     _tasks: list[asyncio.Task]
-    _audio_recorder: RecordHandler
-    _video_recorder: RecordHandler
+    _audio_record_handler: RecordHandler
+    _video_record_handler: RecordHandler
 
     def __init__(
         self,
@@ -114,9 +114,9 @@ class Connection(ConnectionInterface):
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
 
-        (record, record_to) = record_data
-        self._audio_recorder = RecordHandler(self._incoming_audio, record, record_to)
-        self._video_recorder = RecordHandler(self._incoming_video, record, record_to)
+        (record, record_to) = self._record_data
+        self._audio_record_handler = RecordHandler(self._incoming_audio, record, record_to)
+        self._video_record_handler = RecordHandler(self._incoming_video, record, record_to)
 
         self._dc = None
         self._tasks = []
@@ -125,7 +125,6 @@ class Connection(ConnectionInterface):
         pc.add_listener("datachannel", self._on_datachannel)
         pc.add_listener("connectionstatechange", self._on_connection_state_change)
         pc.add_listener("track", self._on_track)
-
 
     async def complete_setup(
         self, audio_filters: list[FilterDict], video_filters: list[FilterDict]
@@ -174,13 +173,13 @@ class Connection(ConnectionInterface):
         if self._state not in [ConnectionState.CLOSED, ConnectionState.FAILED]:
             self._set_state(ConnectionState.CLOSED)
 
+        await self.stop_recording()
+
         # Close all SubConnections
         coros: list[Coroutine] = []
         for sc in self._sub_connections.values():
             coros.append(sc.stop())
         await asyncio.gather(*coros, *self._tasks)
-
-        await asyncio.gather(self._video_recorder.stop(), self._audio_recorder.stop())
 
         # Close main connection
         if self._dc is not None:
@@ -266,7 +265,11 @@ class Connection(ConnectionInterface):
 
     async def start_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
-        await asyncio.gather(self._video_recorder.start(), self._audio_recorder.start())
+        await asyncio.gather(self._video_record_handler.start(), self._audio_record_handler.start())
+
+    async def stop_recording(self) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await asyncio.gather(self._video_record_handler.stop(), self._audio_record_handler.stop())
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -399,29 +402,18 @@ class Connection(ConnectionInterface):
         if track.kind == "audio":
             task = asyncio.create_task(self._incoming_audio.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
-            self._audio_recorder.add_track(self._incoming_audio.subscribe())
+            self._audio_record_handler.add_track(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
             task = asyncio.create_task(self._incoming_video.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
-            self._video_recorder.add_track(self._incoming_video.subscribe())
+            self._video_record_handler.add_track(self._incoming_video.subscribe())
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
             return
 
         self._tasks.append(task)
-
-        @track.on("ended")
-        def _on_ended():
-            """Handles tracks ended event."""
-            self._logger.debug(f"{track.kind} track ended")
-            if track.kind == "audio":
-                task = asyncio.create_task(self._audio_recorder.stop())
-            else:
-                task = asyncio.create_task(self._video_recorder.stop())
-
-            self._tasks.append(task)
 
     def _listen_to_track_close(self, track: TrackHandler, sender: RTCRtpSender):
         """Add a handler to the `ended` event on `track` that closes its transceiver.

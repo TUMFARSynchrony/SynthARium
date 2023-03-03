@@ -524,6 +524,10 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         if self._connection is not None:
             await self._connection.start_recording()
 
+    async def stop_recording(self) -> None:
+        """Stop recording for this user."""
+        await self._connection.stop_recording()
+
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.
 

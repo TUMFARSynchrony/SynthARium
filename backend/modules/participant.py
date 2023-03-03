@@ -85,6 +85,7 @@ class Participant(User):
         self._participant_data = participant_data
         self._experiment = experiment
         experiment.add_participant(self)
+        experiment.on("state", self._handle_state)
 
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
@@ -207,12 +208,25 @@ class Participant(User):
                 _remove_subscribe_callback(None)
                 participants = self._experiment.participants.values()
                 coros = [p.add_subscriber(self) for p in participants if p != self]
-                if self.experiment.session.record:
-                    await self.start_recording()
                 await asyncio.gather(*coros)
             else:
                 return
 
+    async def _handle_state(self, state: Any):
+        """Handle state.
+
+        Notes
+        -----
+        Uses event handlers for the connection `state` event and user (self)
+        `disconnected` event. The latter is used to remove the connection event handler.
+        """
+        if self.experiment.session.record:
+            if state == ExperimentState.RUNNING:
+                await self.start_recording()
+            elif state == ExperimentState.ENDED:
+                await self.stop_recording()
+            else:
+                return
 
     async def _handle_chat(self, data: Any) -> MessageDict:
         """Handle requests with type `CHAT`.
@@ -272,10 +286,10 @@ class Participant(User):
 
         Notes
         -----
-        All recordings will be saved in output by default.
-        The format: ./output/<session_id>/<participant_id>
+        All recordings will be saved in sessions folder by default.
+        The format: ./sessions/<session_id>/<participant_id>
         """
-        record_directory_path = "./output/" + self.experiment.session.id
+        record_directory_path = "./sessions/" + self.experiment.session.id
         if not os.path.isdir(record_directory_path):
             os.mkdir(record_directory_path)
         return record_directory_path + "/" + self.id

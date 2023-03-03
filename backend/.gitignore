@@ -15,4 +15,4 @@ __pycache__
 
 # Misc
 .DS_Store
-output/
+sessions/*/

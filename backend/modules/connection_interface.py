@@ -182,3 +182,12 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Both audio and video media track will be recorded.
         """
         pass
+
+    @abstractmethod
+    async def stop_recording(self) -> None:
+        """Stop recording tracks for this connection.
+
+        Both audio and video recorder will stop.
+        """
+        pass
+

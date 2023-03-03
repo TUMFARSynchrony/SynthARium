@@ -168,6 +168,8 @@ class ConnectionRunner:
                 await self._connection.set_audio_filters(data)
             case "START_RECORDING":
                 await self._connection.start_recording()
+            case "STOP_RECORDING":
+                await self._connection.stop_recording()
             case _:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 
