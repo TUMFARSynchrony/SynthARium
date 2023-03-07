@@ -13,6 +13,7 @@ import { INITIAL_SESSION_DATA } from "../../utils/constants";
 import { getPastAndFutureSessions } from "../../utils/utils";
 import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
+import HeroText from "../../components/atoms/HeroText/HeroText";
 
 function SessionOverview({
   onDeleteSession,
@@ -53,7 +54,7 @@ function SessionOverview({
 
   return (
     <>
-      <h2 className="sessionOverviewHeadline">Welcome! Get started with conducting your user studies here!</h2>
+      <HeroText text={"Welcome! Get started with conducting your user studies here!"} />
       <LinkButton
         name="CREATE NEW SESSION"
         to="/sessionForm"
