@@ -53,7 +53,6 @@ function SessionOverview({
 
   return (
     <>
-      <NavigationBar />
       <h2 className="sessionOverviewHeadline">Welcome! Get started with conducting your user studies here!</h2>
       <LinkButton
         name="CREATE NEW SESSION"
