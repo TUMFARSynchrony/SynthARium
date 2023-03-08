@@ -7,11 +7,11 @@ import {
   integerToDateTime,
   useBackListener,
 } from "../../../utils/utils";
-import Button from "../../atoms/Button/Button";
+import { ActionButton, ActionIconButton, LinkActionButton } from "../../atoms/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
-import LinkButton from "../../atoms/LinkButton/LinkButton";
 import TextAreaField from "../TextAreaField/TextAreaField";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import "./OverviewTab.css";
 
 function OverviewTab({
@@ -64,28 +64,30 @@ function OverviewTab({
           value={message}
           onChange={(newMessage) => setMessage(newMessage)}
         />
-        <Button name={"Send"} design={"secondary"} />
+        <ActionIconButton text="Send" variant="outlined" color="primary" onClick={() => {}} icon={<PlayArrowOutlined />} />
       </div>
       <hr className="separatorLine"></hr>
 
-      <LinkButton
-        name={"LEAVE EXPERIMENT"}
-        design={"secondary"}
-        to={"/"}
+      <LinkActionButton
+        text="LEAVE EXPERIMENT"
+        variant="outlined"
+        path="/"
         onClick={() => onLeaveExperiment()}
       />
       {sessionData.start_time === 0 ? (
-        <Button
-          name={"START EXPERIMENT"}
-          design={"positive"}
+        <ActionButton
+          text="START EXPERIMENT"
+          variant="contained"
+          color="success"
           onClick={() => {
             setStartVerificationModal(true);
           }}
         />
       ) : (
-        <Button
-          name={"END EXPERIMENT"}
-          design={"negative"}
+        <ActionButton
+          text="END EXPERIMENT"
+          variant="contained"
+          color="error"
           onClick={() => {
             setEndVerificationModal(true);
           }}

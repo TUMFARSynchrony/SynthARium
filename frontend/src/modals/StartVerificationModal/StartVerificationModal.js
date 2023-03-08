@@ -1,4 +1,4 @@
-import Button from "../../components/atoms/Button/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 import "./StartVerificationModal.css";
 
@@ -12,14 +12,16 @@ function StartVerificationModal({ setShowModal, onStartExperiment }) {
     <div className="verificationContainer">
       <div className="verificationModal">
         <Heading heading={`Are you sure you want to start the experiment?`} />
-        <Button
-          name={"No"}
-          design={"negative"}
+        <ActionButton
+          text="No"
+          variant="contained"
+          color="error"
           onClick={() => setShowModal(false)}
         />
-        <Button
-          name={"Yes"}
-          design={"positive"}
+        <ActionButton
+          text="Yes"
+          variant="contained"
+          color="success"
           onClick={() => startExperiment()}
         />
       </div>

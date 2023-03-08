@@ -3,10 +3,11 @@ import Heading from "../../atoms/Heading/Heading";
 import { useState } from "react";
 import Note from "../../atoms/Note/Note";
 import TextAreaField from "../TextAreaField/TextAreaField";
-import Button from "../../atoms/Button/Button";
 import { INITIAL_NOTE_DATA } from "../../../utils/constants";
 import { useSelector } from "react-redux";
 import { getSessionById } from "../../../utils/utils";
+import { ActionIconButton } from "../../atoms/Button";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 
 function NotesTab({ onAddNote }) {
   const sessionId = useSelector(
@@ -64,10 +65,12 @@ function NotesTab({ onAddNote }) {
                 onChange={(newContent) => onContentChange(newContent)}
               />
             </div>
-            <Button
-              name={"Send"}
-              design={"secondary"}
+            <ActionIconButton
+              text="Send"
+              variant="contained"
+              color="primary"
               onClick={() => onSendNotes()}
+              icon={<PlayArrowOutlined />}
             />
           </div>
         </div>

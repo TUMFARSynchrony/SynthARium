@@ -2,18 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { initializeSession } from "../../features/openSession";
-import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import "./SessionOverview.css";
-import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
-import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 import { getPastAndFutureSessions } from "../../utils/utils";
-import Button from "../../components/atoms/Button/Button";
 import Label from "../../components/atoms/Label/Label";
 import HeroText from "../../components/atoms/HeroText/HeroText";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import { ActionIconButton, LinkButton } from "../../components/atoms/Button";
 
 function SessionOverview({
   onDeleteSession,
@@ -55,11 +54,7 @@ function SessionOverview({
   return (
     <>
       <HeroText text={"Welcome! Get started with conducting your user studies here!"} />
-      <LinkButton
-        name="CREATE NEW SESSION"
-        to="/sessionForm"
-        onClick={() => onCreateNewSession()}
-      />
+      <LinkButton text="CREATE NEW SESSION" path="/sessionForm" variant="contained" color="primary" onClick={() => onCreateNewSession()} />
       <div className="sessionOverviewDescription">
         Create a new session to create your own experimental design template.
         You can hold these sessions for each experiment you would like to
@@ -85,15 +80,11 @@ function SessionOverview({
           ) : (
             <>No active sessions found.</>
           )}
-          <hr className="separatorLine"></hr>
-          <Button
-            name={
-              showPastSessions ? "Hide past sessions" : "Show past sessions"
-            }
-            icon={showPastSessions ? <FaAngleUp /> : <FaAngleDown />}
-            design={"secondary"}
-            onClick={() => onShowPastSessions()}
-          />
+          <ActionIconButton text={showPastSessions ? "Hide past sessions" : "Show past sessions"} 
+            variant="outlined" 
+            color="primary"
+            onClick={() => onShowPastSessions()} 
+            icon={showPastSessions ? <ExpandLess /> : <ExpandMore />} />
           {showPastSessions &&
             past.length > 0 &&
             past.map((session, index) => {
@@ -108,7 +99,6 @@ function SessionOverview({
                 />
               );
             })}
-          <hr className="separatorLine"></hr>
         </div>
         <>
           {selectedSession ? (

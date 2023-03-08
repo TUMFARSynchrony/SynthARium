@@ -2,7 +2,7 @@ import { useState } from "react";
 import JoinedParticipantModal from "../../../modals/JoinedParticipantModal/JoinedParticipantModal";
 import KickParticipantModal from "../../../modals/KickParticipantModal/KickParticipantModal";
 import { getParticipantById } from "../../../utils/utils";
-import Button from "../Button/Button";
+import { ActionButton } from "../Button";
 import Label from "../Label/Label";
 import "./JoinedParticipantCard.css";
 
@@ -23,22 +23,25 @@ function JoinedParticipant({
         <Label
           title={participantData.first_name + " " + participantData.last_name}
         />
-        <Button
-          name={"Info"}
-          design={"small-secondary"}
+        <ActionButton
+          text="Info"
+          variant="contained"
+          color="info"
           onClick={() => setShowModal(!showModal)}
         />
-        <Button
-          name={"Kick"}
-          design={"small-negative"}
+        <ActionButton
+          text="Kick"
+          variant="contained"
+          color="error"
           onClick={() => {
             setShowKickBanReason(true);
             setAction("Kick");
           }}
         />
-        <Button
-          name={"Ban"}
-          design={"small-negative"}
+        <ActionButton
+          text="Ban"
+          variant="contained"
+          color="error"
           onClick={() => {
             setShowKickBanReason(true);
             setAction("Ban");

@@ -5,10 +5,7 @@ function HeroText({ text }) {
 
     const Text = styled(Typography)(({ theme }) => ({
         fontWeight: 'bold',
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(1),
-        marginRight: theme.spacing(4),
-        marginLeft: theme.spacing(4),
+        margin: theme.spacing(4)
     }));
 
     return (

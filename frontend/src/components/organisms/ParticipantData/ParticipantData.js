@@ -1,10 +1,10 @@
-import Button from "../../atoms/Button/Button";
 import InputTextField from "../../molecules/InputTextField/InputTextField";
 import "./ParticipantData.css";
 
-import { FaRegTrashAlt } from "react-icons/fa";
 import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
 import { useState } from "react";
+import { ActionButton, ActionIconButton } from "../../atoms/Button";
+import DeleteOutline from "@mui/icons-material/DeleteOutline";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -33,17 +33,19 @@ function ParticipantData({
         readonly={true}
       />
       <div className="participantButtons">
-        <Button
-          name="Enter participant information"
-          design={"secondary"}
+        <ActionButton
+          text="Enter participant information"
+          variant="outlined"
+          color="primary"
           onClick={() => onAddAdditionalInformation()}
         />
 
-        <Button
-          name={""}
-          design={"negative"}
+        <ActionIconButton
+          text=""
+          variant="outline"
+          color="error"
           onClick={() => onDeleteParticipant()}
-          icon={<FaRegTrashAlt />}
+          icon={<DeleteOutline />}
         />
       </div>
 

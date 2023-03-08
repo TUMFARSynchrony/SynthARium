@@ -1,12 +1,14 @@
 import { integerToDateTime, isFutureSession } from "../../../utils/utils";
-import Button from "../../atoms/Button/Button";
-import LinkButton from "../../atoms/LinkButton/LinkButton";
-import IconButton from "../../atoms/IconButton/IconButton";
 import "./SessionPreview.css";
 
 import { useDispatch } from "react-redux";
 import { copySession, initializeSession } from "../../../features/openSession";
 import Heading from "../../atoms/Heading/Heading";
+import DeleteOutline from "@mui/icons-material/DeleteOutline";
+import ContentCopy from "@mui/icons-material/ContentCopy";
+import EditOutlined from "@mui/icons-material/EditOutlined";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
+import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
 
 
 function SessionPreview({
@@ -56,39 +58,43 @@ function SessionPreview({
         <div className="sessionPreviewButtons">
           {(selectedSession.creation_time === 0 ||
             selectedSession.end_time > 0) && (
-            <Button
-              name={"DELETE"}
-              design={"negative"}
-              onClick={() => deleteSession()}
-            />
-          )}
-          <LinkButton
-            name={"COPY"}
-            to="/sessionForm"
+              <ActionIconButton text="DELETE" variant="outlined" color="error" onClick={() => deleteSession()} icon={<DeleteOutline />} />
+            )}
+          <LinkActionIconButton
+            text="DUPLICATE"
+            variant="outlined"
+            path="/sessionForm"
             onClick={() => dispatch(copySession(selectedSession))}
+            icon={<ContentCopy />}
           />
           {!selectedSession.creation_time > 0 &&
             selectedSession.end_time === 0 &&
             isFutureSession(selectedSession) && (
               <>
-                <LinkButton
-                  name={"EDIT"}
-                  to="/sessionForm"
+                <LinkActionIconButton
+                  text="EDIT"
+                  variant="outlined"
+                  path="/sessionForm"
                   onClick={() => dispatch(initializeSession(selectedSession))}
+                  icon={<EditOutlined />}
                 />
-                <LinkButton
-                  name={"JOIN"}
-                  to="/watchingRoom"
+                <LinkActionIconButton
+                  text="JOIN"
+                  variant="contained"
+                  path="/watchingRoom"
                   onClick={() => onCreateExperiment(selectedSession.id)}
+                  icon={<PlayArrowOutlined />}
                 />
               </>
             )}
           {selectedSession.creation_time > 0 && selectedSession.end_time === 0 && (
             <>
-              <LinkButton
-                name={"JOIN EXPERIMENT"}
-                to="/watchingRoom"
+              <LinkActionIconButton
+                text="JOIN EXPERIMENT"
+                variant="contained"
+                path="/watchingRoom"
                 onClick={() => onJoinExperiment(selectedSession.id)}
+                icon={<PlayArrowOutlined />}
               />
             </>
           )}

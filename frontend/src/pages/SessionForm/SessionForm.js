@@ -1,8 +1,6 @@
 import Checkbox from "../../components/molecules/Checkbox/Checkbox";
 import InputDateField from "../../components/molecules/InputDateField/InputDateField";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
-import LinkButton from "../../components/atoms/LinkButton/LinkButton";
-import Button from "../../components/atoms/Button/Button";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import Heading from "../../components/atoms/Heading/Heading";
@@ -18,7 +16,6 @@ import TextAreaField from "../../components/molecules/TextAreaField/TextAreaFiel
 
 import "./SessionForm.css";
 import { useEffect, useState } from "react";
-import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addParticipant,
@@ -28,6 +25,9 @@ import {
   initializeSession,
 } from "../../features/openSession";
 import { toast } from "react-toastify";
+import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
+import ChevronLeft from "@mui/icons-material/ChevronLeft";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useDispatch();
@@ -223,9 +223,10 @@ function SessionForm({ onSendSessionToBackend }) {
                   );
                 })}
               </div>
-              <Button
-                name="Add new participant"
-                design={"positive"}
+              <ActionButton
+                text="Add new participant"
+                variant="contained"
+                color="primary"
                 onClick={() => onAddParticipant()}
               />
             </div>
@@ -233,21 +234,23 @@ function SessionForm({ onSendSessionToBackend }) {
           </div>
 
           <div className="sessionFormButtons">
-            <Button name="Save" onClick={() => onSaveSession()} />
-            <LinkButton name="Start" to="/watchingRoom" />
-            <Button
-              name="Random session data"
+            <ActionButton text="Save" variant="contained" color="primary" onClick={() => onSaveSession()} />
+            <LinkButton text="Start" variant="contained" path="/watchingRoom" />
+            <ActionButton
+              text="Random session data"
+              variant="contained"
+              color="primary"
               onClick={() => addRandomSessionData()}
             />
           </div>
         </div>
       )}
-      <Button
-        name={""}
-        icon={showSessionDataForm ? <FaAngleLeft /> : <FaAngleRight />}
-        design={"close"}
+      <ActionIconButton
+        text=""
+        variant="text"
+        color="primary"
         onClick={() => onShowSessionFormModal()}
-        title={"Show/Close session form"}
+        icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
       />
       <div className="sessionFormCanvas">
         <DragAndDrop

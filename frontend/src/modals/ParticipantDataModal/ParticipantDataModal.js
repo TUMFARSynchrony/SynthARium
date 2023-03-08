@@ -5,9 +5,9 @@ import Heading from "../../components/atoms/Heading/Heading";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
 import Checkbox from "../../components/molecules/Checkbox/Checkbox";
 import Label from "../../components/atoms/Label/Label";
-import Button from "../../components/atoms/Button/Button";
 import { useState } from "react";
 import { PARTICIPANT_HOST } from "../../utils/constants";
+import { ActionButton } from "../../components/atoms/Button";
 
 function ParticipantDataModal({
   originalParticipant,
@@ -153,10 +153,11 @@ function ParticipantDataModal({
               <Label title={"Height: "} /> {participantCopy.size.height}
             </div>
           </div>
-          <Button name="Save Participant" onClick={() => onSaveParticipantData()} />
-          <Button
+          <ActionButton text="Save Participant" variant="contained" color="primary" onClick={() => onSaveParticipantData()} />
+          <ActionButton
             name="BACK"
-            design={"negative"}
+            variant="contained"
+            color="primary"
             onClick={() => {
               onCloseModalWithoutData();
             }}
