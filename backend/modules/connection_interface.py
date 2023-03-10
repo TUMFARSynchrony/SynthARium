@@ -35,7 +35,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def stop(self) -> None:
         """Stop this connection.
 
-        Stopps all incoming and outgoing streams and emits the `state_change` event.
+        Stops all incoming and outgoing streams and emits the `state_change` event.
         When finished, it removes all event listeners from this Connection, as no more
         events will be emitted.
         """
@@ -174,3 +174,20 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
             List of audio filter configs.
         """
         pass
+
+    @abstractmethod
+    async def start_recording(self) -> None:
+        """Start recording tracks for this connection.
+
+        Both audio and video media track will be recorded.
+        """
+        pass
+
+    @abstractmethod
+    async def stop_recording(self) -> None:
+        """Stop recording tracks for this connection.
+
+        Both audio and video recorder will stop.
+        """
+        pass
+

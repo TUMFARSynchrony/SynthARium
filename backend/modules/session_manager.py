@@ -294,7 +294,7 @@ class SessionManager:
         """Get all filenames of files in `self._session_dir`."""
         filenames: list[str] = []
         for filename in os.listdir(self._session_dir):
-            if isfile(join(self._session_dir, filename)):
+            if isfile(join(self._session_dir, filename)) and filename.endswith(".json"):
                 filenames.append(filename)
         return filenames
 

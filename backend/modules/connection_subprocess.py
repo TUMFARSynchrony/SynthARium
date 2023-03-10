@@ -46,6 +46,7 @@ class ConnectionSubprocess(ConnectionInterface):
     _initial_audio_filters: list[FilterDict]
     _initial_video_filters: list[FilterDict]
     _filter_receiver: FilterSubprocessReceiver
+    _record_data: tuple
 
     __lock: asyncio.Lock
     _running: bool
@@ -68,6 +69,7 @@ class ConnectionSubprocess(ConnectionInterface):
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
         filter_api: FilterAPI,
+        record_data: tuple
     ):
         """Create new ConnectionSubprocess.
 
@@ -86,6 +88,8 @@ class ConnectionSubprocess(ConnectionInterface):
             Default audio filters for this connection.
         video_filters : list of custom_types.filter.FilterDict
             Default video filters for this connection.
+        record_data : tuple
+            Boolean flag for recording the experiment and the path where the recordings will be saved.
 
         See Also
         --------
@@ -100,6 +104,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._message_handler = message_handler
         self._initial_audio_filters = audio_filters
         self._initial_video_filters = video_filters
+        self._record_data = record_data
 
         self.__lock = asyncio.Lock()
         self._running = True
@@ -183,6 +188,14 @@ class ConnectionSubprocess(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("SET_AUDIO_FILTERS", filters)
 
+    async def start_recording(self) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("START_RECORDING", None)
+
+    async def stop_recording(self) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("STOP_RECORDING", None)
+
     def _set_state(self, state: ConnectionState) -> None:
         """Set connection state and emit `state_change` event."""
         if self._state == state:
@@ -211,6 +224,8 @@ class ConnectionSubprocess(ConnectionInterface):
             json.dumps(self._initial_audio_filters),
             "--video-filters",
             json.dumps(self._initial_video_filters),
+            "--record-data",
+            json.dumps(self._record_data),
         ]
         program_summary = program[:5] + [
             program[5][:10] + ("..." if len(program[5]) >= 10 else "")
@@ -468,6 +483,7 @@ class ConnectionSubprocess(ConnectionInterface):
             must be identified with request.
         """
         data = json.dumps({"command": command, "data": data, "command_nr": command_nr})
+        self._logger.debug(data)
         if self._process is None:
             self._logger.error(f"Failed send {data}, _process is None")
             return
@@ -496,6 +512,7 @@ async def connection_subprocess_factory(
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
     filter_api: FilterAPI,
+    record_data: tuple
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 
@@ -512,6 +529,8 @@ async def connection_subprocess_factory(
         Default audio filters for this connection.
     video_filters : list of custom_types.filter.FilterDict
         Default video filters for this connection.
+    record_data : tuple
+        Boolean flag for recording the experiment and the path where the recordings will be saved.
 
     Returns
     -------
@@ -528,6 +547,7 @@ async def connection_subprocess_factory(
         audio_filters,
         video_filters,
         filter_api,
+        record_data
     )
 
     local_description = await connection.get_local_description()

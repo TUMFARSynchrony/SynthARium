@@ -32,6 +32,9 @@ def parse_args() -> Tuple[
     parser.add_argument(
         "--video-filters", dest="video_filters", required=False, default=[]
     )
+    parser.add_argument(
+        "--record-data", dest="record_data", required=False, default=[]
+    )
     args = parser.parse_args()
 
     # Check and parse offer
@@ -39,6 +42,7 @@ def parse_args() -> Tuple[
         offer_obj = json.loads(args.offer)
         audio_filters = json.loads(args.audio_filters)
         video_filters = json.loads(args.video_filters)
+        record_data = json.loads(args.record_data)
     except (json.JSONDecodeError, TypeError) as e:
         print(
             "Failed to parse command line arguments received in command line arguments:"
@@ -53,14 +57,14 @@ def parse_args() -> Tuple[
 
     offer = RTCSessionDescription(offer_obj["sdp"], offer_obj["type"])
 
-    return (offer, args.log_name_suffix, audio_filters, video_filters)
+    return (offer, args.log_name_suffix, audio_filters, video_filters, record_data)
 
 
 async def main() -> None:
-    offer, log_name_suffix, audio_filters, video_filters = parse_args()
+    offer, log_name_suffix, audio_filters, video_filters, record_data = parse_args()
 
     runner = ConnectionRunner()
-    await runner.run(offer, log_name_suffix, audio_filters, video_filters)
+    await runner.run(offer, log_name_suffix, audio_filters, video_filters, record_data)
 
 
 if __name__ == "__main__":

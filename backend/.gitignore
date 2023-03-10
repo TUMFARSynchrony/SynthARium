@@ -12,3 +12,7 @@ __pycache__
 
 # PyCharm IDE
 .idea
+
+# Misc
+.DS_Store
+sessions/*/
