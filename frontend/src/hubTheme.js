@@ -9,5 +9,12 @@ export const hubTheme = createTheme({
                 },
             },
         },
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    margin: '8px',
+                }
+            }
+        }
     },
 });
