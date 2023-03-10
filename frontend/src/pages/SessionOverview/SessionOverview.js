@@ -15,6 +15,7 @@ import Typography from "@mui/material/Typography";
 import styled from '@mui/material/styles/styled';
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
+import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 
 
 function SessionOverview({
@@ -65,6 +66,7 @@ function SessionOverview({
 
   return (
     <>
+      <NavigationBar />
       <HeroText text={"Welcome! Get started with conducting your user studies here!"} />
       <LinkButton text="CREATE NEW SESSION" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
       <WelcomeText>

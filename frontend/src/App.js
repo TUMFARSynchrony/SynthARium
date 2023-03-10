@@ -28,7 +28,6 @@ import {
   createExperiment,
   joinExperiment,
 } from "./features/ongoingExperiment";
-import NavigationBar from "./components/organisms/NavigationBar/NavigationBar";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -312,7 +311,6 @@ function App() {
 
   return (
     <div className="App">
-      <NavigationBar />
       <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true}/>
       {sessionsList ? (
         <Routes>
