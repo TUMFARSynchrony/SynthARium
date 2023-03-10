@@ -37,6 +37,7 @@ function ParticipantData({
           text="Enter participant information"
           variant="outlined"
           color="primary"
+          size="medium"
           onClick={() => onAddAdditionalInformation()}
         />
 
@@ -44,6 +45,7 @@ function ParticipantData({
           text=""
           variant="outline"
           color="error"
+          size="medium"
           onClick={() => onDeleteParticipant()}
           icon={<DeleteOutline />}
         />

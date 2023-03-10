@@ -153,11 +153,12 @@ function ParticipantDataModal({
               <Label title={"Height: "} /> {participantCopy.size.height}
             </div>
           </div>
-          <ActionButton text="Save Participant" variant="contained" color="primary" onClick={() => onSaveParticipantData()} />
+          <ActionButton text="Save Participant" variant="contained" color="primary" size="large" onClick={() => onSaveParticipantData()} />
           <ActionButton
             name="BACK"
             variant="contained"
             color="primary"
+            size="large"
             onClick={() => {
               onCloseModalWithoutData();
             }}

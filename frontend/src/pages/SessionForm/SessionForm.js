@@ -227,6 +227,7 @@ function SessionForm({ onSendSessionToBackend }) {
                 text="Add new participant"
                 variant="contained"
                 color="primary"
+                size="large"
                 onClick={() => onAddParticipant()}
               />
             </div>
@@ -234,12 +235,13 @@ function SessionForm({ onSendSessionToBackend }) {
           </div>
 
           <div className="sessionFormButtons">
-            <ActionButton text="Save" variant="contained" color="primary" onClick={() => onSaveSession()} />
-            <LinkButton text="Start" variant="contained" path="/watchingRoom" />
+            <ActionButton text="Save" variant="contained" color="primary" size="large" onClick={() => onSaveSession()} />
+            <LinkButton text="Start" variant="contained" size="large" path="/watchingRoom" />
             <ActionButton
               text="Random session data"
               variant="contained"
               color="primary"
+              size="large"
               onClick={() => addRandomSessionData()}
             />
           </div>
@@ -249,6 +251,7 @@ function SessionForm({ onSendSessionToBackend }) {
         text=""
         variant="text"
         color="primary"
+        size="large"
         onClick={() => onShowSessionFormModal()}
         icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
       />

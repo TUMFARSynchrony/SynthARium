@@ -57,11 +57,12 @@ function KickParticipantModal({
           onChange={(newReason) => onChange(newReason)}
           required={true}
         />
-        <ActionButton variant="contained" color="error" text={action} onClick={() => kickBanParticipant()} />
+        <ActionButton variant="contained" color="error" size="medium" text={action} onClick={() => kickBanParticipant()} />
         <ActionButton
           text="Cancel"
           variant="contained"
           color="primary"
+          size="medium"
           onClick={() => setShowModal(false)}
         />
       </div>

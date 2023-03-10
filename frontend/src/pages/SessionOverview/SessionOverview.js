@@ -66,7 +66,7 @@ function SessionOverview({
   return (
     <>
       <HeroText text={"Welcome! Get started with conducting your user studies here!"} />
-      <LinkButton text="CREATE NEW SESSION" path="/sessionForm" variant="contained" color="primary" onClick={() => onCreateNewSession()} />
+      <LinkButton text="CREATE NEW SESSION" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
       <WelcomeText>
         Create a new session to create your own experimental design template.
         You can hold these sessions for each experiment you would like to
@@ -113,6 +113,7 @@ function SessionOverview({
           <ActionIconButton text={showPastSessions ? "Hide past sessions" : "Show past sessions"}
             variant="outlined"
             color="primary"
+            size="medium"
             onClick={() => onShowPastSessions()}
             icon={showPastSessions ? <ExpandLess /> : <ExpandMore />} />
           {showPastSessions &&

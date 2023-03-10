@@ -69,6 +69,7 @@ function NotesTab({ onAddNote }) {
               text="Send"
               variant="contained"
               color="primary"
+              size="medium"
               onClick={() => onSendNotes()}
               icon={<PlayArrowOutlined />}
             />

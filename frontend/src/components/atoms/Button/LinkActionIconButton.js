@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 
-function LinkActionIconButton({ text, variant, path, onClick, icon }) {
+function LinkActionIconButton({ text, variant, path, size, onClick, icon }) {
     let navigate = useNavigate();
 
     const handleButtonClick = (() => {
@@ -10,7 +10,7 @@ function LinkActionIconButton({ text, variant, path, onClick, icon }) {
 
     return (
         <>
-            <Button variant={variant} onClick={() => { handleButtonClick(); onClick(); }} startIcon={icon}>
+            <Button variant={variant} size={size} onClick={() => { handleButtonClick(); onClick(); }} startIcon={icon}>
                 {text}
             </Button>
         </>

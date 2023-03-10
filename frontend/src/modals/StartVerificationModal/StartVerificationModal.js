@@ -16,12 +16,14 @@ function StartVerificationModal({ setShowModal, onStartExperiment }) {
           text="No"
           variant="contained"
           color="error"
+          size="small"
           onClick={() => setShowModal(false)}
         />
         <ActionButton
           text="Yes"
           variant="contained"
           color="success"
+          size="small"
           onClick={() => startExperiment()}
         />
       </div>

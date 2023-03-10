@@ -15,12 +15,14 @@ function EndVerificationModal({ setShowModal, onEndExperiment }) {
           text="No"
           variant="contained"
           color="error"
+          size="small"
           onClick={() => setShowModal(false)}
         />
         <LinkActionButton
           text="Yes"
           path="/"
           variant="contained"
+          size="small"
           onClick={() => endExperiment()}
         />
       </div>

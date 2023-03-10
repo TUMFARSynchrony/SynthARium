@@ -61,7 +61,7 @@ function WatchingRoom({
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton text="Go to Session Overview" path="/" variant="contained" />
+          <LinkButton text="Go to Session Overview" path="/" variant="contained" size="large"/>
         </div>
       )}
     </div>

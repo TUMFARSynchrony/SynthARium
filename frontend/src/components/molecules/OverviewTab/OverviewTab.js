@@ -45,13 +45,13 @@ function OverviewTab({
           <div>
             <Label title={"Starting time: "} />
             {sessionData.start_time > 0
-              ? integerToDateTime(sessionData.start_time)
+              ? integerToDateTime(sessionData.start_time).toLocaleString()
               : "Not started yet"}
           </div>
           <div>
             <Label title={"Ending time: "} />{" "}
             {sessionData.end_time > 0
-              ? integerToDateTime(sessionData.start_time)
+              ? integerToDateTime(sessionData.start_time).toLocaleString()
               : "Not ended yet"}
           </div>
         </div>
@@ -64,7 +64,7 @@ function OverviewTab({
           value={message}
           onChange={(newMessage) => setMessage(newMessage)}
         />
-        <ActionIconButton text="Send" variant="outlined" color="primary" onClick={() => {}} icon={<PlayArrowOutlined />} />
+        <ActionIconButton text="Send" variant="outlined" color="primary" size="medium" onClick={() => {}} icon={<PlayArrowOutlined />} />
       </div>
       <hr className="separatorLine"></hr>
 
@@ -79,6 +79,7 @@ function OverviewTab({
           text="START EXPERIMENT"
           variant="contained"
           color="success"
+          size="large"
           onClick={() => {
             setStartVerificationModal(true);
           }}
@@ -88,6 +89,7 @@ function OverviewTab({
           text="END EXPERIMENT"
           variant="contained"
           color="error"
+          size="large"
           onClick={() => {
             setEndVerificationModal(true);
           }}

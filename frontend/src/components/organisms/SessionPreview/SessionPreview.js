@@ -129,7 +129,7 @@ function SessionPreview({
                                 })
                               }
                             </Box>
-                            <ActionIconButton text="INVITE" variant="outlined" color="primary" onClick={() => handleCopyParticipantInviteLink(participant.id, selectedSession.id)} icon={<ContentCopyIcon />} />
+                            <ActionIconButton text="INVITE" variant="outlined" color="primary" size="small" onClick={() => handleCopyParticipantInviteLink(participant.id, selectedSession.id)} icon={<ContentCopyIcon />} />
                             <Snackbar open={openInviteLinkFeedback}
                               autoHideDuration={2000}
                               onClose={handleCloseParticipantInviteLinkFeedback}
@@ -155,20 +155,20 @@ function SessionPreview({
       <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
         {(selectedSession.creation_time === 0 ||
           selectedSession.end_time > 0) && (
-            <ActionIconButton text="DELETE" variant="outlined" color="error" onClick={() => deleteSession()} icon={<DeleteOutlined />} />
+            <ActionIconButton text="DELETE" variant="outlined" color="error" size="medium" onClick={() => deleteSession()} icon={<DeleteOutlined />} />
           )}
         <Box>
-          <LinkActionIconButton text="DUPLICATE" variant="outlined" color="primary" path="/sessionForm" onClick={() => dispatch(copySession(selectedSession))} icon={<ContentCopyIcon />} />
+          <LinkActionIconButton text="DUPLICATE" variant="outlined" color="primary" size="medium" path="/sessionForm" onClick={() => dispatch(copySession(selectedSession))} icon={<ContentCopyIcon />} />
           {!selectedSession.creation_time > 0 &&
             selectedSession.end_time === 0 &&
             isFutureSession(selectedSession) && (
               <>
-                <LinkActionIconButton text="EDIT" variant="outlined" color="primary" path="/sessionForm" onClick={() => dispatch(initializeSession(selectedSession))} icon={<EditOutlined />} />
-                <LinkActionIconButton text="JOIN" variant="contained" color="primary" path="/watchingRoom" onClick={() => onCreateExperiment(selectedSession.id)} icon={<PlayArrowOutlined />} />
+                <LinkActionIconButton text="EDIT" variant="outlined" color="primary" size="medium" path="/sessionForm" onClick={() => dispatch(initializeSession(selectedSession))} icon={<EditOutlined />} />
+                <LinkActionIconButton text="JOIN" variant="contained" color="primary" size="medium" path="/watchingRoom" onClick={() => onCreateExperiment(selectedSession.id)} icon={<PlayArrowOutlined />} />
               </>
             )}
           {selectedSession.creation_time > 0 && selectedSession.end_time === 0 && (
-            <LinkActionIconButton text="JOIN" variant="contained" path="/watchingRoom" onClick={() => onJoinExperiment(selectedSession.id)} icon={<PlayArrowOutlined />} />
+            <LinkActionIconButton text="JOIN" variant="contained" size="medium" path="/watchingRoom" onClick={() => onJoinExperiment(selectedSession.id)} icon={<PlayArrowOutlined />} />
           )}
         </Box>
       </CardActions>

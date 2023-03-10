@@ -1,10 +1,10 @@
 import Button from '@mui/material/Button';
 
-function ActionIconButton({ text, variant, color, onClick, icon }) {
+function ActionIconButton({ text, variant, color, size, onClick, icon }) {
 
     return (
         <>
-            <Button variant={variant} color={color} onClick={() => { onClick(); }} startIcon={icon}>
+            <Button variant={variant} color={color} size={size} onClick={() => { onClick(); }} startIcon={icon}>
                 {text}
             </Button>
         </>

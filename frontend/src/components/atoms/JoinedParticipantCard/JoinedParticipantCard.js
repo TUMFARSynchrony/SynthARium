@@ -27,12 +27,14 @@ function JoinedParticipant({
           text="Info"
           variant="contained"
           color="info"
+          size="small"
           onClick={() => setShowModal(!showModal)}
         />
         <ActionButton
           text="Kick"
           variant="contained"
           color="error"
+          size="small"
           onClick={() => {
             setShowKickBanReason(true);
             setAction("Kick");
@@ -42,6 +44,7 @@ function JoinedParticipant({
           text="Ban"
           variant="contained"
           color="error"
+          size="small"
           onClick={() => {
             setShowKickBanReason(true);
             setAction("Ban");

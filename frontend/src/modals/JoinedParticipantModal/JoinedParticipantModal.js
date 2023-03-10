@@ -54,6 +54,7 @@ function JoinedParticipantModal({
           text={participantData.muted_audio ? "Unmute Audio" : "Mute Audio"}
           variant="outlined"
           color="primary"
+          size="medium"
           onClick={() =>
             muteParticipant(
               !participantData.muted_audio,
@@ -65,6 +66,7 @@ function JoinedParticipantModal({
           text={participantData.muted_video ? "Unmute Video" : "Mute Video"}
           variant="outlined"
           color="primary"
+          size="medium"
           onClick={() =>
             muteParticipant(
               participantData.muted_audio,
@@ -103,12 +105,14 @@ function JoinedParticipantModal({
             text="Cancel"
             variant="outlined"
             color="primary"
+            size="medium"
             onClick={() => setShowModal(!showModal)}
           />
           <ActionButton
             text="Finish"
             variant="outlined"
             color="success"
+            size="medium"
             onClick={() => setShowModal(!showModal)}
           />
         </div>
