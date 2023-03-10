@@ -1,0 +1,81 @@
+{
+    "id": "bbbef1d7d0",
+    "title": "CONNECTION TEST SESSION",
+    "date": 1689249266451,
+    "record": false,
+    "time_limit": 3000000,
+    "description": "Test session with 10 participants!",
+    "creation_time": 0,
+    "end_time": 1677247613537,
+    "start_time": 1677247613537,
+    "notes": [],
+    "participants": [
+        {
+            "id": "a",
+            "first_name": "Anna",
+            "last_name": "Anderson",
+            "banned": false,
+            "size": {
+                "width": 178.08301648525097,
+                "height": 155.99999999999955
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [
+                { 
+                    "type": "DELAY", 
+                    "id": "delay-a",
+                    "size" : 60 
+                }
+            ],
+            "video_filters": [
+                { 
+                    "type": "EDGE_OUTLINE", 
+                    "id": "edge" 
+                },
+                { 
+                    "type": "ROTATION", 
+                    "id": "rotation" 
+                }
+            ]
+        },
+        {
+            "id": "b",
+            "first_name": "Brandon",
+            "last_name": "Brown",
+            "banned": false,
+            "size": {
+                "width": 173.0789809616626,
+                "height": 154.9999999999999
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "position": {
+                "x": 198.07725145155317,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [
+                { 
+                    "type": "DELAY", 
+                    "id": "delay-a",
+                    "size" : 60 
+                }
+            ],
+            "video_filters": [
+                { 
+                    "type": "EDGE_OUTLINE", 
+                    "id": "edge" 
+                }
+            ]
+        }
+    ],
+    "log": []
+}
