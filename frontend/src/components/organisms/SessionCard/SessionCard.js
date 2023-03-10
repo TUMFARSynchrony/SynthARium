@@ -23,7 +23,7 @@ function SessionCard({ title, date, description, onClick, selected }) {
                 {integerToDateTime(date).toLocaleTimeString()}
               </Typography>
             </Box>
-            <Typography align="left" noWrap="true">
+            <Typography align="left" noWrap={true}>
               {description}
             </Typography>
           </Stack>
