@@ -1,15 +1,29 @@
 import { integerToDateTime, isFutureSession } from "../../../utils/utils";
-import "./SessionPreview.css";
-
 import { useDispatch } from "react-redux";
+import { useState } from "react";
 import { copySession, initializeSession } from "../../../features/openSession";
-import Heading from "../../atoms/Heading/Heading";
-import DeleteOutline from "@mui/icons-material/DeleteOutline";
-import ContentCopy from "@mui/icons-material/ContentCopy";
+import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
+import Card from "@mui/material/Card";
+import CardActions from "@mui/material/CardActions";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
+import List from '@mui/material/List';
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Collapse from '@mui/material/Collapse';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import Chip from "@mui/material/Chip";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
-import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
-
+// REMOVE: Use temporarily until fiters backend API connection is established
+// import sessionData from '../../../bbbef1d7d0.json';
 
 function SessionPreview({
   selectedSession,
@@ -25,82 +39,115 @@ function SessionPreview({
     setSelectedSession(null);
   };
 
+  const [allParticipantsShow, setAllParticipantsShow] = useState(false);
+  const [expandedParticipant, setExpandedParticipant] = useState("");
+
+  const handleParticipantsClick = () => {
+    setAllParticipantsShow(!allParticipantsShow);
+  };
+
+  const handleSingleParticipantClick = (participantIndex) => {
+    setExpandedParticipant(expandedParticipant === participantIndex ? "" : participantIndex);
+  };
+
+  const experimentOngoing = selectedSession.creation_time > 0 && selectedSession.end_time === 0;
+  // REMOVE: Use temporarily until fiters backend API connection is established
+  // selectedSession = sessionData;
+
   return (
-    <div
-      className={
-        "sessionPreviewContainer" +
-        (selectedSession.creation_time > 0 && selectedSession.end_time === 0
-          ? " ongoing"
-          : "")
+    <Card sx={{
+      backgroundColor: experimentOngoing ? 'rgb(252, 232, 211)' : 'white',
+      borderTop: experimentOngoing ? '3px solid rgb(255, 119, 0)' : '3px solid dodgerblue'
+    }}>
+      {
+        experimentOngoing ? (
+          <CardHeader title={`Experiment Ongoing: ${selectedSession.title}`}
+            titleTypographyProps={{ fontWeight: 'bold', fontSize: '24px', color: 'rgb(255, 119, 0)' }} />
+        ) :
+          (
+            <CardHeader title={`${selectedSession.title}`}
+              titleTypographyProps={{ fontWeight: 'bold', fontSize: '24px' }} />
+          )
       }
-    >
-      <div className="sessionPreviewHeader">
-        <div className="ongoingExperiment">
-          {selectedSession.creation_time > 0 &&
-            selectedSession.end_time === 0 && (
-              <Heading heading={"Experiment ongoing."} />
-            )}
-        </div>
-        <h3 className="sessionPreviewTitles">Title: {selectedSession.title}</h3>
-        <hr />
-        <h4 className="sessionPreviewTitles wrapper">
-          Date: {integerToDateTime(selectedSession.date)}
-        </h4>
-        <h4 className="sessionPreviewTitles wrapper">
-          Duration: {selectedSession.time_limit / 60000} minutes
-        </h4>
-        <h4 className="sessionPreviewTitles wrapper">
-          Participant count: {selectedSession.participants.length}
-        </h4>
-      </div>
-      <p className="sessionPreviewInformation">{selectedSession.description}</p>
-      <>
-        <div className="sessionPreviewButtons">
-          {(selectedSession.creation_time === 0 ||
-            selectedSession.end_time > 0) && (
-              <ActionIconButton text="DELETE" variant="outlined" color="error" onClick={() => deleteSession()} icon={<DeleteOutline />} />
-            )}
-          <LinkActionIconButton
-            text="DUPLICATE"
-            variant="outlined"
-            path="/sessionForm"
-            onClick={() => dispatch(copySession(selectedSession))}
-            icon={<ContentCopy />}
-          />
+      <CardContent>
+        <List>
+          <ListItem>
+            <ListItemText primary={`Date: ${integerToDateTime(selectedSession.date)}`} />
+          </ListItem>
+          <ListItem>
+            <ListItemText primary={`Duration: ${selectedSession.time_limit / 60000} minutes`} />
+          </ListItem>
+          <ListItemButton onClick={handleParticipantsClick}>
+            <ListItemText primary={`Participants (${selectedSession.participants.length})`} />
+            {allParticipantsShow ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={allParticipantsShow} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {
+                selectedSession.participants.map((participant, participantIndex) => {
+                  return (
+                    <div key={participantIndex}>
+                      <ListItemButton sx={{ pl: 4 }} onClick={() => handleSingleParticipantClick(participantIndex)}>
+                        <ListItemText primary={`${participant.first_name} ${participant.last_name}`} />
+                        {expandedParticipant === participantIndex ? <ExpandLess /> : <ExpandMore />}
+                      </ListItemButton>
+                      <Collapse in={expandedParticipant === participantIndex} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                          <ListItem sx={{ pl: 4, display: "flex", justifyContent: "space-between" }}>
+                            <Typography>Filters : </Typography>
+                            {participant.audio_filters.length === 0 && participant.video_filters.length === 0 && <Typography>No filters applied!</Typography>}
+                            <Box>
+                              {
+                                participant.audio_filters.map((audioFilter, audioFilterIndex) => {
+                                  return (
+                                    <Chip key={audioFilterIndex} variant="outlined" label={audioFilter.id} size="small" color="secondary" />
+                                  )
+                                })
+                              }
+                              {
+                                participant.video_filters.map((videoFilter, videoFilterindex) => {
+                                  return (
+                                    <Chip key={videoFilterindex} variant="outlined" label={videoFilter.id} size="small" color="secondary" />
+                                  )
+                                })
+                              }
+                            </Box>
+                            <Button size="small" variant="outlined" color="primary" startIcon={<ContentCopyIcon />}>INVITE</Button>
+                          </ListItem>
+                        </List>
+                      </Collapse>
+                    </div>
+                  )
+                })
+              }
+            </List>
+          </Collapse>
+        </List>
+        <Typography>
+          {selectedSession.description}
+        </Typography>
+      </CardContent>
+      <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        {(selectedSession.creation_time === 0 ||
+          selectedSession.end_time > 0) && (
+            <ActionIconButton text="DELETE" variant="outlined" color="error" onClick={() => deleteSession()} icon={<DeleteOutlined />} />
+          )}
+        <Box>
+          <LinkActionIconButton text="DUPLICATE" variant="outlined" color="primary" path="/sessionForm" onClick={() => dispatch(copySession(selectedSession))} icon={<ContentCopyIcon />} />
           {!selectedSession.creation_time > 0 &&
             selectedSession.end_time === 0 &&
             isFutureSession(selectedSession) && (
               <>
-                <LinkActionIconButton
-                  text="EDIT"
-                  variant="outlined"
-                  path="/sessionForm"
-                  onClick={() => dispatch(initializeSession(selectedSession))}
-                  icon={<EditOutlined />}
-                />
-                <LinkActionIconButton
-                  text="JOIN"
-                  variant="contained"
-                  path="/watchingRoom"
-                  onClick={() => onCreateExperiment(selectedSession.id)}
-                  icon={<PlayArrowOutlined />}
-                />
+                <LinkActionIconButton text="EDIT" variant="outlined" color="primary" path="/sessionForm" onClick={() => dispatch(initializeSession(selectedSession))} icon={<EditOutlined />} />
+                <LinkActionIconButton text="JOIN" variant="contained" color="primary" path="/watchingRoom" onClick={() => onCreateExperiment(selectedSession.id)} icon={<PlayArrowOutlined />} />
               </>
             )}
           {selectedSession.creation_time > 0 && selectedSession.end_time === 0 && (
-            <>
-              <LinkActionIconButton
-                text="JOIN EXPERIMENT"
-                variant="contained"
-                path="/watchingRoom"
-                onClick={() => onJoinExperiment(selectedSession.id)}
-                icon={<PlayArrowOutlined />}
-              />
-            </>
+            <LinkActionIconButton text="JOIN" variant="contained" path="/watchingRoom" onClick={() => onJoinExperiment(selectedSession.id)} icon={<PlayArrowOutlined />} />
           )}
-        </div>
-      </>
-    </div>
+        </Box>
+      </CardActions>
+    </Card>
   );
 }
 
