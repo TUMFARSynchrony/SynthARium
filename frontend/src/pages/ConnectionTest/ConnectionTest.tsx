@@ -404,6 +404,16 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
           onClick={() => props.connection.sendMessage("SET_FILTERS", {
             participant_id: "all",
             audio_filters: [],
+            video_filters: [{ type: "ZMQ", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "all",
+            audio_filters: [],
             video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }],
           })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
