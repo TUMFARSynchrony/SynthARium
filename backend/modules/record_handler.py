@@ -1,4 +1,4 @@
-"""Provide TrackHandler for handing and distributing tracks."""
+"""Provide RecordHandler for handling media recorder."""
 
 from __future__ import annotations
 import logging
