@@ -1,0 +1,35 @@
+{
+    "id": "1454281ace",
+    "title": "Hello World",
+    "date": 1671792262556,
+    "record": true,
+    "time_limit": 3600000,
+    "description": "Randomly created session",
+    "creation_time": 0,
+    "end_time": 1671190971808,
+    "start_time": 1671187604970,
+    "notes": [],
+    "participants": [
+        {
+            "id": "c23a6a29af",
+            "first_name": "Max",
+            "last_name": "Mustermann",
+            "banned": false,
+            "size": {
+                "width": 300,
+                "height": 300
+            },
+            "muted_video": true,
+            "muted_audio": true,
+            "position": {
+                "x": 10,
+                "y": 10,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": []
+        }
+    ],
+    "log": ""
+}

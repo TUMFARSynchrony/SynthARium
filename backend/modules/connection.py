@@ -114,7 +114,7 @@ class Connection(ConnectionInterface):
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
 
-        (record, record_to) = self._record_data
+        (record, record_to) = record_data
         self._audio_record_handler = RecordHandler(self._incoming_audio, record, record_to)
         self._video_record_handler = RecordHandler(self._incoming_video, record, record_to)
 
