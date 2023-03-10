@@ -35,7 +35,7 @@ export const getSessionById = (id, list) => {
 };
 
 export const integerToDateTime = (integerDate) => {
-  return new Date(integerDate).toLocaleString();
+  return new Date(integerDate);
 };
 
 export const getTotalBox = (boxes) => {
