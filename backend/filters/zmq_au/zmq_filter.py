@@ -24,24 +24,20 @@ class ZMQFilter(Filter):
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.has_sent = False
-        # self.is_connected = False
+        self.is_connected = False
 
         self.instantiator = OpenFaceInstantiator()
-        #os.popen("/home/kuroi/Desktop/build/bin/OwnExtractor")
         self.writer = OpenFaceDataParser()
 
         context = zmq.Context()
-        # TODO: what error handling for when the socket is taken?
         self.socket = context.socket(zmq.REQ)
-        while True:
-            try:
-                self.socket.bind("tcp://127.0.0.1:5555")
-                print("ZMQ SET UP")
-                break
-            except:
-                # zmq not setup yet, try until it listens
-                print("ZMQ NOT SET UP")
-                pass
+        try:
+            self.socket.bind("tcp://127.0.0.1:5555")
+            self.is_connected = True
+        except zmq.ZMQError as e:
+            # TODO: what error handling for when the socket is taken?
+            print(f"ZMQError: {e}")
+            pass
 
         self.data = {"intensity": {"AU06": 0.4, "AU12": 0.5}}
         self.frame = 0
@@ -56,6 +52,15 @@ class ZMQFilter(Filter):
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
+        if not self.is_connected:
+            origin = (50, 50)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_size = 1
+            color = (0, 255, 0)
+            thickness = 2
+            ndarray = cv2.putText(ndarray, "Port is already taken!", origin, font, font_size,
+                                  color, thickness)
+
         self.frame = self.frame + 1
         if not self.has_sent:
             is_success, image_enc = cv2.imencode(".jpg", ndarray)
