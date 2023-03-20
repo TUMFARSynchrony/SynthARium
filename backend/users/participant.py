@@ -14,7 +14,7 @@ from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
 from custom_types.participant_summary import ParticipantSummaryDict
-from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
+from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
@@ -28,7 +28,7 @@ from modules.exceptions import ErrorDictException
 from modules.connection import connection_factory
 from modules.connection_subprocess import connection_subprocess_factory
 from modules.data import ParticipantData
-from modules.user import User
+from users.user import User
 
 
 class Participant(User):
@@ -58,7 +58,7 @@ class Participant(User):
 
     def __init__(
         self,
-        id: str,
+        participant_id: str,
         experiment: _exp.Experiment,
         participant_data: ParticipantData,
     ) -> None:
@@ -66,7 +66,7 @@ class Participant(User):
 
         Parameters
         ----------
-        id : str
+        participant_id : str
             Unique identifier for Participant.  Must exist in experiment.
         experiment : modules.experiment.Experiment
             Experiment the participant is part of.
@@ -79,9 +79,9 @@ class Participant(User):
             WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
         super(Participant, self).__init__(
-            id, participant_data.muted_video, participant_data.muted_audio
+            participant_id, participant_data.muted_video, participant_data.muted_audio
         )
-        self._logger = logging.getLogger(f"Participant-{id}")
+        self._logger = logging.getLogger(f"Participant-{participant_id}")
         self._participant_data = participant_data
         self._experiment = experiment
         experiment.add_participant(self)
@@ -297,7 +297,7 @@ class Participant(User):
 
 async def participant_factory(
     offer: RTCSessionDescription,
-    id: str,
+    participant_id: str,
     experiment: _exp.Experiment,
     participant_data: ParticipantData,
     config: Config,
@@ -307,14 +307,15 @@ async def participant_factory(
     Instantiate new modules.participant.Participant, handle offer using
     modules.connection.connection_factory and set connection for the Participant.
 
-    This sequence must be donne for all participants.  Instantiating an Participant
-    directly will likely lead to problems, since it wont have a Connection.
+    This sequence must be donne for all participants.  Instantiating a Participant
+    directly will likely lead to problems, since it won't have a Connection.
 
     Parameters
     ----------
+    participant_data : ParticipantData
     offer : aiortc.RTCSessionDescription
         WebRTC offer for building the connection to the client.
-    id : str
+    participant_id : str
         Unique identifier for Participant.  Must exist in experiment.
     experiment : modules.experiment.Experiment
         Experiment the participant is part of.
@@ -327,10 +328,10 @@ async def participant_factory(
         WebRTC answer that should be send back to the client and Participant
         representing the client.
     """
-    participant = Participant(id, experiment, participant_data)
+    participant = Participant(participant_id, experiment, participant_data)
     filter_api = FilterAPI(participant)
     record_data = (experiment.session.record, participant.get_recording_path())
-    log_name_suffix = f"P-{id}"
+    log_name_suffix = f"P-{participant_id}"
 
     if config.participant_multiprocessing:
         answer, connection = await connection_subprocess_factory(

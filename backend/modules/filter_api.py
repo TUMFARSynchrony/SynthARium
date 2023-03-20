@@ -1,7 +1,7 @@
 """Provide `FilterAPI` implementation of `FilterAPIInterface`."""
 
 from modules.filter_api_interface import FilterAPIInterface
-from modules.user import User
+from users.user import User
 
 
 class FilterAPI(FilterAPIInterface):

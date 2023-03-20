@@ -10,8 +10,8 @@ from modules.util import timestamp
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 from modules.data import SessionData
-import modules.experimenter as _experimenter
-import modules.participant as _participant
+import users.experimenter as _experimenter
+import users.participant as _participant
 
 
 class Experiment(AsyncIOEventEmitter):

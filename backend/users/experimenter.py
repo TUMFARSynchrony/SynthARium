@@ -27,7 +27,7 @@ from modules.connection_state import ConnectionState
 from modules.connection import connection_factory
 from modules.connection_subprocess import connection_subprocess_factory
 from modules.exceptions import ErrorDictException
-from modules.user import User
+from users.user import User
 import modules.experiment as _exp
 import modules.hub as _h
 

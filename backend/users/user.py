@@ -24,7 +24,7 @@ from custom_types.connection import ConnectionOfferDict, is_valid_connection_off
 
 import modules.experiment as _exp
 from modules.util import timestamp
-import modules.experimenter as _experimenter
+import users.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.connection_interface import ConnectionInterface

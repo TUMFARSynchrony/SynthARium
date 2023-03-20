@@ -15,8 +15,8 @@ from modules.exceptions import ErrorDictException
 from modules.util import get_system_specs
 
 import modules.experiment as _experiment
-import modules.experimenter as _experimenter
-import modules.participant as _participant
+import users.experimenter as _experimenter
+import users.participant as _participant
 import modules.session_manager as _sm
 
 
