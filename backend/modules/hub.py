@@ -9,12 +9,12 @@ from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
 from modules.experiment import Experiment
-from modules.config import Config
+from server.config import Config
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 from modules.util import get_system_specs
 
-import modules.server as _server
+import server.server as _server
 import modules.experiment as _experiment
 import modules.experimenter as _experimenter
 import modules.participant as _participant
@@ -22,7 +22,7 @@ import modules.session_manager as _sm
 
 
 class Hub:
-    """Central pice of the experiment hub backend.
+    """Central piece of the experiment hub backend.
 
     Attributes
     ----------

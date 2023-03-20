@@ -11,7 +11,7 @@ from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from modules import BACKEND_DIR
-from modules.config import Config
+from server.config import Config
 from modules.filter_api import FilterAPI
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState

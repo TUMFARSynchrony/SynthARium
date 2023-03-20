@@ -19,7 +19,7 @@ from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
-from modules.config import Config
+from server.config import Config
 import modules.experiment as _exp
 from modules.filter_api import FilterAPI
 from modules.experiment_state import ExperimentState

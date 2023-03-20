@@ -1,10 +1,9 @@
 """Provides the `Server` class, which serves the frontend and other endpoints."""
 
-import asyncio
 import logging
 import aiohttp_cors
 import json
-from typing import Any, Callable, Coroutine, Literal, Optional
+from typing import Any, Callable, Coroutine, Literal
 from aiohttp import web
 from datetime import datetime
 from aiortc import RTCSessionDescription
@@ -17,7 +16,7 @@ from custom_types.error import ErrorDict
 
 from modules.exceptions import ErrorDictException
 from modules import FRONTEND_BUILD_DIR
-from modules.config import Config
+from server.config import Config
 
 
 _HANDLER = Callable[
@@ -49,12 +48,8 @@ class Server:
         ----------
         hub_handle_offer : function
             Handler function for incoming WebRTC offers.
-        host : str
-            Host address for server.
-        port : int
-            Port for server.
-        use_cors : bool, default False
-            If true, cors will be enabled for *.  Should only be used for development.
+        config: Config
+            Data class which holds configuration of the server.
         """
         self._logger = logging.getLogger("Server")
         self._hub_handle_offer = hub_handle_offer
@@ -309,7 +304,7 @@ class Server:
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
     async def get_index(self, request: web.Request):
-        """Respond with index.html to an request."""
+        """Respond with index.html to a request."""
         self._logger.info(f'Received "{request.path}" request from {request.remote}')
         return web.Response(content_type="text/html", text=self._index)
 
