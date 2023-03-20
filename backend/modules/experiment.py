@@ -10,8 +10,8 @@ from modules.util import timestamp
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 from modules.data import SessionData
-import users.experimenter as _experimenter
-import users.participant as _participant
+
+from users import Experimenter, Participant
 
 
 class Experiment(AsyncIOEventEmitter):
@@ -25,8 +25,8 @@ class Experiment(AsyncIOEventEmitter):
     _logger: logging.Logger
     _state: ExperimentState
     session: SessionData
-    _experimenters: list[_experimenter.Experimenter]
-    _participants: dict[str, _participant.Participant]
+    _experimenters: list[Experimenter]
+    _participants: dict[str, Participant]
 
     def __init__(self, session: SessionData):
         """Start a new Experiment.
@@ -150,7 +150,7 @@ class Experiment(AsyncIOEventEmitter):
             - `"experimenter"` send data to all experimenters.
 
         data : Any
-            Data that will be send.
+            Data that will be sent.
         exclude : str, optional
             User ID to exclude from targets, e.g. ID from sender of `data`.
         secure_origin : bool, default False
@@ -168,7 +168,7 @@ class Experiment(AsyncIOEventEmitter):
             ID.  Also raised if `to` is set to "all", but `secure_origin` is false.
         """
         # Select target
-        targets: list[_experimenter.Experimenter | _participant.Participant] = []
+        targets: list[Experimenter | Participant] = []
         match to:
             case "all":
                 if not secure_origin:
@@ -203,7 +203,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        participant : custom_types.chat_message.ChatMessageDict
+        chat_message : custom_types.chat_message.ChatMessageDict
             Chat message that will be send.
 
         Raises
@@ -238,7 +238,7 @@ class Experiment(AsyncIOEventEmitter):
         msg_dict = MessageDict(type="CHAT", data=chat_message)
         await self.send(chat_message["target"], msg_dict)
 
-    def add_participant(self, participant: _participant.Participant):
+    def add_participant(self, participant: Participant):
         """Add participant to experiment.
 
         Parameters
@@ -253,8 +253,8 @@ class Experiment(AsyncIOEventEmitter):
         )
         participant.add_listener("disconnected", self.remove_participant)
 
-    def remove_participant(self, participant: _participant.Participant):
-        """Remove an participant from this experiment.
+    def remove_participant(self, participant: Participant):
+        """Remove a participant from this experiment.
 
         Parameters
         ----------
@@ -351,8 +351,8 @@ class Experiment(AsyncIOEventEmitter):
             Whether the participants audio should be muted.
         """
         # Save muted state in session data
-        participantData = self.session.participants.get(participant_id)
-        if participantData is None:
+        participant_data = self.session.participants.get(participant_id)
+        if participant_data is None:
             raise ErrorDictException(
                 code=404,
                 type="UNKNOWN_PARTICIPANT",
@@ -361,14 +361,14 @@ class Experiment(AsyncIOEventEmitter):
                     "of this experiment."
                 ),
             )
-        participantData.muted_audio = audio
-        participantData.muted_video = video
+        participant_data.muted_audio = audio
+        participant_data.muted_video = video
 
         # Mute participant if participant is already connected
         if participant_id in self._participants:
             await self._participants[participant_id].set_muted(video, audio)
 
-    def add_experimenter(self, experimenter: _experimenter.Experimenter):
+    def add_experimenter(self, experimenter: Experimenter):
         """Add experimenter to experiment.
 
         Parameters
@@ -383,7 +383,7 @@ class Experiment(AsyncIOEventEmitter):
         )
         experimenter.add_listener("disconnected", self.remove_experimenter)
 
-    def remove_experimenter(self, experimenter: _experimenter.Experimenter):
+    def remove_experimenter(self, experimenter: Experimenter):
         """Remove an experimenter from this experiment.
 
         Parameters
