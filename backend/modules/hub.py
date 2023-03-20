@@ -18,6 +18,7 @@ import modules.experiment as _experiment
 import users.experimenter as _experimenter
 import users.participant as _participant
 import modules.session_manager as _sm
+from users.experimenter_factory import experimenter_factory
 
 
 class Hub:
@@ -168,7 +169,7 @@ class Hub:
                 )
 
             experimenter_id = "E" + generate_unique_id([e.id for e in self.experimenters])
-            answer, experimenter = await _experimenter.experimenter_factory(
+            answer, experimenter = await experimenter_factory(
                 offer, experimenter_id, self
             )
             self.experimenters.append(experimenter)
