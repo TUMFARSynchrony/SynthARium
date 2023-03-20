@@ -9,17 +9,15 @@ from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
 from modules.experiment import Experiment
-from server import Config, Server
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 from modules.util import get_system_specs
 
 import modules.experiment as _experiment
-import users.experimenter as _experimenter
-import users.participant as _participant
 import modules.session_manager as _sm
-from users.experimenter_factory import experimenter_factory
-from users.participant_factory import participant_factory
+
+from server import Config, Server
+from users import Experimenter, experimenter_factory, participant_factory
 
 
 class Hub:
@@ -30,7 +28,7 @@ class Hub:
     TODO: document.  Some might be private.
     """
 
-    experimenters: list[_experimenter.Experimenter]
+    experimenters: list[Experimenter]
     experiments: dict[str, _experiment.Experiment]
     session_manager: _sm.SessionManager
     server: Server
@@ -93,7 +91,7 @@ class Hub:
 
         await asyncio.gather(*tasks)
 
-    def remove_experimenter(self, experimenter: _experimenter.Experimenter):
+    def remove_experimenter(self, experimenter: Experimenter):
         """Remove an experimenter from this hub.
 
         Should be used when a experimenter connection is closed or failed.
@@ -327,7 +325,7 @@ class Hub:
         return experiment
 
     async def send_to_experimenters(
-        self, data: MessageDict, exclude: _experimenter.Experimenter | None = None
+        self, data: MessageDict, exclude: Experimenter | None = None
     ):
         """Send `data` to all connected experimenters.
 
