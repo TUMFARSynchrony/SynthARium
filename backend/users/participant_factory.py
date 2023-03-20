@@ -1,10 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from modules.experiment import Experiment
+
 from aiortc import RTCSessionDescription
 
 from modules.connection import connection_factory
 from modules.connection_subprocess import connection_subprocess_factory
 from modules.data import ParticipantData
-from modules.experiment import Experiment
 from modules.filter_api import FilterAPI
+
 from server import Config
 from users.participant import Participant
 
