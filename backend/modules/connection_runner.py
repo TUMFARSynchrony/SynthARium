@@ -12,7 +12,7 @@ from filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
 
-from server.config import Config
+from server import Config
 from modules.exceptions import ErrorDictException
 from modules.connection_state import ConnectionState
 from modules.filter_subprocess_api import FilterSubprocessAPI

@@ -9,12 +9,11 @@ from custom_types.message import MessageDict
 from custom_types.participant_summary import ParticipantSummaryDict
 
 from modules.experiment import Experiment
-from server.config import Config
+from server import Config, Server
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 from modules.util import get_system_specs
 
-import server.server as _server
 import modules.experiment as _experiment
 import modules.experimenter as _experimenter
 import modules.participant as _participant
@@ -32,7 +31,7 @@ class Hub:
     experimenters: list[_experimenter.Experimenter]
     experiments: dict[str, _experiment.Experiment]
     session_manager: _sm.SessionManager
-    server: _server.Server
+    server: Server
     config: Config
     _logger: logging.Logger
 
@@ -71,7 +70,7 @@ class Hub:
         self.experimenters = []
         self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = _server.Server(self.handle_offer, self.config)
+        self.server = Server(self.handle_offer, self.config)
 
     async def start(self):
         """Start the hub.  Starts the server."""
@@ -168,9 +167,9 @@ class Hub:
                     description="Invalid or missing experimenter password.",
                 )
 
-            id = "E" + generate_unique_id([e.id for e in self.experimenters])
+            experimenter_id = "E" + generate_unique_id([e.id for e in self.experimenters])
             answer, experimenter = await _experimenter.experimenter_factory(
-                offer, id, self
+                offer, experimenter_id, self
             )
             self.experimenters.append(experimenter)
 
@@ -181,7 +180,7 @@ class Hub:
                 code=400, type="INVALID_REQUEST", description="Invalid user_type."
             )
 
-        return (answer, None)
+        return answer, None
 
     async def _handle_offer_participant(
         self,
@@ -240,8 +239,8 @@ class Hub:
             )
 
         experiment = self.experiments[session_id]
-        participantData = experiment.session.participants.get(participant_id)
-        if participantData is None:
+        participant_data = experiment.session.participants.get(participant_id)
+        if participant_data is None:
             self._logger.warning(
                 f"Participant {participant_id} not found in session: {session_id}"
             )
@@ -251,7 +250,7 @@ class Hub:
                 description="Participant not found in the given session.",
             )
 
-        if participantData.banned:
+        if participant_data.banned:
             raise ErrorDictException(
                 code=400,
                 type="BANNED_PARTICIPANT",
@@ -271,10 +270,10 @@ class Hub:
             )
 
         answer, _ = await _participant.participant_factory(
-            offer, participant_id, experiment, participantData, self.config
+            offer, participant_id, experiment, participant_data, self.config
         )
 
-        return (answer, participantData.as_summary_dict())
+        return answer, participant_data.as_summary_dict()
 
     async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
