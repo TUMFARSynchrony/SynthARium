@@ -43,12 +43,12 @@ class Experimenter(User):
     _experiment: _exp.Experiment | None
     _hub: _h.Hub
 
-    def __init__(self, id: str, hub: _h.Hub) -> None:
+    def __init__(self, experimenter_id: str, hub: _h.Hub) -> None:
         """Instantiate new Experimenter instance.
 
         Parameters
         ----------
-        id : str
+        experimenter_id : str
             Unique identifier for this Experimenter.
         hub : modules.hub.Hub
             Hub this Experimenter is part of.  Used for api calls.
@@ -58,8 +58,8 @@ class Experimenter(User):
         experimenter_factory : Instantiate connection with a new Experimenter based on
             WebRTC `offer`.  Use factory instead of instantiating Experimenter directly.
         """
-        super(Experimenter, self).__init__(id)
-        self._logger = logging.getLogger(f"Experimenter-{id}")
+        super(Experimenter, self).__init__(experimenter_id)
+        self._logger = logging.getLogger(f"Experimenter-{experimenter_id}")
         self._hub = hub
         self._experiment = None
 

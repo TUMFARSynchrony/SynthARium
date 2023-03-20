@@ -90,7 +90,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     __lock: asyncio.Lock
 
     def __init__(
-        self, id: str, muted_video: bool = False, muted_audio: bool = False
+        self, user_id: str, muted_video: bool = False, muted_audio: bool = False
     ) -> None:
         """Instantiate new User base class.
 
@@ -98,7 +98,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        id : str
+        user_id : str
             Unique identifier for this Experimenter.
         muted_video : bool, default False
             Whether the users video should be muted.
@@ -106,8 +106,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             Whether the users audio should be muted.
         """
         super().__init__()
-        self._logger = logging.getLogger(f"User-{id}")
-        self.id = id
+        self._logger = logging.getLogger(f"User-{user_id}")
+        self.id = user_id
         self._experiment = None
         self._muted_video = muted_video
         self._muted_audio = muted_audio
