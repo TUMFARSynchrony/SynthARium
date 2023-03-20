@@ -11,7 +11,6 @@ import asyncio
 import logging
 import os
 from typing import Any, Coroutine
-from aiortc import RTCSessionDescription
 
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.chat_message import is_valid_chatmessage
@@ -19,14 +18,10 @@ from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
-from server import Config
 import modules.experiment as _exp
-from modules.filter_api import FilterAPI
 from modules.experiment_state import ExperimentState
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
-from modules.connection import connection_factory
-from modules.connection_subprocess import connection_subprocess_factory
 from modules.data import ParticipantData
 from users.user import User
 
@@ -93,7 +88,7 @@ class Participant(User):
     def __str__(self) -> str:
         """Get string representation of this participant.
 
-        Currently returns value of `__repr__`.
+        Currently, returns value of `__repr__`.
         """
         return (
             f"id={self.id}, first_name={self._participant_data.first_name}, last_name="
@@ -117,7 +112,7 @@ class Participant(User):
         Parameters
         ----------
         reason : str
-            Reason for the kick.  Will be send to the participant in the
+            Reason for the kick.  Will be sent to the participant in the
             `KICK_NOTIFICATION`.
         """
         kick_notification = KickNotificationDict(reason=reason)
@@ -135,7 +130,7 @@ class Participant(User):
         Parameters
         ----------
         reason : str
-            Reason for the kick.  Will be send to the participant in the
+            Reason for the kick.  Will be sent to the participant in the
             `BAN_NOTIFICATION`.
         """
         ban_notification = KickNotificationDict(reason=reason)
@@ -158,31 +153,31 @@ class Participant(User):
         self._logger.debug(f"Handle state change. State: {state}")
         if state is ConnectionState.CONNECTED:
             self._logger.info(f"Participant connected. {self}")
-            coros: list[Coroutine] = []
+            coroutines: list[Coroutine] = []
             # Add stream to all experimenters
             for e in self._experiment.experimenters:
-                coros.append(self.add_subscriber(e))
+                coroutines.append(self.add_subscriber(e))
 
             # Add stream to all participants and all participants streams to self
             if self._experiment.state == ExperimentState.RUNNING:
-                coros.append(self._subscribe_and_add_subscribers())
+                coroutines.append(self._subscribe_and_add_subscribers())
                 if self.experiment.session.record:
-                    coros.append(self.start_recording())
+                    coroutines.append(self.start_recording())
             else:
                 # Wait for experiment to start (state = `RUNNING`) before subscribing
                 self._subscribe_later()
 
-            await asyncio.gather(*coros)
+            await asyncio.gather(*coroutines)
 
     async def _subscribe_and_add_subscribers(self):
         """Subscribe to all participants in experiment and add them as subscribers."""
-        coros: list[Coroutine] = []
+        coroutines: list[Coroutine] = []
         for p in self._experiment.participants.values():
             if p is self:
                 continue
-            coros.append(self.add_subscriber(p))
-            coros.append(p.add_subscriber(self))
-        await asyncio.gather(*coros)
+            coroutines.append(self.add_subscriber(p))
+            coroutines.append(p.add_subscriber(self))
+        await asyncio.gather(*coroutines)
 
     def _subscribe_later(self):
         """Wait for experiment state to be running, then subscribe to others.
@@ -207,8 +202,8 @@ class Participant(User):
             if state == ExperimentState.RUNNING:
                 _remove_subscribe_callback(None)
                 participants = self._experiment.participants.values()
-                coros = [p.add_subscriber(self) for p in participants if p != self]
-                await asyncio.gather(*coros)
+                coroutines = [p.add_subscriber(self) for p in participants if p != self]
+                await asyncio.gather(*coroutines)
             else:
                 return
 
