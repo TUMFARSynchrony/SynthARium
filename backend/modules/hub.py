@@ -19,6 +19,7 @@ import users.experimenter as _experimenter
 import users.participant as _participant
 import modules.session_manager as _sm
 from users.experimenter_factory import experimenter_factory
+from users.participant_factory import participant_factory
 
 
 class Hub:
@@ -270,7 +271,7 @@ class Hub:
                 ),
             )
 
-        answer, _ = await _participant.participant_factory(
+        answer, _ = await participant_factory(
             offer, participant_id, experiment, participant_data, self.config
         )
 
