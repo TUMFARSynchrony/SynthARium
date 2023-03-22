@@ -1,0 +1,58 @@
+{
+    "filters": [
+        {
+            "id": "Rotation",
+            "type": "video",
+            "groupFilter": false,
+            "config": {
+                "direction": {
+                    "value": [
+                        "clockwise",
+                        "anti-clockwise"
+                    ]
+                },
+                "speed": {
+                    "min": 0.0,
+                    "max": 1.0,
+                    "value": 0.7
+                }
+            }
+        },
+        {
+            "id": "Synchrony",
+            "type": "both",
+            "groupFilter": true,
+            "config": {
+                "numOfParticipants": {
+                    "value": 2
+                }
+            }
+        },
+        {
+            "id": "Edge-Outline",
+            "type": "video",
+            "groupFilter": false,
+            "config": {}
+        },
+        {
+            "id": "Delay-Audio",
+            "type": "audio",
+            "groupFilter": false,
+            "config": {
+                "size": {
+                    "value": 60
+                }
+            }
+        },
+        {
+            "id": "Delay-Video",
+            "type": "video",
+            "groupFilter": false,
+            "config": {
+                "size": {
+                    "value": 60
+                }
+            }
+        }
+    ]
+}
