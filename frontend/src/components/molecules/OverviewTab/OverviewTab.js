@@ -37,10 +37,22 @@ function OverviewTab({
       <Heading heading={sessionData.title} />
       <hr className="separatorLine"></hr>
       <div className="sessionInformation">
-        <h3>Session Information</h3>
+        {/* <h3>Session Information</h3> */}
         <div className="sessionDuration">
           <div>
-            <Label title={"Time Limit: "} /> {sessionData.time_limit / 60000}
+            <Label title={"Instructions"} />
+            <ul>
+              <li>
+                Please remove any glasses, caps or other such articles if you are wearing any.
+              </li>
+              <li>
+                Ensure that your surrounding lighting is good.
+              </li>
+              <li>
+                We would like to know about your experience, so please take 5  minutes at the end to do the
+                Feedback Survey.
+              </li>
+            </ul>
           </div>
           <div>
             <Label title={"Starting time: "} />

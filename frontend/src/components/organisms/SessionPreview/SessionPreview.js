@@ -92,9 +92,6 @@ function SessionPreview({
           <ListItem>
             <ListItemText primary={`Date: ${integerToDateTime(selectedSession.date)}`} />
           </ListItem>
-          <ListItem>
-            <ListItemText primary={`Duration: ${selectedSession.time_limit / 60000} minutes`} />
-          </ListItem>
           <ListItemButton onClick={handleParticipantsClick}>
             <ListItemText primary={`Participants (${selectedSession.participants.length})`} />
             {allParticipantsShow ? <ExpandLess /> : <ExpandMore />}
