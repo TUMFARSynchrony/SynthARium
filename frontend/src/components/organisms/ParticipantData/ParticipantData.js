@@ -1,10 +1,10 @@
-import InputTextField from "../../molecules/InputTextField/InputTextField";
-import "./ParticipantData.css";
-
 import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
 import { useState } from "react";
-import { ActionButton, ActionIconButton } from "../../atoms/Button";
+import { ActionIconButton } from "../../atoms/Button";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
+import EditOutlined from "@mui/icons-material/EditOutlined";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -23,33 +23,20 @@ function ParticipantData({
   };
 
   return (
-    <div className="participantDataContainer">
-      <InputTextField
-        title="Participant Name"
-        placeholder={"Enter the information"}
-        value={[participantData.first_name, participantData.last_name]
-          .filter((str) => str.length > 0)
-          .join(" ")}
-        readonly={true}
-      />
-      <div className="participantButtons">
-        <ActionButton
-          text="Enter participant information"
-          variant="outlined"
-          color="primary"
-          size="medium"
-          onClick={() => onAddAdditionalInformation()}
+    <>
+      <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
+        <TextField
+          label="Participant Name"
+          value={[participantData.first_name, participantData.last_name]
+            .filter((str) => str.length > 0)
+            .join(" ")}
+          inputProps={{ readOnly: true }}
+          size="small"
+          sx={{ marginTop: '5px' }}
         />
-
-        <ActionIconButton
-          text=""
-          variant="outline"
-          color="error"
-          size="medium"
-          onClick={() => onDeleteParticipant()}
-          icon={<DeleteOutline />}
-        />
-      </div>
+        <ActionIconButton text="EDIT" variant="outlined" color="primary" size="medium" onClick={() => onAddAdditionalInformation()} icon={<EditOutlined />} />
+        <ActionIconButton text="DELETE" variant="outlined" color="error" size="medium" onClick={() => onDeleteParticipant()} icon={<DeleteOutline />} />
+      </Box>
 
       {showParticipantInput && (
         <ParticipantDataModal
@@ -62,7 +49,7 @@ function ParticipantData({
           onDeleteParticipant={onDeleteParticipant}
         />
       )}
-    </div>
+    </>
   );
 }
 
