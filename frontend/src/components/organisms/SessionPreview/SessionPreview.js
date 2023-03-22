@@ -24,6 +24,7 @@ import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from '@mui/material/Alert';
 import React from 'react';
+import { getParticipantInviteLink } from "../../../utils/utils";
 // REMOVE: Use temporarily until fiters backend API connection is established
 // import sessionData from '../../../bbbef1d7d0.json';
 
@@ -54,7 +55,7 @@ function SessionPreview({
   };
 
   const handleCopyParticipantInviteLink = (participantId, sessionId) => {
-    const participantInviteLink = `${window.location.protocol}//${window.location.host}/experimentRoom/?participantId=${participantId}&sessionId=${sessionId}`;
+    const participantInviteLink = getParticipantInviteLink(participantId, sessionId);
     navigator.clipboard.writeText(participantInviteLink);
     setOpenInviteLinkFeedback(true);
   };
