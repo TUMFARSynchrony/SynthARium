@@ -147,7 +147,8 @@ export const checkValidSession = (sessionData) => {
   return (
     sessionData.title !== "" &&
     sessionData.description !== "" &&
-    sessionData.time_limit !== 0 &&
+    // TO REMOVE : session duration 
+    // sessionData.time_limit !== 0 &&
     sessionData.date !== 0
   );
 };
@@ -184,4 +185,8 @@ export const getParticipantById = (participantId, sessionData) => {
   let participants = sessionData.participants;
 
   return getSessionById(participantId, participants)[0];
+};
+
+export const getParticipantInviteLink = (participantId, sessionId) => {
+  return `${window.location.protocol}//${window.location.host}/experimentRoom/?participantId=${participantId}&sessionId=${sessionId}`;
 };
