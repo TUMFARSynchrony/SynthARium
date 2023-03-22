@@ -10,9 +10,28 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import ListSubheader from "@mui/material/ListSubheader";
+import Chip from "@mui/material/Chip";
+import ListItem from "@mui/material/ListItem";
 // REMOVE: Mocking filters data until filter API call is established
 import filtersData from '../../filters.json'
 import { getParticipantInviteLink } from "../../utils/utils";
+
+// Loading filters data befor eth component renders, because the Select component needs value
+const testData = filtersData.filters;
+const defaultFilterId = "test";
+
+// const getIndividualFilters = () => {
+//   return filtersData.filters.filter(filter => filter.groupFilter !== true);
+// };
+
+// const getGroupFilters = () => {
+//   return filtersData.filters.filter(filter => filter.groupFilter === true);
+// };
 
 
 function ParticipantDataModal({
@@ -22,12 +41,13 @@ function ParticipantDataModal({
   showParticipantInput,
   setShowParticipantInput,
   handleParticipantChange,
-  onDeleteParticipant,
+  onDeleteParticipant
 }) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  const [individualFilters, setIndividualFilters] = useState([]);
-  const [groupFilters, setGroupFilters] = useState([]);
-  const [selectedFilter, setSelectedFilter] = useState({});
+  // const [individualFilters, setIndividualFilters] = useState(getIndividualFilters());
+  // const [groupFilters, setGroupFilters] = useState(getGroupFilters());
+  const [selectedFilter, setSelectedFilter] = useState(testData.find((filter) => filter.id == defaultFilterId));
+  const [appliedFilters, setAppliedFilters] = useState([]);
 
   const handleChange = (objKey, objValue) => {
     const newParticipantData = { ...participantCopy };
@@ -91,36 +111,37 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  useEffect(() => {
-    setIndividualFilters(getIndividualFilters());
-    setGroupFilters(getGroupFilters());
-  }, [])
-
-  const getIndividualFilters = () => {
-    return filtersData.filters.filter(filter => filter.groupFilter !== true);
-  };
-
-  const getGroupFilters = () => {
-    return filtersData.filters.filter(filter => filter.groupFilter === true);
-  };
-
   const handleFilterSelect = (event) => {
+    event.preventDefault();
     const filter = event.target.value;
-    console.log(event.target.value);
     setSelectedFilter(filter);
+
     const newParticipantData = { ...participantCopy };
-    if (filter.type == "audio") {
-      newParticipantData.audio_filters.push(filter);
-    }
-    else if (filter.type == "video") {
-      newParticipantData.video_filters.push(filter);
+    if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
+      newParticipantData.video_filters = [...newParticipantData.video_filters, filter];
     }
     else {
-      newParticipantData.audio_filters.push(filter);
-      newParticipantData.video_filters.push(filter);
+      newParticipantData.audio_filters = [...newParticipantData.audio_filters, filter];
     }
     setParticipantCopy(newParticipantData);
   };
+
+  const handleDeleteFilter = (filterDelete) => {
+    console.log(filterDelete);
+    const newParticipantData = { ...participantCopy };
+    if (["test", "edge", "rotation", "delay-v"].includes(filterDelete.id)) {
+      newParticipantData.video_filters = newParticipantData.video_filters.filter((filter) => filter.id !== filterDelete.id);
+    }
+    else {
+      newParticipantData.audio_filters = newParticipantData.audio_filters.filter((filter) => filter.id !== filterDelete.id);
+    }
+    setParticipantCopy(newParticipantData);
+  };
+
+  // TO REMOVE
+  useEffect(() => {
+    // console.log(selectedFilter);
+  }, [selectedFilter]);
 
   return (
 
@@ -150,39 +171,47 @@ function ParticipantDataModal({
             <FormControlLabel control={<Checkbox defaultChecked />} label="Mute Video" checked={participantCopy.muted_video} onChange={() => { handleChange("muted_video", !participantCopy.muted_video) }} />
           </Box>
 
-          {/* <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
 
             <Box>
               <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                <InputLabel htmlFor="filters-select">Filters</InputLabel>
-                <Select value={selectedFilter} defaultValue={selectedFilter} id="filters-select" label="Filters" onChange={handleFilterSelect}
-                  // renderValue={(selected) => {
-                  //   if (selected.length === 0) {
-                  //     return <em>None</em>;
-                  //   }
-                  //   return selected;
-                  // }}
-                >
-                  <MenuItem disabled value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
-                  {
-                    individualFilters.map((individualFilter) => {
-                      return <MenuItem key={individualFilter.id} value={individualFilter}>{individualFilter.id}</MenuItem>
-                    })
-                  }
-                  <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
-                  {
-                    groupFilters.map((groupFilter) => {
-                      return <MenuItem key={groupFilter.id} value={groupFilter}>{groupFilter.id}</MenuItem>
-                    })
-                  }
-                </Select>
+                <InputLabel id="filters-select">Filters</InputLabel>
+                {
+                  <Select value={selectedFilter} defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
+                    {/* <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
+                    {
+                      individualFilters.map((individualFilter) => {
+                        if (individualFilter.id == defaultFilterId) {
+                          return <MenuItem key={individualFilter.id} value={individualFilter}><em>{individualFilter.id}</em></MenuItem>
+                        }
+                        else {
+                          return <MenuItem key={individualFilter.id} value={individualFilter}>{individualFilter.id}</MenuItem>
+                        }
+                      })
+                    }
+                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
+                    {
+                      groupFilters.map((groupFilter) => {
+                        return <MenuItem key={groupFilter.id} value={groupFilter}>{groupFilter.id}</MenuItem>
+                      })
+                    } */}
+                    {
+                      testData.map((filter) => {
+                        if (filter.id == defaultFilterId) {
+                          return <MenuItem key={filter.id} value={filter}>{filter.id}</MenuItem>
+                        }
+                        else {
+                          return <MenuItem key={filter.id} value={filter}>{filter.id}</MenuItem>
+                        }
+                      })
+                    }
+                  </Select>
+                }
+
               </FormControl>
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+            {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
               <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                 <InputLabel htmlFor="grouped-select">Direction</InputLabel>
                 <Select defaultValue="" id="grouped-select" label="Direction">
@@ -213,9 +242,34 @@ function ParticipantDataModal({
               <IconButton color="error" sx={{ my: 1, mr: 1 }}>
                 <DeleteOutlineIcon />
               </IconButton>
-            </Box>
+            </Box> */}
 
-          </Box> */}
+          </Box>
+
+          {/* Display applied filters */}
+          <Box>
+            {
+              participantCopy.audio_filters.map((audioFilter, audioFilterIndex) => {
+                return (
+                  <Chip key={audioFilterIndex} label={audioFilter.id} variant="outlined"  size="medium" color="secondary"
+                  onDelete={() => {handleDeleteFilter(audioFilter)}} />
+                  // <Chip key={audioFilterIndex} variant="outlined" label={audioFilter.id} size="small" color="secondary" />
+                )
+              })
+            }
+            {
+              participantCopy.video_filters.map((videoFilter, videoFilterindex) => {
+                return (
+                  // <ListItem key={videoFilter.id}>
+                    <Chip key={videoFilterindex} label={videoFilter.id} variant="outlined"  size="medium" color="secondary"
+                    onDelete={() => {handleDeleteFilter(videoFilter)}}
+                    />
+                  // </ListItem>
+                  // <Chip key={videoFilterindex} variant="outlined" label={videoFilter.id} size="small" color="secondary" />
+                )
+              })
+            }
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions sx={{ alignSelf: "center" }}>

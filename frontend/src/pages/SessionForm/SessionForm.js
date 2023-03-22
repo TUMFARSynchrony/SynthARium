@@ -162,7 +162,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   return (
     <>
-      <Grid container sx={{ m: 4 }}>
+      <Grid container sx={{ mx: 4, my: 3 }}>
         {showSessionDataForm && (
           <Grid item sm={5}>
             <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
