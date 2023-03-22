@@ -120,7 +120,7 @@ function ParticipantDataModal({
     if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
       newParticipantData.video_filters = [...newParticipantData.video_filters, filter];
     }
-    else {
+    else if (["delay-a"].includes(filter.id)) {
       newParticipantData.audio_filters = [...newParticipantData.audio_filters, filter];
     }
     setParticipantCopy(newParticipantData);
@@ -138,10 +138,6 @@ function ParticipantDataModal({
     setParticipantCopy(newParticipantData);
   };
 
-  // TO REMOVE
-  useEffect(() => {
-    // console.log(selectedFilter);
-  }, [selectedFilter]);
 
   return (
 
@@ -196,12 +192,12 @@ function ParticipantDataModal({
                       })
                     } */}
                     {
-                      testData.map((filter) => {
+                      testData.map((filter, filterIndex) => {
                         if (filter.id == defaultFilterId) {
-                          return <MenuItem key={filter.id} value={filter}>{filter.id}</MenuItem>
+                          return <MenuItem key={filterIndex} value={filter}><em>{filter.id}</em></MenuItem>
                         }
                         else {
-                          return <MenuItem key={filter.id} value={filter}>{filter.id}</MenuItem>
+                          return <MenuItem key={filterIndex} value={filter}>{filter.id}</MenuItem>
                         }
                       })
                     }
