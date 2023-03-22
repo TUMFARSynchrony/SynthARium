@@ -1,10 +1,7 @@
 import Checkbox from "../../components/molecules/Checkbox/Checkbox";
-import InputDateField from "../../components/molecules/InputDateField/InputDateField";
-import InputTextField from "../../components/molecules/InputTextField/InputTextField";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
-import Heading from "../../components/atoms/Heading/Heading";
-import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
+import { CANVAS_SIZE, INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
 import {
   filterListByIndex,
   getRandomColor,
@@ -12,7 +9,6 @@ import {
   formatDate,
   checkValidSession,
 } from "../../utils/utils";
-import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 
 import "./SessionForm.css";
 import { useEffect, useState } from "react";
@@ -25,15 +21,28 @@ import {
   initializeSession,
 } from "../../features/openSession";
 import { toast } from "react-toastify";
-import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
+import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Link from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Paper from "@mui/material/Paper";
+import AddIcon from '@mui/icons-material/Add';
+import FormControlLabel from "@mui/material/FormControlLabel";
+import PeopleOutline from "@mui/icons-material/PeopleOutline";
+
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useDispatch();
   let openSession = useSelector((state) => state.openSession.value);
   const [sessionData, setSessionData] = useState(openSession);
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
+  const [numOfParticipants, setNumOfParticipants] = useState();
 
   useEffect(() => {
     setSessionData(openSession);
@@ -96,10 +105,7 @@ function SessionForm({ onSendSessionToBackend }) {
       toast.error("Failed to save session since required fields are missing!");
       return;
     }
-
     onSendSessionToBackend(sessionData);
-
-    console.log("sessionData", sessionData);
   };
 
   const addRandomSessionData = () => {
@@ -147,121 +153,274 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
+  const handleCreateParticipants = () => {
+    for (let i = 0; i < numOfParticipants; i++) {
+      onAddParticipant();
+      console.log(sessionData);
+    }
+  };
+
   return (
-    <div className="sessionFormContainer">
-      {showSessionDataForm && (
-        <div className="sessionFormData">
-          <div className="sessionForm">
-            <Heading heading={"Session Data"} />
-            <InputTextField
-              title="Title"
-              placeholder={"Your title"}
-              value={sessionData.title}
-              onChange={(newTitle) =>
-                handleSessionDataChange("title", newTitle)
-              }
-              required={true}
-            />
-            <TextAreaField
-              title="Description"
-              value={sessionData.description}
-              placeholder={"Short description of the session"}
-              onChange={(newDescription) =>
-                handleSessionDataChange("description", newDescription)
-              }
-              required={true}
-            />
-            <div className="timeInput">
-              <InputTextField
-                title="Time Limit (in minutes)"
-                value={timeLimit}
-                inputType={"number"}
-                onChange={(newTimeLimit) => {
-                  setTimeLimit(newTimeLimit);
-                  handleSessionDataChange("time_limit", newTimeLimit * 60000);
-                }}
-                required={true}
-                min={1}
-              />
-              <InputDateField
-                title="Date"
-                value={sessionData.date ? formatDate(sessionData.date) : ""}
-                onChange={(newDate) =>
-                  handleSessionDataChange(
-                    "date",
-                    newDate ? new Date(newDate).getTime() : 0
-                  )
-                }
-                required={true}
-              />
-            </div>
+    <>
+      <Grid container sx={{ m: 4 }}>
+        {showSessionDataForm && (
+          <Grid item sm={5}>
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
+              <ChevronLeft sx={{ color: "gray" }} />
+              <Link href="/" variant="body2" sx={{ color: "gray", textDecorationColor: "gray", fontWeight: "bold" }}>
+                Back to Session Overview
+              </Link>
+            </Box>
+            <Card elevation={3}>
+              <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>Session Details</Typography>
+              <Box sx={{ height: "74vh", overflowY: "auto" }}>
+                <CardContent>
+                  <Box component="form" sx={{ '& .MuiTextField-root': { m: 1 }, }} noValidate autoComplete="off">
+                    <Box sx={{ '& .MuiTextField-root': { width: '38vw' }, }}>
+                      <TextField label="Title" value={sessionData.title} size="small" required onChange={(event) => handleSessionDataChange("title", event.target.value)} />
+                      <TextField label="Description" value={sessionData.description} size="small" required onChange={(event) => handleSessionDataChange("description", event.target.value)} />
+                    </Box>
+                    <Box sx={{ '& .MuiTextField-root': { width: '18.5vw' }, }}>
+                      <TextField defaultValue={sessionData.date ? formatDate(sessionData.date) : ""} type="datetime-local" size="small" required onChange={(event) =>
+                        handleSessionDataChange("date", event.target.value ? new Date(event.target.value).getTime() : 0)} />
+                      <TextField label="Number of Participants" value={sessionData.participants.length} type="number" size="small"
+                        onChange={(num) => setNumOfParticipants(num)} />
+                    </Box>
+                    <Box sx={{ mt: 1, mb: 3 }}>
+                      <FormControlLabel control={<Checkbox defaultChecked />} label="Record Session" checked={sessionData.record} onChange={() => handleSessionDataChange("record", !sessionData.record)} />
+                      <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} />
+                    </Box>
+                  </Box>
 
-            <Checkbox
-              title="Record Session"
-              value={sessionData.record}
-              checked={sessionData.record}
-              onChange={() =>
-                handleSessionDataChange("record", !sessionData.record)
-              }
-              required={false}
-            />
-            <hr className="separatorLine"></hr>
-            <Heading heading={"Participants"} />
-            <div className="participantCheckboxes"></div>
-            <div className="sessionFormParticipants">
-              <div className="scrollableParticipants">
-                {openSession.participants.map((participant, index) => {
-                  return (
-                    <ParticipantData
-                      onDeleteParticipant={() => onDeleteParticipant(index)}
-                      key={index}
-                      index={index}
-                      participantData={participant}
-                      sessionId={sessionData.id}
-                      handleParticipantChange={handleParticipantChange}
-                    />
-                  );
-                })}
-              </div>
-              <ActionButton
-                text="Add new participant"
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={() => onAddParticipant()}
-              />
-            </div>
-            <hr className="separatorLine"></hr>
-          </div>
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>Participants</Typography>
+                    <ActionIconButton text="ADD" variant="outlined" color="primary" size="small" onClick={() => onAddParticipant()} icon={<AddIcon />} />
+                  </Box>
 
-          <div className="sessionFormButtons">
-            <ActionButton text="Save" variant="contained" color="primary" size="large" onClick={() => onSaveSession()} />
-            <LinkButton text="Start" variant="contained" size="large" path="/watchingRoom" />
-            <ActionButton
-              text="Random session data"
-              variant="contained"
-              color="primary"
-              size="large"
-              onClick={() => addRandomSessionData()}
-            />
-          </div>
-        </div>
-      )}
-      <ActionIconButton
-        text=""
-        variant="text"
-        color="primary"
-        size="large"
-        onClick={() => onShowSessionFormModal()}
-        icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
-      />
-      <div className="sessionFormCanvas">
-        <DragAndDrop
-          participantDimensions={participantDimensions}
-          setParticipantDimensions={setParticipantDimensions}
-        />
-      </div>
-    </div>
+                  {openSession.participants.map((participant, index) => {
+                    return (
+                      <ParticipantData
+                        onDeleteParticipant={() => onDeleteParticipant(index)}
+                        key={index}
+                        index={index}
+                        participantData={participant}
+                        sessionId={sessionData.id}
+                        handleParticipantChange={handleParticipantChange}
+                      />
+                    );
+                  })}
+
+
+                  {/* <Paper variant="outlined" sx={{ my: 1 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <TextField id="" defaultValue="Participant 1" size="small" sx={{ m: 1 }} />
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box>
+                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                          <InputLabel htmlFor="filters-select">Filters</InputLabel>
+                          <Select defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
+                            <MenuItem value="">
+                              <em>None</em>
+                            </MenuItem>
+                            <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
+                            {
+                              individualFilters.map((individualFilter) => {
+                                return <MenuItem key={individualFilter.id} value={individualFilter.id}>{individualFilter.id}</MenuItem>
+                              })
+                            }
+                            <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
+                            {
+                              groupFilters.map((groupFilter) => {
+                                return <MenuItem key={groupFilter.id} value={groupFilter.id}>{groupFilter.id}</MenuItem>
+                              })
+                            }
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    
+                      <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                          <InputLabel htmlFor="grouped-select">Direction</InputLabel>
+                          <Select defaultValue="" id="grouped-select" label="Direction">
+                            <MenuItem value={1}>clockwise</MenuItem>
+                            <MenuItem value={2}>anti-clockwise</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <TextField label="Frame Rate" id="" defaultValue="" type="number"
+                          InputProps={{
+                            endAdornment: <InputAdornment position="end">fps</InputAdornment>,
+                          }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
+                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                          <InputLabel htmlFor="grouped-select">Direction</InputLabel>
+                          <Select defaultValue="" id="grouped-select" label="Direction">
+                            <MenuItem value={1}>clockwise</MenuItem>
+                            <MenuItem value={2}>anti-clockwise</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <TextField label="Frame Rate" id="" defaultValue="" type="number"
+                          InputProps={{
+                            endAdornment: <InputAdornment position="end">fps</InputAdornment>,
+                          }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
+                      </Box>
+                      <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                        <IconButton variant="outlined" color="success" sx={{ my: 1, mr: 1, }}>
+                          <AddIcon />
+                        </IconButton>
+                        <IconButton color="error" sx={{ my: 1, mr: 1 }}>
+                          <DeleteOutlineIcon />
+                        </IconButton>
+                      </Box>
+
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <ActionIconButton text="DELETE" variant="outlined" color="error" size="small" onClick={() => deleteParticipant()} icon={<DeleteOutlined />} />
+                      <Box>
+                        <ActionIconButton text="INVITE" variant="outlined" color="primary" size="small" onClick={() => { }} icon={<ContentCopyIcon />} />
+                        <ActionIconButton text="EDIT" variant="outlined" color="primary" size="small" onClick={() => { }} icon={<EditOutlined />} />
+                      </Box>
+                    </Box>
+                  </Paper> */}
+                </CardContent>
+              </Box>
+              <Box sx={{ my: 1 }}>
+                <ActionButton text="SAVE SESSION" variant="contained" color="success" size="medium" onClick={() => onSaveSession()} />
+              </Box>
+            </Card>
+          </Grid>
+        )}
+        <Grid item>
+          <ActionIconButton text="" variant="text" color="primary" size="large" onClick={() => onShowSessionFormModal()}
+            icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
+          />
+        </Grid>
+        <Grid item sm={5}>
+          <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+            {/* <Link variant="body2" sx={{ color: "gray", textDecorationColor: "gray", fontWeight: "bold" }}>
+              Expand Video Canvas
+            </Link> */}
+          </Box>
+          <Paper elevation={2} sx={{ backgroundColor: "whitesmoke", width: CANVAS_SIZE.width, height: CANVAS_SIZE.height }}>
+            <DragAndDrop participantDimensions={participantDimensions} setParticipantDimensions={setParticipantDimensions} />
+          </Paper>
+        </Grid>
+      </Grid>
+    </>
+
+    // <div className="sessionFormContainer">
+    //   {showSessionDataForm && (
+    //     <div className="sessionFormData">
+    //       <div className="sessionForm">
+    //         <Heading heading={"Session Data"} />
+    //         <InputTextField
+    //           title="Title"
+    //           placeholder={"Your title"}
+    //           value={sessionData.title}
+    //           onChange={(ewTitle) =>
+    //             handleSessionDataChange("title", newTitle)
+    //           }
+    //           required={true}
+    //         />
+    //         <TextAreaField
+    //           title="Description"
+    //           value={sessionData.description}
+    //           placeholder={"Short description of the session"}
+    //           onChange={(newDescription) =>
+    //             handleSessionDataChange("description", newDescription)
+    //           }
+    //           required={true}
+    //         />
+    //         <div className="timeInput">
+    //           <InputTextField
+    //             title="Time Limit (in minutes)"
+    //             value={timeLimit}
+    //             inputType={"number"}
+    //             onChange={(newTimeLimit) => {
+    //               setTimeLimit(newTimeLimit);
+    //               handleSessionDataChange("time_limit", newTimeLimit * 60000);
+    //             }}
+    //             required={true}
+    //             min={1}
+    //           />
+    //           <InputDateField
+    //             title="Date"
+    //             value={sessionData.date ? formatDate(sessionData.date) : ""}
+    //             onChange={(newDate) =>
+    //               handleSessionDataChange(
+    //                 "date",
+    //                 newDate ? new Date(newDate).getTime() : 0
+    //               )
+    //             }
+    //             required={true}
+    //           />
+    //         </div>
+
+    //         <Checkbox
+    //           title="Record Session"
+    //           value={sessionData.record}
+    //           checked={sessionData.record}
+    //           onChange={() =>
+    //             handleSessionDataChange("record", !sessionData.record)
+    //           }
+    //           required={false}
+    //         />
+    //         <hr className="separatorLine"></hr>
+    //         <Heading heading={"Participants"} />
+    //         <div className="participantCheckboxes"></div>
+    //         <div className="sessionFormParticipants">
+    //           <div className="scrollableParticipants">
+    //             {openSession.participants.map((participant, index) => {
+    //               return (
+    //                 <ParticipantData
+    //                   onDeleteParticipant={() => onDeleteParticipant(index)}
+    //                   key={index}
+    //                   index={index}
+    //                   participantData={participant}
+    //                   sessionId={sessionData.id}
+    //                   handleParticipantChange={handleParticipantChange}
+    //                 />
+    //               );
+    //             })}
+    //           </div>
+    //           <ActionButton
+    //             text="Add new participant"
+    //             variant="contained"
+    //             color="primary"
+    //             size="large"
+    //             onClick={() => onAddParticipant()}
+    //           />
+    //         </div>
+    //         <hr className="separatorLine"></hr>
+    //       </div>
+
+    //       <div className="sessionFormButtons">
+    //         <ActionButton text="Save" variant="contained" color="primary" size="large" onClick={() => onSaveSession()} />
+    //         <LinkButton text="Start" variant="contained" size="large" path="/watchingRoom" />
+    //         <ActionButton
+    //           text="Random session data"
+    //           variant="contained"
+    //           color="primary"
+    //           size="large"
+    //           onClick={() => addRandomSessionData()}
+    //         />
+    //       </div>
+    //     </div>
+    //   )}
+    //   <ActionIconButton
+    //     text=""
+    //     variant="text"
+    //     color="primary"
+    //     size="large"
+    //     onClick={() => onShowSessionFormModal()}
+    //     icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
+    //   />
+    //   <div className="sessionFormCanvas">
+    //     <DragAndDrop
+    //       participantDimensions={participantDimensions}
+    //       setParticipantDimensions={setParticipantDimensions}
+    //     />
+    //   </div>
+    // </div>
   );
 }
 
