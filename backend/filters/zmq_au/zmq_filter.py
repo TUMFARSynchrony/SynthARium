@@ -35,11 +35,9 @@ class ZMQFilter(Filter):
             self.socket.bind("tcp://127.0.0.1:5555")
             self.is_connected = True
         except zmq.ZMQError as e:
-            # TODO: what error handling for when the socket is taken?
             print(f"ZMQError: {e}")
-            pass
 
-        self.data = {"intensity": {"AU06": 0.4, "AU12": 0.5}}
+        self.data = {"intensity": {"AU06": -1.0, "AU12": -1.0}}
         self.frame = 0
 
     def __del__(self):
@@ -60,6 +58,7 @@ class ZMQFilter(Filter):
             thickness = 2
             ndarray = cv2.putText(ndarray, "Port is already taken!", origin, font, font_size,
                                   color, thickness)
+            return ndarray
 
         self.frame = self.frame + 1
         if not self.has_sent:
@@ -68,8 +67,23 @@ class ZMQFilter(Filter):
             if is_success:
                 im_bytes = bytearray(image_enc.tobytes())
                 im_64 = base64.b64encode(im_bytes)
-                self.socket.send(im_64)
-                self.has_sent = True
+                #self.socket.send(im_64)
+                #self.has_sent = True
+
+                try:
+                    self.socket.send(im_64)
+                    self.has_sent = True
+                except zmq.ZMQError as e:
+                    origin = (50, 50)
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    font_size = 1
+                    color = (0, 255, 0)
+                    thickness = 2
+                    ndarray = cv2.putText(ndarray, "No OwnExtractor found!", origin,
+                                          font, font_size,
+                                          color, thickness)
+                    return ndarray
+
         else:
             try:
                 message = self.socket.recv(flags=zmq.NOBLOCK)
