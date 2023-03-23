@@ -3,10 +3,13 @@ import subprocess
 
 
 class OpenFaceInstantiator:
-    def __init__(self):
+    def __init__(self, port: int):
         #self.openface_process = os.popen("../../build/bin/OwnExtractor")
-        #self.openface_process = subprocess.Popen(["../../cmake-build-release/bin/OwnExtractor", "5555"])
-        self.openface_process = subprocess.Popen(["../../build/bin/OwnExtractor"])
+        try:
+            self.openface_process = subprocess.Popen(["../../cmake-build-release/bin/OwnExtractor", f"{port}"])
+        except:
+            pass
+        #self.openface_process = subprocess.Popen(["../../build/bin/OwnExtractor"])
 
 
     #def open(self):

@@ -1,4 +1,5 @@
 """Provide `RotationFilter` filter."""
+from multiprocessing import shared_memory, Lock
 
 import cv2
 import json
@@ -17,6 +18,8 @@ class ZMQFilter(Filter):
     has_sent: bool
     socket: zmq.Socket
     frame: int
+    shared_port: shared_memory.SharedMemory
+    mutex: Lock = Lock()
 
     writer: OpenFaceDataParser
     instantiator: OpenFaceInstantiator
@@ -26,22 +29,38 @@ class ZMQFilter(Filter):
         self.has_sent = False
         self.is_connected = False
 
-        self.instantiator = OpenFaceInstantiator()
+        #ZMQFilter.port.buf[0] = (5555).to_bytes(4, "big")
+        """
+        try:
+            self.shared_port = shared_memory.SharedMemory(name="port", create=False, size=4)
+            self.is_creator = False
+        except:
+            self.shared_port = shared_memory.SharedMemory(name="port", create=True, size=4)
+            self.shared_port.buf[:4] = bytearray((5555).to_bytes(4, "big"))
+            self.is_creator = True
+        
+        self.port = int.from_bytes(bytes(self.shared_port.buf), "big")
+        self.shared_port.buf[:4] = bytearray((self.port + 1).to_bytes(4, "big"))
+        """
+        self.port = 5555
+        self.instantiator = OpenFaceInstantiator(self.port)
         self.writer = OpenFaceDataParser()
 
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
         try:
-            self.socket.bind("tcp://127.0.0.1:5555")
+            self.socket.bind(f"tcp://127.0.0.1:{self.port}")
             self.is_connected = True
         except zmq.ZMQError as e:
             print(f"ZMQError: {e}")
 
-        self.data = {"intensity": {"AU06": -1.0, "AU12": -1.0}}
+        self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
 
     def __del__(self):
         self.socket.close()
+        #self.shared_port.close()
+
 
     @staticmethod
     def name(self) -> str:
@@ -56,7 +75,7 @@ class ZMQFilter(Filter):
             font_size = 1
             color = (0, 255, 0)
             thickness = 2
-            ndarray = cv2.putText(ndarray, "Port is already taken!", origin, font, font_size,
+            ndarray = cv2.putText(ndarray, f"Port {self.port} is already taken!", origin, font, font_size,
                                   color, thickness)
             return ndarray
 
@@ -108,7 +127,7 @@ class ZMQFilter(Filter):
         au12 = self.data["intensity"]["AU12"]
         ndarray = cv2.putText(ndarray, f"AU06: {au06}", origin, font, font_size, color, thickness)
         ndarray = cv2.putText(ndarray, f"AU12: {au12}", (50, 100), font, font_size, color, thickness)
-
+        ndarray = cv2.putText(ndarray, f"Port: {self.port}", (50, 150), font, font_size, color, thickness)
         return ndarray
 
     def _cv2_encode(self, ndarray: numpy.ndarray):
