@@ -67,13 +67,11 @@ function SessionOverview({
   return (
     <>
       <NavigationBar />
-      <HeroText text={"Welcome! Get started with conducting your user studies here!"} />
-      <LinkButton text="CREATE NEW SESSION" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
+      <HeroText text={"Synchrony Experiemental Hub"} />
+      <LinkButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
       <WelcomeText>
-        Create a new session to create your own experimental design template.
-        You can hold these sessions for each experiment you would like to
-        connect a new participant/set of participants to (link to wiki
-        for experimental workflow).
+        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment. See
+        <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.
       </WelcomeText>
       <Grid container>
         <Grid item sm={7} sx={{ m: 3 }}>
