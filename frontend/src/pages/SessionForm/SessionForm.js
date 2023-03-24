@@ -10,7 +10,6 @@ import {
   checkValidSession,
 } from "../../utils/utils";
 
-import "./SessionForm.css";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -209,78 +208,6 @@ function SessionForm({ onSendSessionToBackend }) {
                       />
                     );
                   })}
-
-
-                  {/* <Paper variant="outlined" sx={{ my: 1 }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <TextField id="" defaultValue="Participant 1" size="small" sx={{ m: 1 }} />
-                    </Box>
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Box>
-                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                          <InputLabel htmlFor="filters-select">Filters</InputLabel>
-                          <Select defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
-                            {
-                              individualFilters.map((individualFilter) => {
-                                return <MenuItem key={individualFilter.id} value={individualFilter.id}>{individualFilter.id}</MenuItem>
-                              })
-                            }
-                            <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
-                            {
-                              groupFilters.map((groupFilter) => {
-                                return <MenuItem key={groupFilter.id} value={groupFilter.id}>{groupFilter.id}</MenuItem>
-                              })
-                            }
-                          </Select>
-                        </FormControl>
-                      </Box>
-                    
-                      <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
-                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                          <InputLabel htmlFor="grouped-select">Direction</InputLabel>
-                          <Select defaultValue="" id="grouped-select" label="Direction">
-                            <MenuItem value={1}>clockwise</MenuItem>
-                            <MenuItem value={2}>anti-clockwise</MenuItem>
-                          </Select>
-                        </FormControl>
-                        <TextField label="Frame Rate" id="" defaultValue="" type="number"
-                          InputProps={{
-                            endAdornment: <InputAdornment position="end">fps</InputAdornment>,
-                          }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
-                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                          <InputLabel htmlFor="grouped-select">Direction</InputLabel>
-                          <Select defaultValue="" id="grouped-select" label="Direction">
-                            <MenuItem value={1}>clockwise</MenuItem>
-                            <MenuItem value={2}>anti-clockwise</MenuItem>
-                          </Select>
-                        </FormControl>
-                        <TextField label="Frame Rate" id="" defaultValue="" type="number"
-                          InputProps={{
-                            endAdornment: <InputAdornment position="end">fps</InputAdornment>,
-                          }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
-                      </Box>
-                      <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-                        <IconButton variant="outlined" color="success" sx={{ my: 1, mr: 1, }}>
-                          <AddIcon />
-                        </IconButton>
-                        <IconButton color="error" sx={{ my: 1, mr: 1 }}>
-                          <DeleteOutlineIcon />
-                        </IconButton>
-                      </Box>
-
-                    </Box>
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <ActionIconButton text="DELETE" variant="outlined" color="error" size="small" onClick={() => deleteParticipant()} icon={<DeleteOutlined />} />
-                      <Box>
-                        <ActionIconButton text="INVITE" variant="outlined" color="primary" size="small" onClick={() => { }} icon={<ContentCopyIcon />} />
-                        <ActionIconButton text="EDIT" variant="outlined" color="primary" size="small" onClick={() => { }} icon={<EditOutlined />} />
-                      </Box>
-                    </Box>
-                  </Paper> */}
                 </CardContent>
               </Box>
               <Box sx={{ my: 1 }}>
