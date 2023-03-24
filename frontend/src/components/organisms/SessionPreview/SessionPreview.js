@@ -109,7 +109,7 @@ function SessionPreview({
                       <Collapse in={expandedParticipant === participantIndex} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                           <ListItem sx={{ pl: 4, display: "flex", justifyContent: "space-between" }}>
-                            <Typography>Filters : </Typography>
+                            <Typography variant="overline">Filters : </Typography>
                             {participant.audio_filters.length === 0 && participant.video_filters.length === 0 && <Typography>No filters applied!</Typography>}
                             <Box>
                               {

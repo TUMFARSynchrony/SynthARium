@@ -17,7 +17,9 @@ import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import Chip from "@mui/material/Chip";
 import ListItem from "@mui/material/ListItem";
+import Typography from "@mui/material/Typography";
 // REMOVE: Mocking filters data until filter API call is established
+// import filtersData from '../../filters_new.json'
 import filtersData from '../../filters.json'
 import { getParticipantInviteLink } from "../../utils/utils";
 
@@ -47,7 +49,8 @@ function ParticipantDataModal({
   // const [individualFilters, setIndividualFilters] = useState(getIndividualFilters());
   // const [groupFilters, setGroupFilters] = useState(getGroupFilters());
   const [selectedFilter, setSelectedFilter] = useState(testData.find((filter) => filter.id == defaultFilterId));
-  const [appliedFilters, setAppliedFilters] = useState([]);
+  const [audioFiltersCopy, setAudioFiltersCopy] = useState(originalParticipant.audio_filters);
+  const [videoFiltersCopy, setVideoFiltersCopy] = useState(originalParticipant.video_filters);
 
   const handleChange = (objKey, objValue) => {
     const newParticipantData = { ...participantCopy };
@@ -116,28 +119,51 @@ function ParticipantDataModal({
     const filter = event.target.value;
     setSelectedFilter(filter);
 
-    const newParticipantData = { ...participantCopy };
     if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
-      newParticipantData.video_filters = [...newParticipantData.video_filters, filter];
+      // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
+      setVideoFiltersCopy(videoFiltersCopy => [...videoFiltersCopy, filter]);
     }
-    else if (["delay-a"].includes(filter.id)) {
-      newParticipantData.audio_filters = [...newParticipantData.audio_filters, filter];
+    else if (["delay-a", "delay-a-test"].includes(filter.id)) {
+      // else if (testData.map((f) => f.type === "audio" ? f.id : "").includes(filter.id)) {
+      setAudioFiltersCopy(audioFiltersCopy => [...audioFiltersCopy, filter]);
     }
-    setParticipantCopy(newParticipantData);
   };
 
-  const handleDeleteFilter = (filterDelete) => {
-    console.log(filterDelete);
-    const newParticipantData = { ...participantCopy };
+  const handleDeleteFilter = (filterDelete, filterCopyIndex) => {
     if (["test", "edge", "rotation", "delay-v"].includes(filterDelete.id)) {
-      newParticipantData.video_filters = newParticipantData.video_filters.filter((filter) => filter.id !== filterDelete.id);
+      // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filterDelete.id)) {
+      setVideoFiltersCopy(videoFiltersCopy => videoFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
     }
-    else {
-      newParticipantData.audio_filters = newParticipantData.audio_filters.filter((filter) => filter.id !== filterDelete.id);
+    else if (["delay-a", "delay-a-test"].includes(filterDelete.id)) {
+      // else if (testData.map((f) => f.type === "audio" ? f.id : "").includes(filterDelete.id)) {
+      setAudioFiltersCopy(audioFiltersCopy => audioFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
     }
-    setParticipantCopy(newParticipantData);
   };
 
+  const getFilterConfigType = (filter, configType) => {
+    // console.log(filter);
+    for (let key in filter["config"][configType]) {
+      // console.log(typeof filter["config"][configType]["value"]);
+      if (key == "value" && typeof filter["config"][configType]["value"] == "object") {
+        return "object";
+      }
+      else if (key == "value" && typeof filter["config"][configType]["value"] == "number") {
+        return "number";
+      }
+    }
+  };
+
+  useEffect(() => {
+    const participant = { ...participantCopy };
+    participant.video_filters = videoFiltersCopy;
+    setParticipantCopy(participant);
+  }, [videoFiltersCopy]);
+
+  useEffect(() => {
+    const participant = { ...participantCopy };
+    participant.audio_filters = audioFiltersCopy;
+    setParticipantCopy(participant);
+  }, [audioFiltersCopy]);
 
   return (
 
@@ -163,18 +189,17 @@ function ParticipantDataModal({
             <TextField label="y coordinate" size="small" value={participantCopy.position.y} disabled />
           </Box>
           <Box sx={{ display: "flex", justifyContent: "center", gap: 2, my: 3 }}>
-            <FormControlLabel control={<Checkbox defaultChecked />} label="Mute Audio" checked={participantCopy.muted_audio} onChange={(event) => { handleChange("muted_audio", !participantCopy.muted_audio) }} />
+            <FormControlLabel control={<Checkbox defaultChecked />} label="Mute Audio" checked={participantCopy.muted_audio} onChange={() => { handleChange("muted_audio", !participantCopy.muted_audio) }} />
             <FormControlLabel control={<Checkbox defaultChecked />} label="Mute Video" checked={participantCopy.muted_video} onChange={() => { handleChange("muted_video", !participantCopy.muted_video) }} />
           </Box>
 
+          {/* Displaying the filters available in the backend */}
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-
-            <Box>
-              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                <InputLabel id="filters-select">Filters</InputLabel>
-                {
-                  <Select value={selectedFilter} defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
-                    {/* <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
+            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+              <InputLabel id="filters-select">Filters</InputLabel>
+              {
+                <Select value={selectedFilter} defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
+                  {/* <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
                     {
                       individualFilters.map((individualFilter) => {
                         if (individualFilter.id == defaultFilterId) {
@@ -191,77 +216,96 @@ function ParticipantDataModal({
                         return <MenuItem key={groupFilter.id} value={groupFilter}>{groupFilter.id}</MenuItem>
                       })
                     } */}
-                    {
-                      testData.map((filter, filterIndex) => {
-                        if (filter.id == defaultFilterId) {
-                          return <MenuItem key={filterIndex} value={filter}><em>{filter.id}</em></MenuItem>
-                        }
-                        else {
-                          return <MenuItem key={filterIndex} value={filter}>{filter.id}</MenuItem>
-                        }
-                      })
-                    }
-                  </Select>
-                }
-
-              </FormControl>
-            </Box>
-
-            {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
-              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                <InputLabel htmlFor="grouped-select">Direction</InputLabel>
-                <Select defaultValue="" id="grouped-select" label="Direction">
-                  <MenuItem value={1}>clockwise</MenuItem>
-                  <MenuItem value={2}>anti-clockwise</MenuItem>
+                  {
+                    testData.map((filter, filterIndex) => {
+                      if (filter.id == defaultFilterId) {
+                        return <MenuItem key={filterIndex} value={filter} disabled><em>{filter.id}</em></MenuItem>
+                      }
+                      else {
+                        return <MenuItem key={filterIndex} value={filter}>{filter.id}</MenuItem>
+                      }
+                    })
+                  }
                 </Select>
-              </FormControl>
-              <TextField label="Frame Rate" id="" defaultValue="" type="number"
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">fps</InputAdornment>,
-                }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
-              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                <InputLabel htmlFor="grouped-select">Direction</InputLabel>
-                <Select defaultValue="" id="grouped-select" label="Direction">
-                  <MenuItem value={1}>clockwise</MenuItem>
-                  <MenuItem value={2}>anti-clockwise</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField label="Frame Rate" id="" defaultValue="" type="number"
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">fps</InputAdornment>,
-                }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-              <IconButton variant="outlined" color="success" sx={{ my: 1, mr: 1, }}>
-                <AddIcon />
-              </IconButton>
-              <IconButton color="error" sx={{ my: 1, mr: 1 }}>
-                <DeleteOutlineIcon />
-              </IconButton>
-            </Box> */}
-
+              }
+            </FormControl>
           </Box>
 
-          {/* Display applied filters */}
+          {/* Display applied audio filters */}
           <Box>
+            <Typography variant="overline" display="block">
+              Audio Filters
+            </Typography>
             {
-              participantCopy.audio_filters.map((audioFilter, audioFilterIndex) => {
+              audioFiltersCopy.length > 0 && audioFiltersCopy.map((audioFilter, audioFilterIndex) => {
                 return (
-                  <Chip key={audioFilterIndex} label={audioFilter.id} variant="outlined"  size="medium" color="secondary"
-                  onDelete={() => {handleDeleteFilter(audioFilter)}} />
-                  // <Chip key={audioFilterIndex} variant="outlined" label={audioFilter.id} size="small" color="secondary" />
+                  <Box key={audioFilterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
+                    <Box key={audioFilterIndex} sx={{ minWidth: 140 }}>
+                      <Chip key={audioFilterIndex} label={audioFilter.id} variant="outlined" size="medium" color="secondary"
+                        onDelete={() => { handleDeleteFilter(audioFilter, audioFilterIndex) }} />
+                    </Box>
+
+                    {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                      {
+                        Object.keys(audioFilter.config).map((configType) => {
+                          return getFilterConfigType(audioFilter, configType) == "object" ?
+                            (
+                              <FormControl sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
+                                <InputLabel htmlFor="audio-filters-config">Direction</InputLabel>
+                                <Select defaultValue="" id="audio-filters-config" label="Direction">
+                                  <MenuItem key={1} value={1}>clockwise</MenuItem>
+                                  <MenuItem key={2} value={2}>anti-clockwise</MenuItem>
+                                </Select>
+                              </FormControl>
+                            )
+                            :
+                            (
+                              <TextField label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
+                                sx={{ m: 1, width: '10vw', minWidth: 130 }} />
+                            )
+                        })
+                      }
+                    </Box> */}
+                  </Box>
                 )
               })
             }
+
+            {/* Display applied video filters */}
+            <Typography variant="overline" display="block">
+              Video Filters
+            </Typography>
             {
-              participantCopy.video_filters.map((videoFilter, videoFilterindex) => {
+              videoFiltersCopy.length > 0 && videoFiltersCopy.map((videoFilter, videoFilterIndex) => {
                 return (
-                  // <ListItem key={videoFilter.id}>
-                    <Chip key={videoFilterindex} label={videoFilter.id} variant="outlined"  size="medium" color="secondary"
-                    onDelete={() => {handleDeleteFilter(videoFilter)}}
-                    />
-                  // </ListItem>
-                  // <Chip key={videoFilterindex} variant="outlined" label={videoFilter.id} size="small" color="secondary" />
+                  <Box key={videoFilterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
+                    <Box key={videoFilterIndex} sx={{ minWidth: 140 }}>
+                      <Chip key={videoFilterIndex} label={videoFilter.id} variant="outlined" size="medium" color="secondary"
+                        onDelete={() => { handleDeleteFilter(videoFilter, videoFilterIndex) }} />
+                    </Box>
+
+                    {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                      {
+                        Object.keys(videoFilter.config).map((configType) => {
+                          return getFilterConfigType(videoFilter, configType) == "object" ?
+                            (
+                              <FormControl sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
+                                <InputLabel htmlFor="grouped-select">{configType.charAt(0).toUpperCase() + configType.slice(1)}</InputLabel>
+                                <Select defaultValue="" id="grouped-select">
+                                  <MenuItem key={1} value={1}>clockwise</MenuItem>
+                                  <MenuItem key={2} value={2}>anti-clockwise</MenuItem>
+                                </Select>
+                              </FormControl>
+                            )
+                            :
+                            (
+                              <TextField label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
+                                sx={{ m: 1, width: '10vw', minWidth: 130 }} />
+                            )
+                        })
+                      }
+                    </Box> */}
+                  </Box>
                 )
               })
             }
@@ -273,125 +317,6 @@ function ParticipantDataModal({
         <ActionButton text="SAVE" variant="contained" color="success" size="medium" onClick={() => onSaveParticipantData()} />
       </DialogActions>
     </Dialog>
-
-
-    // <div className="additionalParticipantInfoContainer">
-    //   <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true} />
-
-    //   <div className="additionalParticipantInfo">
-    //     <div className="additionalParticipantInfoCard">
-    //       <Heading heading={"General information:"} />
-
-    //       <InputTextField
-    //         title="First Name"
-    //         value={participantCopy.first_name}
-    //         placeholder={"Name of participant"}
-    //         onChange={(newFirstName) => {
-    //           handleChange("first_name", newFirstName);
-    //         }}
-    //         required={true}
-    //       />
-    //       <InputTextField
-    //         title="Last Name"
-    //         value={participantCopy.last_name}
-    //         placeholder={"Name of participant"}
-    //         onChange={(newLastName) => {
-    //           handleChange("last_name", newLastName);
-    //         }}
-    //         required={true}
-    //       />
-    //       <InputTextField
-    //         title="Link"
-    //         value={
-    //           !(participantCopy.id.length === 0 || sessionId.length === 0)
-    //             ? `${PARTICIPANT_HOST}?participantId=${participantCopy.id}&sessionId=${sessionId}`
-    //             : "Save session to generate link."
-    //         }
-    //         readonly={true}
-    //         required={false}
-    //       />
-
-    //       <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
-    //         <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-    //           <InputLabel htmlFor="grouped-select">Direction</InputLabel>
-    //           <Select defaultValue="" id="grouped-select" label="Direction">
-    //             <MenuItem value={1}>clockwise</MenuItem>
-    //             <MenuItem value={2}>anti-clockwise</MenuItem>
-    //           </Select>
-    //         </FormControl>
-    //         <TextField label="Frame Rate" id="" defaultValue="" type="number"
-    //           InputProps={{
-    //             endAdornment: <InputAdornment position="end">fps</InputAdornment>,
-    //           }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
-    //         <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-    //           <InputLabel htmlFor="grouped-select">Direction</InputLabel>
-    //           <Select defaultValue="" id="grouped-select" label="Direction">
-    //             <MenuItem value={1}>clockwise</MenuItem>
-    //             <MenuItem value={2}>anti-clockwise</MenuItem>
-    //           </Select>
-    //         </FormControl>
-    //         <TextField label="Frame Rate" id="" defaultValue="" type="number"
-    //           InputProps={{
-    //             endAdornment: <InputAdornment position="end">fps</InputAdornment>,
-    //           }} size="small" sx={{ m: 1, width: '10vw', minWidth: 140 }} />
-    //       </Box>
-    //       <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-    //         <IconButton variant="outlined" color="success" sx={{ my: 1, mr: 1, }}>
-    //           <AddIcon />
-    //         </IconButton>
-    //         <IconButton color="error" sx={{ my: 1, mr: 1 }}>
-    //           <DeleteOutlineIcon />
-    //         </IconButton>
-    //       </Box>
-
-    //       <div className="participantMuteCheckbox">
-    //         <Checkbox
-    //           title="Mute Audio"
-    //           value={participantCopy.muted_audio}
-    //           checked={participantCopy.muted_audio}
-    //           onChange={() =>
-    //             handleChange("muted_audio", !participantCopy.muted_audio)
-    //           }
-    //           required={false}
-    //         />
-    //         <Checkbox
-    //           title="Mute Video"
-    //           value={participantCopy.muted_video}
-    //           checked={participantCopy.muted_video}
-    //           onChange={() =>
-    //             handleChange("muted_video", !participantCopy.muted_video)
-    //           }
-    //           required={false}
-    //         />
-    //       </div>
-    //       <Heading heading={"Current video position and size:"} />
-    //       <div className="participantVideoSize">
-    //         <div className="participantPosition">
-    //           <Label title={"x: "} /> {participantCopy.position.x}
-    //         </div>
-    //         <div className="participantPosition">
-    //           <Label title={"y: "} /> {participantCopy.position.y}
-    //         </div>
-    //         <div className="participantPosition">
-    //           <Label title={"Width: "} /> {participantCopy.size.width}
-    //         </div>
-    //         <div className="participantPosition">
-    //           <Label title={"Height: "} /> {participantCopy.size.height}
-    //         </div>
-    //       </div>
-    //       <ActionButton text="Save Participant" variant="contained" color="primary" size="large" onClick={() => onSaveParticipantData()} />
-    //       <ActionButton
-    //         text="BACK"
-    //         variant="contained"
-    //         color="primary"
-    //         size="large"
-    //         onClick={() => {
-    //           onCloseModalWithoutData();
-    //         }}
-    //       />
-    //     </div>
-    //   </div>
-    // </div>
   );
 }
 
