@@ -67,11 +67,11 @@ function SessionOverview({
   return (
     <>
       <NavigationBar />
-      <HeroText text={"Synchrony Experiemental Hub"} />
+      <HeroText text={"Synchrony Experimental Hub"} />
       <LinkButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
       <WelcomeText>
-        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment. See
-        <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.
+        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment. 
+        See the <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.
       </WelcomeText>
       <Grid container>
         <Grid item sm={7} sx={{ m: 3 }}>
