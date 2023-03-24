@@ -19,21 +19,21 @@ import Chip from "@mui/material/Chip";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
 // REMOVE: Mocking filters data until filter API call is established
-// import filtersData from '../../filters_new.json'
-import filtersData from '../../filters.json'
+import filtersData from '../../filters_new.json'
+// import filtersData from '../../filters.json'
 import { getParticipantInviteLink } from "../../utils/utils";
 
 // Loading filters data befor eth component renders, because the Select component needs value
 const testData = filtersData.filters;
-const defaultFilterId = "test";
+const defaultFilterId = "None";
 
-// const getIndividualFilters = () => {
-//   return filtersData.filters.filter(filter => filter.groupFilter !== true);
-// };
+const getIndividualFilters = () => {
+  return testData.filter(filter => filter.groupFilter !== true);
+};
 
-// const getGroupFilters = () => {
-//   return filtersData.filters.filter(filter => filter.groupFilter === true);
-// };
+const getGroupFilters = () => {
+  return testData.filter(filter => filter.groupFilter === true);
+};
 
 
 function ParticipantDataModal({
@@ -46,11 +46,11 @@ function ParticipantDataModal({
   onDeleteParticipant
 }) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  // const [individualFilters, setIndividualFilters] = useState(getIndividualFilters());
-  // const [groupFilters, setGroupFilters] = useState(getGroupFilters());
   const [selectedFilter, setSelectedFilter] = useState(testData.find((filter) => filter.id == defaultFilterId));
   const [audioFiltersCopy, setAudioFiltersCopy] = useState(originalParticipant.audio_filters);
   const [videoFiltersCopy, setVideoFiltersCopy] = useState(originalParticipant.video_filters);
+  const individualFilters = getIndividualFilters();
+  const groupFilters = getGroupFilters();
 
   const handleChange = (objKey, objValue) => {
     const newParticipantData = { ...participantCopy };
@@ -115,29 +115,29 @@ function ParticipantDataModal({
   };
 
   const handleFilterSelect = (event) => {
-    event.preventDefault();
     const filter = event.target.value;
     setSelectedFilter(filter);
 
-    if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
-      // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
+    // if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
+    if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setVideoFiltersCopy(videoFiltersCopy => [...videoFiltersCopy, filter]);
     }
-    else if (["delay-a", "delay-a-test"].includes(filter.id)) {
-      // else if (testData.map((f) => f.type === "audio" ? f.id : "").includes(filter.id)) {
+    // else if (["delay-a", "delay-a-test"].includes(filter.id)) {
+    if (testData.map((f) => f.type === "audio" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setAudioFiltersCopy(audioFiltersCopy => [...audioFiltersCopy, filter]);
     }
   };
 
-  const handleDeleteFilter = (filterDelete, filterCopyIndex) => {
-    if (["test", "edge", "rotation", "delay-v"].includes(filterDelete.id)) {
-      // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filterDelete.id)) {
-      setVideoFiltersCopy(videoFiltersCopy => videoFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
-    }
-    else if (["delay-a", "delay-a-test"].includes(filterDelete.id)) {
-      // else if (testData.map((f) => f.type === "audio" ? f.id : "").includes(filterDelete.id)) {
-      setAudioFiltersCopy(audioFiltersCopy => audioFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
-    }
+  const handleDeleteVideoFilter = (filterDelete, filterCopyIndex) => {
+    // if (["test", "edge", "rotation", "delay-v"].includes(filterDelete.id)) {
+    setVideoFiltersCopy(videoFiltersCopy => videoFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
+    // }
+  };
+
+  const handleDeleteAudioFilter = (filterDelete, filterCopyIndex) => {
+    // else if (["delay-a", "delay-a-test"].includes(filterDelete.id)) {
+    setAudioFiltersCopy(audioFiltersCopy => audioFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
+    // }
   };
 
   const getFilterConfigType = (filter, configType) => {
@@ -155,15 +155,11 @@ function ParticipantDataModal({
 
   useEffect(() => {
     const participant = { ...participantCopy };
+    participant.audio_filters = audioFiltersCopy;
     participant.video_filters = videoFiltersCopy;
     setParticipantCopy(participant);
-  }, [videoFiltersCopy]);
+  }, [audioFiltersCopy, videoFiltersCopy]);
 
-  useEffect(() => {
-    const participant = { ...participantCopy };
-    participant.audio_filters = audioFiltersCopy;
-    setParticipantCopy(participant);
-  }, [audioFiltersCopy]);
 
   return (
 
@@ -199,24 +195,24 @@ function ParticipantDataModal({
               <InputLabel id="filters-select">Filters</InputLabel>
               {
                 <Select value={selectedFilter} defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
-                  {/* <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
-                    {
-                      individualFilters.map((individualFilter) => {
-                        if (individualFilter.id == defaultFilterId) {
-                          return <MenuItem key={individualFilter.id} value={individualFilter}><em>{individualFilter.id}</em></MenuItem>
-                        }
-                        else {
-                          return <MenuItem key={individualFilter.id} value={individualFilter}>{individualFilter.id}</MenuItem>
-                        }
-                      })
-                    }
-                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
-                    {
-                      groupFilters.map((groupFilter) => {
-                        return <MenuItem key={groupFilter.id} value={groupFilter}>{groupFilter.id}</MenuItem>
-                      })
-                    } */}
+                  <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
                   {
+                    individualFilters.map((individualFilter) => {
+                      if (individualFilter.id == defaultFilterId) {
+                        return <MenuItem key={individualFilter.id} value={individualFilter} disabled><em>{individualFilter.id}</em></MenuItem>
+                      }
+                      else {
+                        return <MenuItem key={individualFilter.id} value={individualFilter}>{individualFilter.id}</MenuItem>
+                      }
+                    })
+                  }
+                  <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
+                  {
+                    groupFilters.map((groupFilter) => {
+                      return <MenuItem key={groupFilter.id} value={groupFilter}>{groupFilter.id}</MenuItem>
+                    })
+                  }
+                  {/* {
                     testData.map((filter, filterIndex) => {
                       if (filter.id == defaultFilterId) {
                         return <MenuItem key={filterIndex} value={filter} disabled><em>{filter.id}</em></MenuItem>
@@ -225,7 +221,7 @@ function ParticipantDataModal({
                         return <MenuItem key={filterIndex} value={filter}>{filter.id}</MenuItem>
                       }
                     })
-                  }
+                  } */}
                 </Select>
               }
             </FormControl>
@@ -242,7 +238,7 @@ function ParticipantDataModal({
                   <Box key={audioFilterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
                     <Box key={audioFilterIndex} sx={{ minWidth: 140 }}>
                       <Chip key={audioFilterIndex} label={audioFilter.id} variant="outlined" size="medium" color="secondary"
-                        onDelete={() => { handleDeleteFilter(audioFilter, audioFilterIndex) }} />
+                        onDelete={() => { handleDeleteAudioFilter(audioFilter, audioFilterIndex) }} />
                     </Box>
 
                     {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
@@ -281,7 +277,7 @@ function ParticipantDataModal({
                   <Box key={videoFilterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
                     <Box key={videoFilterIndex} sx={{ minWidth: 140 }}>
                       <Chip key={videoFilterIndex} label={videoFilter.id} variant="outlined" size="medium" color="secondary"
-                        onDelete={() => { handleDeleteFilter(videoFilter, videoFilterIndex) }} />
+                        onDelete={() => { handleDeleteVideoFilter(videoFilter, videoFilterIndex) }} />
                     </Box>
 
                     {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
