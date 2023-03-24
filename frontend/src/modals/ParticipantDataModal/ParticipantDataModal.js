@@ -23,7 +23,7 @@ import filtersData from '../../filters_new.json'
 // import filtersData from '../../filters.json'
 import { getParticipantInviteLink } from "../../utils/utils";
 
-// Loading filters data befor eth component renders, because the Select component needs value
+// Loading filters data before the component renders, because the Select component needs value
 const testData = filtersData.filters;
 const defaultFilterId = "None";
 
@@ -128,29 +128,16 @@ function ParticipantDataModal({
     }
   };
 
-  const handleDeleteVideoFilter = (filterDelete, filterCopyIndex) => {
+  const handleDeleteVideoFilter = (filterCopyIndex) => {
     // if (["test", "edge", "rotation", "delay-v"].includes(filterDelete.id)) {
     setVideoFiltersCopy(videoFiltersCopy => videoFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
     // }
   };
 
-  const handleDeleteAudioFilter = (filterDelete, filterCopyIndex) => {
+  const handleDeleteAudioFilter = (filterCopyIndex) => {
     // else if (["delay-a", "delay-a-test"].includes(filterDelete.id)) {
     setAudioFiltersCopy(audioFiltersCopy => audioFiltersCopy.filter((filter, index) => index !== filterCopyIndex));
     // }
-  };
-
-  const getFilterConfigType = (filter, configType) => {
-    // console.log(filter);
-    for (let key in filter["config"][configType]) {
-      // console.log(typeof filter["config"][configType]["value"]);
-      if (key == "value" && typeof filter["config"][configType]["value"] == "object") {
-        return "object";
-      }
-      else if (key == "value" && typeof filter["config"][configType]["value"] == "number") {
-        return "number";
-      }
-    }
   };
 
   useEffect(() => {
@@ -236,32 +223,37 @@ function ParticipantDataModal({
               audioFiltersCopy.length > 0 && audioFiltersCopy.map((audioFilter, audioFilterIndex) => {
                 return (
                   <Box key={audioFilterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
-                    <Box key={audioFilterIndex} sx={{ minWidth: 140 }}>
+                    <Box sx={{ minWidth: 140 }}>
                       <Chip key={audioFilterIndex} label={audioFilter.id} variant="outlined" size="medium" color="secondary"
-                        onDelete={() => { handleDeleteAudioFilter(audioFilter, audioFilterIndex) }} />
+                        onDelete={() => { handleDeleteAudioFilter(audioFilterIndex) }} />
                     </Box>
 
-                    {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                    {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
+                    <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
                       {
-                        Object.keys(audioFilter.config).map((configType) => {
-                          return getFilterConfigType(audioFilter, configType) == "object" ?
-                            (
-                              <FormControl sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
-                                <InputLabel htmlFor="audio-filters-config">Direction</InputLabel>
-                                <Select defaultValue="" id="audio-filters-config" label="Direction">
-                                  <MenuItem key={1} value={1}>clockwise</MenuItem>
-                                  <MenuItem key={2} value={2}>anti-clockwise</MenuItem>
+                        Object.keys(audioFilter.config).map((configType, configIndex) => {
+                          if (Array.isArray(audioFilter["config"][configType]["value"])) {
+                            return (
+                              <FormControl key={configIndex} sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
+                                <InputLabel htmlFor="audio-filters-config">{configType.charAt(0).toUpperCase() + configType.slice(1)}</InputLabel>
+                                <Select key={configIndex} defaultValue="" id="audio-filters-config" label="Direction">
+                                  {
+                                    audioFilter["config"][configType]["value"].map((value) => {
+                                      return <MenuItem key={value} value={value}>{value}</MenuItem>
+                                    })
+                                  }
                                 </Select>
                               </FormControl>
                             )
-                            :
-                            (
-                              <TextField label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
+                          } else if (typeof audioFilter["config"][configType]["value"] == "number") {
+                            return (
+                              <TextField key={configIndex} label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
                                 sx={{ m: 1, width: '10vw', minWidth: 130 }} />
                             )
+                          }
                         })
                       }
-                    </Box> */}
+                    </Box>
                   </Box>
                 )
               })
@@ -275,32 +267,37 @@ function ParticipantDataModal({
               videoFiltersCopy.length > 0 && videoFiltersCopy.map((videoFilter, videoFilterIndex) => {
                 return (
                   <Box key={videoFilterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
-                    <Box key={videoFilterIndex} sx={{ minWidth: 140 }}>
+                    <Box sx={{ minWidth: 140 }}>
                       <Chip key={videoFilterIndex} label={videoFilter.id} variant="outlined" size="medium" color="secondary"
-                        onDelete={() => { handleDeleteVideoFilter(videoFilter, videoFilterIndex) }} />
+                        onDelete={() => { handleDeleteVideoFilter(videoFilterIndex) }} />
                     </Box>
 
-                    {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                    {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
+                    <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
                       {
-                        Object.keys(videoFilter.config).map((configType) => {
-                          return getFilterConfigType(videoFilter, configType) == "object" ?
-                            (
-                              <FormControl sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
+                        Object.keys(videoFilter.config).map((configType, configIndex) => {
+                          if (Array.isArray(videoFilter["config"][configType]["value"])) {
+                            return (
+                              <FormControl key={configIndex} sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
                                 <InputLabel htmlFor="grouped-select">{configType.charAt(0).toUpperCase() + configType.slice(1)}</InputLabel>
-                                <Select defaultValue="" id="grouped-select">
-                                  <MenuItem key={1} value={1}>clockwise</MenuItem>
-                                  <MenuItem key={2} value={2}>anti-clockwise</MenuItem>
+                                <Select key={configIndex} defaultValue="" id="grouped-select">
+                                  {
+                                    videoFilter["config"][configType]["value"].map((value) => {
+                                      return <MenuItem key={value} value={value}>{value}</MenuItem>
+                                    })
+                                  }
                                 </Select>
                               </FormControl>
                             )
-                            :
-                            (
-                              <TextField label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
+                          } else if (typeof videoFilter["config"][configType]["value"] == "number") {
+                            return (
+                              <TextField key={configIndex} label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
                                 sx={{ m: 1, width: '10vw', minWidth: 130 }} />
                             )
+                          }
                         })
                       }
-                    </Box> */}
+                    </Box>
                   </Box>
                 )
               })
