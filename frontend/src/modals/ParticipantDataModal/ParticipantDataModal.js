@@ -19,13 +19,13 @@ import Chip from "@mui/material/Chip";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
 // REMOVE: Mocking filters data until filter API call is established
-import filtersData from '../../filters_new.json'
-// import filtersData from '../../filters.json'
+// import filtersData from '../../filters_new.json'
+import filtersData from '../../filters.json'
 import { getParticipantInviteLink } from "../../utils/utils";
 
 // Loading filters data before the component renders, because the Select component needs value
 const testData = filtersData.filters;
-const defaultFilterId = "None";
+const defaultFilterId = "test";
 
 const getIndividualFilters = () => {
   return testData.filter(filter => filter.groupFilter !== true);
@@ -114,16 +114,15 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = (event) => {
-    const filter = event.target.value;
+  const handleFilterSelect = (filter) => {
     setSelectedFilter(filter);
 
-    // if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
-    if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
+    if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
+      // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setVideoFiltersCopy(videoFiltersCopy => [...videoFiltersCopy, filter]);
     }
-    // else if (["delay-a", "delay-a-test"].includes(filter.id)) {
-    if (testData.map((f) => f.type === "audio" || f.type === "both" ? f.id : "").includes(filter.id)) {
+    else if (["delay-a", "delay-a-test"].includes(filter.id)) {
+      // if (testData.map((f) => f.type === "audio" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setAudioFiltersCopy(audioFiltersCopy => [...audioFiltersCopy, filter]);
     }
   };
@@ -177,41 +176,42 @@ function ParticipantDataModal({
           </Box>
 
           {/* Displaying the filters available in the backend */}
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+          <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+            <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
               <InputLabel id="filters-select">Filters</InputLabel>
               {
-                <Select value={selectedFilter} defaultValue="" id="filters-select" label="Filters" onChange={handleFilterSelect}>
+                <Select value={selectedFilter} default="" id="filters-select" label="Filters">
                   <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Individual Filters</ListSubheader>
-                  {
+                  {/* {
                     individualFilters.map((individualFilter) => {
                       if (individualFilter.id == defaultFilterId) {
                         return <MenuItem key={individualFilter.id} value={individualFilter} disabled><em>{individualFilter.id}</em></MenuItem>
                       }
                       else {
-                        return <MenuItem key={individualFilter.id} value={individualFilter}>{individualFilter.id}</MenuItem>
+                        return <MenuItem key={individualFilter.id} value={individualFilter} onClick={() => handleFilterSelect(individualFilter)}>{individualFilter.id}</MenuItem>
                       }
                     })
                   }
                   <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
                   {
                     groupFilters.map((groupFilter) => {
-                      return <MenuItem key={groupFilter.id} value={groupFilter}>{groupFilter.id}</MenuItem>
+                      return <MenuItem key={groupFilter.id} value={groupFilter} onClick={() => handleFilterSelect(groupFilter)}>{groupFilter.id}</MenuItem>
                     })
-                  }
-                  {/* {
+                  } */}
+                  {
                     testData.map((filter, filterIndex) => {
                       if (filter.id == defaultFilterId) {
                         return <MenuItem key={filterIndex} value={filter} disabled><em>{filter.id}</em></MenuItem>
                       }
                       else {
-                        return <MenuItem key={filterIndex} value={filter}>{filter.id}</MenuItem>
+                        return <MenuItem key={filterIndex} value={filter} onClick={() => handleFilterSelect(filter)}>{filter.id}</MenuItem>
                       }
                     })
-                  } */}
+                  }
                 </Select>
               }
             </FormControl>
+            <Typography variant="caption" sx={{ mt: 4 }}>(NOTE: You can select each filter multiple times)</Typography>
           </Box>
 
           {/* Display applied audio filters */}
@@ -229,7 +229,7 @@ function ParticipantDataModal({
                     </Box>
 
                     {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
-                    <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                    {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
                       {
                         Object.keys(audioFilter.config).map((configType, configIndex) => {
                           if (Array.isArray(audioFilter["config"][configType]["value"])) {
@@ -253,7 +253,7 @@ function ParticipantDataModal({
                           }
                         })
                       }
-                    </Box>
+                    </Box> */}
                   </Box>
                 )
               })
@@ -273,7 +273,7 @@ function ParticipantDataModal({
                     </Box>
 
                     {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
-                    <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                    {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
                       {
                         Object.keys(videoFilter.config).map((configType, configIndex) => {
                           if (Array.isArray(videoFilter["config"][configType]["value"])) {
@@ -297,7 +297,7 @@ function ParticipantDataModal({
                           }
                         })
                       }
-                    </Box>
+                    </Box> */}
                   </Box>
                 )
               })
