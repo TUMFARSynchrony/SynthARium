@@ -21,10 +21,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from '@mui/material/Alert';
-import React from 'react';
 import { getParticipantInviteLink } from "../../../utils/utils";
+import CustomSnackbar from "../../molecules/CustomSnackbar";
 // REMOVE: Use temporarily until fiters backend API connection is established
 // import sessionData from '../../../bbbef1d7d0.json';
 
@@ -63,10 +61,6 @@ function SessionPreview({
   const handleCloseParticipantInviteLinkFeedback = (event, reason) => {
     setOpenInviteLinkFeedback(false);
   };
-
-  const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-  });
 
   const experimentOngoing = selectedSession.creation_time > 0 && selectedSession.end_time === 0;
   // REMOVE: Use temporarily until fiters backend API connection is established
@@ -128,14 +122,8 @@ function SessionPreview({
                               }
                             </Box>
                             <ActionIconButton text="INVITE" variant="outlined" color="primary" size="small" onClick={() => handleCopyParticipantInviteLink(participant.id, selectedSession.id)} icon={<ContentCopyIcon />} />
-                            <Snackbar open={openInviteLinkFeedback}
-                              autoHideDuration={2000}
-                              onClose={handleCloseParticipantInviteLinkFeedback}
-                              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-                              <Alert onClose={handleCloseParticipantInviteLinkFeedback} severity="success" sx={{ width: '100%' }}>
-                                {`Copied ${participant.first_name} ${participant.last_name}'s invite link to clipboard`}
-                              </Alert>
-                            </Snackbar>
+                            <CustomSnackbar open={openInviteLinkFeedback} text={`Copied ${participant.first_name} ${participant.last_name}'s invite link to clipboard`}
+                              severity="success" handleClose={handleCloseParticipantInviteLinkFeedback} />
                           </ListItem>
                         </List>
                       </Collapse>
