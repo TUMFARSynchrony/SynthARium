@@ -12,6 +12,7 @@ function ParticipantData({
   sessionId,
   index,
   handleParticipantChange,
+  setSnackbarResponse
 }) {
   // I first name and last name of the participant are empty, then we have a newly created participant. The default value is then true.
   const [showParticipantInput, setShowParticipantInput] = useState(
@@ -38,17 +39,16 @@ function ParticipantData({
         <ActionIconButton text="DELETE" variant="outlined" color="error" size="medium" onClick={() => onDeleteParticipant()} icon={<DeleteOutline />} />
       </Box>
 
-      {showParticipantInput && (
-        <ParticipantDataModal
-          originalParticipant={participantData}
-          sessionId={sessionId}
-          index={index}
-          showParticipantInput={showParticipantInput}
-          setShowParticipantInput={setShowParticipantInput}
-          handleParticipantChange={handleParticipantChange}
-          onDeleteParticipant={onDeleteParticipant}
-        />
-      )}
+      <ParticipantDataModal
+        originalParticipant={participantData}
+        sessionId={sessionId}
+        index={index}
+        showParticipantInput={showParticipantInput}
+        setShowParticipantInput={setShowParticipantInput}
+        handleParticipantChange={handleParticipantChange}
+        onDeleteParticipant={onDeleteParticipant}
+        setSnackbarResponse={setSnackbarResponse}
+      />
     </>
   );
 }

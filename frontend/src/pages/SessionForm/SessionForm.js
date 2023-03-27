@@ -42,7 +42,18 @@ function SessionForm({ onSendSessionToBackend }) {
   const [sessionData, setSessionData] = useState(openSession);
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
   const [numOfParticipants, setNumOfParticipants] = useState();
-  const [openSaveSessionFailed, setOpenSaveSessionFailed] = useState(false);
+  const [snackbarResponse, setSnackbarResponse] = useState({
+    newParticipantInputEmpty: false,
+    requiredInformationMissing: false,
+    participantOriginalEmpty: false,
+    newInputEqualsOld: false
+  });
+  const initialSnackbar = {
+    open: false,
+    text: "",
+    severity: "success"
+  };
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
 
   useEffect(() => {
     setSessionData(openSession);
@@ -102,7 +113,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onSaveSession = () => {
     if (!checkValidSession(sessionData)) {
-      setOpenSaveSessionFailed(true);
+      setSnackbar({ open: true, text: "Failed to save session since required fields are missing!", severity: "error" });
       return;
     }
     onSendSessionToBackend(sessionData);
@@ -160,6 +171,24 @@ function SessionForm({ onSendSessionToBackend }) {
     }
   };
 
+  useEffect(() => {
+    if (snackbarResponse.newParticipantInputEmpty) {
+      setSnackbar({ open: true, text: "You did not enter any information. Participant will be deleted now.", severity: "warning" });
+      return;
+    }
+
+    if (snackbarResponse.requiredInformationMissing) {
+      setSnackbar({ open: true, text: "Required information (First Name/Last Name) missing. Participant will be deleted now.", severity: "warning" });
+      return;
+    }
+
+    if (snackbarResponse.participantOriginalEmpty && !snackbarResponse.newInputEqualsOld) {
+      setSnackbar({ open: true, text: "You need to save the information first!", severity: "warning" });
+      return;
+    }
+  }, [snackbarResponse])
+
+
   return (
     <>
       <Grid container sx={{ mx: 4, my: 3 }}>
@@ -206,6 +235,7 @@ function SessionForm({ onSendSessionToBackend }) {
                         participantData={participant}
                         sessionId={sessionData.id}
                         handleParticipantChange={handleParticipantChange}
+                        setSnackbarResponse={setSnackbarResponse}
                       />
                     );
                   })}
@@ -233,8 +263,8 @@ function SessionForm({ onSendSessionToBackend }) {
           </Paper>
         </Grid>
       </Grid>
-      <CustomSnackbar open={openSaveSessionFailed} text={"Failed to save session since required fields are missing!"} severity={"error"}
-        handleClose={() => setOpenSaveSessionFailed(false)} />;
+      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)} />
     </>
 
     // <div className="sessionFormContainer">
