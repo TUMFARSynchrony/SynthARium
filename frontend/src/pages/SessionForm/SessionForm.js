@@ -210,7 +210,7 @@ function SessionForm({ onSendSessionToBackend }) {
                       <TextField label="Description" value={sessionData.description} size="small" required onChange={(event) => handleSessionDataChange("description", event.target.value)} />
                     </Box>
                     <Box sx={{ '& .MuiTextField-root': { width: '18.5vw' }, }}>
-                      <TextField defaultValue={sessionData.date ? formatDate(sessionData.date) : ""} type="datetime-local" size="small" required onChange={(event) =>
+                      <TextField value={sessionData.date ? formatDate(sessionData.date) : ""} type="datetime-local" size="small" required onChange={(event) =>
                         handleSessionDataChange("date", event.target.value ? new Date(event.target.value).getTime() : 0)} />
                       <TextField label="Number of Participants" value={sessionData.participants.length} type="number" size="small"
                         onChange={(num) => setNumOfParticipants(num)} />
@@ -242,6 +242,7 @@ function SessionForm({ onSendSessionToBackend }) {
                 </CardContent>
               </Box>
               <Box sx={{ my: 1 }}>
+                <ActionButton text="RANDOM SESSION DATA" variant="contained" color="primary" size="medium" onClick={() => addRandomSessionData()} />
                 <ActionButton text="SAVE SESSION" variant="contained" color="success" size="medium" onClick={() => onSaveSession()} />
               </Box>
             </Card>
@@ -266,121 +267,6 @@ function SessionForm({ onSendSessionToBackend }) {
       <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
         handleClose={() => setSnackbar(initialSnackbar)} />
     </>
-
-    // <div className="sessionFormContainer">
-    //   {showSessionDataForm && (
-    //     <div className="sessionFormData">
-    //       <div className="sessionForm">
-    //         <Heading heading={"Session Data"} />
-    //         <InputTextField
-    //           title="Title"
-    //           placeholder={"Your title"}
-    //           value={sessionData.title}
-    //           onChange={(ewTitle) =>
-    //             handleSessionDataChange("title", newTitle)
-    //           }
-    //           required={true}
-    //         />
-    //         <TextAreaField
-    //           title="Description"
-    //           value={sessionData.description}
-    //           placeholder={"Short description of the session"}
-    //           onChange={(newDescription) =>
-    //             handleSessionDataChange("description", newDescription)
-    //           }
-    //           required={true}
-    //         />
-    //         <div className="timeInput">
-    //           <InputTextField
-    //             title="Time Limit (in minutes)"
-    //             value={timeLimit}
-    //             inputType={"number"}
-    //             onChange={(newTimeLimit) => {
-    //               setTimeLimit(newTimeLimit);
-    //               handleSessionDataChange("time_limit", newTimeLimit * 60000);
-    //             }}
-    //             required={true}
-    //             min={1}
-    //           />
-    //           <InputDateField
-    //             title="Date"
-    //             value={sessionData.date ? formatDate(sessionData.date) : ""}
-    //             onChange={(newDate) =>
-    //               handleSessionDataChange(
-    //                 "date",
-    //                 newDate ? new Date(newDate).getTime() : 0
-    //               )
-    //             }
-    //             required={true}
-    //           />
-    //         </div>
-
-    //         <Checkbox
-    //           title="Record Session"
-    //           value={sessionData.record}
-    //           checked={sessionData.record}
-    //           onChange={() =>
-    //             handleSessionDataChange("record", !sessionData.record)
-    //           }
-    //           required={false}
-    //         />
-    //         <hr className="separatorLine"></hr>
-    //         <Heading heading={"Participants"} />
-    //         <div className="participantCheckboxes"></div>
-    //         <div className="sessionFormParticipants">
-    //           <div className="scrollableParticipants">
-    //             {openSession.participants.map((participant, index) => {
-    //               return (
-    //                 <ParticipantData
-    //                   onDeleteParticipant={() => onDeleteParticipant(index)}
-    //                   key={index}
-    //                   index={index}
-    //                   participantData={participant}
-    //                   sessionId={sessionData.id}
-    //                   handleParticipantChange={handleParticipantChange}
-    //                 />
-    //               );
-    //             })}
-    //           </div>
-    //           <ActionButton
-    //             text="Add new participant"
-    //             variant="contained"
-    //             color="primary"
-    //             size="large"
-    //             onClick={() => onAddParticipant()}
-    //           />
-    //         </div>
-    //         <hr className="separatorLine"></hr>
-    //       </div>
-
-    //       <div className="sessionFormButtons">
-    //         <ActionButton text="Save" variant="contained" color="primary" size="large" onClick={() => onSaveSession()} />
-    //         <LinkButton text="Start" variant="contained" size="large" path="/watchingRoom" />
-    //         <ActionButton
-    //           text="Random session data"
-    //           variant="contained"
-    //           color="primary"
-    //           size="large"
-    //           onClick={() => addRandomSessionData()}
-    //         />
-    //       </div>
-    //     </div>
-    //   )}
-    //   <ActionIconButton
-    //     text=""
-    //     variant="text"
-    //     color="primary"
-    //     size="large"
-    //     onClick={() => onShowSessionFormModal()}
-    //     icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
-    //   />
-    //   <div className="sessionFormCanvas">
-    //     <DragAndDrop
-    //       participantDimensions={participantDimensions}
-    //       setParticipantDimensions={setParticipantDimensions}
-    //     />
-    //   </div>
-    // </div>
   );
 }
 
