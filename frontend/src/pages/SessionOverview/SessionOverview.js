@@ -10,7 +10,7 @@ import { getPastAndFutureSessions } from "../../utils/utils";
 import HeroText from "../../components/atoms/HeroText/HeroText";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import ExpandLess from "@mui/icons-material/ExpandLess";
-import { ActionIconButton, LinkButton } from "../../components/atoms/Button";
+import { ActionIconButton, LinkActionButton } from "../../components/atoms/Button";
 import Typography from "@mui/material/Typography";
 import styled from '@mui/material/styles/styled';
 import Grid from "@mui/material/Grid";
@@ -68,7 +68,7 @@ function SessionOverview({
     <>
       <NavigationBar />
       <HeroText text={"Synchrony Experimental Hub"} />
-      <LinkButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
+      <LinkActionButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
       <WelcomeText>
         A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment. 
         See the <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.

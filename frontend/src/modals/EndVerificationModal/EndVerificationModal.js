@@ -23,6 +23,7 @@ function EndVerificationModal({ setShowModal, onEndExperiment }) {
           path="/"
           variant="contained"
           size="small"
+          color="success"
           onClick={() => endExperiment()}
         />
       </div>

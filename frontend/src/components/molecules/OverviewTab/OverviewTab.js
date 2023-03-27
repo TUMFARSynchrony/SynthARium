@@ -84,6 +84,8 @@ function OverviewTab({
         text="LEAVE EXPERIMENT"
         variant="outlined"
         path="/"
+        size="large"
+        color="primary"
         onClick={() => onLeaveExperiment()}
       />
       {sessionData.start_time === 0 ? (

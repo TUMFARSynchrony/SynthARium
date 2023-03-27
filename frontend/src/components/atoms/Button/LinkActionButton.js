@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 
-function LinkActionButton({ text, variant, path, size, onClick }) {
+function LinkActionButton({ text, variant, path, size, color, onClick }) {
     let navigate = useNavigate();
 
     const handleButtonClick = (() => {
@@ -10,7 +10,7 @@ function LinkActionButton({ text, variant, path, size, onClick }) {
 
     return (
         <>
-            <Button variant={variant} size={size} onClick={() => { handleButtonClick(); onClick(); }}>
+            <Button variant={variant} size={size} color={color} onClick={() => { handleButtonClick(); onClick(); }}>
                 {text}
             </Button>
         </>
