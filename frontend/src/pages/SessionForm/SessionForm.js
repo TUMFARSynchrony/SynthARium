@@ -19,7 +19,6 @@ import {
   deleteParticipant,
   initializeSession,
 } from "../../features/openSession";
-import { toast } from "react-toastify";
 import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
@@ -34,6 +33,7 @@ import Paper from "@mui/material/Paper";
 import AddIcon from '@mui/icons-material/Add';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import PeopleOutline from "@mui/icons-material/PeopleOutline";
+import CustomSnackbar from "../../components/molecules/CustomSnackbar";
 
 
 function SessionForm({ onSendSessionToBackend }) {
@@ -42,6 +42,7 @@ function SessionForm({ onSendSessionToBackend }) {
   const [sessionData, setSessionData] = useState(openSession);
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
   const [numOfParticipants, setNumOfParticipants] = useState();
+  const [openSaveSessionFailed, setOpenSaveSessionFailed] = useState(false);
 
   useEffect(() => {
     setSessionData(openSession);
@@ -101,7 +102,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onSaveSession = () => {
     if (!checkValidSession(sessionData)) {
-      toast.error("Failed to save session since required fields are missing!");
+      setOpenSaveSessionFailed(true);
       return;
     }
     onSendSessionToBackend(sessionData);
@@ -232,6 +233,8 @@ function SessionForm({ onSendSessionToBackend }) {
           </Paper>
         </Grid>
       </Grid>
+      <CustomSnackbar open={openSaveSessionFailed} text={"Failed to save session since required fields are missing!"} severity={"error"}
+        handleClose={() => setOpenSaveSessionFailed(false)} />;
     </>
 
     // <div className="sessionFormContainer">

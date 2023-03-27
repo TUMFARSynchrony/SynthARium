@@ -21,8 +21,9 @@ import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { getLocalStream, getSessionById } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
-import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { saveSession } from "./features/openSession";
+import CustomSnackbar from "./components/molecules/CustomSnackbar";
 import {
   changeExperimentState,
   createExperiment,
@@ -44,6 +45,13 @@ function App() {
   sessionsListRef.current = sessionsList;
   const ongoingExperimentRef = useRef();
   ongoingExperimentRef.current = ongoingExperiment;
+  const initialSnackbar = {
+    open: false,
+    text: "",
+    severity: "success"
+  };
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -189,16 +197,17 @@ function App() {
   };
 
   const handleDeletedSession = (data) => {
-    toast.success("Successfully deleted session with ID " + data);
+    setSnackbar({ open: true, text: `Successfully deleted session with ID ${data}`, severity: "success" });
     dispatch(deleteSession(data));
   };
 
   const handleSavedSession = (data) => {
+    navigate("/");
     if (getSessionById(data.id, sessionsListRef.current).length === 0) {
-      toast.success("Successfully created session " + data.title);
+      setSnackbar({ open: true, text: `Successfully created session ${data.title}`, severity: "success" });
       dispatch(createSession(data));
     } else {
-      toast.success("Successfully updated session " + data.title);
+      setSnackbar({ open: true, text: `Successfully updated session ${data.title}`, severity: "success" });
       dispatch(updateSession(data));
     }
 
@@ -206,11 +215,11 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    toast.success("SUCCESS: " + data.description);
+    setSnackbar({ open: true, text: `SUCCESS: ${data.description}`, severity: "success" });
   };
 
   const handleError = (data) => {
-    toast.error(data.description);
+    setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
   };
 
   const handleSessionChange = (data) => {
@@ -311,7 +320,6 @@ function App() {
 
   return (
     <div className="App">
-      <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true}/>
       {sessionsList ? (
         <Routes>
           <Route
@@ -401,6 +409,8 @@ function App() {
       ) : (
         <h1>Loading...</h1>
       )}
+      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)} />
     </div>
   );
 }
