@@ -12,6 +12,14 @@ from filters.filter import Filter
 from filters.zmq_au.openface_data_parser import OpenFaceDataParser
 from filters.zmq_au.openface_instantiator import OpenFaceInstantiator
 
+try:
+    shared_port: shared_memory.SharedMemory = shared_memory.SharedMemory(name="port", create=False, size=4)
+except:
+    shared_port: shared_memory.SharedMemory = shared_memory.SharedMemory(name="port", create=True, size=4)
+    shared_port.buf[:4] = bytearray((5555).to_bytes(4, "big"))
+
+lock: Lock = Lock()
+
 
 class ZMQFilter(Filter):
     """Filter example rotating a video track."""
@@ -30,19 +38,13 @@ class ZMQFilter(Filter):
         self.is_connected = False
 
         #ZMQFilter.port.buf[0] = (5555).to_bytes(4, "big")
-        """
-        try:
-            self.shared_port = shared_memory.SharedMemory(name="port", create=False, size=4)
-            self.is_creator = False
-        except:
-            self.shared_port = shared_memory.SharedMemory(name="port", create=True, size=4)
-            self.shared_port.buf[:4] = bytearray((5555).to_bytes(4, "big"))
-            self.is_creator = True
-        
+        self.shared_port = shared_memory.SharedMemory(name="port", create=False, size=4)
+
+        lock.acquire()
         self.port = int.from_bytes(bytes(self.shared_port.buf), "big")
         self.shared_port.buf[:4] = bytearray((self.port + 1).to_bytes(4, "big"))
-        """
-        self.port = 5555
+        lock.release()
+
         self.instantiator = OpenFaceInstantiator(self.port)
         self.writer = OpenFaceDataParser()
 
@@ -59,7 +61,7 @@ class ZMQFilter(Filter):
 
     def __del__(self):
         self.socket.close()
-        #self.shared_port.close()
+        self.shared_port.close()
 
 
     @staticmethod
