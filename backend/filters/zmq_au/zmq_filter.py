@@ -1,5 +1,4 @@
 """Provide `RotationFilter` filter."""
-from multiprocessing import shared_memory, Lock
 
 import cv2
 import json
@@ -10,15 +9,7 @@ from av import VideoFrame
 
 from filters.filter import Filter
 from filters.zmq_au.openface_data_parser import OpenFaceDataParser
-from filters.zmq_au.openface_instantiator import OpenFaceInstantiator
-
-try:
-    shared_port: shared_memory.SharedMemory = shared_memory.SharedMemory(name="port", create=False, size=4)
-except:
-    shared_port: shared_memory.SharedMemory = shared_memory.SharedMemory(name="port", create=True, size=4)
-    shared_port.buf[:4] = bytearray((5555).to_bytes(4, "big"))
-
-lock: Lock = Lock()
+from filters.zmq_au.openface import OpenFace
 
 
 class ZMQFilter(Filter):
@@ -26,26 +17,30 @@ class ZMQFilter(Filter):
     has_sent: bool
     socket: zmq.Socket
     frame: int
-    shared_port: shared_memory.SharedMemory
-    mutex: Lock = Lock()
 
     writer: OpenFaceDataParser
-    instantiator: OpenFaceInstantiator
+    open_face: OpenFace
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.has_sent = False
         self.is_connected = False
+        self.has_found_socket = False
 
-        #ZMQFilter.port.buf[0] = (5555).to_bytes(4, "big")
+        """
         self.shared_port = shared_memory.SharedMemory(name="port", create=False, size=4)
-
-        lock.acquire()
-        self.port = int.from_bytes(bytes(self.shared_port.buf), "big")
-        self.shared_port.buf[:4] = bytearray((self.port + 1).to_bytes(4, "big"))
-        lock.release()
-
-        self.instantiator = OpenFaceInstantiator(self.port)
+        self.lock = NamedAtomicLock("port")
+        try:
+            self.lock.acquire()
+            self.port = int.from_bytes(bytes(self.shared_port.buf), "big")
+            self.shared_port.buf[:4] = bytearray((self.port + 1).to_bytes(4, "big"))
+            self.lock.release()
+            self.has_found_socket = True
+        except Exception as e:
+            print(f"Error when trying to get or set the port: {e}")
+        """
+        self.open_face = OpenFace(6)
+        self.port = self.open_face.port
         self.writer = OpenFaceDataParser()
 
         context = zmq.Context()
@@ -61,8 +56,6 @@ class ZMQFilter(Filter):
 
     def __del__(self):
         self.socket.close()
-        self.shared_port.close()
-
 
     @staticmethod
     def name(self) -> str:
