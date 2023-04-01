@@ -4,6 +4,7 @@ import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
+import Lobby from "./pages/Lobby";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
@@ -344,6 +345,20 @@ function App() {
             element={
               connection ? (
                 <ExperimentRoom
+                  localStream={localStream}
+                  connection={connection}
+                />
+              ) : (
+                "Loading..."
+              )
+            }
+          />
+          <Route
+            exact
+            path="/lobby"
+            element={
+              connection ? (
+                <Lobby
                   localStream={localStream}
                   connection={connection}
                 />
