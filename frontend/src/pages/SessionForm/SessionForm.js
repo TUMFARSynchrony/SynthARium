@@ -212,12 +212,12 @@ function SessionForm({ onSendSessionToBackend }) {
                     <Box sx={{ '& .MuiTextField-root': { width: '18.5vw' }, }}>
                       <TextField value={sessionData.date ? formatDate(sessionData.date) : ""} type="datetime-local" size="small" required onChange={(event) =>
                         handleSessionDataChange("date", event.target.value ? new Date(event.target.value).getTime() : 0)} />
-                      <TextField label="Number of Participants" value={sessionData.participants.length} type="number" size="small"
+                      <TextField label="Number of Participants" value={sessionData.participants.length} type="number" size="small" disabled
                         onChange={(num) => setNumOfParticipants(num)} />
                     </Box>
                     <Box sx={{ mt: 1, mb: 3 }}>
                       <FormControlLabel control={<Checkbox defaultChecked />} label="Record Session" checked={sessionData.record} onChange={() => handleSessionDataChange("record", !sessionData.record)} />
-                      <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} />
+                      {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
                     </Box>
                   </Box>
 
@@ -242,7 +242,7 @@ function SessionForm({ onSendSessionToBackend }) {
                 </CardContent>
               </Box>
               <Box sx={{ my: 1 }}>
-                <ActionButton text="RANDOM SESSION DATA" variant="contained" color="primary" size="medium" onClick={() => addRandomSessionData()} />
+                {/* <ActionButton text="RANDOM SESSION DATA" variant="contained" color="primary" size="medium" onClick={() => addRandomSessionData()} /> */}
                 <ActionButton text="SAVE SESSION" variant="contained" color="success" size="medium" onClick={() => onSaveSession()} />
               </Box>
             </Card>
