@@ -19,7 +19,7 @@ import {
   deleteParticipant,
   initializeSession,
 } from "../../features/openSession";
-import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
+import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import Box from "@mui/material/Box";
@@ -191,14 +191,14 @@ function SessionForm({ onSendSessionToBackend }) {
 
   return (
     <>
-      <Grid container sx={{ mx: 4, my: 3 }}>
+      <Grid container sx={{ mx: 4, my: 2 }}>
         {showSessionDataForm && (
           <Grid item sm={5}>
             <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
-              <ChevronLeft sx={{ color: "gray" }} />
-              <Link href="/" variant="body2" sx={{ color: "gray", textDecorationColor: "gray", fontWeight: "bold" }}>
-                Back to Session Overview
-              </Link>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <ChevronLeft sx={{ color: "gray" }} />
+              </Box>
+              <LinkButton text="Back to Session Overview" variant="text" size="small" path="/" />
             </Box>
             <Card elevation={3}>
               <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>Session Details</Typography>
