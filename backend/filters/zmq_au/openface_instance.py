@@ -4,7 +4,7 @@ import subprocess
 from filters.zmq_au.port_manager import PortManager
 
 
-class OpenFace:
+class OpenFaceInstance:
     def __init__(self, port: int):
         self._port_manager = PortManager()
         self.port = self._port_manager.port

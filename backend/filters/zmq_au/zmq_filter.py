@@ -8,8 +8,9 @@ import numpy
 from av import VideoFrame
 
 from filters.filter import Filter
+from filters.line_writer import LineWriter
 from filters.zmq_au.openface_data_parser import OpenFaceDataParser
-from filters.zmq_au.openface import OpenFace
+from filters.zmq_au.openface_instance import OpenFaceInstance
 
 
 class ZMQFilter(Filter):
@@ -19,7 +20,8 @@ class ZMQFilter(Filter):
     frame: int
 
     writer: OpenFaceDataParser
-    open_face: OpenFace
+    open_face: OpenFaceInstance
+    line_writer: LineWriter
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
@@ -27,21 +29,10 @@ class ZMQFilter(Filter):
         self.is_connected = False
         self.has_found_socket = False
 
-        """
-        self.shared_port = shared_memory.SharedMemory(name="port", create=False, size=4)
-        self.lock = NamedAtomicLock("port")
-        try:
-            self.lock.acquire()
-            self.port = int.from_bytes(bytes(self.shared_port.buf), "big")
-            self.shared_port.buf[:4] = bytearray((self.port + 1).to_bytes(4, "big"))
-            self.lock.release()
-            self.has_found_socket = True
-        except Exception as e:
-            print(f"Error when trying to get or set the port: {e}")
-        """
-        self.open_face = OpenFace(6)
+        self.open_face = OpenFaceInstance(6)
         self.port = self.open_face.port
         self.writer = OpenFaceDataParser()
+        self.line_writer = LineWriter()
 
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
@@ -65,13 +56,7 @@ class ZMQFilter(Filter):
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
         if not self.is_connected:
-            origin = (50, 50)
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_size = 1
-            color = (0, 255, 0)
-            thickness = 2
-            ndarray = cv2.putText(ndarray, f"Port {self.port} is already taken!", origin, font, font_size,
-                                  color, thickness)
+            ndarray = self.line_writer.write_line(ndarray, f"Port {self.port} is already taken!")
             return ndarray
 
         self.frame = self.frame + 1
@@ -88,14 +73,7 @@ class ZMQFilter(Filter):
                     self.socket.send(im_64)
                     self.has_sent = True
                 except zmq.ZMQError as e:
-                    origin = (50, 50)
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    font_size = 1
-                    color = (0, 255, 0)
-                    thickness = 2
-                    ndarray = cv2.putText(ndarray, "No OwnExtractor found!", origin,
-                                          font, font_size,
-                                          color, thickness)
+                    ndarray = self.line_writer.write_line(ndarray, "No OwnExtractor found!")
                     return ndarray
 
         else:
@@ -112,21 +90,14 @@ class ZMQFilter(Filter):
                 # print("waiting")
                 # ndarray = cv2.putText(ndarray, "waiting", origin + (50, 50), font, font_size, color)
 
-        origin = (50, 50)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_size = 1
-        color = (0, 255, 0)
-        thickness = 2
         # Put text on image
         au06 = self.data["intensity"]["AU06"]
         au12 = self.data["intensity"]["AU12"]
-        ndarray = cv2.putText(ndarray, f"AU06: {au06}", origin, font, font_size, color, thickness)
-        ndarray = cv2.putText(ndarray, f"AU12: {au12}", (50, 100), font, font_size, color, thickness)
-        ndarray = cv2.putText(ndarray, f"Port: {self.port}", (50, 150), font, font_size, color, thickness)
+        ndarray = self.line_writer.write_lines(ndarray, [f"AU06: {au06}", f"AU12: {au12}", f"Port: {self.port}"])
         return ndarray
 
     def _cv2_encode(self, ndarray: numpy.ndarray):
-        is_success, image_enc = cv2.imencode(".jpg", ndarray)
+        is_success, image_enc = cv2.imencode(".png", ndarray)
         # print(type(image_enc))
         if is_success:
             im_bytes = bytearray(image_enc.tobytes())
