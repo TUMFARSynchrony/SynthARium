@@ -4,8 +4,6 @@ import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import SessionForm from "./pages/SessionForm/SessionForm";
-import Lobby from "./pages/Lobby";
-import { ActionButton } from "./components/atoms/Button";
 import Connection from "./networking/Connection";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
@@ -31,7 +29,6 @@ import {
   createExperiment,
   joinExperiment,
 } from "./features/ongoingExperiment";
-import WelcomeModal from "./modals/WelcomeModal";
 
 
 function App() {
@@ -39,7 +36,7 @@ function App() {
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
-  // let [searchParams, setSearchPa`rams] = useSearchParams();
+  let [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
@@ -55,13 +52,7 @@ function App() {
     severity: "success"
   };
   const [snackbar, setSnackbar] = useState(initialSnackbar);
-  const [userType, setUserType] = useState();
-  const [openUserTypeDialog, setOpenUserTypeDialog] = useState(true);
-  const [sessionId, setSessionId] = useState();
-  const [participantId, setParticipantId] = useState();
-
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
 
   const connectedPeersChangeHandler = async (peers) => {
@@ -125,57 +116,43 @@ function App() {
     };
   }, [connection]);
 
-  // useEffect(() => {
-  const createConnection = () => {
+  useEffect(() => {
     const closeConnection = () => {
       connection?.stop();
     };
 
-    //   const sessionIdParam = searchParams.get("sessionId");
-    //   const participantIdParam = searchParams.get("participantId");
-    //   const experimenterPasswordParam = searchParams.get("experimenterPassword");
+    const sessionIdParam = searchParams.get("sessionId");
+    const participantIdParam = searchParams.get("participantId");
+    const experimenterPasswordParam = searchParams.get("experimenterPassword");
 
-    //   const sessionId = sessionIdParam ? sessionIdParam : "";
-    //   const participantId = participantIdParam ? participantIdParam : "";
-    //   let experimenterPassword = experimenterPasswordParam ?? "";
-    //   const userType =
-    //     sessionId && participantId ? "participant" : "experimenter";
+    const sessionId = sessionIdParam ? sessionIdParam : "";
+    const participantId = participantIdParam ? participantIdParam : "";
+    let experimenterPassword = experimenterPasswordParam ?? "";
+    const userType =
+      sessionId && participantId ? "participant" : "experimenter";
 
-    let experimenterPassword = "no-password-given";
     const pathname = window.location.pathname.toLowerCase();
-    const isConnectionTestPage = pathname === "/connectionTest" || pathname === "/connectionLatencyTest";
+    const isConnectionTestPage = pathname === "/connectiontest" || pathname === "/connectionlatencytest";
 
     //   // TODO: get experimenter password before creating Connection, e.g. from "login" page
     //   // The following solution using `prompt` is only a placeholder.
-    //   if (
-    //     !isConnectionTestPage &&
-    //     userType === "experimenter" &&
-    //     !experimenterPassword
-    //   ) {
-    //     //experimenterPassword = prompt("Please insert experimenter password");
-    //     experimenterPassword = "no-password-given";
-    //   }
-
-    //   const asyncStreamHelper = async (connection) => {
-    //     const stream = await getLocalStream();
-    //     if (stream) {
-    //       setLocalStream(stream);
-    //       // Start connection if current page is not connection test page
-    //       if (!isConnectionTestPage) {
-    //         connection.start(stream);
-    //       }
-    //     }
-    //   };
+    if (
+      !isConnectionTestPage &&
+      userType === "experimenter" &&
+      !experimenterPassword
+    ) {
+      //experimenterPassword = prompt("Please insert experimenter password");
+      experimenterPassword = "no-password-given";
+    }
 
     const asyncStreamHelper = async (connection) => {
-      let stream;
-      if (userType === "participant") {
-        stream = await getLocalStream();
+      const stream = await getLocalStream();
+      if (stream) {
         setLocalStream(stream);
-        connection.start(stream);
-      }
-      else if (userType === "experimenter") {
-        connection.start();
+        // Start connection if current page is not connection test page
+        if (!isConnectionTestPage) {
+          connection.start(stream);
+        }
       }
     };
 
@@ -188,17 +165,15 @@ function App() {
     );
 
     setConnection(newConnection);
-    asyncStreamHelper(newConnection);
+    if (userType === "participant" && pathname !== "/connectionlatencytest") {
+      asyncStreamHelper(newConnection);
+      return;
+    }
 
-    //   if (userType === "participant" && pathname !== "/connectionlatencytest") {
-    //     asyncStreamHelper(newConnection);
-    //     return;
-    //   }
-
-    //   // Start connection if current page is not connection test page
-    //   if (!isConnectionTestPage) {
-    //     newConnection.start();
-    //   }
+    // Start connection if current page is not connection test page
+    if (!isConnectionTestPage) {
+      newConnection.start();
+    }
 
     window.addEventListener("beforeunload", closeConnection);
 
@@ -206,8 +181,7 @@ function App() {
       window.removeEventListener("beforeunload", closeConnection);
       closeConnection();
     };
-    // }, []);
-  };
+  }, []);
 
   useEffect(() => {
     if (!connection || connectionState !== ConnectionState.CONNECTED) {
@@ -345,18 +319,6 @@ function App() {
 
   return (
     <div className="App">
-      <WelcomeModal
-        userType={userType}
-        setUserType={setUserType}
-        openUserTypeDialog={openUserTypeDialog}
-        setOpenUserTypeDialog={setOpenUserTypeDialog}
-        sessionId={sessionId}
-        setSessionId={setSessionId}
-        participantId={participantId}
-        setParticipantId={setParticipantId}
-        createConnection={createConnection}
-      />
-
       {sessionsList ? (
         <Routes>
           <Route
@@ -381,20 +343,6 @@ function App() {
             element={
               connection ? (
                 <ExperimentRoom
-                  localStream={localStream}
-                  connection={connection}
-                />
-              ) : (
-                "Loading..."
-              )
-            }
-          />
-          <Route
-            exact
-            path="/lobby"
-            element={
-              connection ? (
-                <Lobby
                   localStream={localStream}
                   connection={connection}
                 />
