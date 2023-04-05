@@ -3,7 +3,7 @@ from NamedAtomicLock import NamedAtomicLock
 
 
 def find_open_slot(current_slots: int):
-    for i in range(0, 10):
+    for i in range(0, 8):
         first_free = (current_slots & (1 << i))
         if not first_free:
             return i
