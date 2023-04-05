@@ -57,13 +57,13 @@ function OverviewTab({
           <div>
             <Label title={"Starting time: "} />
             {sessionData.start_time > 0
-              ? integerToDateTime(sessionData.start_time).toLocaleString()
+              ? integerToDateTime(sessionData.start_time)
               : "Not started yet"}
           </div>
           <div>
             <Label title={"Ending time: "} />{" "}
             {sessionData.end_time > 0
-              ? integerToDateTime(sessionData.start_time).toLocaleString()
+              ? integerToDateTime(sessionData.start_time)
               : "Not ended yet"}
           </div>
         </div>

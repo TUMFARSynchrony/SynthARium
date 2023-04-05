@@ -17,10 +17,7 @@ function SessionCard({ title, date, description, onClick, selected }) {
             </Typography>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography>
-                {integerToDateTime(date).toLocaleDateString()}
-              </Typography>
-              <Typography>
-                {integerToDateTime(date).toLocaleTimeString()}
+                {integerToDateTime(date)}
               </Typography>
             </Box>
             <Typography align="left" noWrap={true}>
