@@ -3,10 +3,9 @@ import os
 
 
 class OpenFaceDataParser:
-    def __init__(self):
+    def __init__(self, filename: str):
         # TODO: get session and participant id
         path = "sessions/ae839e5e6f/OpenFace/"
-        filename = "9ba5fdccde"
         appendix = ".csv"
 
         if not os.path.exists("sessions/ae839e5e6f/OpenFace"):
