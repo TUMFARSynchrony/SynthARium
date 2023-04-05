@@ -6,7 +6,8 @@ export default function AppToolbar() {
     const AppToolbar = styled(Toolbar)(({ theme }) => ({
         backgroundColor: "#899499",
         color: "white",
-        fontWeight: "bold"
+        fontWeight: "bold",
+        height: "8vh"
     }));
 
     return (
