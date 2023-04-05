@@ -8,7 +8,7 @@ import numpy
 from av import VideoFrame
 
 from filters.filter import Filter
-from filters.line_writer import LineWriter
+from filters.simple_line_writer import SimpleLineWriter
 from filters.zmq_au.openface_data_parser import OpenFaceDataParser
 from filters.zmq_au.openface_instance import OpenFaceInstance
 
@@ -21,7 +21,7 @@ class ZMQFilter(Filter):
 
     writer: OpenFaceDataParser
     open_face: OpenFaceInstance
-    line_writer: LineWriter
+    line_writer: SimpleLineWriter
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
@@ -32,7 +32,7 @@ class ZMQFilter(Filter):
         self.open_face = OpenFaceInstance(6)
         self.port = self.open_face.port
         self.writer = OpenFaceDataParser()
-        self.line_writer = LineWriter()
+        self.line_writer = SimpleLineWriter()
 
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
@@ -44,6 +44,7 @@ class ZMQFilter(Filter):
 
         self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
+        self.zmq_count = 0
 
     def __del__(self):
         self.socket.close()
@@ -81,11 +82,13 @@ class ZMQFilter(Filter):
                 message = self.socket.recv(flags=zmq.NOBLOCK)
                 self.data = json.loads(message)
                 self.has_sent = False
-                self.writer.write(self.frame, self.data)
+                self.zmq_count = self.zmq_count + 1
+                self.writer.write(self.zmq_count, self.data)
 
                 # print(self.data["intensity"]["AU06"])
             except zmq.Again as e:
-                self.writer.write(self.frame, {"intensity": -1})
+                #self.writer.write(self.frame, {"intensity": -1})
+                self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
                 pass
                 # print("waiting")
                 # ndarray = cv2.putText(ndarray, "waiting", origin + (50, 50), font, font_size, color)
@@ -93,7 +96,7 @@ class ZMQFilter(Filter):
         # Put text on image
         au06 = self.data["intensity"]["AU06"]
         au12 = self.data["intensity"]["AU12"]
-        ndarray = self.line_writer.write_lines(ndarray, [f"AU06: {au06}", f"AU12: {au12}", f"Port: {self.port}"])
+        ndarray = self.line_writer.write_lines(ndarray, [f"AU06: {au06}", f"AU12: {au12}", f"Port: {self.port}", f"{self.frame}"])
         return ndarray
 
     def _cv2_encode(self, ndarray: numpy.ndarray):

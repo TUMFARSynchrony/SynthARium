@@ -9,7 +9,7 @@ class OpenFaceInstance:
         self._port_manager = PortManager()
         self.port = self._port_manager.port
         try:
-            self.openface_process = subprocess.Popen(["../../cmake-build-release/bin/OwnExtractor", f"{self.port}"], stdout=subprocess.PIPE)
+            self.openface_process = subprocess.Popen(["../../build/bin/OwnExtractor", f"{self.port}"], stdout=subprocess.PIPE)
         except:
             pass
 

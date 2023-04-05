@@ -2,7 +2,7 @@ import cv2
 import numpy
 
 
-class LineWriter:
+class SimpleLineWriter:
     def __init__(self):
         self.origin = (50, 50)
         self.font = cv2.FONT_HERSHEY_SIMPLEX
