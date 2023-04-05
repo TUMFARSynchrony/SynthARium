@@ -10,6 +10,16 @@ from .rotate import RotationFilter
 from .mute import MuteAudioFilter, MuteVideoFilter
 from .delay import DelayFilter
 from .zmq_au import ZMQFilter
+from .zmq_au import ZMQFilterA
+from .zmq_au import ZMQFilterB
+from .zmq_au import ZMQFilterC
+from .zmq_au import ZMQFilterD
+from .zmq_au import ZMQFilterE
+from .zmq_au import ZMQFilterF
+from .zmq_au import ZMQFilterG
+from .zmq_au import ZMQFilterH
+from .zmq_au import ZMQFilterI
+from .zmq_au import ZMQFilterJ
 
 # Do not import filters after here
 from . import filter_factory
