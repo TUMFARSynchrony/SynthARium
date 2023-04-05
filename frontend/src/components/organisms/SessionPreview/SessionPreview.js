@@ -23,8 +23,7 @@ import EditOutlined from "@mui/icons-material/EditOutlined";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import { getParticipantInviteLink } from "../../../utils/utils";
 import CustomSnackbar from "../../molecules/CustomSnackbar";
-// REMOVE: Use temporarily until fiters backend API connection is established
-// import sessionData from '../../../bbbef1d7d0.json';
+
 
 function SessionPreview({
   selectedSession,
@@ -63,8 +62,7 @@ function SessionPreview({
   };
 
   const experimentOngoing = selectedSession.creation_time > 0 && selectedSession.end_time === 0;
-  // REMOVE: Use temporarily until fiters backend API connection is established
-  // selectedSession = sessionData;
+
 
   return (
     <Card sx={{
