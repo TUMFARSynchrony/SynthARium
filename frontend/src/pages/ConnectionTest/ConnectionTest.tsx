@@ -402,13 +402,103 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
         </button>
         <button
           onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
+            participant_id: "a",
             audio_filters: [],
-            video_filters: [{ type: "ZMQ", id: "zmq" }],
+            video_filters: [{ type: "ZMQ_a", id: "zmq" }],
           })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          AU
+          AU "a"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "b",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_b", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "b"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "c",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_c", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "c"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "d",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_d", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "d"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "e",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_e", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "e"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "f",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_f", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "f"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "g",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_g", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "g"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "h",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_h", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "h"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "i",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_i", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "i"
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("SET_FILTERS", {
+            participant_id: "j",
+            audio_filters: [],
+            video_filters: [{ type: "ZMQ_j", id: "zmq" }],
+          })}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          AU "j"
         </button>
         <button
           onClick={() => props.connection.sendMessage("SET_FILTERS", {
