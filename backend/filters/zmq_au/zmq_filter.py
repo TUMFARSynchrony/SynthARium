@@ -44,7 +44,7 @@ class ZMQFilter(Filter):
 
         self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
-        self.zmq_count = 0
+        # self.zmq_count = 0
 
     def __del__(self):
         self.socket.close()
@@ -62,7 +62,7 @@ class ZMQFilter(Filter):
 
         self.frame = self.frame + 1
         if not self.has_sent:
-            is_success, image_enc = cv2.imencode(".jpg", ndarray)
+            is_success, image_enc = cv2.imencode(".png", ndarray)
             # print(type(image_enc))
             if is_success:
                 im_bytes = bytearray(image_enc.tobytes())
@@ -82,13 +82,13 @@ class ZMQFilter(Filter):
                 message = self.socket.recv(flags=zmq.NOBLOCK)
                 self.data = json.loads(message)
                 self.has_sent = False
-                self.zmq_count = self.zmq_count + 1
-                self.writer.write(self.zmq_count, self.data)
+                # self.zmq_count = self.zmq_count + 1
+                self.writer.write(self.frame, self.data)
 
                 # print(self.data["intensity"]["AU06"])
             except zmq.Again as e:
-                #self.writer.write(self.frame, {"intensity": -1})
-                self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
+                self.writer.write(self.frame, {"intensity": -1})
+                #self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
                 pass
                 # print("waiting")
                 # ndarray = cv2.putText(ndarray, "waiting", origin + (50, 50), font, font_size, color)
@@ -96,7 +96,7 @@ class ZMQFilter(Filter):
         # Put text on image
         au06 = self.data["intensity"]["AU06"]
         au12 = self.data["intensity"]["AU12"]
-        ndarray = self.line_writer.write_lines(ndarray, [f"AU06: {au06}", f"AU12: {au12}", f"Port: {self.port}", f"{self.frame}"])
+        ndarray = self.line_writer.write_lines(ndarray, [f"AU06: {au06}", f"AU12: {au12}", f"Port: {self.port}"])
         return ndarray
 
     def _cv2_encode(self, ndarray: numpy.ndarray):
