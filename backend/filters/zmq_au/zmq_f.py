@@ -30,7 +30,7 @@ class ZMQFilterF(Filter):
         self.has_found_socket = False
 
         # self.open_face = OpenFaceInstance(6)
-        self.port = 5510 #self.open_face.port
+        self.port = 5560 #self.open_face.port
         self.writer = OpenFaceDataParser("9ba5fdccde")
         self.line_writer = SimpleLineWriter()
 
