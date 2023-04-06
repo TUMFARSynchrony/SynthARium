@@ -23,8 +23,7 @@ class ZMQFilter(Filter):
 
         self.au_extractor = OpenFaceAUExtractor()
         self.line_writer = SimpleLineWriter()
-
-        self.file_writer = OpenFaceDataParser("9ba5fdccde")
+        self.file_writer = OpenFaceDataParser()
 
         self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
@@ -41,6 +40,9 @@ class ZMQFilter(Filter):
 
         if exit_code == 0:
             self.data = result
+            self.file_writer.write(self.frame, self.data)
+        else:
+            self.file_writer.write(self.frame, {"intensity": "-1"})
 
         # Put text on image
         au06 = self.data["intensity"]["AU06"]
