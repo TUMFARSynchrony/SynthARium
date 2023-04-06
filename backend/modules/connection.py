@@ -25,7 +25,7 @@ from custom_types.error import ErrorDict
 from filters import FilterDict
 from modules.filter_api_interface import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
     RTCSessionDescriptionDict,
     ConnectionProposalDict,

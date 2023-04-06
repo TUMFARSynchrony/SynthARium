@@ -12,7 +12,7 @@ import logging
 import os
 from typing import Any, Coroutine
 
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
@@ -22,7 +22,7 @@ import modules.experiment as _exp
 from modules.experiment_state import ExperimentState
 from modules.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
-from modules.data import ParticipantData
+from session.data.participant import ParticipantData
 from users.user import User
 
 
@@ -65,7 +65,7 @@ class Participant(User):
             Unique identifier for Participant.  Must exist in experiment.
         experiment : modules.experiment.Experiment
             Experiment the participant is part of.
-        participant_data : modules.data.ParticipantData
+        participant_data : session.data.participant.ParticipantData
             Participant data this participant represents.
 
         See Also

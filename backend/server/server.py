@@ -10,7 +10,7 @@ from aiortc import RTCSessionDescription
 from ssl import SSLContext
 from os.path import join
 
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 

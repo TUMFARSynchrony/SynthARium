@@ -1,6 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from session.data.participant import ParticipantDict, ParticipantSummaryDict
+
 from dataclasses import dataclass, field
 
+from custom_types.chat_message import ChatMessageDict
+from filters import FilterDict
 from session.data.base_data import BaseData
+
 from session.data.position.position_data import PositionData
 from session.data.size.size_data import SizeData
 

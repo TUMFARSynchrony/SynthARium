@@ -8,7 +8,7 @@ from modules.connection_state import ConnectionState
 
 from filters import FilterDict
 from custom_types.message import MessageDict
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.connection import (
     ConnectionOfferDict,
     ConnectionAnswerDict,

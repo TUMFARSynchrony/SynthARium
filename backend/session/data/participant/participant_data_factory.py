@@ -1,4 +1,5 @@
-from session.data.participant_data import ParticipantData
+from session.data.participant import ParticipantDict
+from session.data.participant.participant_data import ParticipantData
 from session.data.position.position_data import PositionData
 from session.data.size.size_data import SizeData
 
@@ -13,7 +14,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
 
     Returns
     -------
-    modules.data.ParticipantData
+    session.data.participant.ParticipantData
         ParticipantData based on the data in `participant_dict`.
     """
     size = participant_dict["size"]

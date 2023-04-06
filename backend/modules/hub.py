@@ -6,7 +6,7 @@ import asyncio
 import logging
 
 from custom_types.message import MessageDict
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 
 from modules.experiment import Experiment
 from modules.util import generate_unique_id

@@ -6,7 +6,7 @@ Use for type hints and static type checking without any overhead during runtime.
 from __future__ import annotations
 from typing import Any, Literal, TypeGuard, TypedDict, get_args
 
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 
 import custom_types.util as util
 

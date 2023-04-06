@@ -23,7 +23,7 @@ from custom_types.error import ErrorDict
 from filters import FilterDict
 from custom_types.message import MessageDict
 from custom_types.connection import RTCSessionDescriptionDict
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.connection import ConnectionOfferDict, ConnectionAnswerDict
 
 

@@ -7,7 +7,7 @@ from typing import Any, TypeGuard, TypedDict
 
 import custom_types.util as util
 
-from custom_types.participant import ParticipantDict, is_valid_participant
+from session.data.participant import ParticipantDict, is_valid_participant
 from custom_types.note import NoteDict, is_valid_note
 
 

@@ -19,7 +19,7 @@ from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
 from custom_types.message import MessageDict
-from custom_types.participant_summary import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.connection import ConnectionOfferDict, is_valid_connection_offer_dict
 
 import modules.experiment as _exp
