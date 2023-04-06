@@ -13,7 +13,8 @@ from modules.exceptions import ErrorDictException
 
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.position import PositionDict
-from session.data.size import SizeDict
+from session.data.base_data import BaseData
+from session.data.size import SizeDict, SizeData
 from custom_types.participant import ParticipantDict
 from custom_types.chat_message import ChatMessageDict
 from filters import FilterDict
@@ -24,87 +25,8 @@ from custom_types.session import (
     get_filtered_participant_ids,
 )
 
-
 @dataclass(slots=True)
-class _BaseDataClass(AsyncIOEventEmitter):
-    """Base dataclass with update recognition and handling.
-
-    When data is changed and `_emit_updates` is true, a `update` event is emitted with
-    self as data.
-    """
-
-    _emit_updates: bool | None = field(repr=False, init=False, default=False)
-    """If true, a `update` event is emitted on changes to class variables.
-
-    Only disable temporarily for bulk updates.
-    """
-
-    def __post_init__(self):
-        """Initialize AsyncIOEventEmitter and set `_emit_updates` to true."""
-        super(_BaseDataClass, self).__init__()
-        self._emit_updates = True
-
-    def __setattr__(self, _name: str, _value: Any) -> None:
-        """Recognize changes to variables in this class and call `_emit_update_event`.
-
-        Ignores updates to private variables, including `_emit_updates` and private
-        variables in parent class.
-        """
-        object.__setattr__(self, _name, _value)
-        if _name[0] != "_":
-            self._emit_update_event()
-
-    def _emit_update_event(self, _=None):
-        """Emit an `update` event if `_emit_updates` is true."""
-        try:
-            if self._emit_updates:
-                self.emit("update", self)
-        except AttributeError as e:
-            pass
-
-
-@dataclass(slots=True)
-class SizeData(_BaseDataClass):
-    """Size data with update handling.
-
-    Will forward any updates to the parent SessionData, making sure all changes are
-    persistent.
-
-    Attributes
-    ----------
-    width : int or float
-    height : int or float
-
-    Methods
-    -------
-    asdict()
-        Get SizeData as dictionary.
-
-    Note
-    ----
-    Special methods, such as __init__, __str__, __repr__ and equality checks are
-    generated automatically by dataclasses.dataclass.
-    """
-
-    width: int | float
-    height: int | float
-
-    def asdict(self) -> SizeDict:
-        """Get SizeData as dictionary.
-
-        Returns
-        -------
-        custom_types.size_types.SizeDict
-            SizeDict with the data in this SizeData.
-        """
-        return {
-            "width": self.width,
-            "height": self.height,
-        }
-
-
-@dataclass(slots=True)
-class PositionData(_BaseDataClass):
+class PositionData(BaseData):
     """Position data with update handling.
 
     Will forward any updates to the parent SessionData, making sure all changes are
@@ -150,7 +72,7 @@ class PositionData(_BaseDataClass):
 
 
 @dataclass(slots=True)
-class ParticipantData(_BaseDataClass):
+class ParticipantData(BaseData):
     """participant data with update handling.
 
     Will forward any updates to the parent SessionData, making sure all changes are
@@ -313,7 +235,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
 
 
 @dataclass(slots=True)
-class SessionData(_BaseDataClass):
+class SessionData(BaseData):
     """Session data with update handling.
 
     Will forward any updates to the SessionManager, making sure all changes are
