@@ -13,7 +13,7 @@ from modules.exceptions import ErrorDictException
 
 from custom_types.participant_summary import ParticipantSummaryDict
 from custom_types.position import PositionDict
-from custom_types.size import SizeDict
+from session.data.size import SizeDict
 from custom_types.participant import ParticipantDict
 from custom_types.chat_message import ChatMessageDict
 from filters import FilterDict
@@ -94,7 +94,7 @@ class SizeData(_BaseDataClass):
 
         Returns
         -------
-        custom_types.size.SizeDict
+        custom_types.size_types.SizeDict
             SizeDict with the data in this SizeData.
         """
         return {

@@ -5,7 +5,7 @@ Use for type hints and static type checking without any overhead during runtime.
 
 from typing import TypedDict
 
-from custom_types.size import SizeDict
+from session.data.size import SizeDict
 from custom_types.position import PositionDict
 from custom_types.chat_message import ChatMessageDict
 
@@ -27,7 +27,7 @@ class ParticipantSummaryDict(TypedDict):
         Last name of the participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
-    size : custom_types.size.SizeDict
+    size : custom_types.size_types.SizeDict
         Size of the participant's stream on the canvas.
     chat : list of custom_types.chat_log.ChatLogDict
         Chat log between experimenter and participant.

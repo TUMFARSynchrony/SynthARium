@@ -1,6 +1,6 @@
 from session.data.participant_data import ParticipantData
 from session.data.position_data import PositionData
-from session.data.size_data import SizeData
+from session.data.size.size_data import SizeData
 
 
 def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantData:

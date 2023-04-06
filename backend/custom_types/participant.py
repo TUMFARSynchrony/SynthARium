@@ -8,7 +8,7 @@ from typing import TypeGuard, TypedDict
 import custom_types.util as util
 
 from filters import filter_utils
-from custom_types.size import SizeDict, is_valid_size
+from session.data.size import SizeDict, is_valid_size
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
 from custom_types.position import PositionDict, is_valid_position
 from filters import FilterDict
@@ -38,7 +38,7 @@ class ParticipantDict(TypedDict):
         Active video filters for this participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
-    size : custom_types.size.SizeDict
+    size : custom_types.size_types.SizeDict
         Size of the participant's stream on the canvas.
     chat : list of custom_types.chat_log.ChatLogDict
         Chat log between experimenter and participant.

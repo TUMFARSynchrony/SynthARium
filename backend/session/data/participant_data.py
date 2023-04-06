@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from session.data.base_data import BaseData
 from session.data.position_data import PositionData
-from session.data.size_data import SizeData
+from session.data.size.size_data import SizeData
 
 
 @dataclass(slots=True)

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from session.data.base_data import BaseData
+from session.data.size.size_dict import SizeDict
 
 
 @dataclass(slots=True)
@@ -34,7 +35,7 @@ class SizeData(BaseData):
 
         Returns
         -------
-        custom_types.size.SizeDict
+        custom_types.size_types.SizeDict
             SizeDict with the data in this SizeData.
         """
         return {
