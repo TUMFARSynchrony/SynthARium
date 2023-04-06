@@ -17,7 +17,7 @@ from modules import BACKEND_DIR
 class SessionManager:
     """Manages session data.
 
-    Implements loading and storing sessions from and to the drive.  If a
+    Implements loading and storing sessions from and to the drive. If a
     session is updated, the SessionManager will update the data on the
     drive to ensure persistency.
 
@@ -74,12 +74,12 @@ class SessionManager:
         response = [s.asdict() for s in list(self._sessions.values())]
         return response
 
-    def get_session(self, id: str):
+    def get_session(self, session_id: str):
         """Get the session with the given id.
 
         Parameters
         ----------
-        id : str
+        session_id : str
             Session id of the requested session.
 
         Returns
@@ -88,7 +88,7 @@ class SessionManager:
             None if `id` does not correlate to a known session, otherwise
             session data.
         """
-        return self._sessions.get(id)
+        return self._sessions.get(session_id)
 
     def create_session(self, session_dict: SessionDict):
         """Instantiate a new session with the given session data.
@@ -175,12 +175,12 @@ class SessionManager:
         self._write(session.asdict())
         return session
 
-    def delete_session(self, id: str):
+    def delete_session(self, session_id: str):
         """Delete the session with `id`.
 
         Parameters
         ----------
-        id : str
+        session_id : str
             Session id of the session data that will be deleted.
 
         Returns
@@ -194,9 +194,9 @@ class SessionManager:
         ErrorDictException
             If there is no session with `id` or `creation_time` of the session is > 0.
         """
-        if id not in self._sessions:
+        if session_id not in self._sessions:
             self._logger.warning(
-                f"[SessionManager] Cannot delete session, no session with this ID: {id}"
+                f"[SessionManager] Cannot delete session, no session with this ID: {session_id}"
                 " found"
             )
             raise ErrorDictException(
@@ -206,7 +206,7 @@ class SessionManager:
             )
 
         # Check if creation_time > 0 / an experiment is running for this session
-        if self._sessions[id].creation_time > 0:
+        if self._sessions[session_id].creation_time > 0:
             raise ErrorDictException(
                 code=409,
                 type="EXPERIMENT_RUNNING",
@@ -215,9 +215,9 @@ class SessionManager:
                 ),
             )
 
-        self._logger.info(f"Deleting session with ID: {id}")
-        self._delete_file(f"{id}.json")
-        return self._sessions.pop(id, None) != None
+        self._logger.info(f"Deleting session with ID: {session_id}")
+        self._delete_file(f"{session_id}.json")
+        return self._sessions.pop(session_id, None) is not None
 
     def _handle_session_update(self, session_data: SessionData):
         """Update session data changes on the drive.
@@ -330,7 +330,7 @@ class SessionManager:
             json.dump(session_dict, file, indent=4)
 
     def _delete_file(self, filename: str):
-        """Delete a file in the sessions folder.
+        """Delete a file in the "sessions" folder.
 
         Parameters
         ----------

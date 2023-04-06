@@ -14,7 +14,7 @@ from modules.exceptions import ErrorDictException
 from modules.util import get_system_specs
 
 import modules.experiment as _experiment
-import modules.session_manager as _sm
+import session.session_manager as _sm
 
 from server import Config, Server
 from users import Experimenter, experimenter_factory, participant_factory
