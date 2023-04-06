@@ -6,15 +6,14 @@ factory functions for `SessionData`: `session_data_factory` and `ParticipantData
 """
 from dataclasses import dataclass, field
 from typing import Any
-from pyee.asyncio import AsyncIOEventEmitter
 
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 
 from custom_types.participant_summary import ParticipantSummaryDict
-from custom_types.position import PositionDict
 from session.data.base_data import BaseData
-from session.data.size import SizeDict, SizeData
+from session.data.position.position_data import PositionData
+from session.data.size import SizeData
 from custom_types.participant import ParticipantDict
 from custom_types.chat_message import ChatMessageDict
 from filters import FilterDict
@@ -24,52 +23,6 @@ from custom_types.session import (
     has_duplicate_participant_ids,
     get_filtered_participant_ids,
 )
-
-@dataclass(slots=True)
-class PositionData(BaseData):
-    """Position data with update handling.
-
-    Will forward any updates to the parent SessionData, making sure all changes are
-    persistent.
-
-    Attributes
-    ----------
-    x : int or float
-        x-coordinate
-    y : int or float
-        y-coordinate
-    z : int or float
-        z-coordinate
-
-    Methods
-    -------
-    asdict()
-        Get PositionData as dictionary.
-
-    Note
-    ----
-    Special methods, such as __init__, __str__, __repr__ and equality checks are
-    generated automatically by dataclasses.dataclass.
-    """
-
-    x: int | float
-    y: int | float
-    z: int | float
-
-    def asdict(self) -> PositionDict:
-        """Get PositionData as dictionary.
-
-        Returns
-        -------
-        custom_types.position.PositionDict
-            PositionDict with the data in this PositionData.
-        """
-        return {
-            "x": self.x,
-            "y": self.y,
-            "z": self.z,
-        }
-
 
 @dataclass(slots=True)
 class ParticipantData(BaseData):

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from session.data.base_data import BaseData
+from session.data.position import PositionDict
 
 
 @dataclass(slots=True)

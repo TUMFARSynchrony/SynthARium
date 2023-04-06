@@ -10,7 +10,7 @@ import custom_types.util as util
 from filters import filter_utils
 from session.data.size import SizeDict, is_valid_size
 from custom_types.chat_message import ChatMessageDict, is_valid_chatmessage
-from custom_types.position import PositionDict, is_valid_position
+from session.data.position import PositionDict, is_valid_position
 from filters import FilterDict
 
 

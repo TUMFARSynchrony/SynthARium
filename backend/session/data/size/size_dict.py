@@ -1,3 +1,8 @@
+"""Provide the `SizeDict` TypedDict.
+
+Use for type hints and static type checking without any overhead during runtime.
+"""
+
 from typing import TypedDict
 
 

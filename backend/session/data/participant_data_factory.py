@@ -1,5 +1,5 @@
 from session.data.participant_data import ParticipantData
-from session.data.position_data import PositionData
+from session.data.position.position_data import PositionData
 from session.data.size.size_data import SizeData
 
 

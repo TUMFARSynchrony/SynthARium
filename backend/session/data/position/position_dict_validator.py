@@ -1,34 +1,7 @@
-"""Provide the `PositionDict` TypedDict.
+from typing import TypeGuard
 
-Use for type hints and static type checking without any overhead during runtime.
-"""
-
-from typing import TypeGuard, TypedDict
-
-import custom_types.util as util
-
-
-class PositionDict(TypedDict):
-    """3D position for a user on a canvas.
-
-    Attributes
-    ----------
-    x : int or float
-        X coordinate.
-    y : int or float
-        Y coordinate.
-    z : int or float
-        Z coordinate.
-
-    See Also
-    --------
-    Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#Participant
-    """
-
-    x: int | float
-    y: int | float
-    z: int | float
+from custom_types import util
+from session.data.position import PositionDict
 
 
 def is_valid_position(data) -> TypeGuard[PositionDict]:

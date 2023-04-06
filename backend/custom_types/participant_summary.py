@@ -6,7 +6,7 @@ Use for type hints and static type checking without any overhead during runtime.
 from typing import TypedDict
 
 from session.data.size import SizeDict
-from custom_types.position import PositionDict
+from session.data.position import PositionDict
 from custom_types.chat_message import ChatMessageDict
 
 
