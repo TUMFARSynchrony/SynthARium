@@ -12,8 +12,9 @@ def find_open_slot(current_slots: int, max_slots: int):
 class PortManager:
     _starting_port: int = 5555
     _slot: int = 0
-    _shared_port_slots: shared_memory.SharedMemory
     _size: int = 2
+    _shared_port_slots: shared_memory.SharedMemory
+    port: int
 
     def __init__(self):
         self._lock = NamedAtomicLock("open_face_port")
