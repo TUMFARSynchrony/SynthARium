@@ -12,7 +12,7 @@ import logging
 from typing import Any, Coroutine
 
 from filters import filter_utils
-from custom_types.session import is_valid_session
+from session.data.session import is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
 from custom_types.message import MessageDict
@@ -147,7 +147,7 @@ class Experimenter(User):
 
         Parameters
         ----------
-        data : any or custom_types.session.SessionDict
+        data : any or session.data.session.SessionDict
             Message data, can be anything.  Everything other than
             custom_types.session_id_request.SessionIdRequestDict will raise a
             modules.exceptions.ErrorDictException.

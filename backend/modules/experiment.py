@@ -9,7 +9,7 @@ from custom_types.chat_message import ChatMessageDict
 from modules.util import timestamp
 from modules.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
-from modules.data import SessionData
+from session.data.session import SessionData
 
 from users import Experimenter, Participant
 
@@ -33,7 +33,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        session : modules.data.SessionData
+        session : session.data.session.SessionData
             SessionData this experiment is based on. Will modify the session during
             execution.
         """

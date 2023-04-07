@@ -6,6 +6,7 @@ import time
 from aiortc.contrib.media import MediaRecorder, MediaBlackhole
 from modules.track_handler import TrackHandler
 
+
 class RecordHandler:
     """Handles audio and video recording of the stream."""
 

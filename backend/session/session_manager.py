@@ -6,11 +6,11 @@ import logging
 import os
 from os.path import isfile, join
 
-from custom_types.session import SessionDict, is_valid_session
+from session.data.session import SessionDict, is_valid_session
 
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
-from modules.data import SessionData, session_data_factory
+from session.data.session import SessionData, session_data_factory
 from modules import BACKEND_DIR
 
 
@@ -101,12 +101,12 @@ class SessionManager:
 
         Parameters
         ----------
-        session_dict : custom_types.session.SessionDict
+        session_dict : session.data.session.SessionDict
             Basic session data without ids
 
         Returns
         -------
-        modules.data.SessionData
+        session.data.session.SessionData
             New session object.
 
         Raises
@@ -224,7 +224,7 @@ class SessionManager:
 
         Parameters
         ----------
-        session_data : modules.data.SessionData
+        session_data : session.data.session.SessionData
             SessionData that was updated.
 
         Notes
@@ -316,7 +316,7 @@ class SessionManager:
 
         Parameters
         ----------
-        session_dict : custom_types.session.SessionDict
+        session_dict : session.data.session.SessionDict
             session data that should be written to the self._session_dir
             directory.
         """

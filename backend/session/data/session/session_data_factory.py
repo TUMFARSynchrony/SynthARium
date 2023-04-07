@@ -1,15 +1,21 @@
+from modules.exceptions import ErrorDictException
+from session.data.participant import participant_data_factory
+from session.data.session import SessionDict, SessionData
+from session.data.session.session_data_functions import has_duplicate_participant_ids, \
+    _generate_participant_ids
+
 
 def session_data_factory(session_dict: SessionDict) -> SessionData:
     """Create a SessionData object based on a SessionDict.
 
     Parameters
     ----------
-    session_dict : custom_types.session.SessionDict
+    session_dict : session.data.session.SessionDict
         Session dictionary with the data for the resulting SessionData
 
     Returns
     -------
-    modules.data.SessionData
+    session.data.session.SessionData
         SessionData based on the data in `session_dict`.
 
     Raises
@@ -48,21 +54,3 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
         participants,
         session_dict["log"],
     )
-
-
-def _generate_participant_ids(session_dict: SessionDict) -> None:
-    """Generate missing participant IDs in `session_dict`.
-
-    Parameters
-    ----------
-    session_dict : custom_types.session.SessionDict
-        Session dictionary where the participant ids will be generated in.
-    """
-    participant_ids = get_filtered_participant_ids(session_dict)
-    for participant in session_dict["participants"]:
-        id = participant["id"]
-        if id == "":
-            # New participant without id
-            new_id = generate_unique_id(participant_ids)
-            participant_ids.append(new_id)
-            participant["id"] = new_id

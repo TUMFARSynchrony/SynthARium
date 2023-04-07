@@ -1,23 +1,13 @@
-"""Provide data classes for session, participant, size and position data.
-
-Provides: `SessionData`, `ParticipantData`, `PositionData` and `SizeData` as well as
-factory functions for `SessionData`: `session_data_factory` and `ParticipantData`:
-`participant_data_factory`.
-"""
 from dataclasses import dataclass, field
 from typing import Any
 
-from modules.util import generate_unique_id
-from modules.exceptions import ErrorDictException
-
-from session.data.base_data import BaseData
-from session.data.participant import participant_data_factory, ParticipantData
 from custom_types.note import NoteDict
-from custom_types.session import (
-    SessionDict,
-    has_duplicate_participant_ids,
-    get_filtered_participant_ids,
-)
+from modules.exceptions import ErrorDictException
+from session.data.base_data import BaseData
+from session.data.participant import ParticipantData, participant_data_factory
+from session.data.session.session_dict import SessionDict
+from session.data.session.session_data_functions import _generate_participant_ids, get_filtered_participant_ids, \
+    has_duplicate_participant_ids
 
 
 @dataclass(slots=True)
@@ -123,7 +113,7 @@ class SessionData(BaseData):
 
         Parameters
         ----------
-        session_dict : custom_types.session.SessionDict
+        session_dict : session.data.session.SessionDict
             New data that will be parsed into this SessionData.
 
         Raises
@@ -163,7 +153,7 @@ class SessionData(BaseData):
 
         Returns
         -------
-        custom_types.session.SessionDict
+        session.data.session.SessionDict
             SessionDict with the data in this SessionData.
         """
         session_dict: SessionDict = {
@@ -190,7 +180,7 @@ class SessionData(BaseData):
 
         Parameters
         ----------
-        session_dict : custom_types.session.SessionDict
+        session_dict : session.data.session.SessionDict
             Session dictionary containing the data that should be set / parsed into this
             SessionData.
         final_emit_updates_value : bool, default True
@@ -243,7 +233,7 @@ class SessionData(BaseData):
 
         Parameters
         ----------
-        session_dict : custom_types.session.SessionDict
+        session_dict : session.data.session.SessionDict
             Session dictionary that should be checked for unknown, and therefore
             invalid, participant IDs.  Ignores missing IDs.
 
@@ -260,72 +250,3 @@ class SessionData(BaseData):
                 return True
 
         return False
-
-
-def session_data_factory(session_dict: SessionDict) -> SessionData:
-    """Create a SessionData object based on a SessionDict.
-
-    Parameters
-    ----------
-    session_dict : custom_types.session.SessionDict
-        Session dictionary with the data for the resulting SessionData
-
-    Returns
-    -------
-    modules.data.SessionData
-        SessionData based on the data in `session_dict`.
-
-    Raises
-    ------
-    ValueError
-        If `id` in `session_dict` is an empty string.
-    ErrorDictException
-        If a duplicate participant ID was found.
-    """
-    if session_dict["id"] == "":
-        raise ValueError('Missing "id" in session dict.')
-    if session_dict["creation_time"] != 0:
-        raise ValueError('"creation_time" must be 0 when creating new SessionData.')
-
-    if has_duplicate_participant_ids(session_dict):
-        raise ErrorDictException(
-            type="DUPLICATE_ID",
-            code=400,
-            description="Duplicate participant ID found in session data.",
-        )
-
-    _generate_participant_ids(session_dict)
-    participants = {}
-    for participant_dict in session_dict["participants"]:
-        p = participant_data_factory(participant_dict)
-        participants[p.id] = p
-
-    return SessionData(
-        session_dict["id"],
-        session_dict["title"],
-        session_dict["date"],
-        session_dict["record"],
-        session_dict["time_limit"],
-        session_dict["description"],
-        session_dict["notes"],
-        participants,
-        session_dict["log"],
-    )
-
-
-def _generate_participant_ids(session_dict: SessionDict) -> None:
-    """Generate missing participant IDs in `session_dict`.
-
-    Parameters
-    ----------
-    session_dict : custom_types.session.SessionDict
-        Session dictionary where the participant ids will be generated in.
-    """
-    participant_ids = get_filtered_participant_ids(session_dict)
-    for participant in session_dict["participants"]:
-        id = participant["id"]
-        if id == "":
-            # New participant without id
-            new_id = generate_unique_id(participant_ids)
-            participant_ids.append(new_id)
-            participant["id"] = new_id
