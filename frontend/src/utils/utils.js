@@ -188,5 +188,5 @@ export const getParticipantById = (participantId, sessionData) => {
 };
 
 export const getParticipantInviteLink = (participantId, sessionId) => {
-  return `${window.location.protocol}//${window.location.host}/experimentRoom/?participantId=${participantId}&sessionId=${sessionId}`;
+  return `${window.location.origin}/experimentRoom/?participantId=${participantId}&sessionId=${sessionId}`;
 };

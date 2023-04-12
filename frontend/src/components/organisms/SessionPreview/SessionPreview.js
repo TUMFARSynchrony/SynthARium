@@ -1,6 +1,6 @@
 import { integerToDateTime, isFutureSession } from "../../../utils/utils";
 import { useDispatch } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { copySession, initializeSession } from "../../../features/openSession";
 import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
 import Card from "@mui/material/Card";
@@ -41,7 +41,12 @@ function SessionPreview({
 
   const [allParticipantsShow, setAllParticipantsShow] = useState(false);
   const [expandedParticipant, setExpandedParticipant] = useState("");
-  const [openInviteLinkFeedback, setOpenInviteLinkFeedback] = useState(false);
+  const initialSnackbar = {
+    open: false,
+    text: "",
+    severity: "success"
+  };
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
 
   const handleParticipantsClick = () => {
     setAllParticipantsShow(!allParticipantsShow);
@@ -51,14 +56,30 @@ function SessionPreview({
     setExpandedParticipant(expandedParticipant === participantIndex ? "" : participantIndex);
   };
 
-  const handleCopyParticipantInviteLink = (participantId, sessionId) => {
-    const participantInviteLink = getParticipantInviteLink(participantId, sessionId);
-    navigator.clipboard.writeText(participantInviteLink);
-    setOpenInviteLinkFeedback(true);
+  const handleCopyParticipantInviteLink = (participantId, firstName, lastName, sessionId) => {
+    try {
+      const participantInviteLink = getParticipantInviteLink(participantId, sessionId);
+      navigator.clipboard.writeText(participantInviteLink);
+      setSnackbar({
+        open: true,
+        text: participantInviteLink ?
+          `Copied ${firstName} ${lastName}'s invite link to clipboard`
+          :
+          "Unfortunately, nothing got copied!",
+        severity: "success"
+      });
+    } catch (error) {
+      console.log(error);
+      setSnackbar({
+        open: true,
+        text: "There was an error while copying the invite link. Please check the logs.",
+        severity: "error"
+      });
+    }
   };
 
   const handleCloseParticipantInviteLinkFeedback = (event, reason) => {
-    setOpenInviteLinkFeedback(false);
+    setSnackbar(initialSnackbar);
   };
 
   const experimentOngoing = selectedSession.creation_time > 0 && selectedSession.end_time === 0;
@@ -119,9 +140,13 @@ function SessionPreview({
                                 })
                               }
                             </Box>
-                            <ActionIconButton text="INVITE" variant="outlined" color="primary" size="small" onClick={() => handleCopyParticipantInviteLink(participant.id, selectedSession.id)} icon={<ContentCopyIcon />} />
-                            <CustomSnackbar open={openInviteLinkFeedback} text={`Copied ${participant.first_name} ${participant.last_name}'s invite link to clipboard`}
-                              severity="success" handleClose={handleCloseParticipantInviteLinkFeedback} />
+                            <ActionIconButton text="INVITE" variant="outlined" color="primary" size="small" onClick={() => handleCopyParticipantInviteLink(
+                              participant.id,
+                              participant.first_name,
+                              participant.last_name,
+                              selectedSession.id)}
+                              icon={<ContentCopyIcon />} />
+                            <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity} handleClose={handleCloseParticipantInviteLinkFeedback} />
                           </ListItem>
                         </List>
                       </Collapse>
