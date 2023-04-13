@@ -33,7 +33,7 @@ import Checkbox from "@mui/material/Checkbox";
 import AddIcon from '@mui/icons-material/Add';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import PeopleOutline from "@mui/icons-material/PeopleOutline";
-import CustomSnackbar from "../../components/molecules/CustomSnackbar";
+import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 
 
 function SessionForm({ onSendSessionToBackend }) {
@@ -216,7 +216,7 @@ function SessionForm({ onSendSessionToBackend }) {
                         onChange={(num) => setNumOfParticipants(num)} />
                     </Box>
                     <Box sx={{ mt: 1, mb: 3 }}>
-                      <FormControlLabel control={<Checkbox defaultChecked />} label="Record Session" checked={sessionData.record} onChange={() => handleSessionDataChange("record", !sessionData.record)} />
+                      <FormControlLabel control={<Checkbox />} label="Record Session" checked={sessionData.record} onChange={() => handleSessionDataChange("record", !sessionData.record)} />
                       {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
                     </Box>
                   </Box>

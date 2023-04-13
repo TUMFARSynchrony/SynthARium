@@ -13,6 +13,7 @@ import Label from "../../atoms/Label/Label";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import "./OverviewTab.css";
+import { instructionsList } from "../../../utils/constants";
 
 function OverviewTab({
   onLeaveExperiment,
@@ -37,21 +38,16 @@ function OverviewTab({
       <Heading heading={sessionData.title} />
       <hr className="separatorLine"></hr>
       <div className="sessionInformation">
-        {/* <h3>Session Information</h3> */}
         <div className="sessionDuration">
           <div>
             <Label title={"Instructions"} />
             <ul>
-              <li>
-                Please remove any glasses, caps or other such articles if you are wearing any.
-              </li>
-              <li>
-                Ensure that your surrounding lighting is good.
-              </li>
-              <li>
-                We would like to know about your experience, so please take 5  minutes at the end to do the
-                Feedback Survey.
-              </li>
+              {
+                // getting a common set of instructions for the participant from constants.js
+                instructionsList.map((instruction, index) => {
+                  return <li key={index}>{instruction}</li>
+                })
+              }
             </ul>
           </div>
           <div>
@@ -76,7 +72,7 @@ function OverviewTab({
           value={message}
           onChange={(newMessage) => setMessage(newMessage)}
         />
-        <ActionIconButton text="Send" variant="outlined" color="primary" size="medium" onClick={() => {}} icon={<PlayArrowOutlined />} />
+        <ActionIconButton text="Send" variant="outlined" color="primary" size="medium" onClick={() => { }} icon={<PlayArrowOutlined />} />
       </div>
       <hr className="separatorLine"></hr>
 

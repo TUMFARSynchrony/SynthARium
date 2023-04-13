@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { ActionButton } from "../../components/atoms/Button";
 import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 import { banMuteUnmuteParticipant } from "../../features/sessionsList";
-import CustomSnackbar from "../../components/molecules/CustomSnackbar";
+import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import "./KickParticipantModal.css";
 
 function KickParticipantModal({

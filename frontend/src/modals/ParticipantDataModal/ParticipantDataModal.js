@@ -22,7 +22,7 @@ import Checkbox from "@mui/material/Checkbox";
 // import filtersData from '../../filters_new.json'
 import filtersData from '../../filters.json'
 import { getParticipantInviteLink } from "../../utils/utils";
-import CustomSnackbar from "../../components/molecules/CustomSnackbar";
+import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 
 // Loading filters data before the component renders, because the Select component needs value
 const testData = filtersData.filters;
@@ -177,8 +177,8 @@ function ParticipantDataModal({
               <TextField label="y coordinate" size="small" value={participantCopy.position.y} disabled />
             </Box>
             <Box sx={{ display: "flex", justifyContent: "center", gap: 2, my: 3 }}>
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Mute Audio" checked={participantCopy.muted_audio} onChange={() => { handleChange("muted_audio", !participantCopy.muted_audio) }} />
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Mute Video" checked={participantCopy.muted_video} onChange={() => { handleChange("muted_video", !participantCopy.muted_video) }} />
+              <FormControlLabel control={<Checkbox />} label="Mute Audio" checked={participantCopy.muted_audio} onChange={() => { handleChange("muted_audio", !participantCopy.muted_audio) }} />
+              <FormControlLabel control={<Checkbox />} label="Mute Video" checked={participantCopy.muted_video} onChange={() => { handleChange("muted_video", !participantCopy.muted_video) }} />
             </Box>
 
             {/* Displaying the filters available in the backend */}

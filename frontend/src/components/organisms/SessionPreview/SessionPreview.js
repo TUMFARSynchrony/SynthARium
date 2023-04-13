@@ -22,7 +22,7 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import { getParticipantInviteLink } from "../../../utils/utils";
-import CustomSnackbar from "../../molecules/CustomSnackbar";
+import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
 
 
 function SessionPreview({

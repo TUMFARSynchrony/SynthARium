@@ -23,7 +23,7 @@ import { getLocalStream, getSessionById } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { saveSession } from "./features/openSession";
-import CustomSnackbar from "./components/molecules/CustomSnackbar";
+import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import {
   changeExperimentState,
   createExperiment,

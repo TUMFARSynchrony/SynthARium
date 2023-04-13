@@ -11,20 +11,11 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import styled from '@mui/material/styles/styled';
 import SendIcon from '@mui/icons-material/Send';
+import { instructionsList } from "../../utils/constants";
 
 
 function ExperimentRoom({ localStream, connection }) {
   const videoElement = useRef(null);
-  const instructionsList = [
-    "Please remove any glasses, caps or other such articles if you are wearing any.",
-    "Ensure that your surrounding lighting is good.",
-    "We would like to know about your experience, so please take 5  minutes at the end \
-    to do the Feedback Survey.",
-    "Please remove any glasses, caps or other such articles if you are wearing any.",
-    "Ensure that your surrounding lighting is good.",
-    "We would like to know about your experience, so please take 5  minutes at the end \
-    to do the Feedback Survey."
-  ]
   const [message, setMessage] = useState("");
   const [participantStream, setParticipantStream] = useState(localStream);
 
