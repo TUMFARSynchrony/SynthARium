@@ -2,8 +2,8 @@ import { useState } from "react";
 import JoinedParticipantModal from "../../../modals/JoinedParticipantModal/JoinedParticipantModal";
 import KickParticipantModal from "../../../modals/KickParticipantModal/KickParticipantModal";
 import { getParticipantById } from "../../../utils/utils";
-import { ActionButton } from "../Button";
-import Label from "../Label/Label";
+import { ActionButton } from "../../atoms/Button";
+import Label from "../../atoms/Label/Label";
 import "./JoinedParticipantCard.css";
 
 function JoinedParticipant({

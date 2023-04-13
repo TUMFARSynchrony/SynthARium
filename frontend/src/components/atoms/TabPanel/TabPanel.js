@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+// This component is currently unused, it can be used in the watching room to 
+// replace the "Overview", "Notes" and "Participants" tabs.
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
 

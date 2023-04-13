@@ -1,4 +1,3 @@
-import Checkbox from "../../components/molecules/Checkbox/Checkbox";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { CANVAS_SIZE, INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
@@ -30,6 +29,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
+import Checkbox from "@mui/material/Checkbox";
 import AddIcon from '@mui/icons-material/Add';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import PeopleOutline from "@mui/icons-material/PeopleOutline";

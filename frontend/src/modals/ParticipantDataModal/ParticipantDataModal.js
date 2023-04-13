@@ -1,6 +1,5 @@
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect } from "react";
-import Checkbox from "../../components/molecules/Checkbox/Checkbox";
 import { useState } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import Box from "@mui/material/Box";
@@ -18,6 +17,7 @@ import ListSubheader from "@mui/material/ListSubheader";
 import Chip from "@mui/material/Chip";
 import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
+import Checkbox from "@mui/material/Checkbox";
 // REMOVE: Mocking filters data until filter API call is established
 // import filtersData from '../../filters_new.json'
 import filtersData from '../../filters.json'
