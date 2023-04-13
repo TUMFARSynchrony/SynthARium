@@ -5,7 +5,7 @@ export default function AppToolbar() {
 
     // This is the toolbar view for partcipants only and used in the experiment room, 
     // with the title - SYNCHRONY HUB. Can add a logo in the future
-    const AppToolbar = styled(Toolbar)(({ }) => ({
+    const AppToolbar = styled(Toolbar)(() => ({
         backgroundColor: "#899499",
         color: "white",
         fontWeight: "bold",

@@ -1,5 +1,3 @@
-import { ToastContainer, toast } from "react-toastify";
-import { useEffect } from "react";
 import { useState } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import Box from "@mui/material/Box";
@@ -15,7 +13,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
 import Chip from "@mui/material/Chip";
-import ListItem from "@mui/material/ListItem";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
 // REMOVE: Mocking filters data until filter API call is established
@@ -48,7 +45,7 @@ function ParticipantDataModal({
   setSnackbarResponse
 }) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  const [selectedFilter, setSelectedFilter] = useState(testData.find((filter) => filter.id == defaultFilterId));
+  const [selectedFilter, setSelectedFilter] = useState(testData.find((filter) => filter.id === defaultFilterId));
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
   const initialSnackbar = {
@@ -206,7 +203,7 @@ function ParticipantDataModal({
                     } */}
                     {
                       testData.map((filter, filterIndex) => {
-                        if (filter.id == defaultFilterId) {
+                        if (filter.id === defaultFilterId) {
                           return <MenuItem key={filterIndex} value={filter} disabled><em>{filter.id}</em></MenuItem>
                         }
                         else {

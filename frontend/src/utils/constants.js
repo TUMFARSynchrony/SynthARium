@@ -91,8 +91,7 @@ export const PARTICIPANT_HOST = "http://localhost:3000/experimentRoom/";
 export const instructionsList = [
   "Please remove any glasses, caps or other such articles if you are wearing any.",
   "Ensure that your surrounding lighting is good.",
-  "We would like to know about your experience, so please take 5  minutes at the end \
-  to do the Feedback Survey."
+  "We would like to know about your experience, so please take 5  minutes at the end to do the Feedback Survey."
 ]
 
 export const initialSnackbar = {

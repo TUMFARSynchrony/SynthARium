@@ -13,8 +13,7 @@ function ConsentModal() {
     const [checkParticipation, setCheckParticipation] = useState(false);
     const [checkRecording, setCheckRecording] = useState(false);
     const consentTextParticipation = "I understand that I may terminate my participation in the study at any time.";
-    const consentTextRecording = "I accept the recording of my audio and video and am also aware that the data \
-                                    will be kept anonymous and maybe used for research purposes.";
+    const consentTextRecording = "I accept the recording of my audio and video and am also aware that the data will be kept anonymous and maybe used for research purposes.";
 
     return (
         <Dialog open={openConsentDialog} PaperProps={{ sx: { width: "50%" } }}>

@@ -147,7 +147,7 @@ export const checkValidSession = (sessionData) => {
   return (
     sessionData.title !== "" &&
     sessionData.description !== "" &&
-    // TO DO : remove session duration from the check, as it is no longer needed. 
+    // TO DO : remove session time_limit from the check and session.json, as it is no longer needed. 
     // Because the session is not going to end after the session duration has passed.
     // sessionData.time_limit !== 0 &&
     sessionData.date !== 0

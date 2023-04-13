@@ -24,7 +24,6 @@ import ChevronRight from "@mui/icons-material/ChevronRight";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
@@ -32,7 +31,6 @@ import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import AddIcon from '@mui/icons-material/Add';
 import FormControlLabel from "@mui/material/FormControlLabel";
-import PeopleOutline from "@mui/icons-material/PeopleOutline";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 
 
@@ -40,6 +38,7 @@ function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useDispatch();
   let openSession = useSelector((state) => state.openSession.value);
   const [sessionData, setSessionData] = useState(openSession);
+  // TO DO: remove the field time_limit from session.json
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
   const [numOfParticipants, setNumOfParticipants] = useState();
   const [snackbarResponse, setSnackbarResponse] = useState({

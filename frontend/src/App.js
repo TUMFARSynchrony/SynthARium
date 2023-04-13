@@ -197,6 +197,7 @@ function App() {
   };
 
   const handleSavedSession = (data) => {
+    // Redirects to session overview page on saving a session.
     navigate("/");
     if (getSessionById(data.id, sessionsListRef.current).length === 0) {
       setSnackbar({ open: true, text: `Successfully created session ${data.title}`, severity: "success" });

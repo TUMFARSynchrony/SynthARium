@@ -7,7 +7,7 @@ import Stack from "@mui/material/Stack";
 import { integerToDateTime } from "../../../utils/utils";
 import { sessionCardBorderColor } from "../../../styles/styles";
 
-const GreySessionTitle = styled(Typography)(({ }) => ({
+const GreySessionTitle = styled(Typography)(() => ({
   component: "div",
   variant: "subtitle1",
   color: "grey",
