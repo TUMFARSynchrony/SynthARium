@@ -1,6 +1,6 @@
 import { integerToDateTime, isFutureSession } from "../../../utils/utils";
 import { useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { copySession, initializeSession } from "../../../features/openSession";
 import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
 import Card from "@mui/material/Card";
@@ -23,6 +23,13 @@ import EditOutlined from "@mui/icons-material/EditOutlined";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import { getParticipantInviteLink } from "../../../utils/utils";
 import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
+import {
+  sessionCardBorderColor,
+  ongoingSessionCardBackgroundColor,
+  ongoingSessionCardBorderColor,
+  ongoingSessionCardHeaderColor
+} from "../../../styles/styles";
+import { initialSnackbar } from "../../../utils/constants";
 
 
 function SessionPreview({
@@ -41,21 +48,20 @@ function SessionPreview({
 
   const [allParticipantsShow, setAllParticipantsShow] = useState(false);
   const [expandedParticipant, setExpandedParticipant] = useState("");
-  const initialSnackbar = {
-    open: false,
-    text: "",
-    severity: "success"
-  };
   const [snackbar, setSnackbar] = useState(initialSnackbar);
+  const experimentOngoing = selectedSession.creation_time > 0 && selectedSession.end_time === 0;
 
+  // handles click on show/hide list of all participants
   const handleParticipantsClick = () => {
     setAllParticipantsShow(!allParticipantsShow);
   };
 
+  // handles click on show/hide of selected participant
   const handleSingleParticipantClick = (participantIndex) => {
     setExpandedParticipant(expandedParticipant === participantIndex ? "" : participantIndex);
   };
 
+  // Method to copy the invite link to clipboard and display a snackbar notification.
   const handleCopyParticipantInviteLink = (participantId, firstName, lastName, sessionId) => {
     try {
       const participantInviteLink = getParticipantInviteLink(participantId, sessionId);
@@ -69,31 +75,30 @@ function SessionPreview({
         severity: "success"
       });
     } catch (error) {
-      console.log(error);
+      // displays error snackbar
       setSnackbar({
         open: true,
-        text: "There was an error while copying the invite link. Please check the logs.",
+        text: "There was an error while copying the invite link.",
         severity: "error"
       });
     }
   };
 
-  const handleCloseParticipantInviteLinkFeedback = (event, reason) => {
+  const handleCloseParticipantInviteLinkFeedback = () => {
     setSnackbar(initialSnackbar);
   };
 
-  const experimentOngoing = selectedSession.creation_time > 0 && selectedSession.end_time === 0;
-
 
   return (
+    // Using common colors stored in the styles.js file
     <Card sx={{
-      backgroundColor: experimentOngoing ? 'rgb(252, 232, 211)' : 'white',
-      borderTop: experimentOngoing ? '3px solid rgb(255, 119, 0)' : '3px solid dodgerblue'
+      backgroundColor: experimentOngoing ? ongoingSessionCardBackgroundColor : 'white',
+      borderTop: experimentOngoing ? ongoingSessionCardBorderColor : sessionCardBorderColor
     }}>
       {
         experimentOngoing ? (
           <CardHeader title={`Experiment Ongoing: ${selectedSession.title}`}
-            titleTypographyProps={{ fontWeight: 'bold', fontSize: '24px', color: 'rgb(255, 119, 0)' }} />
+            titleTypographyProps={{ fontWeight: 'bold', fontSize: '24px', color: ongoingSessionCardHeaderColor }} />
         ) :
           (
             <CardHeader title={`${selectedSession.title}`}
@@ -109,6 +114,8 @@ function SessionPreview({
             <ListItemText primary={`Participants (${selectedSession.participants.length})`} />
             {allParticipantsShow ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
+
+          {/* Displays a collapsible list of all participants */}
           <Collapse in={allParticipantsShow} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {
@@ -119,6 +126,8 @@ function SessionPreview({
                         <ListItemText primary={`${participant.first_name} ${participant.last_name}`} />
                         {expandedParticipant === participantIndex ? <ExpandLess /> : <ExpandMore />}
                       </ListItemButton>
+
+                      {/* Displays a collapsible view of the filters and invite link of selected participant */}
                       <Collapse in={expandedParticipant === participantIndex} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                           <ListItem sx={{ pl: 4, display: "flex", justifyContent: "space-between" }}>
@@ -126,6 +135,8 @@ function SessionPreview({
                             {participant.audio_filters.length === 0 && participant.video_filters.length === 0 && <Typography>No filters applied!</Typography>}
                             <Box>
                               {
+                                // Displays audio filters first and then video filters -> order b/w audio and video filters dosen't matter.
+                                // But each of their own internal order should be maintained.
                                 participant.audio_filters.map((audioFilter, audioFilterIndex) => {
                                   return (
                                     <Chip key={audioFilterIndex} variant="outlined" label={audioFilter.id} size="small" color="secondary" />
@@ -146,6 +157,7 @@ function SessionPreview({
                               participant.last_name,
                               selectedSession.id)}
                               icon={<ContentCopyIcon />} />
+                            {/* Displays success/error notification on copy invite link to clipboard */}
                             <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity} handleClose={handleCloseParticipantInviteLinkFeedback} />
                           </ListItem>
                         </List>
@@ -161,6 +173,8 @@ function SessionPreview({
           {selectedSession.description}
         </Typography>
       </CardContent>
+
+      {/* Displays list of delete, duplicate, edit and join buttons */}
       <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
         {(selectedSession.creation_time === 0 ||
           selectedSession.end_time > 0) && (

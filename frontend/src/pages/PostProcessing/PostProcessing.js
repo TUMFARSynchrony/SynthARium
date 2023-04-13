@@ -1,5 +1,5 @@
 import HeroText from "../../components/atoms/HeroText/HeroText";
-import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
+import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 
 function PostProcessing() {
   return (

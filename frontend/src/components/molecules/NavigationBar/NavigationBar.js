@@ -4,10 +4,13 @@ import Stack from "@mui/material/Stack";
 import { styled } from '@mui/material/styles';
 import { LinkButton } from '../../atoms/Button';
 
-const GreyToolbar = styled(Toolbar)(({ theme }) => ({
+const GreyToolbar = styled(Toolbar)(({ }) => ({
   backgroundColor: "#899499",
 }));
 
+// This is the toolbar view for the experimenter, with navigation links to session overview,
+// and the post processing room. It is intentionally not displayed in the session form screen 
+// and watching room to prevent multiple navigation possibilities.
 function NavigationBar() {
 
   return (
@@ -16,7 +19,7 @@ function NavigationBar() {
         <GreyToolbar>
           <Stack direction="row">
             <LinkButton text={"Session Overview"} path={"/"} variant="string" size="large" />
-            <LinkButton text={"Post-Processing Room"} path={"/postProcessingRoom"} variant="string" size="large"/>
+            <LinkButton text={"Post-Processing Room"} path={"/postProcessingRoom"} variant="string" size="large" />
           </Stack>
         </GreyToolbar>
       </AppBar>

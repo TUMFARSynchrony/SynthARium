@@ -1,26 +1,34 @@
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
+import styled from "@emotion/styled";
 import CardActionArea from "@mui/material/CardActionArea";
 import Stack from "@mui/material/Stack";
 import { integerToDateTime } from "../../../utils/utils";
+import { sessionCardBorderColor } from "../../../styles/styles";
 
-function SessionCard({ title, date, description, onClick, selected }) {
+const GreySessionTitle = styled(Typography)(({ }) => ({
+  component: "div",
+  variant: "subtitle1",
+  color: "grey",
+  fontWeight: "bold"
+}));
+
+
+function SessionCard({ title, date, description, onClick }) {
   return (
-    <Card sx={{ mt: 2, mb: 2, borderTop: '3px solid dodgerblue' }} >
+    <Card sx={{ mt: 2, mb: 2, borderTop: sessionCardBorderColor }} >
       <CardActionArea onClick={onClick}>
         <CardContent>
-          <Stack spacing={1}>
-            <Typography component='div' variant="subtitle1" align="left" sx={{ color: 'grey', fontWeight: 'bold' }}>
+          <Stack spacing={1} sx={{ display: "block", textAlign: "left" }}>
+            <GreySessionTitle>
               {title}
+            </GreySessionTitle>
+            <Typography>
+              {integerToDateTime(date)}
             </Typography>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography>
-                {integerToDateTime(date)}
-              </Typography>
-            </Box>
-            <Typography align="left" noWrap={true}>
+            {/* Nowrap displays only one line of experiment description, rest is ... */}
+            <Typography noWrap={true}>
               {description}
             </Typography>
           </Stack>

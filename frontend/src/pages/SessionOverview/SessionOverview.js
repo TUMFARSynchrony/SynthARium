@@ -15,7 +15,7 @@ import Typography from "@mui/material/Typography";
 import styled from '@mui/material/styles/styled';
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
-import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
+import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 
 
 function SessionOverview({

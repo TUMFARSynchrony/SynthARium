@@ -94,3 +94,9 @@ export const instructionsList = [
   "We would like to know about your experience, so please take 5  minutes at the end \
   to do the Feedback Survey."
 ]
+
+export const initialSnackbar = {
+  open: false,
+  text: "",
+  severity: "success"
+};
