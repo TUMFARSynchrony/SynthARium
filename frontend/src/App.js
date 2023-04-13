@@ -29,6 +29,7 @@ import {
   createExperiment,
   joinExperiment,
 } from "./features/ongoingExperiment";
+import { initialSnackbar } from "./utils/constants";
 
 
 function App() {
@@ -46,11 +47,6 @@ function App() {
   sessionsListRef.current = sessionsList;
   const ongoingExperimentRef = useRef();
   ongoingExperimentRef.current = ongoingExperiment;
-  const initialSnackbar = {
-    open: false,
-    text: "",
-    severity: "success"
-  };
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
   const dispatch = useDispatch();
