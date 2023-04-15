@@ -88,12 +88,14 @@ function parseIceServers() {
 
 export const PARTICIPANT_HOST = "http://localhost:3000/experimentRoom/";
 
+// Displays the same set of instructions in both the /experimentRoom and in the /watchingRoom.
 export const instructionsList = [
   "Please remove any glasses, caps or other such articles if you are wearing any.",
   "Ensure that your surrounding lighting is good.",
   "We would like to know about your experience, so please take 5  minutes at the end to do the Feedback Survey."
 ]
 
+// Initialising the notification snackbar used in many components.
 export const initialSnackbar = {
   open: false,
   text: "",

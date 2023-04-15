@@ -4,6 +4,7 @@ import { ActionButton } from "../../components/atoms/Button";
 import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 import { banMuteUnmuteParticipant } from "../../features/sessionsList";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
+import { initialSnackbar } from "../../utils/constants";
 import "./KickParticipantModal.css";
 
 function KickParticipantModal({
@@ -16,11 +17,6 @@ function KickParticipantModal({
 }) {
   const [reason, setReason] = useState("");
   const dispatch = useDispatch();
-  const initialSnackbar = {
-    open: false,
-    text: "",
-    severity: "success"
-  };
   const [snackbar, setSnackbar] = useState(initialSnackbar);
 
   const onChange = (newReason) => {

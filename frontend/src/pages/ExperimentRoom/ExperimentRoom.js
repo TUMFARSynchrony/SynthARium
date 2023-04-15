@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
-import ConsentModal from "../../modals/ConsentModal";
+import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import { ActionIconButton } from "../../components/atoms/Button";
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';

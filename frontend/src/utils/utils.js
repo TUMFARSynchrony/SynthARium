@@ -188,6 +188,7 @@ export const getParticipantById = (participantId, sessionData) => {
   return getSessionById(participantId, participants)[0];
 };
 
+// Generating the dynamic participant invite link based on the host domain.
 export const getParticipantInviteLink = (participantId, sessionId) => {
   return `${window.location.origin}/experimentRoom/?participantId=${participantId}&sessionId=${sessionId}`;
 };
