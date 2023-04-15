@@ -32,6 +32,7 @@ import Checkbox from "@mui/material/Checkbox";
 import AddIcon from '@mui/icons-material/Add';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
+import { initialSnackbar } from "../../utils/constants";
 
 
 function SessionForm({ onSendSessionToBackend }) {
@@ -41,31 +42,47 @@ function SessionForm({ onSendSessionToBackend }) {
   // TO DO: remove the field time_limit from session.json
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
   const [numOfParticipants, setNumOfParticipants] = useState();
-  const [snackbarResponse, setSnackbarResponse] = useState({
-    newParticipantInputEmpty: false,
-    requiredInformationMissing: false,
-    participantOriginalEmpty: false,
-    newInputEqualsOld: false
-  });
-  const initialSnackbar = {
-    open: false,
-    text: "",
-    severity: "success"
-  };
   const [snackbar, setSnackbar] = useState(initialSnackbar);
-
-  useEffect(() => {
-    setSessionData(openSession);
-  }, [openSession]);
-
+  const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [participantDimensions, setParticipantDimensions] = useState(
     getParticipantDimensions(
       sessionData.participants ? sessionData.participants : []
     )
   );
 
-  const [showSessionDataForm, setShowSessionDataForm] = useState(true);
+  // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
+  // It is displayed here instead of in the Participant Modal itself, since upon closing the modal it is no longer 
+  // available to display the warnings.
+  const [snackbarResponse, setSnackbarResponse] = useState({
+    newParticipantInputEmpty: false,
+    requiredInformationMissing: false,
+    participantOriginalEmpty: false,
+    newInputEqualsOld: false
+  });
 
+
+  useEffect(() => {
+    setSessionData(openSession);
+  }, [openSession]);
+
+  useEffect(() => {
+    if (snackbarResponse.newParticipantInputEmpty) {
+      setSnackbar({ open: true, text: "You did not enter any information. Participant will be deleted now.", severity: "warning" });
+      return;
+    }
+
+    if (snackbarResponse.requiredInformationMissing) {
+      setSnackbar({ open: true, text: "Required information (First Name/Last Name) missing. Participant will be deleted now.", severity: "warning" });
+      return;
+    }
+
+    if (snackbarResponse.participantOriginalEmpty && !snackbarResponse.newInputEqualsOld) {
+      setSnackbar({ open: true, text: "You need to save the information first!", severity: "warning" });
+      return;
+    }
+  }, [snackbarResponse])
+
+  
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant({ index: index }));
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
@@ -163,29 +180,13 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
-  const handleCreateParticipants = () => {
-    for (let i = 0; i < numOfParticipants; i++) {
-      onAddParticipant();
-      console.log(sessionData);
-    }
-  };
-
-  useEffect(() => {
-    if (snackbarResponse.newParticipantInputEmpty) {
-      setSnackbar({ open: true, text: "You did not enter any information. Participant will be deleted now.", severity: "warning" });
-      return;
-    }
-
-    if (snackbarResponse.requiredInformationMissing) {
-      setSnackbar({ open: true, text: "Required information (First Name/Last Name) missing. Participant will be deleted now.", severity: "warning" });
-      return;
-    }
-
-    if (snackbarResponse.participantOriginalEmpty && !snackbarResponse.newInputEqualsOld) {
-      setSnackbar({ open: true, text: "You need to save the information first!", severity: "warning" });
-      return;
-    }
-  }, [snackbarResponse])
+  // TO DO: auto create x no. of participants.
+  // const handleCreateParticipants = () => {
+  //   for (let i = 0; i < numOfParticipants; i++) {
+  //     onAddParticipant();
+  //     console.log(sessionData);
+  //   }
+  // };
 
 
   return (
@@ -203,6 +204,7 @@ function SessionForm({ onSendSessionToBackend }) {
               <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>Session Details</Typography>
               <Box sx={{ height: "74vh", overflowY: "auto" }}>
                 <CardContent>
+                  {/* Override text fields' margin and width using MUI classnames */}
                   <Box component="form" sx={{ '& .MuiTextField-root': { m: 1 }, }} noValidate autoComplete="off">
                     <Box sx={{ '& .MuiTextField-root': { width: '38vw' }, }}>
                       <TextField label="Title" value={sessionData.title} size="small" required onChange={(event) => handleSessionDataChange("title", event.target.value)} />

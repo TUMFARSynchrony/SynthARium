@@ -27,6 +27,10 @@ function SessionOverview({
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const [past, setPast] = useState([]);
   const [future, setFuture] = useState([]);
+  const [selectedSession, setSelectedSession] = useState(
+    future.length !== 0 ? future[0] : null
+  );
+  const [showPastSessions, setShowPastSessions] = useState(false);
 
   // const { past, future } = getPastAndFutureSessions(sessionsList);
   useEffect(() => {
@@ -36,12 +40,6 @@ function SessionOverview({
     setFuture(futureSession);
     setSelectedSession(futureSession.length !== 0 ? futureSession[0] : null);
   }, [sessionsList]);
-
-  const [selectedSession, setSelectedSession] = useState(
-    future.length !== 0 ? future[0] : null
-  );
-
-  const [showPastSessions, setShowPastSessions] = useState(false);
 
   const handleClick = (session) => {
     setSelectedSession(session);
@@ -60,7 +58,7 @@ function SessionOverview({
     fontStyle: "italic",
   }));
 
-  const Separator = styled(Divider)(({ theme }) => ({
+  const Separator = styled(Divider)(() => ({
     borderRightWidth: 5,
   }));
 
@@ -70,7 +68,7 @@ function SessionOverview({
       <HeroText text={"Synchrony Experimental Hub"} />
       <LinkActionButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
       <WelcomeText>
-        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment. 
+        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment.
         See the <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.
       </WelcomeText>
       <Grid container>
@@ -84,7 +82,9 @@ function SessionOverview({
               onJoinExperiment={onJoinExperiment}
             />
           ) : (
-            <h2>No session selected.</h2>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              No session selected.
+            </Typography>
           )}
         </Grid>
         <Grid item>
@@ -108,7 +108,9 @@ function SessionOverview({
               );
             })
           ) : (
-            <>No active sessions found.</>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              No active sessions found.
+            </Typography>
           )}
           <ActionIconButton text={showPastSessions ? "Hide past sessions" : "Show past sessions"}
             variant="outlined"
