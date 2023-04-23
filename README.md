@@ -4,7 +4,7 @@
 
 An online tool for researchers to host and conduct customizable online experiments with users.
 
-![Quick Demo Exp Hub](.gif)
+![Quick Demo Exp Hub](https://raw.githubusercontent.com/wiki/TUMFARSynchrony/experimental-hub/images/exp-quick-demo-small.gif)
 
 As a part of our vision for the experimental hub, we hope to make at home video conferencing studies have more laboratory control through the **experimenter and participant workflows** we have designed in allowing safegaurds in the workflow and a flexible UI (e.g. custom participant video screen position, size, and order, limiting participant exposure pre-experiment to others in the call or seeing themselves with a fitler too early, etc.). We also hope that the experimental templates and filters our platform uses helps the **egological validity and repeatability** of both HCI and psychology experiments and encourages sharing of anonymized data of the experiment. Finally, because our expirmental hub is self hosted, there should be more control over the **data privacy** of where potentially sensitive video and audio data is being stored. 
 
