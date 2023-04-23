@@ -21,13 +21,16 @@ import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { getLocalStream, getSessionById } from "./utils/utils";
 import { useSelector, useDispatch } from "react-redux";
-import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { saveSession } from "./features/openSession";
+import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import {
   changeExperimentState,
   createExperiment,
   joinExperiment,
 } from "./features/ongoingExperiment";
+import { initialSnackbar } from "./utils/constants";
+
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -44,7 +47,8 @@ function App() {
   sessionsListRef.current = sessionsList;
   const ongoingExperimentRef = useRef();
   ongoingExperimentRef.current = ongoingExperiment;
-
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const connectedPeersChangeHandler = async (peers) => {
@@ -124,11 +128,10 @@ function App() {
       sessionId && participantId ? "participant" : "experimenter";
 
     const pathname = window.location.pathname.toLowerCase();
-    const isConnectionTestPage =
-      pathname === "/connectiontest" || pathname === "/connectionlatencytest";
+    const isConnectionTestPage = pathname === "/connectiontest" || pathname === "/connectionlatencytest";
 
-    // TODO: get experimenter password before creating Connection, e.g. from "login" page
-    // The following solution using `prompt` is only a placeholder.
+    //   // TODO: get experimenter password before creating Connection, e.g. from "login" page
+    //   // The following solution using `prompt` is only a placeholder.
     if (
       !isConnectionTestPage &&
       userType === "experimenter" &&
@@ -189,16 +192,18 @@ function App() {
   };
 
   const handleDeletedSession = (data) => {
-    toast.success("Successfully deleted session with ID " + data);
+    setSnackbar({ open: true, text: `Successfully deleted session with ID ${data}`, severity: "success" });
     dispatch(deleteSession(data));
   };
 
   const handleSavedSession = (data) => {
+    // Redirects to session overview page on saving a session.
+    navigate("/");
     if (getSessionById(data.id, sessionsListRef.current).length === 0) {
-      toast.success("Successfully created session " + data.title);
+      setSnackbar({ open: true, text: `Successfully created session ${data.title}`, severity: "success" });
       dispatch(createSession(data));
     } else {
-      toast.success("Successfully updated session " + data.title);
+      setSnackbar({ open: true, text: `Successfully updated session ${data.title}`, severity: "success" });
       dispatch(updateSession(data));
     }
 
@@ -206,11 +211,11 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    toast.success("SUCCESS: " + data.description);
+    setSnackbar({ open: true, text: `SUCCESS: ${data.description}`, severity: "success" });
   };
 
   const handleError = (data) => {
-    toast.error(data.description);
+    setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
   };
 
   const handleSessionChange = (data) => {
@@ -309,13 +314,8 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
-  const onJoinExperimentParticipant = () => {
-    dispatch(changeExperimentState("WAITING"));
-  };
-
   return (
     <div className="App">
-      <ToastContainer autoClose={1000} theme="colored" hideProgressBar={true}/>
       {sessionsList ? (
         <Routes>
           <Route
@@ -341,7 +341,6 @@ function App() {
               connection ? (
                 <ExperimentRoom
                   localStream={localStream}
-                  onJoinExperimentParticipant={onJoinExperimentParticipant}
                   connection={connection}
                 />
               ) : (
@@ -406,6 +405,8 @@ function App() {
       ) : (
         <h1>Loading...</h1>
       )}
+      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)} />
     </div>
   );
 }

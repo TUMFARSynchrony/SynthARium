@@ -147,7 +147,9 @@ export const checkValidSession = (sessionData) => {
   return (
     sessionData.title !== "" &&
     sessionData.description !== "" &&
-    sessionData.time_limit !== 0 &&
+    // TO DO : remove session time_limit from the check and session.json, as it is no longer needed. 
+    // Because the session is not going to end after the session duration has passed.
+    // sessionData.time_limit !== 0 &&
     sessionData.date !== 0
   );
 };
@@ -184,4 +186,9 @@ export const getParticipantById = (participantId, sessionData) => {
   let participants = sessionData.participants;
 
   return getSessionById(participantId, participants)[0];
+};
+
+// Generating the dynamic participant invite link based on the host domain.
+export const getParticipantInviteLink = (participantId, sessionId) => {
+  return `${window.location.origin}/experimentRoom/?participantId=${participantId}&sessionId=${sessionId}`;
 };

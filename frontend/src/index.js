@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -10,6 +9,8 @@ import openSessionReducer from "./features/openSession";
 import ongoingExperimentReducer from "./features/ongoingExperiment";
 import "react-toastify/dist/ReactToastify.css";
 import { BrowserRouter as Router } from "react-router-dom";
+import ThemeProvider from "@mui/material/styles/ThemeProvider";
+import { hubTheme } from "./styles/hubTheme";
 
 const store = configureStore({
   reducer: {
@@ -21,11 +22,13 @@ const store = configureStore({
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <Provider store={store}>
-    <Router>
-      <App />
-    </Router>
-  </Provider>
+  <ThemeProvider theme={hubTheme}>
+    <Provider store={store}>
+      <Router>
+        <App />
+      </Router>
+    </Provider>
+  </ThemeProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

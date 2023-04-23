@@ -7,12 +7,13 @@ import {
   integerToDateTime,
   useBackListener,
 } from "../../../utils/utils";
-import Button from "../../atoms/Button/Button";
+import { ActionButton, ActionIconButton, LinkActionButton } from "../../atoms/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
-import LinkButton from "../../atoms/LinkButton/LinkButton";
 import TextAreaField from "../TextAreaField/TextAreaField";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import "./OverviewTab.css";
+import { instructionsList } from "../../../utils/constants";
 
 function OverviewTab({
   onLeaveExperiment,
@@ -37,10 +38,17 @@ function OverviewTab({
       <Heading heading={sessionData.title} />
       <hr className="separatorLine"></hr>
       <div className="sessionInformation">
-        <h3>Session Information</h3>
         <div className="sessionDuration">
           <div>
-            <Label title={"Time Limit: "} /> {sessionData.time_limit / 60000}
+            <Label title={"Instructions"} />
+            <ul>
+              {
+                // getting a common set of instructions for the participant from constants.js
+                instructionsList.map((instruction, index) => {
+                  return <li key={index}>{instruction}</li>
+                })
+              }
+            </ul>
           </div>
           <div>
             <Label title={"Starting time: "} />
@@ -64,28 +72,34 @@ function OverviewTab({
           value={message}
           onChange={(newMessage) => setMessage(newMessage)}
         />
-        <Button name={"Send"} design={"secondary"} />
+        <ActionIconButton text="Send" variant="outlined" color="primary" size="medium" onClick={() => { }} icon={<PlayArrowOutlined />} />
       </div>
       <hr className="separatorLine"></hr>
 
-      <LinkButton
-        name={"LEAVE EXPERIMENT"}
-        design={"secondary"}
-        to={"/"}
+      <LinkActionButton
+        text="LEAVE EXPERIMENT"
+        variant="outlined"
+        path="/"
+        size="large"
+        color="primary"
         onClick={() => onLeaveExperiment()}
       />
       {sessionData.start_time === 0 ? (
-        <Button
-          name={"START EXPERIMENT"}
-          design={"positive"}
+        <ActionButton
+          text="START EXPERIMENT"
+          variant="contained"
+          color="success"
+          size="large"
           onClick={() => {
             setStartVerificationModal(true);
           }}
         />
       ) : (
-        <Button
-          name={"END EXPERIMENT"}
-          design={"negative"}
+        <ActionButton
+          text="END EXPERIMENT"
+          variant="contained"
+          color="error"
+          size="large"
           onClick={() => {
             setEndVerificationModal(true);
           }}
