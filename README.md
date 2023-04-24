@@ -1,7 +1,5 @@
 # Experimental Hub
 
-<!-- goals, product vision, and roadmap. -->
-
 An online tool for researchers to host and conduct customizable online experiments with users.
 
 ![Quick Demo Exp Hub](https://raw.githubusercontent.com/wiki/TUMFARSynchrony/experimental-hub/images/exp-quick-demo-small.gif)
