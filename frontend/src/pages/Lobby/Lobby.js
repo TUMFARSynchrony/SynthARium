@@ -14,7 +14,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { instructionsList } from "../../utils/constants";
 
 
-function ExperimentRoom({ localStream, connection }) {
+function Lobby({ localStream, connection }) {
   const videoElement = useRef(null);
   const [message, setMessage] = useState("");
   const [participantStream, setParticipantStream] = useState(localStream);
@@ -88,4 +88,4 @@ function ExperimentRoom({ localStream, connection }) {
   );
 }
 
-export default ExperimentRoom;
+export default Lobby;
