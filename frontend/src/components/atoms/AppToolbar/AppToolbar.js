@@ -3,7 +3,7 @@ import Toolbar from '@mui/material/Toolbar';
 
 export default function AppToolbar() {
 
-    // This is the toolbar view for partcipants only and used in the experiment room, 
+    // This is the toolbar view for partcipants only and used in the lobby, 
     // with the title - SYNCHRONY HUB. Can add a logo in the future
     const AppToolbar = styled(Toolbar)(() => ({
         backgroundColor: "#899499",

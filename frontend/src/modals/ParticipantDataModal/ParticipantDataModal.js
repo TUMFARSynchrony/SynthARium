@@ -30,7 +30,7 @@ import filtersData from '../../filters.json'
 const testData = filtersData.filters;
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-// For current filters, set default filter = "test", and for new filters set default filter = "None"
+// For current filters, set default filter = "test", and for new filters set default filter = "none"
 const defaultFilterId = "test";
 
 const getIndividualFilters = () => {

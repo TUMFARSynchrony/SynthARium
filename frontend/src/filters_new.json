@@ -1,13 +1,13 @@
 {
     "filters": [
         {
-            "id": "None",
+            "id": "none",
             "type": "both",
             "groupFilter": false,
             "config": {}
         },
         {
-            "id": "Rotation",
+            "id": "rotation",
             "type": "video",
             "groupFilter": false,
             "config": {
@@ -25,7 +25,7 @@
             }
         },
         {
-            "id": "Synchrony",
+            "id": "synchrony",
             "type": "both",
             "groupFilter": true,
             "config": {
@@ -35,13 +35,13 @@
             }
         },
         {
-            "id": "Edge-Outline",
+            "id": "edge-outline",
             "type": "video",
             "groupFilter": false,
             "config": {}
         },
         {
-            "id": "Delay-Audio",
+            "id": "delay-audio",
             "type": "audio",
             "groupFilter": false,
             "config": {
@@ -51,7 +51,7 @@
             }
         },
         {
-            "id": "Delay-Video",
+            "id": "delay-video",
             "type": "video",
             "groupFilter": false,
             "config": {

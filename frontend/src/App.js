@@ -1,5 +1,5 @@
 import "./App.css";
-import ExperimentRoom from "./pages/ExperimentRoom/ExperimentRoom";
+import Lobby from "./pages/Lobby/Lobby";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
@@ -336,10 +336,10 @@ function App() {
           />
           <Route
             exact
-            path="/experimentRoom"
+            path="/lobby"
             element={
               connection ? (
-                <ExperimentRoom
+                <Lobby
                   localStream={localStream}
                   connection={connection}
                 />
