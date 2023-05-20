@@ -3,11 +3,11 @@ from av import VideoFrame
 
 from filters.filter import Filter
 from filters.simple_line_writer import SimpleLineWriter
-from filters.zmq_au.open_face_au_exctractor import OpenFaceAUExtractor
+from filters.open_face_au.open_face_au_exctractor import OpenFaceAUExtractor
 from .openface_data_parser import OpenFaceDataParser
 
 
-class ZMQFilter(Filter):
+class OpenFaceAUFilter(Filter):
     """Filter example rotating a video track."""
     frame: int
 

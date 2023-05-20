@@ -5,8 +5,8 @@ import cv2
 import numpy
 import zmq
 
-from filters.zmq_au.open_face import OpenFace
-from filters.zmq_au.port_manager import PortManager
+from filters.open_face_au.open_face import OpenFace
+from filters.open_face_au.port_manager import PortManager
 
 
 class OpenFaceAUExtractor:
