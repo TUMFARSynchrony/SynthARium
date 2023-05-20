@@ -26,25 +26,31 @@ class PortManager:
         except:
             self._shared_port: shared_memory.SharedMemory = shared_memory.SharedMemory(
                 name="open_face_port", create=True, size=self._size)
-            self._shared_port.buf[:self._size] = bytearray((0).to_bytes(self._size, "big"))
+            self._write_to_shared_memory(0)
 
-        current_slots = int.from_bytes(bytes(self._shared_port.buf), "big")
+        current_slots = self._read_from_shared_memory()
         self._slot = find_open_slot(current_slots, self._size * 8)
 
         next_slots = current_slots + (1 << self._slot)
-        self._shared_port.buf[:self._size] = bytearray(next_slots.to_bytes(self._size, "big"))
+        self._write_to_shared_memory(next_slots)
 
         self._lock.release()
         self.port = self._starting_port + self._slot
 
     def __del__(self):
         self._lock.acquire()
-        current_slots = int.from_bytes(bytes(self._shared_port.buf), "big")
+        current_slots = self._read_from_shared_memory()
         next_slots = current_slots - (1 << self._slot)
-        self._shared_port.buf[:self._size] = bytearray(next_slots.to_bytes(self._size, "big"))
+        self._write_to_shared_memory(next_slots)
 
         self._shared_port.close()
         if next_slots is 0:
             self._shared_port.unlink()
 
         self._lock.release()
+
+    def _write_to_shared_memory(self, value: int):
+        self._shared_port.buf[:self._size] = bytearray(value.to_bytes(self._size, "big"))
+
+    def _read_from_shared_memory(self):
+        return int.from_bytes(bytes(self._shared_port.buf), "big")

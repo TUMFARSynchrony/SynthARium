@@ -4,7 +4,7 @@ from av import VideoFrame
 from filters.filter import Filter
 from filters.simple_line_writer import SimpleLineWriter
 from filters.zmq_au.open_face_au_exctractor import OpenFaceAUExtractor
-from filters.zmq_au.openface_data_parser import OpenFaceDataParser
+from .openface_data_parser import OpenFaceDataParser
 
 
 class ZMQFilter(Filter):
@@ -17,10 +17,6 @@ class ZMQFilter(Filter):
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
-        self.has_sent = False
-        self.is_connected = False
-        self.has_found_socket = False
-
         self.au_extractor = OpenFaceAUExtractor()
         self.line_writer = SimpleLineWriter()
         self.file_writer = OpenFaceDataParser()
@@ -30,7 +26,7 @@ class ZMQFilter(Filter):
 
     @staticmethod
     def name(self) -> str:
-        return "ZMQ"
+        return "OPENFACE_AU"
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray

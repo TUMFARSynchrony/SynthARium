@@ -1,8 +1,4 @@
-import os
 import subprocess
-
-from filters.zmq_au.openface_data_parser import OpenFaceDataParser
-from filters.zmq_au.port_manager import PortManager
 
 
 class OpenFace:

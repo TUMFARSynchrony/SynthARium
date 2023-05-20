@@ -52,22 +52,24 @@ class OpenFaceAUExtractor:
             try:
                 result = self._get_result()
                 return 0, self.port_msg, result
-            except zmq.Again as e:
+            except zmq.ZMQError as e:
                 return 1, self.port_msg, None
-                pass
 
     def _start_extraction(self, ndarray: numpy.ndarray):
         is_success, image_enc = cv2.imencode(".png", ndarray)
-        if is_success:
-            im_bytes = bytearray(image_enc.tobytes())
-            im_64 = base64.b64encode(im_bytes)
 
-            try:
-                self.socket.send(im_64, flags=zmq.NOBLOCK)
-                self.is_extracting = True
-                return True
-            except zmq.ZMQError as e:
-                return False
+        if not is_success:
+            return False
+
+        im_bytes = bytearray(image_enc.tobytes())
+        im_64 = base64.b64encode(im_bytes)
+
+        try:
+            self.socket.send(im_64, flags=zmq.NOBLOCK)
+            self.is_extracting = True
+            return True
+        except zmq.ZMQError as e:
+            return False
 
     def _get_result(self):
         message = self.socket.recv(flags=zmq.NOBLOCK)
