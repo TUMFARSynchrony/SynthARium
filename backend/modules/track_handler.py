@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from modules.connection import Connection
     from modules.filter_api_interface import FilterAPIInterface
 
-
 class TrackHandler(MediaStreamTrack):
     """Handles and distributes an incoming audio track to multiple subscribers."""
 
@@ -86,6 +85,7 @@ class TrackHandler(MediaStreamTrack):
             raise ValueError(
                 f'Invalid kind: "{kind}". Accepted values: "audio" or "video"'
             )
+
         self._muted = muted
         self.connection = connection
         self._relay = MediaRelay()
@@ -105,6 +105,7 @@ class TrackHandler(MediaStreamTrack):
         ----------
         filters : list of filters.FilterDict
         """
+
         self._mute_filter = filter_factory.init_mute_filter(
             self.kind, self.connection.incoming_audio, self.connection.incoming_video
         )

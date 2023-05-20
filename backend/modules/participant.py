@@ -9,6 +9,7 @@ modules.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
+import os
 from typing import Any, Coroutine
 from aiortc import RTCSessionDescription
 
@@ -84,6 +85,7 @@ class Participant(User):
         self._participant_data = participant_data
         self._experiment = experiment
         experiment.add_participant(self)
+        experiment.on("state", self._handle_state)
 
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
@@ -164,6 +166,8 @@ class Participant(User):
             # Add stream to all participants and all participants streams to self
             if self._experiment.state == ExperimentState.RUNNING:
                 coros.append(self._subscribe_and_add_subscribers())
+                if self.experiment.session.record:
+                    coros.append(self.start_recording())
             else:
                 # Wait for experiment to start (state = `RUNNING`) before subscribing
                 self._subscribe_later()
@@ -200,13 +204,29 @@ class Participant(User):
         @self._experiment.on("state")
         async def _subscribe_callback(state: ExperimentState) -> None:
             """If `state` is `RUNNING`, subscribe to all participants in experiment."""
-            if state != ExperimentState.RUNNING:
+            if state == ExperimentState.RUNNING:
+                _remove_subscribe_callback(None)
+                participants = self._experiment.participants.values()
+                coros = [p.add_subscriber(self) for p in participants if p != self]
+                await asyncio.gather(*coros)
+            else:
                 return
 
-            _remove_subscribe_callback(None)
-            participants = self._experiment.participants.values()
-            coros = [p.add_subscriber(self) for p in participants if p != self]
-            await asyncio.gather(*coros)
+    async def _handle_state(self, state: Any):
+        """Handle state.
+
+        Notes
+        -----
+        Uses event handlers for the connection `state` event and user (self)
+        `disconnected` event. The latter is used to remove the connection event handler.
+        """
+        if self.experiment.session.record:
+            if state == ExperimentState.RUNNING:
+                await self.start_recording()
+            elif state == ExperimentState.ENDED:
+                await self.stop_recording()
+            else:
+                return
 
     async def _handle_chat(self, data: Any) -> MessageDict:
         """Handle requests with type `CHAT`.
@@ -261,6 +281,19 @@ class Participant(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
+    def get_recording_path(self):
+        """Get the recording path for current participant.
+
+        Notes
+        -----
+        All recordings will be saved in sessions folder by default.
+        The format: ./sessions/<session_id>/<participant_id>
+        """
+        record_directory_path = "./sessions/" + self.experiment.session.id
+        if not os.path.isdir(record_directory_path):
+            os.mkdir(record_directory_path)
+        return record_directory_path + "/" + self.id
+
 
 async def participant_factory(
     offer: RTCSessionDescription,
@@ -296,6 +329,7 @@ async def participant_factory(
     """
     participant = Participant(id, experiment, participant_data)
     filter_api = FilterAPI(participant)
+    record_data = (experiment.session.record, participant.get_recording_path())
     log_name_suffix = f"P-{id}"
 
     if config.participant_multiprocessing:
@@ -307,6 +341,7 @@ async def participant_factory(
             participant_data.audio_filters,
             participant_data.video_filters,
             filter_api,
+            record_data
         )
     else:
         answer, connection = await connection_factory(
@@ -316,6 +351,7 @@ async def participant_factory(
             participant_data.audio_filters,
             participant_data.video_filters,
             filter_api,
+            record_data
         )
 
     participant.set_connection(connection)

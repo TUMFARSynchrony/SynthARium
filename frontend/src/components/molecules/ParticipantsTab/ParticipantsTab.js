@@ -1,5 +1,5 @@
 import Heading from "../../atoms/Heading/Heading";
-import JoinedParticipantCard from "../../atoms/JoinedParticipantCard/JoinedParticipantCard";
+import JoinedParticipantCard from "../../organisms/JoinedParticipantCard/JoinedParticipantCard";
 import { useSelector } from "react-redux";
 import "./ParticipantsTab.css";
 import { getSessionById } from "../../../utils/utils";

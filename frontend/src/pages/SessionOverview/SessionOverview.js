@@ -1,18 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { initializeSession } from "../../features/openSession";
-import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
-import "./SessionOverview.css";
-import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
-import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 import { getPastAndFutureSessions } from "../../utils/utils";
-import Button from "../../components/atoms/Button/Button";
-import Label from "../../components/atoms/Label/Label";
+import HeroText from "../../components/atoms/HeroText/HeroText";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import { ActionIconButton, LinkActionButton } from "../../components/atoms/Button";
+import Typography from "@mui/material/Typography";
+import styled from '@mui/material/styles/styled';
+import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
+import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
+
 
 function SessionOverview({
   onDeleteSession,
@@ -23,6 +27,10 @@ function SessionOverview({
   const sessionsList = useSelector((state) => state.sessionsList.value);
   const [past, setPast] = useState([]);
   const [future, setFuture] = useState([]);
+  const [selectedSession, setSelectedSession] = useState(
+    future.length !== 0 ? future[0] : null
+  );
+  const [showPastSessions, setShowPastSessions] = useState(false);
 
   // const { past, future } = getPastAndFutureSessions(sessionsList);
   useEffect(() => {
@@ -32,12 +40,6 @@ function SessionOverview({
     setFuture(futureSession);
     setSelectedSession(futureSession.length !== 0 ? futureSession[0] : null);
   }, [sessionsList]);
-
-  const [selectedSession, setSelectedSession] = useState(
-    future.length !== 0 ? future[0] : null
-  );
-
-  const [showPastSessions, setShowPastSessions] = useState(false);
 
   const handleClick = (session) => {
     setSelectedSession(session);
@@ -51,24 +53,47 @@ function SessionOverview({
     setShowPastSessions(!showPastSessions);
   };
 
+  const WelcomeText = styled(Typography)(({ theme }) => ({
+    margin: theme.spacing(2, 4, 2, 4), // top, right, bottom, left
+    fontStyle: "italic",
+  }));
+
+  const Separator = styled(Divider)(() => ({
+    borderRightWidth: 5,
+  }));
+
   return (
     <>
       <NavigationBar />
-      <h2 className="sessionOverviewHeadline">Welcome! Get started with conducting your user studies here!</h2>
-      <LinkButton
-        name="CREATE NEW SESSION"
-        to="/sessionForm"
-        onClick={() => onCreateNewSession()}
-      />
-      <div className="sessionOverviewDescription">
-        Create a new session to create your own experimental design template.
-        You can hold these sessions for each experiment you would like to
-        connect a new participant/set of participants to (link to wiki
-        forexperimental workflow).
-      </div>
-      <div className="sessionOverviewContainer">
-        <div className="sessionOverviewCards">
-          <Label title={"Upcoming sessions:"} />
+      <HeroText text={"Synchrony Experimental Hub"} />
+      <LinkActionButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
+      <WelcomeText>
+        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment.
+        See the <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.
+      </WelcomeText>
+      <Grid container>
+        <Grid item sm={7} sx={{ m: 3 }}>
+          {selectedSession ? (
+            <SessionPreview
+              selectedSession={selectedSession}
+              setSelectedSession={setSelectedSession}
+              onDeleteSession={onDeleteSession}
+              onCreateExperiment={onCreateExperiment}
+              onJoinExperiment={onJoinExperiment}
+            />
+          ) : (
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              No session selected.
+            </Typography>
+          )}
+        </Grid>
+        <Grid item>
+          <Separator orientation="vertical" />
+        </Grid>
+        <Grid item sm={4} sx={{ m: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            Upcoming sessions:
+          </Typography>
           {future.length !== 0 ? (
             future.map((session, index) => {
               return (
@@ -83,17 +108,16 @@ function SessionOverview({
               );
             })
           ) : (
-            <>No active sessions found.</>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              No active sessions found.
+            </Typography>
           )}
-          <hr className="separatorLine"></hr>
-          <Button
-            name={
-              showPastSessions ? "Hide past sessions" : "Show past sessions"
-            }
-            icon={showPastSessions ? <FaAngleUp /> : <FaAngleDown />}
-            design={"secondary"}
+          <ActionIconButton text={showPastSessions ? "Hide past sessions" : "Show past sessions"}
+            variant="outlined"
+            color="primary"
+            size="medium"
             onClick={() => onShowPastSessions()}
-          />
+            icon={showPastSessions ? <ExpandLess /> : <ExpandMore />} />
           {showPastSessions &&
             past.length > 0 &&
             past.map((session, index) => {
@@ -108,22 +132,8 @@ function SessionOverview({
                 />
               );
             })}
-          <hr className="separatorLine"></hr>
-        </div>
-        <>
-          {selectedSession ? (
-            <SessionPreview
-              selectedSession={selectedSession}
-              setSelectedSession={setSelectedSession}
-              onDeleteSession={onDeleteSession}
-              onCreateExperiment={onCreateExperiment}
-              onJoinExperiment={onJoinExperiment}
-            />
-          ) : (
-            <h2>No session selected.</h2>
-          )}
-        </>
-      </div>
+        </Grid>
+      </Grid>
     </>
   );
 }

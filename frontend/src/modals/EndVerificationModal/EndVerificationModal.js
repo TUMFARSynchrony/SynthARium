@@ -1,6 +1,5 @@
-import Button from "../../components/atoms/Button/Button";
+import { ActionButton, LinkActionButton } from "../../components/atoms/Button";
 import Heading from "../../components/atoms/Heading/Heading";
-import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 
 function EndVerificationModal({ setShowModal, onEndExperiment }) {
   const endExperiment = () => {
@@ -12,15 +11,19 @@ function EndVerificationModal({ setShowModal, onEndExperiment }) {
     <div className="verificationContainer">
       <div className="verificationModal">
         <Heading heading={`Are you sure you want to end the experiment?`} />
-        <Button
-          name={"No"}
-          design={"negative"}
+        <ActionButton
+          text="No"
+          variant="contained"
+          color="error"
+          size="small"
           onClick={() => setShowModal(false)}
         />
-        <LinkButton
-          name={"Yes"}
-          design={"positive"}
-          to="/"
+        <LinkActionButton
+          text="Yes"
+          path="/"
+          variant="contained"
+          size="small"
+          color="success"
           onClick={() => endExperiment()}
         />
       </div>

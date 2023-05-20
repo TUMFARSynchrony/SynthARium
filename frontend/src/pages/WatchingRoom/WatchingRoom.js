@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
 import Heading from "../../components/atoms/Heading/Heading";
-import LinkButton from "../../components/atoms/LinkButton/LinkButton";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
 import { getSessionById } from "../../utils/utils";
+import { LinkButton } from "../../components/atoms/Button";
 import "./WatchingRoom.css";
 
 function WatchingRoom({
@@ -61,7 +61,7 @@ function WatchingRoom({
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton name={"Go to Session Overview"} to="/" />
+          <LinkButton text="Go to Session Overview" path="/" variant="contained" size="large"/>
         </div>
       )}
     </div>

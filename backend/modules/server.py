@@ -81,7 +81,7 @@ class Server:
             pages = [
                 "/",
                 "/postProcessingRoom",
-                "/experimentRoom",
+                "/lobby",
                 "/watchingRoom",
                 "/sessionForm",
                 "/connectionTest",

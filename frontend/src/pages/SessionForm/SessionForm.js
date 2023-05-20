@@ -1,12 +1,6 @@
-import Checkbox from "../../components/molecules/Checkbox/Checkbox";
-import InputDateField from "../../components/molecules/InputDateField/InputDateField";
-import InputTextField from "../../components/molecules/InputTextField/InputTextField";
-import LinkButton from "../../components/atoms/LinkButton/LinkButton";
-import Button from "../../components/atoms/Button/Button";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
-import Heading from "../../components/atoms/Heading/Heading";
-import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
+import { CANVAS_SIZE, INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
 import {
   filterListByIndex,
   getRandomColor,
@@ -14,11 +8,8 @@ import {
   formatDate,
   checkValidSession,
 } from "../../utils/utils";
-import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 
-import "./SessionForm.css";
 import { useEffect, useState } from "react";
-import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addParticipant,
@@ -27,26 +18,71 @@ import {
   deleteParticipant,
   initializeSession,
 } from "../../features/openSession";
-import { toast } from "react-toastify";
+import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
+import ChevronLeft from "@mui/icons-material/ChevronLeft";
+import ChevronRight from "@mui/icons-material/ChevronRight";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Paper from "@mui/material/Paper";
+import Checkbox from "@mui/material/Checkbox";
+import AddIcon from '@mui/icons-material/Add';
+import FormControlLabel from "@mui/material/FormControlLabel";
+import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
+import { initialSnackbar } from "../../utils/constants";
+
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useDispatch();
   let openSession = useSelector((state) => state.openSession.value);
   const [sessionData, setSessionData] = useState(openSession);
+  // TO DO: remove the field time_limit from session.json
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
-
-  useEffect(() => {
-    setSessionData(openSession);
-  }, [openSession]);
-
+  const [numOfParticipants, setNumOfParticipants] = useState();
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
+  const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [participantDimensions, setParticipantDimensions] = useState(
     getParticipantDimensions(
       sessionData.participants ? sessionData.participants : []
     )
   );
 
-  const [showSessionDataForm, setShowSessionDataForm] = useState(true);
+  // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
+  // It is displayed here instead of in the Participant Modal itself, since upon closing the modal it is no longer 
+  // available to display the warnings.
+  const [snackbarResponse, setSnackbarResponse] = useState({
+    newParticipantInputEmpty: false,
+    requiredInformationMissing: false,
+    participantOriginalEmpty: false,
+    newInputEqualsOld: false
+  });
 
+
+  useEffect(() => {
+    setSessionData(openSession);
+  }, [openSession]);
+
+  useEffect(() => {
+    if (snackbarResponse.newParticipantInputEmpty) {
+      setSnackbar({ open: true, text: "You did not enter any information. Participant will be deleted now.", severity: "warning" });
+      return;
+    }
+
+    if (snackbarResponse.requiredInformationMissing) {
+      setSnackbar({ open: true, text: "Required information (First Name/Last Name) missing. Participant will be deleted now.", severity: "warning" });
+      return;
+    }
+
+    if (snackbarResponse.participantOriginalEmpty && !snackbarResponse.newInputEqualsOld) {
+      setSnackbar({ open: true, text: "You need to save the information first!", severity: "warning" });
+      return;
+    }
+  }, [snackbarResponse])
+
+  
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant({ index: index }));
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
@@ -93,13 +129,10 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onSaveSession = () => {
     if (!checkValidSession(sessionData)) {
-      toast.error("Failed to save session since required fields are missing!");
+      setSnackbar({ open: true, text: "Failed to save session since required fields are missing!", severity: "error" });
       return;
     }
-
     onSendSessionToBackend(sessionData);
-
-    console.log("sessionData", sessionData);
   };
 
   const addRandomSessionData = () => {
@@ -147,115 +180,94 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
+  // TO DO: auto create x no. of participants.
+  // const handleCreateParticipants = () => {
+  //   for (let i = 0; i < numOfParticipants; i++) {
+  //     onAddParticipant();
+  //     console.log(sessionData);
+  //   }
+  // };
+
+
   return (
-    <div className="sessionFormContainer">
-      {showSessionDataForm && (
-        <div className="sessionFormData">
-          <div className="sessionForm">
-            <Heading heading={"Session Data"} />
-            <InputTextField
-              title="Title"
-              placeholder={"Your title"}
-              value={sessionData.title}
-              onChange={(newTitle) =>
-                handleSessionDataChange("title", newTitle)
-              }
-              required={true}
-            />
-            <TextAreaField
-              title="Description"
-              value={sessionData.description}
-              placeholder={"Short description of the session"}
-              onChange={(newDescription) =>
-                handleSessionDataChange("description", newDescription)
-              }
-              required={true}
-            />
-            <div className="timeInput">
-              <InputTextField
-                title="Time Limit (in minutes)"
-                value={timeLimit}
-                inputType={"number"}
-                onChange={(newTimeLimit) => {
-                  setTimeLimit(newTimeLimit);
-                  handleSessionDataChange("time_limit", newTimeLimit * 60000);
-                }}
-                required={true}
-                min={1}
-              />
-              <InputDateField
-                title="Date"
-                value={sessionData.date ? formatDate(sessionData.date) : ""}
-                onChange={(newDate) =>
-                  handleSessionDataChange(
-                    "date",
-                    newDate ? new Date(newDate).getTime() : 0
-                  )
-                }
-                required={true}
-              />
-            </div>
+    <>
+      <Grid container sx={{ mx: 4, my: 2 }}>
+        {showSessionDataForm && (
+          <Grid item sm={5}>
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <ChevronLeft sx={{ color: "gray" }} />
+              </Box>
+              <LinkButton text="Back to Session Overview" variant="text" size="small" path="/" />
+            </Box>
+            <Card elevation={3}>
+              <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>Session Details</Typography>
+              <Box sx={{ height: "74vh", overflowY: "auto" }}>
+                <CardContent>
+                  {/* Override text fields' margin and width using MUI classnames */}
+                  <Box component="form" sx={{ '& .MuiTextField-root': { m: 1 }, }} noValidate autoComplete="off">
+                    <Box sx={{ '& .MuiTextField-root': { width: '38vw' }, }}>
+                      <TextField label="Title" value={sessionData.title} size="small" required onChange={(event) => handleSessionDataChange("title", event.target.value)} />
+                      <TextField label="Description" value={sessionData.description} size="small" required onChange={(event) => handleSessionDataChange("description", event.target.value)} />
+                    </Box>
+                    <Box sx={{ '& .MuiTextField-root': { width: '18.5vw' }, }}>
+                      <TextField value={sessionData.date ? formatDate(sessionData.date) : ""} type="datetime-local" size="small" required onChange={(event) =>
+                        handleSessionDataChange("date", event.target.value ? new Date(event.target.value).getTime() : 0)} />
+                      <TextField label="Number of Participants" value={sessionData.participants.length} type="number" size="small" disabled
+                        onChange={(num) => setNumOfParticipants(num)} />
+                    </Box>
+                    <Box sx={{ mt: 1, mb: 3 }}>
+                      <FormControlLabel control={<Checkbox />} label="Record Session" checked={sessionData.record} onChange={() => handleSessionDataChange("record", !sessionData.record)} />
+                      {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
+                    </Box>
+                  </Box>
 
-            <Checkbox
-              title="Record Session"
-              value={sessionData.record}
-              checked={sessionData.record}
-              onChange={() =>
-                handleSessionDataChange("record", !sessionData.record)
-              }
-              required={false}
-            />
-            <hr className="separatorLine"></hr>
-            <Heading heading={"Participants"} />
-            <div className="participantCheckboxes"></div>
-            <div className="sessionFormParticipants">
-              <div className="scrollableParticipants">
-                {openSession.participants.map((participant, index) => {
-                  return (
-                    <ParticipantData
-                      onDeleteParticipant={() => onDeleteParticipant(index)}
-                      key={index}
-                      index={index}
-                      participantData={participant}
-                      sessionId={sessionData.id}
-                      handleParticipantChange={handleParticipantChange}
-                    />
-                  );
-                })}
-              </div>
-              <Button
-                name="Add new participant"
-                design={"positive"}
-                onClick={() => onAddParticipant()}
-              />
-            </div>
-            <hr className="separatorLine"></hr>
-          </div>
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>Participants</Typography>
+                    <ActionIconButton text="ADD" variant="outlined" color="primary" size="small" onClick={() => onAddParticipant()} icon={<AddIcon />} />
+                  </Box>
 
-          <div className="sessionFormButtons">
-            <Button name="Save" onClick={() => onSaveSession()} />
-            <LinkButton name="Start" to="/watchingRoom" />
-            <Button
-              name="Random session data"
-              onClick={() => addRandomSessionData()}
-            />
-          </div>
-        </div>
-      )}
-      <Button
-        name={""}
-        icon={showSessionDataForm ? <FaAngleLeft /> : <FaAngleRight />}
-        design={"close"}
-        onClick={() => onShowSessionFormModal()}
-        title={"Show/Close session form"}
-      />
-      <div className="sessionFormCanvas">
-        <DragAndDrop
-          participantDimensions={participantDimensions}
-          setParticipantDimensions={setParticipantDimensions}
-        />
-      </div>
-    </div>
+                  {openSession.participants.map((participant, index) => {
+                    return (
+                      <ParticipantData
+                        onDeleteParticipant={() => onDeleteParticipant(index)}
+                        key={index}
+                        index={index}
+                        participantData={participant}
+                        sessionId={sessionData.id}
+                        handleParticipantChange={handleParticipantChange}
+                        setSnackbarResponse={setSnackbarResponse}
+                      />
+                    );
+                  })}
+                </CardContent>
+              </Box>
+              <Box sx={{ my: 1 }}>
+                {/* <ActionButton text="RANDOM SESSION DATA" variant="contained" color="primary" size="medium" onClick={() => addRandomSessionData()} /> */}
+                <ActionButton text="SAVE SESSION" variant="contained" color="success" size="medium" onClick={() => onSaveSession()} />
+              </Box>
+            </Card>
+          </Grid>
+        )}
+        <Grid item>
+          <ActionIconButton text="" variant="text" color="primary" size="large" onClick={() => onShowSessionFormModal()}
+            icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
+          />
+        </Grid>
+        <Grid item sm={5}>
+          <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+            {/* <Link variant="body2" sx={{ color: "gray", textDecorationColor: "gray", fontWeight: "bold" }}>
+              Expand Video Canvas
+            </Link> */}
+          </Box>
+          <Paper elevation={2} sx={{ backgroundColor: "whitesmoke", width: CANVAS_SIZE.width, height: CANVAS_SIZE.height }}>
+            <DragAndDrop participantDimensions={participantDimensions} setParticipantDimensions={setParticipantDimensions} />
+          </Paper>
+        </Grid>
+      </Grid>
+      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)} />
+    </>
   );
 }
 
