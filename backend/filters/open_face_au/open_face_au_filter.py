@@ -4,7 +4,7 @@ from av import VideoFrame
 from filters.filter import Filter
 from filters.simple_line_writer import SimpleLineWriter
 from filters.open_face_au.open_face_au_exctractor import OpenFaceAUExtractor
-from .openface_data_parser import OpenFaceDataParser
+from .open_face_data_parser import OpenFaceDataParser
 
 
 class OpenFaceAUFilter(Filter):
@@ -36,6 +36,8 @@ class OpenFaceAUFilter(Filter):
 
         if exit_code == 0:
             self.data = result
+            # TODO: use correct frame
+            # if a frame is skipped, data corresponds to a frame before current frame, but self.frame does not
             self.file_writer.write(self.frame, self.data)
         else:
             self.file_writer.write(self.frame, {"intensity": "-1"})
