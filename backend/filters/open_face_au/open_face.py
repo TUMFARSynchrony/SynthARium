@@ -4,7 +4,12 @@ import subprocess
 class OpenFace:
     def __init__(self, port: int):
         try:
-            self._openface_process = subprocess.Popen(["../../build/bin/OwnExtractor", f"{port}"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self._openface_process = subprocess.Popen(
+                ["../../build/bin/OwnExtractor", f"{port}"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
         except:
             pass
 

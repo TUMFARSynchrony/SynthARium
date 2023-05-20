@@ -9,6 +9,7 @@ from .open_face_data_parser import OpenFaceDataParser
 
 class OpenFaceAUFilter(Filter):
     """Filter example rotating a video track."""
+
     frame: int
 
     file_writer: OpenFaceDataParser
@@ -45,5 +46,7 @@ class OpenFaceAUFilter(Filter):
         # Put text on image
         au06 = self.data["intensity"]["AU06"]
         au12 = self.data["intensity"]["AU12"]
-        ndarray = self.line_writer.write_lines(ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg])
+        ndarray = self.line_writer.write_lines(
+            ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg]
+        )
         return ndarray

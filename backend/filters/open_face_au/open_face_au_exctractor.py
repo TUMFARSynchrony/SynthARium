@@ -10,7 +10,6 @@ from filters.open_face_au.port_manager import PortManager
 
 
 class OpenFaceAUExtractor:
-
     port_manager: PortManager
     open_face: OpenFace
     socket: zmq.Socket
@@ -32,7 +31,9 @@ class OpenFaceAUExtractor:
 
         self.is_extracting = False
         self.port_taken_msg = f"Port {self.port_manager.port} is already taken!"
-        self.no_connection_msg = f"No connection established on {self.port_manager.port}"
+        self.no_connection_msg = (
+            f"No connection established on {self.port_manager.port}"
+        )
         self.port_msg = f"Port: {self.port_manager.port}"
 
     def __del__(self):
