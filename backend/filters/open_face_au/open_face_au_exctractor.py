@@ -42,18 +42,29 @@ class OpenFaceAUExtractor:
         if not self.is_connected:
             return -1, self.port_taken_msg, None
 
-        if not self.is_extracting:
-            success = self._start_extraction(ndarray)
-            if success:
+        result = None
+        received = False
+        try:
+            result = self._get_result()
+            received = True
+        except zmq.ZMQError as e:
+            if self.is_extracting:
                 return 1, self.port_msg, None
-            else:
-                return -2, self.no_connection_msg, None
-        else:
+
+        success = self._start_extraction(ndarray)
+        if success:
             try:
                 result = self._get_result()
-                return 0, self.port_msg, result
+                received = True
             except zmq.ZMQError as e:
-                return 1, self.port_msg, None
+                pass
+
+            if received:
+                return 0, self.port_msg, result
+            else:
+                return 1, self.port_msg, result
+        else:
+            return -2, self.no_connection_msg, result
 
     def _start_extraction(self, ndarray: numpy.ndarray):
         is_success, image_enc = cv2.imencode(".png", ndarray)
