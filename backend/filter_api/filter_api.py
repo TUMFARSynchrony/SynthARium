@@ -1,7 +1,12 @@
 """Provide `FilterAPI` implementation of `FilterAPIInterface`."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from filter_api.filter_api_interface import FilterAPIInterface
-from users.user import User
+
+if TYPE_CHECKING:
+    from users.user import User
 
 
 class FilterAPI(FilterAPIInterface):

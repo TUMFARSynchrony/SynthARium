@@ -13,11 +13,11 @@ from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, RTCSessionDescriptionDict
 from modules import BACKEND_DIR
 from server import Config
-from filter_api import FilterAPI, FilterSubprocessReceiver
 from modules.exceptions import ErrorDictException
 from connection.connection_state import ConnectionState
 from connection.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
+from filter_api import FilterAPI, FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
