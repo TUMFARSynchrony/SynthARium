@@ -15,7 +15,7 @@ from connection.messages import ConnectionAnswerDict, ConnectionProposalDict
 from custom_types.message import MessageDict
 from filters import FilterDict
 from modules.exceptions import ErrorDictException
-from modules.filter_subprocess_api import FilterSubprocessAPI
+from filter_api import FilterSubprocessAPI
 from modules.subprocess_logging import SubprocessLoggingHandler
 from server import Config
 

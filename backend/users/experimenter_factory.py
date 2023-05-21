@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from aiortc import RTCSessionDescription
 
-from modules.filter_api import FilterAPI
+from filter_api import FilterAPI
 from connection.connection import connection_factory
 from connection.connection_subprocess import connection_subprocess_factory
 

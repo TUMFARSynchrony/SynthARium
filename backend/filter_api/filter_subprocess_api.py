@@ -1,7 +1,7 @@
 """Provide `FilterSubprocessAPI` implementation of `FilterAPIInterface`."""
 
 from typing import Callable
-from modules.filter_api_interface import FilterAPIInterface
+from filter_api.filter_api_interface import FilterAPIInterface
 
 
 class FilterSubprocessAPI(FilterAPIInterface):
@@ -12,7 +12,7 @@ class FilterSubprocessAPI(FilterAPIInterface):
     FilterSubprocessAPI is run on a subprocess and does not have direct access to data
     / functionality filters may require.  To access that data / functionality, it sends
     commands to a modules.filter_subprocess_receiver.FilterSubprocessReceiver on the
-    main process.  Sending the commands is  donne using `_relay_command`, wich is
+    main process.  Sending the commands is  donne using `_relay_command`, which is
     intended to be the `_send_command` function in
     modules.connection_runner.ConnectionRunner.
 

@@ -2,13 +2,13 @@
 
 import logging
 from modules.exceptions import ErrorDictException
-from modules.filter_api import FilterAPI
+from filter_api.filter_api import FilterAPI
 
 
 class FilterSubprocessReceiver:
     """Receive commands for the FilterAPI from a FilterSubprocessAPI.
 
-    When a modules.filter_subprocess_api.FilterSubprocessAPI wants to execute a API call
+    When a modules.filter_subprocess_api.FilterSubprocessAPI wants to execute an API call
     , it sends a command to a FilterSubprocessReceiver running on the main process.
     The FilterSubprocessReceiver then forwards the request to a
     modules.filter_api.FilterAPI.
@@ -32,7 +32,7 @@ class FilterSubprocessReceiver:
 
         Parameters
         ----------
-        filter_api : modules.filter_api.FilterAPI
+        filter_api : filter_api.filter_api.FilterAPI
             FilterAPI requests from modules.filter_subprocess_api.FilterSubprocessAPI
             will be forwarded to.
         """

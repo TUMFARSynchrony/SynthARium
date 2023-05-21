@@ -11,7 +11,7 @@ from aiortc import RTCSessionDescription
 from connection.connection import connection_factory
 from connection.connection_subprocess import connection_subprocess_factory
 from session.data.participant import ParticipantData
-from modules.filter_api import FilterAPI
+from filter_api import FilterAPI
 
 from server import Config
 from users.participant import Participant

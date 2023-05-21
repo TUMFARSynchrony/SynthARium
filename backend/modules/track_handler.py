@@ -18,7 +18,7 @@ from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVid
 
 if TYPE_CHECKING:
     from connection.connection import Connection
-    from modules.filter_api_interface import FilterAPIInterface
+    from filter_api import FilterAPIInterface
 
 
 class TrackHandler(MediaStreamTrack):
