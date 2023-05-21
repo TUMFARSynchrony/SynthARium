@@ -22,7 +22,7 @@ from filters import FilterDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
-import modules.experiment as _exp
+import experiment as _exp
 from modules.util import timestamp
 import users.experimenter as _experimenter
 from modules.exceptions import ErrorDictException

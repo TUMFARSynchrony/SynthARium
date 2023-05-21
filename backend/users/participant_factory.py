@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from modules.experiment import Experiment
+    from experiment import Experiment
 
 from aiortc import RTCSessionDescription
 

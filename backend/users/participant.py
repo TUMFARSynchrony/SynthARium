@@ -12,14 +12,15 @@ import logging
 import os
 from typing import Any, Coroutine
 
+
 from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 
-import modules.experiment as _exp
-from modules.experiment_state import ExperimentState
+import experiment.experiment as _exp
+from experiment import ExperimentState
 from connection.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from session.data.participant import ParticipantData

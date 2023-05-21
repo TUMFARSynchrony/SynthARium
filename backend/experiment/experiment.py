@@ -1,17 +1,20 @@
 """Provide the `Experiment` class."""
+from __future__ import annotations
+
 import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
 
 from modules.util import timestamp
-from modules.experiment_state import ExperimentState
+from experiment.experiment_state import ExperimentState
 from modules.exceptions import ErrorDictException
 from session.data.session import SessionData
 
-from users import Experimenter, Participant
+if TYPE_CHECKING:
+    from users import Experimenter, Participant
 
 
 class Experiment(AsyncIOEventEmitter):

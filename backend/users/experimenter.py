@@ -24,7 +24,7 @@ from custom_types.session_id_request import is_valid_session_id_request
 from connection.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from users.user import User
-import modules.experiment as _exp
+import experiment.experiment as _exp
 import modules.hub as _h
 
 

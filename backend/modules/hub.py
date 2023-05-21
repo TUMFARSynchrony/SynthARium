@@ -8,12 +8,12 @@ import logging
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
-from modules.experiment import Experiment
+from experiment import Experiment
 from modules.util import generate_unique_id
 from modules.exceptions import ErrorDictException
 from modules.util import get_system_specs
 
-import modules.experiment as _experiment
+import experiment.experiment as _experiment
 import session.session_manager as _sm
 
 from server import Config, Server
