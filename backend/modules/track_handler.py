@@ -17,7 +17,7 @@ from aiortc.contrib.media import MediaRelay
 from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
 
 if TYPE_CHECKING:
-    from modules.connection import Connection
+    from connection.connection import Connection
     from modules.filter_api_interface import FilterAPIInterface
 
 

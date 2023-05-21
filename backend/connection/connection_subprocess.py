@@ -10,21 +10,20 @@ from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
+from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, RTCSessionDescriptionDict
 from modules import BACKEND_DIR
 from server import Config
 from modules.filter_api import FilterAPI
 from modules.exceptions import ErrorDictException
-from modules.connection_state import ConnectionState
-from modules.connection_interface import ConnectionInterface
+from connection.connection_state import ConnectionState
+from connection.connection_interface import ConnectionInterface
 from modules.subprocess_logging import handle_log_from_subprocess
 from modules.filter_subprocess_receiver import FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
 from custom_types.message import MessageDict
-from custom_types.connection import RTCSessionDescriptionDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-from custom_types.connection import ConnectionOfferDict, ConnectionAnswerDict
 
 
 class ConnectionSubprocess(ConnectionInterface):
@@ -75,7 +74,7 @@ class ConnectionSubprocess(ConnectionInterface):
 
         Parameters
         ----------
-        offer : custom_types.connection.RTCSessionDescriptionDict
+        offer : connection.messages.rtc_session_description_dict.RTCSessionDescriptionDict
             Initial connection offer.
         message_handler : function (custom_typed.message.MessageDict) -> None
             Handler for incoming messages over the datachannel.  Incoming messages will

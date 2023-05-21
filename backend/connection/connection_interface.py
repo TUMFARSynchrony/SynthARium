@@ -4,16 +4,12 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
 
-from modules.connection_state import ConnectionState
+from connection.connection_state import ConnectionState
+from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, ConnectionProposalDict
 
 from filters import FilterDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-from custom_types.connection import (
-    ConnectionOfferDict,
-    ConnectionAnswerDict,
-    ConnectionProposalDict,
-)
 
 
 class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
@@ -72,7 +68,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Returns
         -------
-        custom_types.connection.ConnectionProposalDict
+        connection.messages.ConnectionProposalDict
             Connection proposal including `participant_summary`.  The `id` in the
             returned dict is the `subconnection_id` for this proposal.  If the
             subscriber should be removed manually, this ID is required for
@@ -99,9 +95,9 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        answer : custom_types.connection.ConnectionAnswerDict
+        answer : connection.messages.connection_answer_dict.ConnectionAnswerDict
             Answer to a custom_types.connection.ConnectionOfferDict created by this
-            connection.  The answer ID must match a offer ID send by this connection.
+            connection.  The answer ID must match an offer ID send by this connection.
 
         Raises
         ------

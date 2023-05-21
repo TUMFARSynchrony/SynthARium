@@ -20,7 +20,7 @@ from custom_types.success import SuccessDict
 
 import modules.experiment as _exp
 from modules.experiment_state import ExperimentState
-from modules.connection_state import ConnectionState
+from connection.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from session.data.participant import ParticipantData
 from users.user import User

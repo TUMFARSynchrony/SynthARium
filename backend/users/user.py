@@ -15,19 +15,19 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
 
+from connection.messages import ConnectionOfferDict, is_valid_connection_offer_dict
 from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-from custom_types.connection import ConnectionOfferDict, is_valid_connection_offer_dict
 
 import modules.experiment as _exp
 from modules.util import timestamp
 import users.experimenter as _experimenter
 from modules.exceptions import ErrorDictException
-from modules.connection_state import ConnectionState
-from modules.connection_interface import ConnectionInterface
+from connection.connection_state import ConnectionState
+from connection.connection_interface import ConnectionInterface
 
 
 class User(AsyncIOEventEmitter, metaclass=ABCMeta):

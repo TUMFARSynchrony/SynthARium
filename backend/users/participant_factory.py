@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
 from aiortc import RTCSessionDescription
 
-from modules.connection import connection_factory
-from modules.connection_subprocess import connection_subprocess_factory
+from connection.connection import connection_factory
+from connection.connection_subprocess import connection_subprocess_factory
 from session.data.participant import ParticipantData
 from modules.filter_api import FilterAPI
 

@@ -21,7 +21,7 @@ from custom_types.note import is_valid_note
 from custom_types.mute import is_valid_mute_request
 from custom_types.session_id_request import is_valid_session_id_request
 
-from modules.connection_state import ConnectionState
+from connection.connection_state import ConnectionState
 from modules.exceptions import ErrorDictException
 from users.user import User
 import modules.experiment as _exp

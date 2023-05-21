@@ -6,18 +6,19 @@ import logging
 import sys
 import time
 from typing import Any
+
 from aiortc import RTCSessionDescription
 
-from filters import FilterDict
+from connection.connection import Connection, connection_factory
+from connection.connection_state import ConnectionState
+from connection.messages import ConnectionAnswerDict, ConnectionProposalDict
 from custom_types.message import MessageDict
-from custom_types.connection import ConnectionProposalDict, ConnectionAnswerDict
-
-from server import Config
+from filters import FilterDict
 from modules.exceptions import ErrorDictException
-from modules.connection_state import ConnectionState
 from modules.filter_subprocess_api import FilterSubprocessAPI
-from modules.connection import Connection, connection_factory
 from modules.subprocess_logging import SubprocessLoggingHandler
+from server import Config
+
 
 class ConnectionRunner:
     """Subprocess counterpart to Connection wrapper ConnectionSubprocess.
@@ -65,7 +66,7 @@ class ConnectionRunner:
         log_name_suffix: str,
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
-        record_data: list
+        record_data: list,
     ) -> None:
         """Run the ConnectionRunner.  Returns after the ConnectionRunner finished.
 
@@ -85,7 +86,7 @@ class ConnectionRunner:
             audio_filters,
             video_filters,
             filter_api,
-            record_data
+            record_data,
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self._send_command(
