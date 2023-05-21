@@ -26,8 +26,8 @@ async def participant_factory(
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
 
-    Instantiate new modules.participant.Participant, handle offer using
-    modules.connection.connection_factory and set connection for the Participant.
+    Instantiate new hub.participant.Participant, handle offer using
+    hub.connection.connection_factory and set connection for the Participant.
 
     This sequence must be donne for all participants.  Instantiating a Participant
     directly will likely lead to problems, since it won't have a Connection.
@@ -39,14 +39,14 @@ async def participant_factory(
         WebRTC offer for building the connection to the client.
     participant_id : str
         Unique identifier for Participant.  Must exist in experiment.
-    experiment : modules.experiment.Experiment
+    experiment : hub.experiment.Experiment
         Experiment the participant is part of.
-    config : modules.config.Config
+    config : hub.config.Config
         Hub configuration / Config object.
 
     Returns
     -------
-    tuple with aiortc.RTCSessionDescription, modules.participant.Participant
+    tuple with aiortc.RTCSessionDescription, hub.participant.Participant
         WebRTC answer that should be sent back to the client and Participant
         representing the client.
     """

@@ -8,9 +8,9 @@ from pyee.asyncio import AsyncIOEventEmitter
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
 
-from modules.util import timestamp
+from hub.util import timestamp
 from experiment.experiment_state import ExperimentState
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from session.data.session import SessionData
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ class Experiment(AsyncIOEventEmitter):
     """Experiment representing a running session.
 
     Extends AsyncIOEventEmitter, providing the following events:
-    - `state` : modules.experiment_state.ExperimentState
+    - `state` : hub.experiment_state.ExperimentState
         Emitted when the connection state changes.
     """
 
@@ -246,7 +246,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        participant : modules.participant.Participant
+        participant : hub.participant.Participant
             Participant joining the experiment.
         """
         self._participants[participant.id] = participant
@@ -261,7 +261,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        participant : modules.participant.Participant
+        participant : hub.participant.Participant
             Participant leaving the experiment.
         """
         self._participants.pop(participant.id)
@@ -376,7 +376,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        experimenter : modules.experimenter.Experimenter
+        experimenter : hub.experimenter.Experimenter
             Experimenter joining the experiment.
         """
         self._experimenters.append(experimenter)
@@ -391,7 +391,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        experimenter : modules.experimenter.Experimenter
+        experimenter : hub.experimenter.Experimenter
             Experimenter leaving the experiment.
 
         Raises
@@ -414,7 +414,7 @@ class Experiment(AsyncIOEventEmitter):
 
         Parameters
         ----------
-        state : modules.experiment_state.ExperimentState
+        state : hub.experiment_state.ExperimentState
             New experiment state.
         """
         if self._state == state:

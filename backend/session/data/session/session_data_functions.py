@@ -2,7 +2,7 @@
 
 Use for type hints and static type checking without any overhead during runtime.
 """
-from modules.util import generate_unique_id
+from hub.util import generate_unique_id
 from session.data.session.session_dict import SessionDict
 
 

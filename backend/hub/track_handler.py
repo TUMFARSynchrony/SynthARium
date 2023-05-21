@@ -51,9 +51,9 @@ class TrackHandler(MediaStreamTrack):
         ----------
         kind : str, "audio" or "video"
             Kind of MediaStreamTrack this handler handles.
-        connection : modules.connection.Connection
+        connection : hub.connection.Connection
             Connection this track handler belongs to.
-        filter_api : subclass of modules.filter_api_interface.FilterAPIInterface
+        filter_api : subclass of hub.filter_api_interface.FilterAPIInterface
             Filter API for filters.
         track : aiortc.mediastreams.MediaStreamTrack
             Track this handler should manage and distribute.  None if track is set

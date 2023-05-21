@@ -9,9 +9,9 @@ from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
 from experiment import Experiment
-from modules.util import generate_unique_id
-from modules.exceptions import ErrorDictException
-from modules.util import get_system_specs
+from hub.util import generate_unique_id
+from hub.exceptions import ErrorDictException
+from hub.util import get_system_specs
 
 import experiment.experiment as _experiment
 import session.session_manager as _sm
@@ -100,7 +100,7 @@ class Hub:
 
         Parameters
         ----------
-        experimenter : modules.experimenter.Experimenter
+        experimenter : hub.experimenter.Experimenter
             Experimenter that will be removed from the hub
 
         Raises
@@ -120,7 +120,7 @@ class Hub:
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict | None]:
         """Handle incoming offer from a client.
 
-        This function is intended to be passed down to the modules.server.Server, which
+        This function is intended to be passed down to the hub.server.Server, which
         will call it after checking and parsing an incoming offer.
 
         Parameters
@@ -335,7 +335,7 @@ class Hub:
         ----------
         data : custom_types.message.MessageDict
             Message for the experimenters.
-        exclude : modules.experimenter.Experimenter, default None
+        exclude : hub.experimenter.Experimenter, default None
             Optional `Experimenter` that will be ignored.
         """
         for experimenter in self.experimenters:

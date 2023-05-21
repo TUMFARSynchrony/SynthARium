@@ -3,7 +3,7 @@
 Notes
 -----
 Use participant_factory for creating new participants to ensure that they have a valid
-modules.connection.Connection.
+hub.connection.Connection.
 """
 
 from __future__ import annotations
@@ -22,13 +22,13 @@ from custom_types.success import SuccessDict
 import experiment.experiment as _exp
 from experiment import ExperimentState
 from connection.connection_state import ConnectionState
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from session.data.participant import ParticipantData
 from users.user import User
 
 
 class Participant(User):
-    """Participant is a type of modules.user.User with participant rights.
+    """Participant is a type of hub.user.User with participant rights.
 
     Has access to a different set of API endpoints than other Users.  API endpoints for
     participants are defined here.
@@ -64,7 +64,7 @@ class Participant(User):
         ----------
         participant_id : str
             Unique identifier for Participant.  Must exist in experiment.
-        experiment : modules.experiment.Experiment
+        experiment : hub.experiment.Experiment
             Experiment the participant is part of.
         participant_data : session.data.participant.ParticipantData
             Participant data this participant represents.
@@ -144,11 +144,11 @@ class Participant(User):
         """Handler for connection "state_change" event.
 
         Implements the abstract `_handle_connection_state_change` function in
-        modules.user.User.
+        hub.user.User.
 
         Parameters
         ----------
-        state : modules.connection_state.ConnectionState
+        state : hub.connection_state.ConnectionState
             New state of the connection this Participant has with the client.
         """
         self._logger.debug(f"Handle state change. State: {state}")

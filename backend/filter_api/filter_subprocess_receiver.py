@@ -1,23 +1,23 @@
 """provide `FilterSubprocessReceiver` class."""
 
 import logging
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from filter_api.filter_api import FilterAPI
 
 
 class FilterSubprocessReceiver:
     """Receive commands for the FilterAPI from a FilterSubprocessAPI.
 
-    When a modules.filter_subprocess_api.FilterSubprocessAPI wants to execute an API call
+    When a hub.filter_subprocess_api.FilterSubprocessAPI wants to execute an API call
     , it sends a command to a FilterSubprocessReceiver running on the main process.
     The FilterSubprocessReceiver then forwards the request to a
-    modules.filter_api.FilterAPI.
+    hub.filter_api.FilterAPI.
 
     See Also
     --------
-    modules.filter_subprocess_api.FilterSubprocessAPI :
+    hub.filter_subprocess_api.FilterSubprocessAPI :
         FilterSubprocessAPI sending the commands handled by FilterSubprocessReceiver.
-    modules.filter_api_interface.FilterAPIInterface : Filter API documentation.
+    hub.filter_api_interface.FilterAPIInterface : Filter API documentation.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Backend-Architecture
         Architecture UML Diagram.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Filters
@@ -33,7 +33,7 @@ class FilterSubprocessReceiver:
         Parameters
         ----------
         filter_api : filter_api.filter_api.FilterAPI
-            FilterAPI requests from modules.filter_subprocess_api.FilterSubprocessAPI
+            FilterAPI requests from hub.filter_subprocess_api.FilterSubprocessAPI
             will be forwarded to.
         """
         self._filter_api = filter_api
@@ -45,7 +45,7 @@ class FilterSubprocessReceiver:
         Parameters
         ----------
         message : dict
-            Message send by modules.filter_subprocess_api.FilterSubprocessAPI.  There
+            Message send by hub.filter_subprocess_api.FilterSubprocessAPI.  There
             are no guarantees about its content, but the intended content is `command`
             and `data`.
         """

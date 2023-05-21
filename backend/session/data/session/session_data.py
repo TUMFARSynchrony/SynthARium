@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from custom_types.note import NoteDict
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from session.data.base_data import BaseData
 from session.data.participant import ParticipantData, participant_data_factory
 from session.data.session.session_dict import SessionDict

@@ -14,8 +14,8 @@ from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.error import ErrorDict
 
-from modules.exceptions import ErrorDictException
-from modules import FRONTEND_BUILD_DIR
+from hub.exceptions import ErrorDictException
+from hub import FRONTEND_BUILD_DIR
 from server.config import Config
 
 

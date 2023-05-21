@@ -22,8 +22,8 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     See Also
     --------
-    modules.connection.Connection : Implementation for ConnectionInterface.
-    modules.connection_subprocess.ConnectionSubprocess :
+    hub.connection.Connection : Implementation for ConnectionInterface.
+    hub.connection_subprocess.ConnectionSubprocess :
         Implementation for ConnectionInterface.
     """
 
@@ -51,7 +51,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     @property
     @abstractmethod
     def state(self) -> ConnectionState:
-        """Get the modules.connection_state.ConnectionState the Connection is in."""
+        """Get the hub.connection_state.ConnectionState the Connection is in."""
         pass
 
     @abstractmethod
@@ -102,8 +102,8 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Raises
         ------
         ErrorDictException
-            If `id` in `offer` is unknown (not a modules.connection.SubConnection ID
-            handled by this modules.connection.Connection).
+            If `id` in `offer` is unknown (not a hub.connection.SubConnection ID
+            handled by this hub.connection.Connection).
 
         See Also
         --------

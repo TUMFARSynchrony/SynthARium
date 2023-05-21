@@ -1,4 +1,4 @@
-"""Main modules for backend."""
+"""Main hub for backend."""
 
 from pathlib import Path
 

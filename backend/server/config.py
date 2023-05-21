@@ -5,7 +5,7 @@ from typing import Literal
 
 import json
 from os.path import join, exists
-from modules import BACKEND_DIR
+from hub import BACKEND_DIR
 
 
 class Config:

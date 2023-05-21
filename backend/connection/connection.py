@@ -16,11 +16,11 @@ import json
 
 from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, ConnectionProposalDict
 from connection.sub_connection import SubConnection
-from modules.track_handler import TrackHandler
-from modules.exceptions import ErrorDictException
+from hub.track_handler import TrackHandler
+from hub.exceptions import ErrorDictException
 from connection.connection_interface import ConnectionInterface
 from connection.connection_state import ConnectionState, parse_connection_state
-from modules.record_handler import RecordHandler
+from hub.record_handler import RecordHandler
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
@@ -31,10 +31,10 @@ from session.data.participant.participant_summary import ParticipantSummaryDict
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
 
-    Implements modules.connection_interface.ConnectionInterface.
+    Implements hub.connection_interface.ConnectionInterface.
 
     Extends AsyncIOEventEmitter, providing the following events:
-    - `state_change` : modules.connection_state.ConnectionState
+    - `state_change` : hub.connection_state.ConnectionState
         Emitted when the state of this connection changes.
 
     Notes
@@ -140,12 +140,12 @@ class Connection(ConnectionInterface):
 
     @property
     def incoming_audio(self) -> TrackHandler:
-        """Get modules.track_handler.TrackHandler for incoming audio track."""
+        """Get hub.track_handler.TrackHandler for incoming audio track."""
         return self._incoming_audio
 
     @property
     def incoming_video(self) -> TrackHandler:
-        """Get modules.track_handler.TrackHandler for incoming video track."""
+        """Get hub.track_handler.TrackHandler for incoming video track."""
         return self._incoming_video
 
     def __str__(self) -> str:
@@ -467,7 +467,7 @@ async def connection_factory(
 
     Returns
     -------
-    tuple with aiortc.RTCSessionDescription, modules.connection.Connection
+    tuple with aiortc.RTCSessionDescription, hub.connection.Connection
         WebRTC answer that should be send back to the client and a Connection.
     """
     pc = RTCPeerConnection()

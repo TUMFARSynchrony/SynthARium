@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import time
 from aiortc.contrib.media import MediaRecorder, MediaBlackhole
-from modules.track_handler import TrackHandler
+from hub.track_handler import TrackHandler
 
 
 class RecordHandler:

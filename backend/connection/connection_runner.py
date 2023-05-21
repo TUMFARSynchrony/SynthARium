@@ -14,9 +14,9 @@ from connection.connection_state import ConnectionState
 from connection.messages import ConnectionAnswerDict, ConnectionProposalDict
 from custom_types.message import MessageDict
 from filters import FilterDict
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from filter_api import FilterSubprocessAPI
-from modules.subprocess_logging import SubprocessLoggingHandler
+from hub.subprocess_logging import SubprocessLoggingHandler
 from server import Config
 
 
@@ -24,7 +24,7 @@ class ConnectionRunner:
     """Subprocess counterpart to Connection wrapper ConnectionSubprocess.
 
     Handles incoming commands from main process and relays messages and events from the
-    modules.connection.Connection to the main process.
+    hub.connection.Connection to the main process.
 
     Intended to be executed on a dedicated subprocess.  Executing other pieces of code
     on the same (sub)process may lead to problems, in case stdin, stderr or stdout are

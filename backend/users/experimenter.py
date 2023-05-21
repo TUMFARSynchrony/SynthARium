@@ -3,7 +3,7 @@
 Notes
 -----
 Use experimenter_factory for creating new Experimenters to ensure that they have a valid
-modules.connection.Connection.
+hub.connection.Connection.
 """
 
 from __future__ import annotations
@@ -22,14 +22,14 @@ from custom_types.mute import is_valid_mute_request
 from custom_types.session_id_request import is_valid_session_id_request
 
 from connection.connection_state import ConnectionState
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from users.user import User
 import experiment.experiment as _exp
-import modules.hub as _h
+import hub.hub as _h
 
 
 class Experimenter(User):
-    """Experimenter is a type of modules.user.User with experimenter rights.
+    """Experimenter is a type of hub.user.User with experimenter rights.
 
     Has access to a different set of API endpoints than other Users.  API endpoints for
     experimenters are defined here.
@@ -94,11 +94,11 @@ class Experimenter(User):
         """Handler for connection "state_change" event.
 
         Implements the abstract `_handle_connection_state_change` function in
-        modules.user.User.
+        hub.user.User.
 
         Parameters
         ----------
-        state : modules.connection_state.ConnectionState
+        state : hub.connection_state.ConnectionState
             New state of the connection this Experimenter has with the client.
         """
         self._logger.debug(f"Handle state change. State: {state}")
@@ -150,7 +150,7 @@ class Experimenter(User):
         data : any or session.data.session.SessionDict
             Message data, can be anything.  Everything other than
             custom_types.session_id_request.SessionIdRequestDict will raise a
-            modules.exceptions.ErrorDictException.
+            hub.exceptions.ErrorDictException.
 
         Raises
         ------
@@ -241,7 +241,7 @@ class Experimenter(User):
         data : any or custom_types.session_id_request.SessionIdRequestDict
             Message data, can be anything.  Everything other than
             custom_types.session_id_request.SessionIdRequestDict will raise a
-            modules.exceptions.ErrorDictException.
+            hub.exceptions.ErrorDictException.
 
         Raises
         ------
@@ -275,7 +275,7 @@ class Experimenter(User):
         """Handle requests with type `CREATE_EXPERIMENT`.
 
         Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
-        If found, try to create a new modules.experiment.Experiment based on the session
+        If found, try to create a new hub.experiment.Experiment based on the session
         with the `session_id` in `data`.
 
         Experimenters are notified using a `EXPERIMENT_CREATED` message by the hub.
@@ -285,7 +285,7 @@ class Experimenter(User):
         data : any or custom_types.session_id_request.SessionIdRequestDict
             Message data, can be anything.  Everything other than
             custom_types.session_id_request.SessionIdRequestDict will raise a
-            modules.exceptions.ErrorDictException.
+            hub.exceptions.ErrorDictException.
 
         Returns
         -------
@@ -323,7 +323,7 @@ class Experimenter(User):
         """Handle requests with type `JOIN_EXPERIMENT`.
 
         Check if data is a valid custom_types.session_id_request.SessionIdRequestDict.
-        If found, try to join an existing modules.experiment.Experiment with the
+        If found, try to join an existing hub.experiment.Experiment with the
         `session_id` in `data`.
 
         Parameters
@@ -331,7 +331,7 @@ class Experimenter(User):
         data : any or custom_types.session_id_request.SessionIdRequestDict
             Message data, can be anything.  Everything other than
             custom_types.session_id_request.SessionIdRequestDict will raise a
-            modules.exceptions.ErrorDictException.
+            hub.exceptions.ErrorDictException.
 
         Returns
         -------
@@ -392,7 +392,7 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If this Experimenter is not connected to a modules.experiment.Experiment.
+            If this Experimenter is not connected to a hub.experiment.Experiment.
         """
         experiment = self.get_experiment_or_raise("Failed to leave experiment.")
         experiment.remove_experimenter(self)
@@ -424,7 +424,7 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If this Experimenter is not connected to a modules.experiment.Experiment or
+            If this Experimenter is not connected to a hub.experiment.Experiment or
             the Experiment has already started.
         """
         experiment = self.get_experiment_or_raise("Cannot start experiment.")
@@ -452,7 +452,7 @@ class Experimenter(User):
         Raises
         ------
         ErrorDictException
-            If this Experimenter is not connected to a modules.experiment.Experiment or
+            If this Experimenter is not connected to a hub.experiment.Experiment or
             the Experiment has already ended.
         """
         experiment = self.get_experiment_or_raise("Cannot stop experiment.")
@@ -467,14 +467,14 @@ class Experimenter(User):
         """Handle requests with type `ADD_NOTE`.
 
         Check if data is a valid custom_types.note.NoteDict and adds the note to the
-        modules.experiment.Experiment the Experimenter is connected to.
+        hub.experiment.Experiment the Experimenter is connected to.
 
         Parameters
         ----------
         data : any or custom_types.note.NoteDict
             Message data, can be anything.  Everything other than
             custom_types.note.NoteDict will raise a
-            modules.exceptions.ErrorDictException.
+            hub.exceptions.ErrorDictException.
 
         Returns
         -------
@@ -486,7 +486,7 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid custom_types.note.NoteDict or if this Experimenter is
-            not connected to a modules.experiment.Experiment.
+            not connected to a hub.experiment.Experiment.
         """
         if not is_valid_note(data):
             raise ErrorDictException(
@@ -524,7 +524,7 @@ class Experimenter(User):
         ErrorDictException
             If data is not a valid custom_types.chat_message.ChatMessageDict,
             `target` is not "experimenter" or this Experimenter is not connected to a
-            modules.experiment.Experiment.
+            hub.experiment.Experiment.
         """
         if not is_valid_chatmessage(data):
             raise ErrorDictException(
@@ -570,7 +570,7 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid custom_types.kick.KickRequestDict or if this
-            Experimenter is not connected to a modules.experiment.Experiment.
+            Experimenter is not connected to a hub.experiment.Experiment.
         """
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
@@ -609,7 +609,7 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid custom_types.kick.KickRequestDict or if this
-            Experimenter is not connected to a modules.experiment.Experiment.
+            Experimenter is not connected to a hub.experiment.Experiment.
         """
         if not is_valid_kickrequest(data):
             raise ErrorDictException(
@@ -648,7 +648,7 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid custom_types.mute.MuteRequestDict or if this
-            Experimenter is not connected to a modules.experiment.Experiment.
+            Experimenter is not connected to a hub.experiment.Experiment.
         """
         if not is_valid_mute_request(data):
             raise ErrorDictException(

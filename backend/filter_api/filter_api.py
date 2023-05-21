@@ -14,13 +14,13 @@ class FilterAPI(FilterAPIInterface):
 
     FilterAPI is run on the main process and has direct access to data / functionality
     filters may require.  In case this functionality is required from a subprocess,
-    modules.filter_subprocess_api.FilterSubprocessAPI is used.
+    hub.filter_subprocess_api.FilterSubprocessAPI is used.
 
-    Implements modules.filter_api_interface.FilterAPIInterface.
+    Implements hub.filter_api_interface.FilterAPIInterface.
 
     See Also
     --------
-    modules.filter_api_interface.FilterAPIInterface : further documentation.
+    hub.filter_api_interface.FilterAPIInterface : further documentation.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Backend-Architecture
         Architecture UML Diagram.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Filters
@@ -34,7 +34,7 @@ class FilterAPI(FilterAPIInterface):
 
         Parameters
         ----------
-        user : modules.user.User
+        user : hub.user.User
             User the filter API can access.
         """
         super().__init__()

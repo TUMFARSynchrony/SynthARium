@@ -7,7 +7,7 @@ logger = logging.getLogger("ConnectionState")
 
 
 class ConnectionState(Enum):
-    """State a modules.connection.Connection is in.
+    """State a hub.connection.Connection is in.
 
     The initial state is `NEW`.  When the Connection is started, the state changes to
     `CONNECTING`.  As soon as the connection is stable and a data channel is open, the
@@ -34,7 +34,7 @@ def parse_connection_state(state: str) -> ConnectionState:
 
     Returns
     -------
-    modules.connection_state.ConnectionState
+    hub.connection_state.ConnectionState
         Parsed state.
 
     Raises

@@ -7,7 +7,7 @@ with the Connection test page.
 
 # import logging
 from session.data.session import SessionData
-from modules.hub import Hub
+from hub.hub import Hub
 import asyncio
 
 from session.data.session import SessionDict

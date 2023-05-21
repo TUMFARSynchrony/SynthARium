@@ -1,4 +1,4 @@
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from session.data.participant import participant_data_factory
 from session.data.session import SessionDict, SessionData
 from session.data.session.session_data_functions import has_duplicate_participant_ids, \

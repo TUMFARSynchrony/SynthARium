@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from modules.hub import Hub
+    from hub.hub import Hub
 
 from aiortc import RTCSessionDescription
 
@@ -18,8 +18,8 @@ async def experimenter_factory(
 ) -> tuple[RTCSessionDescription, Experimenter]:
     """Instantiate connection with a new Experimenter based on WebRTC `offer`.
 
-    Instantiate new modules.experimenter.Experimenter, handle offer using
-    modules.connection.connection_factory and set connection for the Experimenter.
+    Instantiate new hub.experimenter.Experimenter, handle offer using
+    hub.connection.connection_factory and set connection for the Experimenter.
 
     This sequence must be donne for all experimenters.  Instantiating an Experimenter
     directly will likely lead to problems, since it won't have a Connection.
@@ -35,7 +35,7 @@ async def experimenter_factory(
 
     Returns
     -------
-    tuple with aiortc.RTCSessionDescription, modules.experimenter.Experimenter
+    tuple with aiortc.RTCSessionDescription, hub.experimenter.Experimenter
         WebRTC answer that should be sent back to the client and Experimenter
         representing the client.
     """

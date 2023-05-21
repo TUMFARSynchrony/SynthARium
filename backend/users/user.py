@@ -2,8 +2,8 @@
 
 See Also
 --------
-modules.participant.Participant : Participant implementation of User.
-modules.experimenter.Experimenter : Experimenter implementation of User.
+hub.participant.Participant : Participant implementation of User.
+hub.experimenter.Experimenter : Experimenter implementation of User.
 """
 
 from __future__ import annotations
@@ -23,9 +23,9 @@ from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
 import experiment as _exp
-from modules.util import timestamp
+from hub.util import timestamp
 import users.experimenter as _experimenter
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from connection.connection_state import ConnectionState
 from connection.connection_interface import ConnectionInterface
 
@@ -36,7 +36,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     Provides client connection and message handling logic for child classes.
 
     Extends AsyncIOEventEmitter, providing the following events:
-    - `disconnected` : modules.user.User
+    - `disconnected` : hub.user.User
         Emitted when the connection with the client closes.
     - `CONNECTION_ANSWER` : custom_types.connection.ConnectionAnswerDict
         CONNECTION_ANSWER message received from a client.
@@ -68,8 +68,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     See Also
     --------
-    modules.participant.Participant : Participant implementation of User.
-    modules.experimenter.Experimenter : Experimenter implementation of User.
+    hub.participant.Participant : Participant implementation of User.
+    hub.experimenter.Experimenter : Experimenter implementation of User.
 
     Notes
     -----
@@ -144,7 +144,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Returns
         -------
-        None or modules.experiment.Experiment
+        None or hub.experiment.Experiment
             None if user is not connected to an experiment, otherwise experiment.
 
         See Also
@@ -167,7 +167,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         See Also
         --------
-        modules.participant.Participant.get_summary
+        hub.participant.Participant.get_summary
             Participant implementation for get_summary.
         """
         return None
@@ -179,8 +179,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         See Also
         --------
-        modules.participant.Participant : Participant implementation of User.
-        modules.experimenter.Experimenter : Experimenter implementation of User.
+        hub.participant.Participant : Participant implementation of User.
+        hub.experimenter.Experimenter : Experimenter implementation of User.
         """
         self._logger.debug(f"Added Connection: {repr(connection)}")
         self._connection = connection
@@ -222,7 +222,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        user : modules.user.User
+        user : hub.user.User
             New subscriber to this User.
 
         See Also
@@ -320,7 +320,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        user : modules.user.User
+        user : hub.user.User
             Subscriber to this User that will be removed.
         """
         self._logger.debug(f"Removing subscriber: {user}")
@@ -420,7 +420,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Get `self._experiment` or raise ErrorDictException if it is None.
 
         Use to check if this Experimenter is connected to an
-        modules.experiment.Experiment.
+        hub.experiment.Experiment.
 
         Parameters
         ----------
@@ -472,7 +472,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         """Set or update video filters to `filters`.
 
-        Wrapper for modules.connection_interface.ConnectionInterface `set_video_filters`
+        Wrapper for hub.connection_interface.ConnectionInterface `set_video_filters`
         , with callback in case the connection is not set
 
         Parameters
@@ -497,7 +497,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def set_audio_filters(self, filters: list[FilterDict]) -> None:
         """Set or update audio filters to `filters`.
 
-        Wrapper for modules.connection_interface.ConnectionInterface `set_audio_filters`
+        Wrapper for hub.connection_interface.ConnectionInterface `set_audio_filters`
         , with callback in case the connection is not set
 
         Parameters
@@ -545,7 +545,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        state : modules.connection_state.ConnectionState
+        state : hub.connection_state.ConnectionState
             New state of `self._connection`.
         """
         if state in [ConnectionState.CLOSED, ConnectionState.FAILED]:
@@ -575,7 +575,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        state : modules.connection_state.ConnectionState
+        state : hub.connection_state.ConnectionState
             New state of the connection this user has with the client.
         """
         pass

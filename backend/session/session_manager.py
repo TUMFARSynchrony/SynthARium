@@ -8,10 +8,10 @@ from os.path import isfile, join
 
 from session.data.session import SessionDict, is_valid_session
 
-from modules.util import generate_unique_id
-from modules.exceptions import ErrorDictException
+from hub.util import generate_unique_id
+from hub.exceptions import ErrorDictException
 from session.data.session import SessionData, session_data_factory
-from modules import BACKEND_DIR
+from hub import BACKEND_DIR
 
 
 class SessionManager:
@@ -23,9 +23,9 @@ class SessionManager:
 
     Methods
     -------
-    get_session_list() : list of modules.data.SessionData
+    get_session_list() : list of hub.data.SessionData
         Get all sessions.
-    get_session(id) : modules.data.SessionData or None
+    get_session(id) : hub.data.SessionData or None
         Get the session with the given id.
     create_session(session_dict) : None
         Instantiate a new session with the given session dict.
@@ -58,7 +58,7 @@ class SessionManager:
 
         Returns
         -------
-        list of modules.data.SessionData
+        list of hub.data.SessionData
             List containing all sessions managed by this SessionManager.
         """
         return list(self._sessions.values())
@@ -84,7 +84,7 @@ class SessionManager:
 
         Returns
         -------
-        modules.data.SessionData or None
+        hub.data.SessionData or None
             None if `id` does not correlate to a known session, otherwise
             session data.
         """

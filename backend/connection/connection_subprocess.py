@@ -11,12 +11,12 @@ from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
 from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, RTCSessionDescriptionDict
-from modules import BACKEND_DIR
+from hub import BACKEND_DIR
 from server import Config
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 from connection.connection_state import ConnectionState
 from connection.connection_interface import ConnectionInterface
-from modules.subprocess_logging import handle_log_from_subprocess
+from hub.subprocess_logging import handle_log_from_subprocess
 from filter_api import FilterAPI, FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
@@ -26,14 +26,14 @@ from session.data.participant.participant_summary import ParticipantSummaryDict
 
 
 class ConnectionSubprocess(ConnectionInterface):
-    """Wrapper executing a modules.connection.Connection on a dedicated subprocess.
+    """Wrapper executing a hub.connection.Connection on a dedicated subprocess.
 
     Relays all logging and events from the Connection.
 
-    Implements modules.connection_interface.ConnectionInterface.
+    Implements hub.connection_interface.ConnectionInterface.
 
     Extends AsyncIOEventEmitter, providing the following events:
-    - `state_change` : modules.connection_state.ConnectionState
+    - `state_change` : hub.connection_state.ConnectionState
         Emitted when the state of this connection changes.
     """
 
@@ -80,7 +80,7 @@ class ConnectionSubprocess(ConnectionInterface):
             be parsed and type checked (only top level, not including contents of data).
         log_name_suffix : str
             Suffix for logger.  Format: Connection-<log_name_suffix>.
-        config : modules.config.Config
+        config : hub.config.Config
             Hub config.
         audio_filters : list of custom_types.filter.FilterDict
             Default audio filters for this connection.
@@ -532,7 +532,7 @@ async def connection_subprocess_factory(
 
     Returns
     -------
-    tuple with aiortc.RTCSessionDescription, modules.connection_subprocess.ConnectionSubprocess
+    tuple with aiortc.RTCSessionDescription, hub.connection_subprocess.ConnectionSubprocess
         WebRTC answer that should be send back to the client and a ConnectionSubprocess.
     """
     offer_dict = RTCSessionDescriptionDict(sdp=offer.sdp, type=offer.type)  # type: ignore

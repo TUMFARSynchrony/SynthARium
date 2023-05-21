@@ -19,17 +19,17 @@ class FilterAPIInterface(ABC):
     When a filter requires additional data or access to functionality outside of the
     subprocesses part of the hub, the filter API should be extended.  In theory, the API
     could get access to all parts of the program, e.g. by adding access to the hub to
-    modules.filter_api.FilterAPI.
+    hub.filter_api.FilterAPI.
 
     When adding a function to the filter API, it should be defined in
-    modules.filter_api_interface.FilterAPIInterface and implemented in
-    modules.filter_api.FilterAPI as well as
-    modules.filter_subprocess_api.FilterSubprocessAPI.
+    hub.filter_api_interface.FilterAPIInterface and implemented in
+    hub.filter_api.FilterAPI as well as
+    hub.filter_subprocess_api.FilterSubprocessAPI.
 
     See Also
     --------
-    modules.filter_api.FilterAPI
-    modules.filter_subprocess_api.FilterSubprocessAPI
+    hub.filter_api.FilterAPI
+    hub.filter_subprocess_api.FilterSubprocessAPI
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Backend-Architecture
         Architecture UML Diagram.
     https://github.com/TUMFARSynchrony/experimental-hub/wiki/Filters
@@ -38,9 +38,9 @@ class FilterAPIInterface(ABC):
 
     @abstractmethod
     async def experiment_send(self, to: str, data, exclude: str) -> None:
-        """Send data using the send method in modules.experiment.Experiment.
+        """Send data using the send method in hub.experiment.Experiment.
 
-        See modules.experiment.Experiment `send()` for parameter documentation.
+        See hub.experiment.Experiment `send()` for parameter documentation.
         `secure_origin` is set to True.
 
         Raises
