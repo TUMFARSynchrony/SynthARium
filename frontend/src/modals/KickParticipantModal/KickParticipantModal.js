@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { toast } from "react-toastify";
-import Button from "../../components/atoms/Button/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
 import { banMuteUnmuteParticipant } from "../../features/sessionsList";
+import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
+import { initialSnackbar } from "../../utils/constants";
 import "./KickParticipantModal.css";
 
 function KickParticipantModal({
@@ -16,6 +17,7 @@ function KickParticipantModal({
 }) {
   const [reason, setReason] = useState("");
   const dispatch = useDispatch();
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
 
   const onChange = (newReason) => {
     setReason(newReason);
@@ -23,7 +25,7 @@ function KickParticipantModal({
 
   const kickBanParticipant = () => {
     if (!reason) {
-      toast.warn("Please specify the reason!");
+      setSnackbar({ open: true, text: "Please specify the reason!", severity: "warning" });
       return;
     }
 
@@ -57,13 +59,17 @@ function KickParticipantModal({
           onChange={(newReason) => onChange(newReason)}
           required={true}
         />
-        <Button name={action} onClick={() => kickBanParticipant()} />
-        <Button
-          name={"Cancel"}
-          design={"negative"}
+        <ActionButton variant="contained" color="error" size="medium" text={action} onClick={() => kickBanParticipant()} />
+        <ActionButton
+          text="Cancel"
+          variant="contained"
+          color="primary"
+          size="medium"
           onClick={() => setShowModal(false)}
         />
       </div>
+      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)} />
     </div>
   );
 }

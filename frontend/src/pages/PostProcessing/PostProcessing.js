@@ -1,16 +1,13 @@
-import NavigationBar from "../../components/organisms/NavigationBar/NavigationBar";
-import "./PostProcessing.css";
+import HeroText from "../../components/atoms/HeroText/HeroText";
+import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 
 function PostProcessing() {
   return (
-    <div>
+    <>
       <NavigationBar />
-      <h1>Post-Processing Room</h1>
-      <h3>
-        Under construction, this is the page you can analyze and visualize the
-        experiment data after conducting your experiment.
-      </h3>
-    </div>
+      <HeroText text={"Post-Processing Room"} />
+      <HeroText text={"Under construction! This is the page where you can analyze and visualize the experiment data after conducting your experiment."} />
+    </>
   );
 }
 

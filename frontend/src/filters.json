@@ -1,0 +1,26 @@
+{
+    "filters": [
+        {
+            "type": "FILTER_API_TEST", 
+            "id": "test"
+        },
+        { 
+            "type": "EDGE_OUTLINE", 
+            "id": "edge" 
+        }, 
+        { 
+            "type": "ROTATION",
+            "id": "rotation" 
+        },
+        { 
+            "type": "DELAY",
+            "id": "delay-a",
+            "size": 60 
+        },
+        { 
+            "type": "DELAY", 
+            "id": "delay-v",
+            "size": 60
+        }
+    ]
+}

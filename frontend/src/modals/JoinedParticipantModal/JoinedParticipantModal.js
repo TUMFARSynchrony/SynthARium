@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import Button from "../../components/atoms/Button/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import Label from "../../components/atoms/Label/Label";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
 import { banMuteUnmuteParticipant } from "../../features/sessionsList";
@@ -50,9 +50,11 @@ function JoinedParticipantModal({
           title={participantData.first_name + " " + participantData.last_name}
         />
         <hr className="separatorLine"></hr>
-        <Button
-          name={participantData.muted_audio ? "Unmute Audio" : "Mute Audito"}
-          design={"secondary"}
+        <ActionButton
+          text={participantData.muted_audio ? "Unmute Audio" : "Mute Audio"}
+          variant="outlined"
+          color="primary"
+          size="medium"
           onClick={() =>
             muteParticipant(
               !participantData.muted_audio,
@@ -60,9 +62,11 @@ function JoinedParticipantModal({
             )
           }
         />
-        <Button
-          name={participantData.muted_video ? "Unmute Video" : "Mute Video"}
-          design={"secondary"}
+        <ActionButton
+          text={participantData.muted_video ? "Unmute Video" : "Mute Video"}
+          variant="outlined"
+          color="primary"
+          size="medium"
           onClick={() =>
             muteParticipant(
               participantData.muted_audio,
@@ -97,14 +101,18 @@ function JoinedParticipantModal({
         </div>
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantButtons">
-          <Button
-            name={"Cancel"}
-            design={"negative"}
+          <ActionButton
+            text="Cancel"
+            variant="outlined"
+            color="primary"
+            size="medium"
             onClick={() => setShowModal(!showModal)}
           />
-          <Button
-            name={"Finish"}
-            design={"positive"}
+          <ActionButton
+            text="Finish"
+            variant="outlined"
+            color="success"
+            size="medium"
             onClick={() => setShowModal(!showModal)}
           />
         </div>
