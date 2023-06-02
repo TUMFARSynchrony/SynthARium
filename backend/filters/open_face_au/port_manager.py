@@ -1,3 +1,4 @@
+import os
 from multiprocessing import shared_memory
 from NamedAtomicLock import NamedAtomicLock
 
@@ -17,7 +18,7 @@ class PortManager:
     port: int
 
     def __init__(self):
-        self._lock = NamedAtomicLock("open_face_port")
+        self._lock = NamedAtomicLock("open_face_port", os.path.dirname(__file__))
         self._lock.acquire()
 
         try:
@@ -46,7 +47,7 @@ class PortManager:
         self._write_to_shared_memory(next_slots)
 
         self._shared_port.close()
-        if next_slots is 0:
+        if next_slots == 0:
             self._shared_port.unlink()
 
         self._lock.release()
@@ -57,4 +58,4 @@ class PortManager:
         )
 
     def _read_from_shared_memory(self):
-        return int.from_bytes(bytes(self._shared_port.buf), "big")
+        return int.from_bytes(bytes(self._shared_port.buf[: self._size]), "big")
