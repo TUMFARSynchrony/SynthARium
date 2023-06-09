@@ -54,7 +54,7 @@ export const getTotalBox = (boxes) => {
     x: minX,
     y: minY,
     width: maxX - minX,
-    height: maxY - minY,
+    height: maxY - minY
   };
 };
 
@@ -62,7 +62,7 @@ export const getLocalStream = async () => {
   // TODO: allow the user to select a specific camera / audio device?
   const constraints = {
     video: true,
-    audio: true,
+    audio: true
   };
   try {
     return await navigator.mediaDevices.getUserMedia(constraints);
@@ -74,21 +74,21 @@ export const getLocalStream = async () => {
 export const getParticipantDimensions = (participants) => {
   let dimensions = [];
 
-  participants.forEach((participant, _) => {
+  participants.forEach((participant) => {
     dimensions.push({
       shapes: {
         x: 0,
         y: 0,
         fill: getRandomColor(),
         first_name: participant.first_name,
-        last_name: participant.last_name,
+        last_name: participant.last_name
       },
       groups: {
         x: participant.position.x,
         y: participant.position.y,
         width: participant.size.width,
-        height: participant.size.height,
-      },
+        height: participant.size.height
+      }
     });
   });
 
@@ -129,7 +129,7 @@ export const getPastAndFutureSessions = (sessionsList) => {
 
   let today = new Date().getTime();
 
-  sessionsList.forEach((session, _) => {
+  sessionsList.forEach((session) => {
     // Sessions in the past are in the past and cannot be started.
     // end_time needs to be > 0 for a session to be past as well.
     if (session.date < today || session.end_time > 0) {
@@ -147,7 +147,7 @@ export const checkValidSession = (sessionData) => {
   return (
     sessionData.title !== "" &&
     sessionData.description !== "" &&
-    // TO DO : remove session time_limit from the check and session.json, as it is no longer needed. 
+    // TO DO : remove session time_limit from the check and session.json, as it is no longer needed.
     // Because the session is not going to end after the session duration has passed.
     // sessionData.time_limit !== 0 &&
     sessionData.date !== 0

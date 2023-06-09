@@ -5,9 +5,13 @@ import StartVerificationModal from "../../../modals/StartVerificationModal/Start
 import {
   getSessionById,
   integerToDateTime,
-  useBackListener,
+  useBackListener
 } from "../../../utils/utils";
-import { ActionButton, ActionIconButton, LinkActionButton } from "../../atoms/Button";
+import {
+  ActionButton,
+  ActionIconButton,
+  LinkActionButton
+} from "../../atoms/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
 import TextAreaField from "../TextAreaField/TextAreaField";
@@ -18,7 +22,7 @@ import { instructionsList } from "../../../utils/constants";
 function OverviewTab({
   onLeaveExperiment,
   onStartExperiment,
-  onEndExperiment,
+  onEndExperiment
 }) {
   const [message, setMessage] = useState("");
   const [startVerificationModal, setStartVerificationModal] = useState(false);
@@ -45,7 +49,7 @@ function OverviewTab({
               {
                 // getting a common set of instructions for the participant from constants.js
                 instructionsList.map((instruction, index) => {
-                  return <li key={index}>{instruction}</li>
+                  return <li key={index}>{instruction}</li>;
                 })
               }
             </ul>
@@ -72,7 +76,13 @@ function OverviewTab({
           value={message}
           onChange={(newMessage) => setMessage(newMessage)}
         />
-        <ActionIconButton text="Send" variant="outlined" color="primary" size="medium" onClick={() => { }} icon={<PlayArrowOutlined />} />
+        <ActionIconButton
+          text="Send"
+          variant="outlined"
+          color="primary"
+          size="medium"
+          icon={<PlayArrowOutlined />}
+        />
       </div>
       <hr className="separatorLine"></hr>
 

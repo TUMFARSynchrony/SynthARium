@@ -13,7 +13,7 @@ function KickParticipantModal({
   showModal,
   setShowModal,
   onKickBanParticipant,
-  action,
+  action
 }) {
   const [reason, setReason] = useState("");
   const dispatch = useDispatch();
@@ -25,14 +25,18 @@ function KickParticipantModal({
 
   const kickBanParticipant = () => {
     if (!reason) {
-      setSnackbar({ open: true, text: "Please specify the reason!", severity: "warning" });
+      setSnackbar({
+        open: true,
+        text: "Please specify the reason!",
+        severity: "warning"
+      });
       return;
     }
 
     onKickBanParticipant(
       {
         participant_id: participantId,
-        reason: reason,
+        reason: reason
       },
       action
     );
@@ -44,7 +48,7 @@ function KickParticipantModal({
           participantId: participantId,
           action: "banned",
           value: true,
-          sessionId: sessionId,
+          sessionId: sessionId
         })
       );
     }
@@ -59,7 +63,13 @@ function KickParticipantModal({
           onChange={(newReason) => onChange(newReason)}
           required={true}
         />
-        <ActionButton variant="contained" color="error" size="medium" text={action} onClick={() => kickBanParticipant()} />
+        <ActionButton
+          variant="contained"
+          color="error"
+          size="medium"
+          text={action}
+          onClick={() => kickBanParticipant()}
+        />
         <ActionButton
           text="Cancel"
           variant="contained"
@@ -68,8 +78,12 @@ function KickParticipantModal({
           onClick={() => setShowModal(false)}
         />
       </div>
-      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
-        handleClose={() => setSnackbar(initialSnackbar)} />
+      <CustomSnackbar
+        open={snackbar.open}
+        text={snackbar.text}
+        severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)}
+      />
     </div>
   );
 }

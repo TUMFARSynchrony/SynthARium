@@ -8,7 +8,7 @@ const Rectangle = ({
   groupProps,
   isSelected,
   onSelect,
-  onChange,
+  onChange
 }) => {
   const shapeRef = useRef();
   const trRef = useRef();
@@ -39,7 +39,7 @@ const Rectangle = ({
       x: old.x(),
       y: old.y(),
       width: Math.max(5, old.width() * scaleX),
-      height: Math.max(old.height() * scaleY),
+      height: Math.max(old.height() * scaleY)
     });
   };
 
@@ -77,7 +77,7 @@ const Rectangle = ({
 
     onChange({
       ...groupProps,
-      ...newAbsPos,
+      ...newAbsPos
     });
   };
 

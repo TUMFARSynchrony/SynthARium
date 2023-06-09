@@ -16,8 +16,8 @@ export const openSessionSlice = createSlice({
       end_time: 0,
       creation_time: 0,
       notes: [],
-      log: "",
-    },
+      log: ""
+    }
   },
   reducers: {
     initializeSession: (state, { payload }) => {
@@ -47,7 +47,7 @@ export const openSessionSlice = createSlice({
       let newParticipantArray = [...newSessionData.participants];
       newParticipantArray[payload.index] = {
         ...newParticipantArray[payload.index],
-        ...payload.participant,
+        ...payload.participant
       };
 
       newSessionData.participants = newParticipantArray;
@@ -88,8 +88,8 @@ export const openSessionSlice = createSlice({
       newSessionData.participants = participants;
 
       state.value = newSessionData;
-    },
-  },
+    }
+  }
 });
 
 export const {
@@ -100,7 +100,7 @@ export const {
   changeParticipant,
   deleteParticipant,
   changeParticipantDimensions,
-  copySession,
+  copySession
 } = openSessionSlice.actions;
 
 export default openSessionSlice.reducer;

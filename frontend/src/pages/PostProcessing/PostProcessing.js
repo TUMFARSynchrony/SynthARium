@@ -6,7 +6,11 @@ function PostProcessing() {
     <>
       <NavigationBar />
       <HeroText text={"Post-Processing Room"} />
-      <HeroText text={"Under construction! This is the page where you can analyze and visualize the experiment data after conducting your experiment."} />
+      <HeroText
+        text={
+          "Under construction! This is the page where you can analyze and visualize the experiment data after conducting your experiment."
+        }
+      />
     </>
   );
 }

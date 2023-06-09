@@ -22,12 +22,12 @@ export function getSessionJson() {
           position: {
             x: 20,
             y: 50,
-            z: 0,
+            z: 0
           },
           size: {
             width: 200,
-            height: 200,
-          },
+            height: 200
+          }
         },
         {
           id: "",
@@ -39,14 +39,14 @@ export function getSessionJson() {
           position: {
             x: 10,
             y: 10,
-            z: 0,
+            z: 0
           },
           size: {
             width: 100,
-            height: 100,
-          },
-        },
-      ],
+            height: 100
+          }
+        }
+      ]
     },
     {
       id: "",
@@ -70,12 +70,12 @@ export function getSessionJson() {
           position: {
             x: 20,
             y: 50,
-            z: 0,
+            z: 0
           },
           size: {
             width: 200,
-            height: 200,
-          },
+            height: 200
+          }
         },
         {
           id: "",
@@ -87,15 +87,15 @@ export function getSessionJson() {
           position: {
             x: 10,
             y: 10,
-            z: 0,
+            z: 0
           },
           size: {
             width: 100,
-            height: 100,
-          },
-        },
-      ],
-    },
+            height: 100
+          }
+        }
+      ]
+    }
   ];
 }
 
@@ -115,21 +115,21 @@ export function getJoinedParticipants() {
       position: {
         x: 0,
         y: 10,
-        z: 10,
+        z: 10
       },
       size: {
         width: 100,
-        height: 100,
+        height: 100
       },
       chat: [
         {
           message: "Welcome to todays experiment!",
           time: 1650380763075,
           author: "experimenter",
-          target: "participants",
-        },
+          target: "participants"
+        }
       ],
-      banned: false,
+      banned: false
     },
     {
       id: "2d1882e48b",
@@ -141,34 +141,34 @@ export function getJoinedParticipants() {
       position: {
         x: 0,
         y: 150,
-        z: 200,
+        z: 200
       },
       size: {
         width: 100,
-        height: 100,
+        height: 100
       },
       chat: [
         {
           message: "Welcome to todays experiment!",
           time: 1650380763075,
           author: "experimenter",
-          target: "participants",
+          target: "participants"
         },
         {
           message:
             "Hello Erika. Please enable your video camera to start the experiment.",
           time: 1650380764175,
           author: "experimenter",
-          target: "25a882669d",
+          target: "25a882669d"
         },
         {
           message: "Hello, of course. It should work now.",
           time: 1650380765075,
           author: "25a882669d",
-          target: "experimenter",
-        },
+          target: "experimenter"
+        }
       ],
-      banned: false,
-    },
+      banned: false
+    }
   ];
 }
