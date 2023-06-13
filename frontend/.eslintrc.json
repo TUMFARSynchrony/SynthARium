@@ -32,5 +32,5 @@
       "version": "detect"
     }
   },
-  "ignorePatterns": ["build/"]
+  "ignorePatterns": ["build/", "node_modules/, public/"]
 }
