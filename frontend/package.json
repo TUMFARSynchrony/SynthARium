@@ -35,10 +35,13 @@
     "eject": "react-scripts eject",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepare": "cd .. && husky install && frontend/.husky"
+    "prepare": "cd .. && husky install"
   },
   "lint-staged": {
-    "*.{ts, tsx, js, jsx, md, json, yaml, yml}": ["eslint", "prettier --write"]
+    "*.{ts,tsx,js,jsx,md,json,yaml,yml}": [
+      "eslint",
+      "prettier --write"
+    ]
   },
   "eslintConfig": {
     "extends": [
