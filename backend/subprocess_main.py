@@ -5,10 +5,10 @@ import sys
 from typing import Tuple
 from aiortc import RTCSessionDescription
 
+from connection.messages import is_valid_rtc_session_description_dict
 from filters import FilterDict
-from custom_types.connection import is_valid_rtc_session_description_dict
 
-from modules.connection_runner import ConnectionRunner
+from connection.connection_runner import ConnectionRunner
 
 
 def parse_args() -> Tuple[

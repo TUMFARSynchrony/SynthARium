@@ -6,12 +6,12 @@ from os.path import join
 from typing import TYPE_CHECKING
 from av import VideoFrame
 
-from modules import BACKEND_DIR
+from hub import BACKEND_DIR
 from filters.filter_dict import FilterDict
 from filters.filter import Filter
 
 if TYPE_CHECKING:
-    from modules.track_handler import TrackHandler
+    from hub.track_handler import TrackHandler
 
 
 class MuteVideoFilter(Filter):
@@ -59,7 +59,7 @@ class MuteVideoFilter(Filter):
         filters are used outside the normal filter pipeline, where returning an
         av.VideoFrame is quicker than numpy.ndarray. They can however also be used in
         the normal filter pipeline.
-        See modules.track_handler.TrackHandler for details.
+        See hub.track_handler.TrackHandler for details.
 
         See Also
         ----------

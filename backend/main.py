@@ -1,6 +1,6 @@
 """Backend entry point"""
 
-from modules.hub import Hub
+from hub.hub import Hub
 import asyncio
 
 _hub: Hub
@@ -9,7 +9,7 @@ _hub: Hub
 async def main():
     """Entry point for experiment Hub.
 
-    Creates a modules.hub.Hub.  Then waits for ever.
+    Creates a hub.hub.Hub.  Then waits forever.
     Close with KeyboardInterrupt.
     """
     global _hub

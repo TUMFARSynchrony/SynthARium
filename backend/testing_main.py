@@ -6,11 +6,11 @@ with the Connection test page.
 """
 
 # import logging
-from modules.data import SessionData
-from modules.hub import Hub
+from session.data.session import SessionData
+from hub.hub import Hub
 import asyncio
 
-from custom_types.session import SessionDict
+from session.data.session import SessionDict
 
 
 hub: Hub
