@@ -12,7 +12,7 @@ function InputTextField({
   register,
   label,
   required,
-  min,
+  min
 }) {
   return (
     <div className="inputFieldContainer">

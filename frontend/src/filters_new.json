@@ -1,64 +1,61 @@
 {
-    "filters": [
-        {
-            "id": "none",
-            "type": "both",
-            "groupFilter": false,
-            "config": {}
+  "filters": [
+    {
+      "id": "none",
+      "type": "both",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "id": "rotation",
+      "type": "video",
+      "groupFilter": false,
+      "config": {
+        "direction": {
+          "value": ["clockwise", "anti-clockwise"]
         },
-        {
-            "id": "rotation",
-            "type": "video",
-            "groupFilter": false,
-            "config": {
-                "direction": {
-                    "value": [
-                        "clockwise",
-                        "anti-clockwise"
-                    ]
-                },
-                "speed": {
-                    "min": 0.0,
-                    "max": 1.0,
-                    "value": 0.7
-                }
-            }
-        },
-        {
-            "id": "synchrony",
-            "type": "both",
-            "groupFilter": true,
-            "config": {
-                "numOfParticipants": {
-                    "value": 2
-                }
-            }
-        },
-        {
-            "id": "edge-outline",
-            "type": "video",
-            "groupFilter": false,
-            "config": {}
-        },
-        {
-            "id": "delay-audio",
-            "type": "audio",
-            "groupFilter": false,
-            "config": {
-                "size": {
-                    "value": 60
-                }
-            }
-        },
-        {
-            "id": "delay-video",
-            "type": "video",
-            "groupFilter": false,
-            "config": {
-                "size": {
-                    "value": 60
-                }
-            }
+        "speed": {
+          "min": 0.0,
+          "max": 1.0,
+          "value": 0.7
         }
-    ]
+      }
+    },
+    {
+      "id": "synchrony",
+      "type": "both",
+      "groupFilter": true,
+      "config": {
+        "numOfParticipants": {
+          "value": 2
+        }
+      }
+    },
+    {
+      "id": "edge-outline",
+      "type": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "id": "delay-audio",
+      "type": "audio",
+      "groupFilter": false,
+      "config": {
+        "size": {
+          "value": 60
+        }
+      }
+    },
+    {
+      "id": "delay-video",
+      "type": "video",
+      "groupFilter": false,
+      "config": {
+        "size": {
+          "value": 60
+        }
+      }
+    }
+  ]
 }

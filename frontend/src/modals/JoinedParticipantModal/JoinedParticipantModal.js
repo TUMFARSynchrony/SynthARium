@@ -12,7 +12,7 @@ function JoinedParticipantModal({
   showModal,
   setShowModal,
   sessionId,
-  onMuteParticipant,
+  onMuteParticipant
 }) {
   const dispatch = useDispatch();
 
@@ -20,7 +20,7 @@ function JoinedParticipantModal({
     onMuteParticipant({
       participant_id: participantData.id,
       mute_video: muteVideo,
-      mute_audio: muteAudio,
+      mute_audio: muteAudio
     });
 
     dispatch(
@@ -28,7 +28,7 @@ function JoinedParticipantModal({
         participantId: participantData.id,
         action: "muted_audio",
         value: muteAudio,
-        sessionId: sessionId,
+        sessionId: sessionId
       })
     );
 
@@ -37,7 +37,7 @@ function JoinedParticipantModal({
         participantId: participantData.id,
         action: "muted_video",
         value: muteVideo,
-        sessionId: sessionId,
+        sessionId: sessionId
       })
     );
   };

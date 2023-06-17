@@ -3,31 +3,33 @@
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
  */
 export type Message = {
-	type: string,
-	data: any;
+  type: string;
+  data: any;
 };
 
 /**
- * Check if `data` is a valid {@link Message}. 
+ * Check if `data` is a valid {@link Message}.
  * Does not check the type or contents of the `data` field in message.
  * Only checks if the required fields exist, not for unwanted fields or invalid contents.
- * 
+ *
  * @param data data that should be checked for {@link Message} type
  * @returns true if `data` is a valid {@link Message}
  */
 export function isValidMessage(data: any): data is Message {
-	return "type" in data && typeof data.type === 'string' && "data" in data;
+  return "type" in data && typeof data.type === "string" && "data" in data;
 }
 
 /**
- * Check if `data` is a valid {@link RTCSessionDescriptionInit}. 
+ * Check if `data` is a valid {@link RTCSessionDescriptionInit}.
  * Only checks if the required fields exist, not for unwanted fields or invalid contents.
- * 
+ *
  * @param data data that should be checked for {@link RTCSessionDescriptionInit} type
  * @returns true if `data` is a valid {@link RTCSessionDescriptionInit}
  */
-function isValidConnectionRTCSessionDescriptionInit(data: any): data is RTCSessionDescriptionInit {
-	return "sdp" in data && "type" in data;
+function isValidConnectionRTCSessionDescriptionInit(
+  data: any
+): data is RTCSessionDescriptionInit {
+  return "sdp" in data && "type" in data;
 }
 
 /**
@@ -35,19 +37,21 @@ function isValidConnectionRTCSessionDescriptionInit(data: any): data is RTCSessi
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#connectionproposal ConnectionProposal data type documentation.
  */
 export type ConnectionProposal = {
-	id: string,
-	participant_summary: ParticipantSummary | string | null;
+  id: string;
+  participant_summary: ParticipantSummary | string | null;
 };
 
 /**
- * Check if `data` is a valid {@link ConnectionProposal}. 
+ * Check if `data` is a valid {@link ConnectionProposal}.
  * Only checks if the required fields exist, not for unwanted fields or invalid contents.
- * 
+ *
  * @param data data that should be checked for {@link ConnectionProposal} type
  * @returns true if `data` is a valid {@link ConnectionProposal}
  */
-export function isValidConnectionProposal(data: any): data is ConnectionProposal {
-	return "id" in data && "participant_summary" in data;
+export function isValidConnectionProposal(
+  data: any
+): data is ConnectionProposal {
+  return "id" in data && "participant_summary" in data;
 }
 
 /**
@@ -55,8 +59,8 @@ export function isValidConnectionProposal(data: any): data is ConnectionProposal
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#connectionoffer ConnectionOffer data type documentation.
  */
 export type ConnectionOffer = {
-	id: string,
-	offer: RTCSessionDescriptionInit;
+  id: string;
+  offer: RTCSessionDescriptionInit;
 };
 
 /**
@@ -64,23 +68,23 @@ export type ConnectionOffer = {
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#connectionanswer ConnectionAnswer data type documentation.
  */
 export type ConnectionAnswer = {
-	id: string;
-	answer: RTCSessionDescriptionInit;
+  id: string;
+  answer: RTCSessionDescriptionInit;
 };
 
 /**
  * Check if `data` is a valid {@link ConnectionAnswer}.
- * Only checks if the required fields exist, not for unwanted fields or invalid contents. 
- * 
+ * Only checks if the required fields exist, not for unwanted fields or invalid contents.
+ *
  * @param data data that should be checked for {@link ConnectionAnswer} type
  * @returns true if `data` is a valid {@link ConnectionAnswer}
  */
 export function isValidConnectionAnswer(data: any): data is ConnectionAnswer {
-	return (
-		"id" in data
-		&& "answer" in data
-		&& isValidConnectionRTCSessionDescriptionInit(data.answer)
-	);
+  return (
+    "id" in data &&
+    "answer" in data &&
+    isValidConnectionRTCSessionDescriptionInit(data.answer)
+  );
 }
 
 /**
@@ -88,29 +92,29 @@ export function isValidConnectionAnswer(data: any): data is ConnectionAnswer {
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#participantsummary ParticipantSummary data type documentation.
  */
 export type ParticipantSummary = {
-	first_name: string,
-	last_name: string,
-	position: {
-		x: number,
-		y: number,
-		z: number,
-	};
-	size: {
-		width: number,
-		height: number,
-	};
-	chat: {
-		message: string,
-		time: number,
-		author: string,
-		target: string,
-	}[];
+  first_name: string;
+  last_name: string;
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  size: {
+    width: number;
+    height: number;
+  };
+  chat: {
+    message: string;
+    time: number;
+    author: string;
+    target: string;
+  }[];
 };
 
 /**
  * Information about a connected peer the {@link Connection} has.
  */
 export type ConnectedPeer = {
-	stream: MediaStream,
-	summary: ParticipantSummary | string | null;
+  stream: MediaStream;
+  summary: ParticipantSummary | string | null;
 };

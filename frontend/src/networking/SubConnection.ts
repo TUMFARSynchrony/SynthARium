@@ -1,16 +1,22 @@
 import Connection from "./Connection";
 import ConnectionBase from "./ConnectionBase";
-import { ConnectionAnswer, ConnectionOffer, ConnectionProposal } from "./typing";
+import {
+  ConnectionAnswer,
+  ConnectionOffer,
+  ConnectionProposal
+} from "./typing";
 
 /**
  * SubConnection class used by {@link Connection} to get streams of other users from the backend.
- * 
+ *
  * Not intended for use outside of {@link Connection}.
- * 
+ *
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
  * @extends ConnectionBase
  */
-export default class SubConnection extends ConnectionBase<MediaStream | string> {
+export default class SubConnection extends ConnectionBase<
+  MediaStream | string
+> {
   readonly id: string;
 
   private connection: Connection;
@@ -21,10 +27,14 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
    * @param proposal ConnectionProposal received from the backend.
    * @param connection parent Connection, used to send data to the backend.
    * @param logging Whether logging should be enabled.
-   * 
+   *
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
-  constructor(proposal: ConnectionProposal, connection: Connection, logging: boolean) {
+  constructor(
+    proposal: ConnectionProposal,
+    connection: Connection,
+    logging: boolean
+  ) {
     super(true, `SubConnection - ${proposal.id}`, logging);
     this.id = proposal.id;
     this.connection = connection;
@@ -36,7 +46,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
 
   /**
    * Send offer for this SubConnection to the backend.
-   * 
+   *
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
   public async sendOffer() {
@@ -49,9 +59,9 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     this.connection.sendMessage("CONNECTION_OFFER", connectionOffer);
   }
 
-  /** 
+  /**
    * Handle `CONNECTION_ANSWER` message from the backend.
-   * 
+   *
    * The answer is set as remote description for {@link pc}.
    */
   public async handleAnswer(answer: ConnectionAnswer) {
@@ -60,9 +70,9 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
 
   /**
    * Stop the SubConnection.
-   * 
-   * Stop all transceivers associated with this SubConnection and its peer connection. 
-   * 
+   *
+   * Stop all transceivers associated with this SubConnection and its peer connection.
+   *
    * Multiple calls to this functions are ignored.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
@@ -86,7 +96,9 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
 
   protected handleIceConnectionStateChange(): void {
     this.log(`IceConnectionState: ${this.pc.iceConnectionState}`);
-    if (["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)) {
+    if (
+      ["disconnected", "closed", "failed"].includes(this.pc.iceConnectionState)
+    ) {
       this.stop();
     }
   }

@@ -13,7 +13,7 @@ function WatchingRoom({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
-  onEndExperiment,
+  onEndExperiment
 }) {
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value
@@ -61,7 +61,12 @@ function WatchingRoom({
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton text="Go to Session Overview" path="/" variant="contained" size="large"/>
+          <LinkButton
+            text="Go to Session Overview"
+            path="/"
+            variant="contained"
+            size="large"
+          />
         </div>
       )}
     </div>

@@ -14,10 +14,10 @@ See [backend readme](./../backend/README.md#using-a-ssl-certificate) for details
 
 In `frontend/.env`:
 
--   `REACT_APP_BACKEND`: address of the backend server
--   `HTTPS`: If true, the frontend dev server will use HTTPS. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
--   `SSL_CRT_FILE`: Optional path to SSL certificate file. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
--   `SSL_KEY_FILE`: Optional path to SSL certificate private key file. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
+- `REACT_APP_BACKEND`: address of the backend server
+- `HTTPS`: If true, the frontend dev server will use HTTPS. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
+- `SSL_CRT_FILE`: Optional path to SSL certificate file. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
+- `SSL_KEY_FILE`: Optional path to SSL certificate private key file. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
 
 ## Available Scripts
 

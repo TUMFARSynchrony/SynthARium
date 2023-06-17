@@ -16,8 +16,8 @@ const store = configureStore({
   reducer: {
     sessionsList: sessionsListReducer,
     openSession: openSessionReducer,
-    ongoingExperiment: ongoingExperimentReducer,
-  },
+    ongoingExperiment: ongoingExperimentReducer
+  }
 });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

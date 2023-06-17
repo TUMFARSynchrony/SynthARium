@@ -1,11 +1,11 @@
 {
-	"[python]": {
-		"files.trimTrailingWhitespace": true,
-		"editor.defaultFormatter": null,
-		"editor.insertSpaces": true,
-		"editor.rulers": [88], // Black line witdh. See https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#line-length
-		"editor.formatOnSave": true
-	},
-	"python.formatting.provider": "black",
-	"python.analysis.typeCheckingMode": "basic",
+  "[python]": {
+    "files.trimTrailingWhitespace": true,
+    "editor.defaultFormatter": null,
+    "editor.insertSpaces": true,
+    "editor.rulers": [88], // Black line witdh. See https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#line-length
+    "editor.formatOnSave": true
+  },
+  "python.formatting.provider": "black",
+  "python.analysis.typeCheckingMode": "basic",
 }
