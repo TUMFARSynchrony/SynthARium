@@ -44,12 +44,17 @@ We provide some settings for vscode in ./vscode/settings.json, e.g. for code for
 
 
 ### React
-_TODO_
-
+- Husky pre-commit script will auto-format changed files using prettier and if your commit breaks es-lint rules it won't allow you to commit before fixing those issues.
+- For code formatting, we use [Prettier](https://prettier.io/)
+- For static code analysis, we use [ESLint](https://eslint.org/docs/latest/rules/)
+- To format all files, run `npm run format`
+- To check all syntactic errors and warnings `npm run lint`
 ## Recommended vscode extensions
 
 For development with vscode, we recommend the following vscode extensions:
 
 - [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) for python language support.
 - [Pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance) for static type checking.
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for styling on frontend.
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) for static code analysis on frontend.
 
