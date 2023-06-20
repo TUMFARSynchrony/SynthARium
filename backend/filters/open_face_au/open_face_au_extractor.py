@@ -34,7 +34,7 @@ class OpenFaceAUExtractor:
     def __del__(self):
         self.socket.close()
 
-    def extract(self, ndarray: numpy.ndarray) -> tuple(int, str, object):
+    def extract(self, ndarray: numpy.ndarray) -> tuple[int, str, object]:
         port_msg = f"Port: {self.port_manager.port}"
 
         if not self.is_connected:
