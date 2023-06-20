@@ -22,22 +22,22 @@ class TemplateFilter(Filter):
 
     @staticmethod
     def name(self) -> str:
-        # TODO: change this name
+        # change this name
         return "TEMPLATE"
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
-        # TODO: change this to implement filter
+        # change this to implement filter
         self.line_writer.write_line(ndarray, "Hello World")
 
         # Return modified frame
         return ndarray
 
-    # TODO: add or delete this, depending on filters needs
+    # add or delete this, depending on filters needs
     # When adding this, you also need to uncomment the imports above, otherwise delete
     """"
     @staticmethod
     def validate_dict(data) -> TypeGuard[TemplateFilterDict]:
-        # TODO: implement correct validation method
+        # implement correct validation method
         return (
             util.check_valid_typeddict_keys(data, TemplateFilterDict)
             and "size" in data
