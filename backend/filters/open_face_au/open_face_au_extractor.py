@@ -13,8 +13,8 @@ class OpenFaceAUExtractor:
     port_manager: PortManager
     open_face: OpenFace
     socket: zmq.Socket
-
     is_extracting: bool
+    is_connected: bool
 
     def __init__(self):
         self.port_manager = PortManager()
@@ -30,18 +30,15 @@ class OpenFaceAUExtractor:
             print(f"ZMQError: {e}")
 
         self.is_extracting = False
-        self.port_taken_msg = f"Port {self.port_manager.port} is already taken!"
-        self.no_connection_msg = (
-            f"No connection established on {self.port_manager.port}"
-        )
-        self.port_msg = f"Port: {self.port_manager.port}"
 
     def __del__(self):
         self.socket.close()
 
-    def extract(self, ndarray: numpy.ndarray) -> (int, str, object):
+    def extract(self, ndarray: numpy.ndarray) -> tuple(int, str, object):
+        port_msg = f"Port: {self.port_manager.port}"
+
         if not self.is_connected:
-            return -1, self.port_taken_msg, None
+            return -1, f"Port {self.port_manager.port} is already taken!", None
 
         result = None
         received = False
@@ -50,7 +47,7 @@ class OpenFaceAUExtractor:
             received = True
         except zmq.ZMQError as e:
             if self.is_extracting:
-                return 1, self.port_msg, None
+                return 1, port_msg, None
 
         success = self._start_extraction(ndarray)
         if success:
@@ -61,13 +58,13 @@ class OpenFaceAUExtractor:
                 pass
 
             if received:
-                return 0, self.port_msg, result
+                return 0, port_msg, result
             else:
-                return 1, self.port_msg, result
+                return 1, port_msg, result
         else:
-            return -2, self.no_connection_msg, result
+            return -2, f"No connection established on {self.port_manager.port}", result
 
-    def _start_extraction(self, ndarray: numpy.ndarray):
+    def _start_extraction(self, ndarray: numpy.ndarray) -> bool:
         is_success, image_enc = cv2.imencode(".png", ndarray)
 
         if not is_success:
@@ -83,7 +80,7 @@ class OpenFaceAUExtractor:
         except zmq.ZMQError as e:
             return False
 
-    def _get_result(self):
+    def _get_result(self) -> object:
         message = self.socket.recv(flags=zmq.NOBLOCK)
         self.open_face.flush_result()
         data = json.loads(message)

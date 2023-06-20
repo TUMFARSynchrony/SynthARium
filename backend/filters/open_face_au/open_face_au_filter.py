@@ -3,15 +3,15 @@ from av import VideoFrame
 
 from filters.filter import Filter
 from filters.simple_line_writer import SimpleLineWriter
-from filters.open_face_au.open_face_au_exctractor import OpenFaceAUExtractor
+from filters.open_face_au.open_face_au_extractor import OpenFaceAUExtractor
 from .open_face_data_parser import OpenFaceDataParser
 
 
 class OpenFaceAUFilter(Filter):
-    """Filter example rotating a video track."""
+    """OpenFace AU Extraction filter."""
 
     frame: int
-
+    data: dict
     file_writer: OpenFaceDataParser
     line_writer: SimpleLineWriter
     au_extractor: OpenFaceAUExtractor
