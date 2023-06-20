@@ -10,9 +10,5 @@ __pycache__
 *.crt
 *.pem
 
-# PyCharm IDE
-.idea
-
-# Misc
-.DS_Store
+# Sessions
 sessions/*/
