@@ -5,12 +5,17 @@ import os
 class OpenFaceDataParser:
     def __init__(self):
         # TODO: get session and participant id
-        path = "sessions/ae839e5e6f/OpenFace/"
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "sessions",
+            "ae839e5e6f",
+            "OpenFace"
+        )
         filename = "9ba5fdccde"
         appendix = ".csv"
 
-        if not os.path.exists("sessions/ae839e5e6f/OpenFace"):
-            os.makedirs("sessions/ae839e5e6f/OpenFace")
+        if not os.path.exists(path):
+            os.makedirs(path)
 
         filepath = path + filename + appendix
         i = 1
