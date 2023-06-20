@@ -1,7 +1,7 @@
 from filters.filter_dict import FilterDict
 
 
-# TODO: Add or delete this, depending on filters needs
+# Add or delete this, depending on filters needs
 class TemplateFilterDict(FilterDict):
     """TypedDict for template filter.
 
