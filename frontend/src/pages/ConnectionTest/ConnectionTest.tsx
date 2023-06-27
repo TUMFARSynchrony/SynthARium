@@ -10,38 +10,48 @@ import { getLocalStream } from "../../utils/utils";
 /**
  * Test page for testing the {@link Connection} & api.
  */
-const ConnectionTest = (props: {
-  localStream?: MediaStream,
-  setLocalStream: (localStream: MediaStream) => void,
-  connection: Connection,
-  setConnection: (connection: Connection) => void,
-}) => {
-  const connection = props.connection;
-  const [audioIsMuted, setAudioIsMuted] = useState(!props.localStream?.getAudioTracks()[0].enabled ?? false);
-  const [videoIsMuted, setVideoIsMuted] = useState(!props.localStream?.getVideoTracks()[0].enabled ?? false);
+function ConnectionTest(props: {
+  localStream?: MediaStream;
+  setLocalStream: (localStream: MediaStream) => void;
+  connection: Connection;
+  setConnection: (connection: Connection) => void;
+}) {
+  const { connection } = props;
+  const [audioIsMuted, setAudioIsMuted] = useState(
+    !props.localStream?.getAudioTracks()[0].enabled ?? false
+  );
+  const [videoIsMuted, setVideoIsMuted] = useState(
+    !props.localStream?.getVideoTracks()[0].enabled ?? false
+  );
   const [connectionState, setConnectionState] = useState(connection.state);
   const [connectedPeers, setConnectedPeers] = useState<ConnectedPeer[]>([]);
 
   /** Handle `remoteStreamChange` event of {@link Connection}. */
-  const streamChangeHandler = async (_: MediaStream) => {
+  const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
 
   /** Handle `connectionStateChange` event of {@link Connection}. */
   const stateChangeHandler = async (state: ConnectionState) => {
-    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
+    console.log(
+      `%cConnection state change Handler: ${ConnectionState[state]}`,
+      "color:blue"
+    );
     setConnectionState(state);
   };
 
   /** Handle `connectedPeersChange` event of {@link Connection}. */
   const connectedPeersChangeHandler = async (peers: ConnectedPeer[]) => {
-    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
+    console.groupCollapsed(
+      "%cConnection peer streams change Handler",
+      "color:blue"
+    );
     console.log(peers);
     console.groupEnd();
     setConnectedPeers(peers);
   };
 
-  // Register Connection event handlers 
+  // Register Connection event handlers
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
@@ -111,49 +121,90 @@ const ConnectionTest = (props: {
   return (
     <div className="ConnectionTestPageWrapper">
       <h1>ConnectionTest</h1>
-      <p>Connection State:
-        <span className={`connectionState ${ConnectionState[connectionState]}`}>{ConnectionState[connectionState]}</span>
+      <p>
+        Connection State:
+        <span className={`connectionState ${ConnectionState[connectionState]}`}>
+          {ConnectionState[connectionState]}
+        </span>
       </p>
-      <button onClick={() => connection.start(props.localStream)} disabled={connection.state !== ConnectionState.NEW}>Start Connection</button>
-      <button onClick={() => connection.stop()} disabled={connection.state !== ConnectionState.CONNECTED}>Stop Connection</button>
-      {connection.state === ConnectionState.NEW ?
+      <button
+        onClick={() => connection.start(props.localStream)}
+        disabled={connection.state !== ConnectionState.NEW}
+      >
+        Start Connection
+      </button>
+      <button
+        onClick={() => connection.stop()}
+        disabled={connection.state !== ConnectionState.CONNECTED}
+      >
+        Stop Connection
+      </button>
+      {connection.state === ConnectionState.NEW ? (
         <ReplaceConnection
           connection={connection}
           setConnection={props.setConnection}
           localStream={props.localStream}
           setLocalStream={props.setLocalStream}
-        /> : ""
-      }
+        />
+      ) : (
+        ""
+      )}
       <div className="ownStreams">
-        <Video title="local stream" srcObject={props.localStream ?? new MediaStream()} ignoreAudio />
-        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} ignoreAudio />
+        <Video
+          title="local stream"
+          srcObject={props.localStream ?? new MediaStream()}
+          ignoreAudio
+        />
+        <Video
+          title={getRemoteStreamTitle()}
+          srcObject={connection.remoteStream}
+          ignoreAudio
+        />
       </div>
-      {props.localStream ?
+      {props.localStream ? (
         <>
-          <button onClick={muteAudio}>{audioIsMuted ? "Unmute" : "Mute"} localStream Audio</button>
-          <button onClick={muteVideo}>{videoIsMuted ? "Unmute" : "Mute"} localStream Video</button>
-        </> : ""
-      }
+          <button onClick={muteAudio}>
+            {audioIsMuted ? "Unmute" : "Mute"} localStream Audio
+          </button>
+          <button onClick={muteVideo}>
+            {videoIsMuted ? "Unmute" : "Mute"} localStream Video
+          </button>
+        </>
+      ) : (
+        ""
+      )}
       <button onClick={() => console.log(connection)}>Log Connection</button>
-      <p><b>Peer Connections</b> ({connectedPeers.length}):</p>
+      <p>
+        <b>Peer Connections</b> ({connectedPeers.length}):
+      </p>
       <div className="peerStreams">
-        {connectedPeers.map((peer, i) => <Video title={getVideoTitle(peer, i)} srcObject={peer.stream} key={i} />)}
+        {connectedPeers.map((peer, i) => (
+          <Video
+            title={getVideoTitle(peer, i)}
+            srcObject={peer.stream}
+            key={i}
+          />
+        ))}
       </div>
       <ApiTests connection={connection} />
     </div>
   );
-};
+}
 
 export default ConnectionTest;
 
 /**
  * Component to send test requests to the backend API and display responses.
  */
-function ApiTests(props: { connection: Connection; }): JSX.Element {
-  const [responses, setResponses] = useState<{ endpoint: string, data: string; }[]>([]);
+function ApiTests(props: { connection: Connection }): JSX.Element {
+  const [responses, setResponses] = useState<
+    { endpoint: string; data: string }[]
+  >([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
-  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
+  const [participantId, setParticipantId] = useState(
+    props.connection.participantId ?? ""
+  );
   const [mutedVideo, setMutedVideo] = useState(false);
   const [mutedAudio, setMutedAudio] = useState(false);
 
@@ -163,21 +214,31 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
      * @param endpoint endpoint to which `messageData` was send. Used as a title for this response.
      * @param messageData data that should be displayed.
      */
-    const saveGenericApiResponse = async (endpoint: string, messageData: any) => {
-      setResponses([{ endpoint: endpoint, data: messageData }, ...responses]);
+    const saveGenericApiResponse = async (
+      endpoint: string,
+      messageData: any
+    ) => {
+      setResponses([{ endpoint, data: messageData }, ...responses]);
       setHighlightedResponse(0);
     };
 
     // Message listeners to messages from the backend.
     const handleTest = (data: any) => saveGenericApiResponse("TEST", data);
-    const handleSessionChange = (data: any) => saveGenericApiResponse("SESSION_CHANGE", data);
-    const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
-    const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
+    const handleSessionChange = (data: any) =>
+      saveGenericApiResponse("SESSION_CHANGE", data);
+    const handleSessionList = (data: any) =>
+      saveGenericApiResponse("SESSION_LIST", data);
+    const handleSuccess = (data: any) =>
+      saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
-    const handleExperimentCreated = (data: any) => saveGenericApiResponse("EXPERIMENT_CREATED", data);
-    const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
-    const handleExperimentStarted = (data: any) => saveGenericApiResponse("EXPERIMENT_STARTED", data);
-    const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
+    const handleExperimentCreated = (data: any) =>
+      saveGenericApiResponse("EXPERIMENT_CREATED", data);
+    const handleExperimentEnded = (data: any) =>
+      saveGenericApiResponse("EXPERIMENT_ENDED", data);
+    const handleExperimentStarted = (data: any) =>
+      saveGenericApiResponse("EXPERIMENT_STARTED", data);
+    const handleKickNotification = (data: any) =>
+      saveGenericApiResponse("KICK_NOTIFICATION", data);
     const handlePong = async (data: any) => {
       saveGenericApiResponse("PONG", data);
       if ("time" in data.ping_data) {
@@ -215,10 +276,13 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
 
   return (
     <>
-      {props.connection.userType === "participant"
-        ? <p className="apiWarning"><b>Note:</b> API should only work for experimenters</p>
-        : <p className="apiSubsectionHeader">API Testing:</p>
-      }
+      {props.connection.userType === "participant" ? (
+        <p className="apiWarning">
+          <b>Note:</b> API should only work for experimenters
+        </p>
+      ) : (
+        <p className="apiSubsectionHeader">API Testing:</p>
+      )}
       <div className="requestButtons">
         <button
           onClick={() => props.connection.sendMessage("GET_SESSION_LIST", {})}
@@ -246,13 +310,21 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             value={sessionId}
           />
           <button
-            onClick={() => props.connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId })}
+            onClick={() =>
+              props.connection.sendMessage("CREATE_EXPERIMENT", {
+                session_id: sessionId
+              })
+            }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             CREATE_EXPERIMENT
           </button>
           <button
-            onClick={() => props.connection.sendMessage("JOIN_EXPERIMENT", { session_id: sessionId })}
+            onClick={() =>
+              props.connection.sendMessage("JOIN_EXPERIMENT", {
+                session_id: sessionId
+              })
+            }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             JOIN_EXPERIMENT
@@ -272,13 +344,23 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             value={participantId}
           />
           <button
-            onClick={() => props.connection.sendMessage("KICK_PARTICIPANT", { participant_id: participantId, reason: "Testing." })}
+            onClick={() =>
+              props.connection.sendMessage("KICK_PARTICIPANT", {
+                participant_id: participantId,
+                reason: "Testing."
+              })
+            }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             KICK_PARTICIPANT
           </button>
           <button
-            onClick={() => props.connection.sendMessage("BAN_PARTICIPANT", { participant_id: participantId, reason: "Testing." })}
+            onClick={() =>
+              props.connection.sendMessage("BAN_PARTICIPANT", {
+                participant_id: participantId,
+                reason: "Testing."
+              })
+            }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             BAN_PARTICIPANT
@@ -291,14 +373,16 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             onChange={(e) => setParticipantId(e.target.value)}
             value={participantId}
           />
-          <label>Mute Audio
+          <label>
+            Mute Audio
             <input
               type="checkbox"
               onChange={(e) => setMutedAudio(e.target.checked)}
               checked={mutedAudio}
             />
           </label>
-          <label>Mute Video
+          <label>
+            Mute Video
             <input
               type="checkbox"
               onChange={(e) => setMutedVideo(e.target.checked)}
@@ -306,14 +390,22 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
             />
           </label>
           <button
-            onClick={() => props.connection.sendMessage("MUTE", { participant_id: participantId, mute_video: mutedVideo, mute_audio: mutedAudio })}
+            onClick={() =>
+              props.connection.sendMessage("MUTE", {
+                participant_id: participantId,
+                mute_video: mutedVideo,
+                mute_audio: mutedAudio
+              })
+            }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             MUTE
           </button>
         </div>
         <button
-          onClick={() => props.connection.sendMessage("PING", { "time": new Date().getTime() })}
+          onClick={() =>
+            props.connection.sendMessage("PING", { time: new Date().getTime() })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           PING
@@ -323,79 +415,105 @@ function ApiTests(props: { connection: Connection; }): JSX.Element {
       <div className="basicTabs">
         <span className="tabsTitle">Responses:</span>
         {responses.map((response, index) => {
-          return <button key={index}
-            onClick={() => setHighlightedResponse(index)}
-            className={index === highlightedResponse ? "" : "secondary"}
-          >{response.endpoint}
-          </button>;
+          return (
+            <button
+              key={index}
+              onClick={() => setHighlightedResponse(index)}
+              className={index === highlightedResponse ? "" : "secondary"}
+            >
+              {response.endpoint}
+            </button>
+          );
         })}
       </div>
-      {responses.length > 0 ? <PrettyJson json={responses[highlightedResponse].data} /> : ""}
+      {responses.length > 0 ? (
+        <PrettyJson json={responses[highlightedResponse].data} />
+      ) : (
+        ""
+      )}
     </>
   );
 }
 
-function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
+function SetFilterPresets(props: { connection: Connection }): JSX.Element {
   return (
     <>
       <p className="apiSubsectionHeader">Filter Presets:</p>
       <div className="requestButtons">
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: []
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           None
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "FILTER_API_TEST", id: "test" }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [{ type: "FILTER_API_TEST", id: "test" }]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           Filter API Test
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           Edge Outline
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "ROTATION", id: "rotation" }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [{ type: "ROTATION", id: "rotation" }]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           Rotation
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }, { type: "ROTATION", id: "rotation" }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [
+                { type: "EDGE_OUTLINE", id: "edge" },
+                { type: "ROTATION", id: "rotation" }
+              ]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           Edge Outline + Rotation
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "ROTATION", id: "rotation" }, { type: "EDGE_OUTLINE", id: "edge" }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [
+                { type: "ROTATION", id: "rotation" },
+                { type: "EDGE_OUTLINE", id: "edge" }
+              ]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           Rotation + Edge Outline
@@ -411,31 +529,37 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
           OPENFACE AU
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           60 Frame Video Delay
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
-            video_filters: [],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+              video_filters: []
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           60 Frame Audio Delay
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
-            video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           60 Frame audio + video Delay
@@ -445,11 +569,10 @@ function SetFilterPresets(props: { connection: Connection; }): JSX.Element {
   );
 }
 
-
 /**
  * Component to display an readable, indented version of `json`.
  */
-function PrettyJson(props: { json: any; }) {
+function PrettyJson(props: { json: any }) {
   return (
     <div className="prettyJson">
       <pre>{JSON.stringify(props.json, null, 4)}</pre>
@@ -459,22 +582,33 @@ function PrettyJson(props: { json: any; }) {
 
 /**
  * Component with inputs to replace the current {@link Connection} with a new one.
-      * Used to change session-, participant-ids or user type.
-      *
-      * Do not use after the connection has been started.
-      */
+ * Used to change session-, participant-ids or user type.
+ *
+ * Do not use after the connection has been started.
+ */
 function ReplaceConnection(props: {
-  connection: Connection,
-  setConnection: (connection: Connection) => void,
-  localStream: MediaStream,
-  setLocalStream: (localStream: MediaStream) => void,
+  connection: Connection;
+  setConnection: (connection: Connection) => void;
+  localStream: MediaStream;
+  setLocalStream: (localStream: MediaStream) => void;
 }) {
-  const [userType, setUserType] = useState<"participant" | "experimenter">(props.connection.userType);
+  const [userType, setUserType] = useState<"participant" | "experimenter">(
+    props.connection.userType
+  );
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
-  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
-  const [experimenterPassword, setExperimenterPassword] = useState(props.connection.experimenterPassword ?? "");
+  const [participantId, setParticipantId] = useState(
+    props.connection.participantId ?? ""
+  );
+  const [experimenterPassword, setExperimenterPassword] = useState(
+    props.connection.experimenterPassword ?? ""
+  );
 
-  const updateConnection = async (userType: "participant" | "experimenter", sessionId: string, participantId: string, experimenterPassword: string) => {
+  const updateConnection = async (
+    userType: "participant" | "experimenter",
+    sessionId: string,
+    participantId: string,
+    experimenterPassword: string
+  ) => {
     if (userType === "participant") {
       if (sessionId === "") sessionId = "placeholderId";
       if (participantId === "") participantId = "placeholderId";
@@ -485,8 +619,17 @@ function ReplaceConnection(props: {
         if (stream) props.setLocalStream(stream);
       }
     }
-    console.log(`%c[ReplaceConnection] Replaced connection with new parameters: ${userType}, ${sessionId}, ${participantId}`, "color:darkgreen");
-    const connection = new Connection(userType, sessionId, participantId, experimenterPassword, props.connection.logging);
+    console.log(
+      `%c[ReplaceConnection] Replaced connection with new parameters: ${userType}, ${sessionId}, ${participantId}`,
+      "color:darkgreen"
+    );
+    const connection = new Connection(
+      userType,
+      sessionId,
+      participantId,
+      experimenterPassword,
+      props.connection.logging
+    );
     props.setConnection(connection);
   };
 
@@ -494,13 +637,23 @@ function ReplaceConnection(props: {
     e.preventDefault();
     const newUserType = e.target.value as "participant" | "experimenter";
     setUserType(newUserType);
-    updateConnection(newUserType, sessionId, participantId, experimenterPassword);
+    updateConnection(
+      newUserType,
+      sessionId,
+      participantId,
+      experimenterPassword
+    );
   };
 
   const handleSessionId = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setSessionId(e.target.value);
-    updateConnection(userType, e.target.value, participantId, experimenterPassword);
+    updateConnection(
+      userType,
+      e.target.value,
+      participantId,
+      experimenterPassword
+    );
   };
 
   const handleParticipantId = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -509,19 +662,23 @@ function ReplaceConnection(props: {
     updateConnection(userType, sessionId, e.target.value, experimenterPassword);
   };
 
-  const handleExperimenterPassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExperimenterPassword = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     e.preventDefault();
     setExperimenterPassword(e.target.value);
     updateConnection(userType, sessionId, participantId, e.target.value);
   };
 
-  const info = "Replace connection before connecting to change the user type, session id or participant id";
+  const info =
+    "Replace connection before connecting to change the user type, session id or participant id";
 
   return (
     <div className="replaceConnectionWrapper">
       <span title={info}>Replace Connection:</span>
       <form className="replaceConnectionForm">
-        <label>Type:&nbsp;&nbsp;
+        <label>
+          Type:&nbsp;&nbsp;
           <select
             defaultValue={props.connection.userType}
             onChange={handleUserType}
@@ -530,16 +687,18 @@ function ReplaceConnection(props: {
             <option value="experimenter">Experimenter</option>
           </select>
         </label>
-        {
-          userType === "participant" ? <>
-            <label>Session ID:&nbsp;&nbsp;
+        {userType === "participant" ? (
+          <>
+            <label>
+              Session ID:&nbsp;&nbsp;
               <input
                 type="text"
                 onChange={handleSessionId}
                 defaultValue={sessionId}
               />
             </label>
-            <label>ParticipantID:&nbsp;&nbsp;
+            <label>
+              ParticipantID:&nbsp;&nbsp;
               <input
                 type="text"
                 onChange={handleParticipantId}
@@ -547,14 +706,16 @@ function ReplaceConnection(props: {
               />
             </label>
           </>
-            : <label>Experimenter Password:&nbsp;&nbsp;
-              <input
-                type="text"
-                onChange={handleExperimenterPassword}
-                defaultValue={experimenterPassword}
-              />
-            </label>
-        }
+        ) : (
+          <label>
+            Experimenter Password:&nbsp;&nbsp;
+            <input
+              type="text"
+              onChange={handleExperimenterPassword}
+              defaultValue={experimenterPassword}
+            />
+          </label>
+        )}
       </form>
     </div>
   );
@@ -566,7 +727,11 @@ function ReplaceConnection(props: {
  * @param props.srcObject video and audio source
  * @param props.ignoreAudio if true, audio tracks in `srcObject` will be ignored.
  */
-function Video(props: { title: string, srcObject: MediaStream, ignoreAudio?: boolean; }): JSX.Element {
+function Video(props: {
+  title: string;
+  srcObject: MediaStream;
+  ignoreAudio?: boolean;
+}): JSX.Element {
   const refVideo = useRef<HTMLVideoElement>(null);
   const [info, setInfo] = useState("");
 
@@ -619,9 +784,12 @@ function Video(props: { title: string, srcObject: MediaStream, ignoreAudio?: boo
   }, [info, props.srcObject]);
 
   return (
-    <div className={"videoWrapper"}>
-      <p>{props.title}{props.srcObject.active ? "" : " [inactive]"}</p>
-      <video ref={refVideo} autoPlay playsInline width={300}></video>
+    <div className="videoWrapper">
+      <p>
+        {props.title}
+        {props.srcObject.active ? "" : " [inactive]"}
+      </p>
+      <video ref={refVideo} autoPlay playsInline width={300} />
       <div className="fpsCounter">{info}</div>
     </div>
   );

@@ -12,7 +12,7 @@ from .filter_dict import FilterDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error
-    from modules.track_handler import TrackHandler
+    from hub.track_handler import TrackHandler
 
 
 class Filter(ABC):
@@ -27,7 +27,7 @@ class Filter(ABC):
     """
 
     audio_track_handler: TrackHandler
-    """Audio modules.track_handler.TrackHandler for the stream this filter is part of.
+    """Audio hub.track_handler.TrackHandler for the stream this filter is part of.
 
     Use to communicate with audio filters running on the same stream.  Depending on the
     type of this filter, the filter is either managed by `audio_track_handler` or
@@ -35,7 +35,7 @@ class Filter(ABC):
     """
 
     video_track_handler: TrackHandler
-    """Video modules.track_handler.TrackHandler for the stream this filter is part of.
+    """Video hub.track_handler.TrackHandler for the stream this filter is part of.
 
     Use to communicate with video filters running on the same stream.  Depending on the
     type of this filter, the filter is either managed by `video_track_handler` or

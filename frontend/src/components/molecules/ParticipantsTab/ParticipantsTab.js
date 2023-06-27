@@ -7,7 +7,7 @@ import { getSessionById } from "../../../utils/utils";
 function ParticipantsTab({
   connectedParticipants,
   onKickBanParticipant,
-  onMuteParticipant,
+  onMuteParticipant
 }) {
   const ongoingExperiment = useSelector(
     (state) => state.ongoingExperiment.value

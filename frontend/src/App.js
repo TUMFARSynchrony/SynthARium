@@ -13,7 +13,7 @@ import {
   createSession,
   getSessionsList,
   updateSession,
-  setExperimentTimes,
+  setExperimentTimes
 } from "./features/sessionsList";
 import { deleteSession } from "./features/sessionsList";
 
@@ -27,10 +27,9 @@ import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import {
   changeExperimentState,
   createExperiment,
-  joinExperiment,
+  joinExperiment
 } from "./features/ongoingExperiment";
 import { initialSnackbar } from "./utils/constants";
-
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -61,7 +60,7 @@ function App() {
     setConnectedParticipants(peers);
   };
 
-  const streamChangeHandler = async (_) => {
+  const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
 
@@ -128,7 +127,8 @@ function App() {
       sessionId && participantId ? "participant" : "experimenter";
 
     const pathname = window.location.pathname.toLowerCase();
-    const isConnectionTestPage = pathname === "/connectiontest" || pathname === "/connectionlatencytest";
+    const isConnectionTestPage =
+      pathname === "/connectiontest" || pathname === "/connectionlatencytest";
 
     //   // TODO: get experimenter password before creating Connection, e.g. from "login" page
     //   // The following solution using `prompt` is only a placeholder.
@@ -192,7 +192,11 @@ function App() {
   };
 
   const handleDeletedSession = (data) => {
-    setSnackbar({ open: true, text: `Successfully deleted session with ID ${data}`, severity: "success" });
+    setSnackbar({
+      open: true,
+      text: `Successfully deleted session with ID ${data}`,
+      severity: "success"
+    });
     dispatch(deleteSession(data));
   };
 
@@ -200,10 +204,18 @@ function App() {
     // Redirects to session overview page on saving a session.
     navigate("/");
     if (getSessionById(data.id, sessionsListRef.current).length === 0) {
-      setSnackbar({ open: true, text: `Successfully created session ${data.title}`, severity: "success" });
+      setSnackbar({
+        open: true,
+        text: `Successfully created session ${data.title}`,
+        severity: "success"
+      });
       dispatch(createSession(data));
     } else {
-      setSnackbar({ open: true, text: `Successfully updated session ${data.title}`, severity: "success" });
+      setSnackbar({
+        open: true,
+        text: `Successfully updated session ${data.title}`,
+        severity: "success"
+      });
       dispatch(updateSession(data));
     }
 
@@ -211,7 +223,11 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    setSnackbar({ open: true, text: `SUCCESS: ${data.description}`, severity: "success" });
+    setSnackbar({
+      open: true,
+      text: `SUCCESS: ${data.description}`,
+      severity: "success"
+    });
   };
 
   const handleError = (data) => {
@@ -231,7 +247,7 @@ function App() {
       setExperimentTimes({
         action: "creation_time",
         value: data.creation_time,
-        sessionId: data.session_id,
+        sessionId: data.session_id
       })
     );
   };
@@ -241,7 +257,7 @@ function App() {
       setExperimentTimes({
         action: "start_time",
         value: data.start_time,
-        sessionId: ongoingExperimentRef.current.sessionId,
+        sessionId: ongoingExperimentRef.current.sessionId
       })
     );
   };
@@ -251,7 +267,7 @@ function App() {
       setExperimentTimes({
         action: "end_time",
         value: data.end_time,
-        sessionId: ongoingExperimentRef.current.sessionId,
+        sessionId: ongoingExperimentRef.current.sessionId
       })
     );
 
@@ -259,7 +275,7 @@ function App() {
       setExperimentTimes({
         action: "start_time",
         value: data.start_time,
-        sessionId: ongoingExperimentRef.current.sessionId,
+        sessionId: ongoingExperimentRef.current.sessionId
       })
     );
   };
@@ -271,7 +287,7 @@ function App() {
 
   const onDeleteSession = (sessionId) => {
     connection.sendMessage("DELETE_SESSION", {
-      session_id: sessionId,
+      session_id: sessionId
     });
   };
 
@@ -339,10 +355,7 @@ function App() {
             path="/lobby"
             element={
               connection ? (
-                <Lobby
-                  localStream={localStream}
-                  connection={connection}
-                />
+                <Lobby localStream={localStream} connection={connection} />
               ) : (
                 "Loading..."
               )
@@ -405,8 +418,12 @@ function App() {
       ) : (
         <h1>Loading...</h1>
       )}
-      <CustomSnackbar open={snackbar.open} text={snackbar.text} severity={snackbar.severity}
-        handleClose={() => setSnackbar(initialSnackbar)} />
+      <CustomSnackbar
+        open={snackbar.open}
+        text={snackbar.text}
+        severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)}
+      />
     </div>
   );
 }

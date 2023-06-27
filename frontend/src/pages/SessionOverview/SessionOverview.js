@@ -10,18 +10,20 @@ import { getPastAndFutureSessions } from "../../utils/utils";
 import HeroText from "../../components/atoms/HeroText/HeroText";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import ExpandLess from "@mui/icons-material/ExpandLess";
-import { ActionIconButton, LinkActionButton } from "../../components/atoms/Button";
+import {
+  ActionIconButton,
+  LinkActionButton
+} from "../../components/atoms/Button";
 import Typography from "@mui/material/Typography";
-import styled from '@mui/material/styles/styled';
+import styled from "@mui/material/styles/styled";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
 import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 
-
 function SessionOverview({
   onDeleteSession,
   onJoinExperiment,
-  onCreateExperiment,
+  onCreateExperiment
 }) {
   const dispatch = useDispatch();
   const sessionsList = useSelector((state) => state.sessionsList.value);
@@ -55,21 +57,32 @@ function SessionOverview({
 
   const WelcomeText = styled(Typography)(({ theme }) => ({
     margin: theme.spacing(2, 4, 2, 4), // top, right, bottom, left
-    fontStyle: "italic",
+    fontStyle: "italic"
   }));
 
   const Separator = styled(Divider)(() => ({
-    borderRightWidth: 5,
+    borderRightWidth: 5
   }));
 
   return (
     <>
       <NavigationBar />
       <HeroText text={"Synchrony Experimental Hub"} />
-      <LinkActionButton text="CREATE NEW EXPERIMENT" path="/sessionForm" variant="contained" color="primary" size="large" onClick={() => onCreateNewSession()} />
+      <LinkActionButton
+        text="CREATE NEW EXPERIMENT"
+        path="/sessionForm"
+        variant="contained"
+        color="primary"
+        size="large"
+        onClick={() => onCreateNewSession()}
+      />
       <WelcomeText>
-        A video conferencing tool for researchers. Create a new experimental template to start designing and hosting your next experiment.
-        See the <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">Wiki</a> for more info.
+        A video conferencing tool for researchers. Create a new experimental
+        template to start designing and hosting your next experiment. See the{" "}
+        <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
+          Wiki
+        </a>{" "}
+        for more info.
       </WelcomeText>
       <Grid container>
         <Grid item sm={7} sx={{ m: 3 }}>
@@ -82,7 +95,7 @@ function SessionOverview({
               onJoinExperiment={onJoinExperiment}
             />
           ) : (
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
               No session selected.
             </Typography>
           )}
@@ -91,7 +104,7 @@ function SessionOverview({
           <Separator orientation="vertical" />
         </Grid>
         <Grid item sm={4} sx={{ m: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
             Upcoming sessions:
           </Typography>
           {future.length !== 0 ? (
@@ -108,16 +121,20 @@ function SessionOverview({
               );
             })
           ) : (
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
               No active sessions found.
             </Typography>
           )}
-          <ActionIconButton text={showPastSessions ? "Hide past sessions" : "Show past sessions"}
+          <ActionIconButton
+            text={
+              showPastSessions ? "Hide past sessions" : "Show past sessions"
+            }
             variant="outlined"
             color="primary"
             size="medium"
             onClick={() => onShowPastSessions()}
-            icon={showPastSessions ? <ExpandLess /> : <ExpandMore />} />
+            icon={showPastSessions ? <ExpandLess /> : <ExpandMore />}
+          />
           {showPastSessions &&
             past.length > 0 &&
             past.map((session, index) => {

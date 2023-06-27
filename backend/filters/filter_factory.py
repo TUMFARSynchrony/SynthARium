@@ -4,11 +4,11 @@ from typing import Literal, TYPE_CHECKING
 from filters.filter_utils import get_filter_dict
 
 if TYPE_CHECKING:
-    from modules.track_handler import TrackHandler
+    from hub.track_handler import TrackHandler
 
 from filters import *
 
-from modules.exceptions import ErrorDictException
+from hub.exceptions import ErrorDictException
 
 
 def create_filter(
@@ -29,7 +29,7 @@ def create_filter(
 
     Raises
     ------
-    modules.exceptions.ErrorDictException
+    hub.exceptions.ErrorDictException
         If the filter type is unknown.
     """
     filter_type = filter_config["type"]
