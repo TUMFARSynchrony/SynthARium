@@ -27,6 +27,7 @@ class OpenFaceAUExtractor:
             self.socket.bind(f"tcp://127.0.0.1:{self.port_manager.port}")
             self.is_connected = True
         except zmq.ZMQError as e:
+            self.is_connected = False
             print(f"ZMQError: {e}")
 
         self.is_extracting = False
