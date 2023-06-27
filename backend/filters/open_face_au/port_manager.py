@@ -18,7 +18,7 @@ class PortManager:
     port: int
 
     def __init__(self):
-        self._lock = NamedAtomicLock("open_face_port", os.path.dirname(os.path.abspath(__file__)))
+        self._lock = NamedAtomicLock("open_face_lock", os.path.dirname(os.path.abspath(__file__)))
         self._lock.acquire()
 
         try:
