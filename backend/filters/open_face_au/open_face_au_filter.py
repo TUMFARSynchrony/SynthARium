@@ -25,6 +25,9 @@ class OpenFaceAUFilter(Filter):
         self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
 
+    def __del__(self):
+        del self.file_writer, self.line_writer, self.au_extractor
+
     @staticmethod
     def name(self) -> str:
         return "OPENFACE_AU"
