@@ -53,3 +53,6 @@ class OpenFaceAUFilter(Filter):
             ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg]
         )
         return ndarray
+
+    async def cleanup(self) -> None:
+        del self
