@@ -20,7 +20,7 @@ class OpenFaceDataParser:
         filepath = os.path.join(path, filename + appendix)
         i = 1
         while os.path.exists(filepath):
-            filepath = path + filename + f"_{i}" + appendix
+            filepath = os.path.join(path, filename + f"_{i}" + appendix)
             i = i + 1
 
         self.save_file = open(filepath, "w")
