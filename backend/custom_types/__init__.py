@@ -2,5 +2,5 @@
 
 Notes
 -----
-Modules in this package should not have any dependencies in the `modules` package.
+Modules in this package should not have any dependencies in the `hub` package.
 """

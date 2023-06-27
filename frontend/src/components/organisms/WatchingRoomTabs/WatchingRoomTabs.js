@@ -11,7 +11,7 @@ function WatchingRoomTabs({
   onLeaveExperiment,
   onStartExperiment,
   onMuteParticipant,
-  onEndExperiment,
+  onEndExperiment
 }) {
   return (
     <>

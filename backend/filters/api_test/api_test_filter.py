@@ -35,7 +35,7 @@ class FilterAPITestFilter(Filter):
         msg = MessageDict(
             type="TEST",
             data={
-                "description": "Test message send by FilterAPITestFilter",
+                "description": "Test message sent by FilterAPITestFilter",
                 "frame_counter": self.counter,
                 "time": str(datetime.now()),
             },

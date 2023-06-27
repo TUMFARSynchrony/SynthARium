@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const ongoingExperimentSlice = createSlice({
   name: "ongoingExperiment",
   initialState: {
-    value: { sessionId: "", experimentState: "" },
+    value: { sessionId: "", experimentState: "" }
   },
   reducers: {
     createExperiment: (state, { payload }) => {
@@ -20,8 +20,8 @@ export const ongoingExperimentSlice = createSlice({
 
     changeExperimentState: (state, { payload }) => {
       state.value.experimentState = payload;
-    },
-  },
+    }
+  }
 });
 
 export const { createExperiment, changeExperimentState, joinExperiment } =

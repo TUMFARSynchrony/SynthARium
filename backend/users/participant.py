@@ -1,0 +1,295 @@
+"""Provide the `Participant` class and `participant_factory` factory function.
+
+Notes
+-----
+Use participant_factory for creating new participants to ensure that they have a valid
+hub.connection.Connection.
+"""
+
+from __future__ import annotations
+import asyncio
+import logging
+import os
+from typing import Any, Coroutine
+
+
+from session.data.participant.participant_summary import ParticipantSummaryDict
+from custom_types.chat_message import is_valid_chatmessage
+from custom_types.kick import KickNotificationDict
+from custom_types.message import MessageDict
+from custom_types.success import SuccessDict
+
+import experiment.experiment as _exp
+from experiment import ExperimentState
+from connection.connection_state import ConnectionState
+from hub.exceptions import ErrorDictException
+from session.data.participant import ParticipantData
+from users.user import User
+
+
+class Participant(User):
+    """Participant is a type of hub.user.User with participant rights.
+
+    Has access to a different set of API endpoints than other Users.  API endpoints for
+    participants are defined here.
+
+    Methods
+    -------
+    get_summary()
+        Get custom_types.participant_summary.ParticipantSummaryDict for this Participant
+        .
+    kick(reason)
+        Kick the Participant.
+    ban(reason)
+        Ban the Participant.
+
+    See Also
+    --------
+    participant_factory : Instantiate connection with a new Participant based on WebRTC
+        `offer`.  Use factory instead of initiating Participants directly.
+    """
+
+    _experiment: _exp.Experiment
+    _participant_data: ParticipantData
+
+    def __init__(
+        self,
+        participant_id: str,
+        experiment: _exp.Experiment,
+        participant_data: ParticipantData,
+    ) -> None:
+        """Instantiate new Participant instance.
+
+        Parameters
+        ----------
+        participant_id : str
+            Unique identifier for Participant.  Must exist in experiment.
+        experiment : hub.experiment.Experiment
+            Experiment the participant is part of.
+        participant_data : session.data.participant.ParticipantData
+            Participant data this participant represents.
+
+        See Also
+        --------
+        participant_factory : Instantiate connection with a new Participant based on
+            WebRTC `offer`.  Use factory instead of instantiating Participant directly.
+        """
+        super(Participant, self).__init__(
+            participant_id, participant_data.muted_video, participant_data.muted_audio
+        )
+        self._logger = logging.getLogger(f"Participant-{participant_id}")
+        self._participant_data = participant_data
+        self._experiment = experiment
+        experiment.add_participant(self)
+        experiment.on("state", self._handle_state)
+
+        # Add API endpoints
+        self.on_message("CHAT", self._handle_chat)
+
+    def __str__(self) -> str:
+        """Get string representation of this participant.
+
+        Currently, returns value of `__repr__`.
+        """
+        return (
+            f"id={self.id}, first_name={self._participant_data.first_name}, last_name="
+            f"{self._participant_data.last_name}, experiment="
+            f"{self._experiment.session.id}"
+        )
+
+    def __repr__(self) -> str:
+        """Get representation of this participant."""
+        return f"Participant({str(self)})"
+
+    def get_summary(self) -> ParticipantSummaryDict:
+        return self._participant_data.as_summary_dict()
+
+    async def kick(self, reason: str) -> None:
+        """Kick the participant.
+
+        Notify the participant about the kick with a `KICK_NOTIFICATION` message and
+        disconnect the participant.
+
+        Parameters
+        ----------
+        reason : str
+            Reason for the kick.  Will be sent to the participant in the
+            `KICK_NOTIFICATION`.
+        """
+        kick_notification = KickNotificationDict(reason=reason)
+        message = MessageDict(type="KICK_NOTIFICATION", data=kick_notification)
+        await self.send(message)
+
+        await self.disconnect()
+
+    async def ban(self, reason: str) -> None:
+        """Ban the participant.
+
+        Notify the participant about the ban with a `BAN_NOTIFICATION` message and
+        disconnect the participant.
+
+        Parameters
+        ----------
+        reason : str
+            Reason for the kick.  Will be sent to the participant in the
+            `BAN_NOTIFICATION`.
+        """
+        ban_notification = KickNotificationDict(reason=reason)
+        message = MessageDict(type="BAN_NOTIFICATION", data=ban_notification)
+        await self.send(message)
+
+        await self.disconnect()
+
+    async def _handle_connection_state_change(self, state: ConnectionState) -> None:
+        """Handler for connection "state_change" event.
+
+        Implements the abstract `_handle_connection_state_change` function in
+        hub.user.User.
+
+        Parameters
+        ----------
+        state : hub.connection_state.ConnectionState
+            New state of the connection this Participant has with the client.
+        """
+        self._logger.debug(f"Handle state change. State: {state}")
+        if state is ConnectionState.CONNECTED:
+            self._logger.info(f"Participant connected. {self}")
+            coroutines: list[Coroutine] = []
+            # Add stream to all experimenters
+            for e in self._experiment.experimenters:
+                coroutines.append(self.add_subscriber(e))
+
+            # Add stream to all participants and all participants streams to self
+            if self._experiment.state == ExperimentState.RUNNING:
+                coroutines.append(self._subscribe_and_add_subscribers())
+                if self.experiment.session.record:
+                    coroutines.append(self.start_recording())
+            else:
+                # Wait for experiment to start (state = `RUNNING`) before subscribing
+                self._subscribe_later()
+
+            await asyncio.gather(*coroutines)
+
+    async def _subscribe_and_add_subscribers(self):
+        """Subscribe to all participants in experiment and add them as subscribers."""
+        coroutines: list[Coroutine] = []
+        for p in self._experiment.participants.values():
+            if p is self:
+                continue
+            coroutines.append(self.add_subscriber(p))
+            coroutines.append(p.add_subscriber(self))
+        await asyncio.gather(*coroutines)
+
+    def _subscribe_later(self):
+        """Wait for experiment state to be running, then subscribe to others.
+
+        Notes
+        -----
+        Uses event handlers for the connection `state` event and user (self)
+        `disconnected` event. The latter is used to remove the connection event handler.
+        """
+
+        @self.on("disconnected")
+        def _remove_subscribe_callback(_) -> None:
+            """Remove listeners from experiment when participant disconnects."""
+            try:
+                self._experiment.remove_listener("state", _subscribe_callback)
+            except KeyError:
+                pass
+
+        @self._experiment.on("state")
+        async def _subscribe_callback(state: ExperimentState) -> None:
+            """If `state` is `RUNNING`, subscribe to all participants in experiment."""
+            if state == ExperimentState.RUNNING:
+                _remove_subscribe_callback(None)
+                participants = self._experiment.participants.values()
+                coroutines = [p.add_subscriber(self) for p in participants if p != self]
+                await asyncio.gather(*coroutines)
+            else:
+                return
+
+    async def _handle_state(self, state: Any):
+        """Handle state.
+
+        Notes
+        -----
+        Uses event handlers for the connection `state` event and user (self)
+        `disconnected` event. The latter is used to remove the connection event handler.
+        """
+        if self.experiment.session.record:
+            if state == ExperimentState.RUNNING:
+                await self.start_recording()
+            elif state == ExperimentState.ENDED:
+                await self.stop_recording()
+            else:
+                return
+
+    async def _handle_chat(self, data: Any) -> MessageDict:
+        """Handle requests with type `CHAT`.
+
+        Check if data is a valid custom_types.chat_message.ChatMessageDict, target is
+        set to "experimenter", author is the ID of this participant and pass the request
+        to the experiment.
+
+        Parameters
+        ----------
+        data : any or custom_types.chat_message.ChatMessageDict
+            Message data, can be anything.  Everything other than
+            custom_types.chat_message.ChatMessageDict will result in a `ERROR` response.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `CHAT`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.chat_message.ChatMessageDict, target is
+            not set to "experimenter" or author is not the ID of this participant.
+        """
+        if not is_valid_chatmessage(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid ChatMessage.",
+            )
+
+        if data["target"] != "experimenter":
+            raise ErrorDictException(
+                code=403,
+                type="INVALID_REQUEST",
+                description='Participants can only chat with "experimenter".',
+            )
+
+        if data["author"] != self.id:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Author of message must be participant ID.",
+            )
+
+        await self._experiment.handle_chat_message(data)
+
+        success = SuccessDict(
+            type="CHAT", description="Successfully send chat message."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
+    def get_recording_path(self):
+        """Get the recording path for current participant.
+
+        Notes
+        -----
+        All recordings will be saved in sessions folder by default.
+        The format: ./sessions/<session_id>/<participant_id>
+        """
+        record_directory_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "sessions",
+            self.experiment.session.id
+        )
+        if not os.path.isdir(record_directory_path):
+            os.mkdir(record_directory_path)
+        return record_directory_path + "/" + self.id

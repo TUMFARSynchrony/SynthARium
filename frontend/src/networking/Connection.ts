@@ -11,29 +11,29 @@ import {
 } from "./typing";
 import SubConnection from "./SubConnection";
 
-
 /**
  * Class handling the connection with the backend.
- * 
+ *
  * Provides {@link EventHandler} events that can be used to detect changes.
  * Provided Events:
  * - `connectionStateChange`: emitted when the connection {@link state} changes. The event contains the current {@link ConnectionState}.
- * - `remoteStreamChange`: emitted when {@link remoteStream} changes. The event contains {@link remoteStream}. 
+ * - `remoteStreamChange`: emitted when {@link remoteStream} changes. The event contains {@link remoteStream}.
  *    Changes should be inplace, so replacing the previous data is not required.
- * - `connectedPeersChange`: emitted when {@link connectedPeers} changes. The event contains {@link connectedPeers}. 
+ * - `connectedPeersChange`: emitted when {@link connectedPeers} changes. The event contains {@link connectedPeers}.
  *    Changes should be inplace, so replacing the previous data is not required.
- * 
+ *
  * To listen to incoming datachannel messages, use the {@link api} EventHandler.
  *
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
  * @see EventHandler
  * @extends ConnectionBase
  */
-export default class Connection extends ConnectionBase<ConnectionState | MediaStream | ConnectedPeer[]> {
-
+export default class Connection extends ConnectionBase<
+  ConnectionState | MediaStream | ConnectedPeer[]
+> {
   /**
    * EventHandler for incoming messages over the datachannel.
-   * 
+   *
    * @example ```js
    * function handleSuccess(data) {...}
    * function handleError(data) {...}
@@ -56,14 +56,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Initiate new Connection.
-   * 
+   *
    * @param userType type of user this connection identify as.
    * @param sessionId session Id. Only required / used if userType === "participant".
    * @param participantId participant Id. Only required / used if userType === "participant".
    * @param experimenterPassword experimenter password, must match password set in `backend/config.json`. Only required / used if userType === "experimenter".
    * @param logging Whether logging should be enabled. passed to {@link ConnectionBase}
-   * 
-   * @throws Error if userType === "participant" and one of: participantId or sessionId are missing.  
+   *
+   * @throws Error if userType === "participant" and one of: participantId or sessionId are missing.
    * @see Connection class description for details about the class.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
@@ -72,15 +72,19 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     sessionId?: string,
     participantId?: string,
     experimenterPassword?: string,
-    logging: boolean = false
+    logging = false
   ) {
     super(true, "Connection", logging);
 
     // Check for missing parameters depending on userType
     if (userType === "participant" && (!participantId || !sessionId)) {
-      throw new Error("userType participant requires the participantId and sessionId to be defined.");
+      throw new Error(
+        "userType participant requires the participantId and sessionId to be defined."
+      );
     } else if (userType === "experimenter" && !experimenterPassword) {
-      throw new Error("userType experimenter requires the experimenterPassword to be defined.");
+      throw new Error(
+        "userType experimenter requires the experimenterPassword to be defined."
+      );
     }
 
     this.sessionId = sessionId;
@@ -91,7 +95,10 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this._state = ConnectionState.NEW;
 
     this.api = new EventHandler();
-    this.api.on("CONNECTION_PROPOSAL", this.handleConnectionProposal.bind(this));
+    this.api.on(
+      "CONNECTION_PROPOSAL",
+      this.handleConnectionProposal.bind(this)
+    );
     this.api.on("CONNECTION_ANSWER", this.handleConnectionAnswer.bind(this));
 
     this.initDataChannel();
@@ -100,11 +107,11 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   /**
    * Get the streams from other clients connected to the same experiment (peers).
    * @returns MediaStream array containing only the peer streams.
-   * @see connectedPeers to get the peer streams and participant summaries. 
+   * @see connectedPeers to get the peer streams and participant summaries.
    */
   public get peerStreams(): MediaStream[] {
     const streams: MediaStream[] = [];
-    this.subConnections.forEach(sc => {
+    this.subConnections.forEach((sc) => {
       streams.push(sc.remoteStream);
     });
     return streams;
@@ -117,7 +124,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    */
   public get connectedPeers(): ConnectedPeer[] {
     const connectedPeers: ConnectedPeer[] = [];
-    this.subConnections.forEach(sc => {
+    this.subConnections.forEach((sc) => {
       connectedPeers.push({
         stream: sc.remoteStream,
         summary: sc.participantSummary
@@ -136,17 +143,23 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Start the connection.
-   * @param localStream optional. {@link MediaStream} that is used as the participants stream.  
+   * @param localStream optional. {@link MediaStream} that is used as the participants stream.
    * @throws error if `this.userType` === participant and localStream is not given,
    *   or if the connection {@link state} is not NEW.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
   public async start(localStream?: MediaStream) {
     if (!localStream && this.userType === "participant") {
-      throw new Error("Connection.start(): localStream is required for user type participant.");
+      throw new Error(
+        "Connection.start(): localStream is required for user type participant."
+      );
     }
     if (this._state !== ConnectionState.NEW) {
-      throw new Error(`Connection.start(): cannot start Connection, state is: ${ConnectionState[this._state]}`);
+      throw new Error(
+        `Connection.start(): cannot start Connection, state is: ${
+          ConnectionState[this._state]
+        }`
+      );
     }
     this.localStream = localStream;
     this.setState(ConnectionState.CONNECTING);
@@ -163,14 +176,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Stop the connection.
-   * 
+   *
    * Changes the state to CLOSED, closes datachannel and all streams and internal connections.
-   * 
+   *
    * @fires `connectionStateChange` event
    * @param closeSenders default true - If true, streams send by this connection (localstream) will be closed.
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol for details about the connection protocol.
    */
-  public stop(closeSenders: boolean = true) {
+  public stop(closeSenders = true) {
     this.internalStop(undefined, closeSenders);
   }
 
@@ -180,18 +193,23 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
    * @param state default CLOSED - state the connection should set to
    * @param closeSenders default true - If true, streams send by this connection (localstream) will be closed.
    */
-  private internalStop(state?: ConnectionState, closeSenders: boolean = true) {
-    if ([ConnectionState.CLOSED, ConnectionState.FAILED].includes(this._state)) {
+  private internalStop(state?: ConnectionState, closeSenders = true) {
+    if (
+      [ConnectionState.CLOSED, ConnectionState.FAILED].includes(this._state)
+    ) {
       return;
     }
     this.setState(state ?? ConnectionState.CLOSED);
     this.log("Stopping");
-    this.subConnections.forEach(sc => sc.stop());
+    this.subConnections.forEach((sc) => sc.stop());
     this.dc.close();
 
     // close transceivers
     this.pc.getTransceivers().forEach(function (transceiver) {
-      if (transceiver.currentDirection && transceiver.currentDirection !== "stopped") {
+      if (
+        transceiver.currentDirection &&
+        transceiver.currentDirection !== "stopped"
+      ) {
         transceiver.stop();
       }
     });
@@ -201,7 +219,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       this.pc.getSenders().forEach(function (sender) {
         if (sender && sender.track) {
           sender.track.stop();
-        };
+        }
       });
     }
 
@@ -211,16 +229,20 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Construct and send a Message object to the backend using the datachannel.
-   * @param endpoint Backend API endpoint / message type. See link bellow for details. 
-   * @param data message data. See link bellow for details. 
-   * 
+   * @param endpoint Backend API endpoint / message type. See link bellow for details.
+   * @param data message data. See link bellow for details.
+   *
    * @throws Error if the connection {@link state} is not CONNECTED.
-   * 
+   *
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
    */
   public sendMessage(endpoint: string, data: any) {
     if (this._state !== ConnectionState.CONNECTED) {
-      throw Error(`Cannot send message if connection state is not Connected. State: ${ConnectionState[this._state]}`);
+      throw Error(
+        `Cannot send message if connection state is not Connected. State: ${
+          ConnectionState[this._state]
+        }`
+      );
     }
     this.logGroup(`Sending ${endpoint} message`, data, true);
 
@@ -232,7 +254,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     this.dc.send(stringified);
   }
 
-  /** 
+  /**
    * Update the connection state.
    * @fires `connectionStateChange` event
    */
@@ -256,11 +278,11 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   /** Initialize `this.dc` and add event listeners. */
   private initDataChannel() {
     this.dc = this.pc.createDataChannel("API");
-    this.dc.onclose = (_) => {
+    this.dc.onclose = () => {
       this.log("datachannel closed");
       this.stop();
     };
-    this.dc.onopen = (_) => {
+    this.dc.onopen = () => {
       this.log("datachannel opened");
       this.setState(ConnectionState.CONNECTED);
     };
@@ -268,9 +290,9 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   }
 
   /**
-   * Handle an incoming message on the datachannel. 
+   * Handle an incoming message on the datachannel.
    * @param e incoming {@link MessageEvent}
-   * 
+   *
    * @fires event in `this.api`, if `e` contains valid Message (see link bellow).
    * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#message Message data type documentation.
    */
@@ -279,7 +301,9 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     try {
       message = JSON.parse(e.data);
     } catch (error) {
-      this.logError("Failed to parse datachannel message received from the server.");
+      this.logError(
+        "Failed to parse datachannel message received from the server."
+      );
       return;
     }
     if (!isValidMessage(message)) {
@@ -291,8 +315,8 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
   }
 
   /**
-   * Negotiate the connection with the backend. 
-   * 
+   * Negotiate the connection with the backend.
+   *
    * Used to start the initial / main connection with the backend.
    */
   private async negotiate() {
@@ -305,7 +329,7 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
         type: offer.type,
         user_type: "participant",
         session_id: this.sessionId,
-        participant_id: this.participantId,
+        participant_id: this.participantId
       };
     } else {
       request = {
@@ -322,10 +346,10 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       response = await fetch(BACKEND + "/offer", {
         body: JSON.stringify({ request }),
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         method: "POST",
-        mode: ENVIRONMENT === "development" ? "cors" : undefined,
+        mode: ENVIRONMENT === "development" ? "cors" : undefined
       });
     } catch (error) {
       this.logError("Failed to connect to backend.", error.message);
@@ -353,12 +377,12 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Handle incoming `CONNECTION_PROPOSAL` messages from the backend.
-   * 
+   *
    * If the proposal is valid, create a new SubConnection, add event listeners and store it in `this.subConnections`.
    * Sends `CONNECTION_OFFER` for new SubConnection to backend.
-   * 
+   *
    * @param data message data from the incoming message of type `CONNECTION_PROPOSAL`.
-   * 
+   *
    * @see https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection Connection protocol - Adding a SubConnection.
    */
   private async handleConnectionProposal(data: any): Promise<void> {
@@ -368,11 +392,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
     }
     const subConnection = new SubConnection(data, this, this.logging);
     this.subConnections.set(subConnection.id, subConnection);
-    subConnection.on("remoteStreamChange", async (_) => {
+    subConnection.on("remoteStreamChange", async () => {
       this.emit("connectedPeersChange", this.connectedPeers);
     });
     subConnection.on("connectionClosed", async (id) => {
-      this.log("SubConnection \"connectionClosed\" event received. Removing SubConnection:", id);
+      this.log(
+        'SubConnection "connectionClosed" event received. Removing SubConnection:',
+        id
+      );
       this.subConnections.delete(id as string);
       this.emit("connectedPeersChange", this.connectedPeers);
     });
@@ -381,11 +408,11 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
 
   /**
    * Handle incoming `CONNECTION_ANSWER` messages from the backend.
-   * 
-   * If the answer is valid, it will be passed to the corresponding SubConnection.  
-   * 
+   *
+   * If the answer is valid, it will be passed to the corresponding SubConnection.
+   *
    * @param data message data from the incoming message of type `CONNECTION_ANSWER`.
-   * 
+   *
    * @see https://github.com/TUMFARSynchrony/experimental-hub/wiki/Connection-Protocol#adding-a-sub-connection Connection protocol - Adding a SubConnection.
    */
   private async handleConnectionAnswer(data: any): Promise<void> {
@@ -393,9 +420,14 @@ export default class Connection extends ConnectionBase<ConnectionState | MediaSt
       this.logError("Received invalid CONNECTION_ANSWER.");
       return;
     }
-    const subConnection: SubConnection | undefined = this.subConnections.get(data.id);
+    const subConnection: SubConnection | undefined = this.subConnections.get(
+      data.id
+    );
     if (!subConnection) {
-      this.logError("Failed to handle answer, no subconnection found for id:", data.id);
+      this.logError(
+        "Failed to handle answer, no subconnection found for id:",
+        data.id
+      );
       return;
     }
     subConnection.handleAnswer(data);

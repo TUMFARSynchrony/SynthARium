@@ -8,7 +8,7 @@ from filters.filter import Filter
 from filters.filter_dict import FilterDict
 
 if TYPE_CHECKING:
-    from modules.track_handler import TrackHandler
+    from hub.track_handler import TrackHandler
 
 
 class MuteAudioFilter(Filter):
@@ -55,7 +55,7 @@ class MuteAudioFilter(Filter):
         filters are used outside the normal filter pipeline, where returning an
         av.AudioFrame is quicker than numpy.ndarray.  They can however also be used in
         the normal filter pipeline.
-        See modules.track_handler.TrackHandler for details.
+        See hub.track_handler.TrackHandler for details.
 
         See Also
         ----------

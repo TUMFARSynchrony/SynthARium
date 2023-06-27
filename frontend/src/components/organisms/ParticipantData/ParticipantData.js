@@ -35,10 +35,24 @@ function ParticipantData({
             .join(" ")}
           inputProps={{ readOnly: true }}
           size="small"
-          sx={{ mt: '5px' }}
+          sx={{ mt: "5px" }}
         />
-        <ActionIconButton text="EDIT" variant="outlined" color="primary" size="medium" onClick={() => onAddAdditionalInformation()} icon={<EditOutlined />} />
-        <ActionIconButton text="DELETE" variant="outlined" color="error" size="medium" onClick={() => onDeleteParticipant()} icon={<DeleteOutline />} />
+        <ActionIconButton
+          text="EDIT"
+          variant="outlined"
+          color="primary"
+          size="medium"
+          onClick={() => onAddAdditionalInformation()}
+          icon={<EditOutlined />}
+        />
+        <ActionIconButton
+          text="DELETE"
+          variant="outlined"
+          color="error"
+          size="medium"
+          onClick={() => onDeleteParticipant()}
+          icon={<DeleteOutline />}
+        />
       </Box>
 
       {/* This is the modal to enter/display :

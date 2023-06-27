@@ -66,8 +66,8 @@ export const sessionsListSlice = createSlice({
       const newSessionsList = filterListById(state.value, payload.sessionId);
       state.value = [...newSessionsList, session];
       state.value = sortArray(state.value);
-    },
-  },
+    }
+  }
 });
 
 export const {
@@ -77,7 +77,7 @@ export const {
   updateSession,
   addNote,
   banMuteUnmuteParticipant,
-  setExperimentTimes,
+  setExperimentTimes
 } = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;

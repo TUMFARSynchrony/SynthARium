@@ -13,7 +13,7 @@ def check_valid_typeddict_keys(data: Any, type: Type[TypedDict]) -> TypeGuard[di
     `data`.
 
     Does not check the data type of values in `data`!  Full checks, including data type
-    checks, should be included within the TypedDicts modules.  These checks should
+    checks, should be included within the TypedDicts hub.  These checks should
     include this function.
 
     Parameters

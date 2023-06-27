@@ -10,17 +10,17 @@ export const INITIAL_SESSION_DATA = {
   end_time: 0,
   creation_time: 0,
   notes: [],
-  log: "",
+  log: ""
 };
 
 export const CANVAS_SIZE = {
   // TODO: make the CANVAS_SIZE responsive
-  // after PR #43 making video canvas size static (suited to macbook 13.3 inch) as a temporary workaround 
+  // after PR #43 making video canvas size static (suited to macbook 13.3 inch) as a temporary workaround
   // for properly alinged display of the konva elements
   // old width: 1138.333, // 1366
   width: 1040,
   height: 640, //768
-  scale: 1.2,
+  scale: 1.2
 };
 
 export const INITIAL_PARTICIPANT_DATA = {
@@ -36,18 +36,18 @@ export const INITIAL_PARTICIPANT_DATA = {
   position: {
     x: 10,
     y: 10,
-    z: 0,
+    z: 0
   },
   size: {
     width: 300,
-    height: 300,
-  },
+    height: 300
+  }
 };
 
 export const INITIAL_NOTE_DATA = {
   time: 0,
   speakers: [],
-  content: "",
+  content: ""
 };
 
 /**
@@ -93,7 +93,7 @@ export const instructionsList = [
   "Please remove any glasses, caps or other such articles if you are wearing any.",
   "Ensure that your surrounding lighting is good.",
   "We would like to know about your experience, so please take 5  minutes at the end to do the Feedback Survey."
-]
+];
 
 // Initialising the notification snackbar used in many components.
 export const initialSnackbar = {

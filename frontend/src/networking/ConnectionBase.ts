@@ -2,14 +2,12 @@ import { ICE_SERVERS } from "../utils/constants";
 import { EventHandler } from "./EventHandler";
 import { ParticipantSummary } from "./typing";
 
-
 /**
  * Base class for Connection and SubConnection. Shared functionality is implemented here.
- * 
+ *
  * @extends EventHandler
  */
 export default abstract class ConnectionBase<T> extends EventHandler<T> {
-
   readonly logging: boolean;
   protected _participantSummary: ParticipantSummary | string | null;
   protected pc: RTCPeerConnection;
@@ -30,7 +28,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     this._participantSummary = null;
 
     const config: any = {
-      sdpSemantics: "unified-plan",
+      sdpSemantics: "unified-plan"
     };
     if (ICE_SERVERS) {
       config.iceServers = ICE_SERVERS;
@@ -42,8 +40,8 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
   }
 
   /**
-   * Get remote stream of this client. 
-   * 
+   * Get remote stream of this client.
+   *
    * The remote stream is the stream received from the backend, based on the stream send from this client.
    */
   public get remoteStream(): MediaStream {
@@ -60,7 +58,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
 
   /**
    * Get statistics for main WebRTC peer connection.
-   * 
+   *
    * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats getStats method
    */
   public async getStats(): Promise<RTCStatsReport> {
@@ -105,18 +103,18 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     console.error(`[${this.name}] ${message}`, ...optionalParams);
   }
 
-  /** 
+  /**
    * Create a new Offer for this connection.
-   * 
+   *
    * Calls `createOffer`, `setLocalDescription`, waits for iceGatheringState to be "complete"
    * and returns `localDescription` of {@link pc}
-   * 
+   *
    * @returns `localDescription` of {@link pc}
    */
   protected async createOffer(): Promise<RTCSessionDescription> {
     const options = {
       offerToReceiveVideo: true,
-      offerToReceiveAudio: true,
+      offerToReceiveAudio: true
     };
 
     const offer = await this.pc.createOffer(options);
@@ -129,10 +127,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
       } else {
         const checkState = () => {
           if (this.pc?.iceGatheringState === "complete") {
-            this.pc.removeEventListener(
-              "icegatheringstatechange",
-              checkState
-            );
+            this.pc.removeEventListener("icegatheringstatechange", checkState);
             resolve(undefined);
           }
         };
@@ -143,7 +138,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     return this.pc.localDescription;
   }
 
-  /** 
+  /**
    * Add event handlers for {@link pc}.
    */
   private addPcEventHandlers() {
@@ -186,8 +181,8 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     });
   }
 
-  /** 
-   * Handle the `signalingstatechange` event on {@link pc}. 
+  /**
+   * Handle the `signalingstatechange` event on {@link pc}.
    */
   protected handleSignalingStateChange(): void {
     this.log(`SignalingState: ${this.pc.signalingState}`);
@@ -196,15 +191,15 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     }
   }
 
-  /** 
-   * Stop the connection. 
-   * 
+  /**
+   * Stop the connection.
+   *
    * See documentation in implementations for details regarding effects and fired events.
    */
   public abstract stop(): void;
 
-  /** 
-   * Handle the `iceconnectionstatechange` event on {@link pc}. 
+  /**
+   * Handle the `iceconnectionstatechange` event on {@link pc}.
    */
   protected abstract handleIceConnectionStateChange(): void;
 }

@@ -14,23 +14,16 @@ const GreySessionTitle = styled(Typography)(() => ({
   fontWeight: "bold"
 }));
 
-
 function SessionCard({ title, date, description, onClick }) {
   return (
-    <Card sx={{ mt: 2, mb: 2, borderTop: sessionCardBorderColor }} >
+    <Card sx={{ mt: 2, mb: 2, borderTop: sessionCardBorderColor }}>
       <CardActionArea onClick={onClick}>
         <CardContent>
           <Stack spacing={1} sx={{ display: "block", textAlign: "left" }}>
-            <GreySessionTitle>
-              {title}
-            </GreySessionTitle>
-            <Typography>
-              {integerToDateTime(date)}
-            </Typography>
+            <GreySessionTitle>{title}</GreySessionTitle>
+            <Typography>{integerToDateTime(date)}</Typography>
             {/* Nowrap displays only one line of experiment description, rest is ... */}
-            <Typography noWrap={true}>
-              {description}
-            </Typography>
+            <Typography noWrap={true}>{description}</Typography>
           </Stack>
         </CardContent>
       </CardActionArea>

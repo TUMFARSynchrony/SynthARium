@@ -8,7 +8,7 @@ function InputField({
   onChange,
   checked,
   required,
-  min,
+  min
 }) {
   return (
     <input
