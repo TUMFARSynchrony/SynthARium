@@ -17,7 +17,7 @@ class OpenFaceDataParser:
         if not os.path.exists(path):
             os.makedirs(path)
 
-        filepath = path + filename + appendix
+        filepath = os.path.join(path, filename + appendix)
         i = 1
         while os.path.exists(filepath):
             filepath = path + filename + f"_{i}" + appendix

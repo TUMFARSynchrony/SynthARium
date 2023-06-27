@@ -3,7 +3,14 @@ import numpy
 
 
 class SimpleLineWriter:
-    def __int__(self, origin=(50, 50), font=cv2.FONT_HERSHEY_SIMPLEX, font_size=1, color=(0, 255, 0), thickness=2):
+    origin: tuple
+    font: int
+    font_size: int
+    color: tuple
+    thickness: int
+    offset: int
+    
+    def __init__(self, origin=(50, 50), font=cv2.FONT_HERSHEY_SIMPLEX, font_size=1, color=(0, 255, 0), thickness=2):
         self.origin = origin
         self.font = font
         self.font_size = font_size
