@@ -26,7 +26,7 @@ class OpenFace:
         try:
             self._openface_process.terminate()
         except:
-            pass
+            self._openface_process.kill()
 
     def flush_result(self):
         # This is a bit ugly/hacky, but it stops the stdout from overflowing
