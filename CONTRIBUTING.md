@@ -4,7 +4,7 @@
 
 To contribute code to this project, see the following steps:
 
-0. Checkout our current open [Issues](https://github.com/TUMFARSynchrony/experimental-hub/issues) and add your contribution idea to our [discussion board](https://github.com/TUMFARSynchrony/experimental-hub/discussions/categories/ideas) 
+0. Checkout our current open [Issues](https://github.com/TUMFARSynchrony/experimental-hub/issues) and add your contribution idea to our [discussion board](https://github.com/TUMFARSynchrony/experimental-hub/discussions/categories/ideas). 
 1. Create a new branch in which changes are made. Branches should be named using the following convention: `[<frontend/backend>-]<initials>-<topic>`.  
 Branch names are in lowercase. If the change regards the frontend or backend start the name with `frontend` or `backend` respectively. If it's a general change this part is omitted. The topic can be multiple words which should be sperated by hyphens (`-`).
 2. Make sure your code works with the latest version of `main`, then create a pull request.
