@@ -10,6 +10,7 @@ from .rotate import RotationFilter
 from .mute import MuteAudioFilter, MuteVideoFilter
 from .delay import DelayFilter
 from .name import NameFilter
+from .speaking_time import SpeakingTimeFilter
 
 # Do not import filters after here
 from . import filter_factory
