@@ -46,6 +46,7 @@ We provide some settings for vscode in ./vscode/settings.json, e.g. for code for
 
 
 ### React
+Using Husky, Prettier, and ESLint which are installed upon `npm install` we define our frontend style guidelines: 
 - Husky pre-commit script will auto-format changed files using prettier and if your commit breaks es-lint rules it won't allow you to commit before fixing those issues.
 - For code formatting, we use [Prettier](https://prettier.io/).
 - For static code analysis, we use [ESLint](https://eslint.org/docs/latest/rules/).
