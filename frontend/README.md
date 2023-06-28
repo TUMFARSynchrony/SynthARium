@@ -21,9 +21,11 @@ In `frontend/.env`:
 
 ## Available Scripts
 
-In the project directory, you can run:
+In the project directory folder `frontend/`, you can run:
 
 ### `npm install`
+
+Which installs all our frontend dependancies. 
 
 ### `npm start`
 
@@ -40,7 +42,7 @@ See the section about [running tests](https://facebook.github.io/create-react-ap
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
+Builds the app for production to the `build` folder. Make sure to run this command only in the `frontend/` directory.
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
 The build is minified and the filenames include the hashes.\
