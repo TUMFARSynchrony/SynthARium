@@ -1,0 +1,19 @@
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '''
+/(
+  \.pyi?$
+  |\backend
+)/
+'''
+exclude = '''
+/(
+  \.toml
+  |\.sh
+  |\.git
+  |\.ini
+  |Dockerfile
+  |Jenkinfile
+)/
+'''
