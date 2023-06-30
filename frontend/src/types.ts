@@ -28,7 +28,7 @@ export type Participant = {
   muted_audio: boolean;
   position: { x: number; y: number; z: number };
   chat: Chat[];
-  audio_fiters: [];
+  audio_filters: [];
   video_filters: VideoFilter[];
 };
 
