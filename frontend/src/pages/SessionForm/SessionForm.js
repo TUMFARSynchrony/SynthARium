@@ -101,7 +101,7 @@ function SessionForm({ onSendSessionToBackend }) {
   }, [snackbarResponse]);
 
   const onDeleteParticipant = (index) => {
-    dispatch(deleteParticipant({ index: index }));
+    dispatch(deleteParticipant(index));
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
   };
 

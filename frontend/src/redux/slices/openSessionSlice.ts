@@ -1,7 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 import { Participant, Session } from "../../types";
-import { filterListByIndex } from "../../utils/utils";
 
 type OpenStateState = {
   session: Session;
@@ -53,17 +52,13 @@ export const openSessionSlice = createSlice({
       { payload }: PayloadAction<{ index: number; participant: Participant }>
     ) => {
       const { index, participant } = payload;
-      state.session.participants[index] = {
-        ...state.session.participants[index],
-        ...participant
-      };
+      state.session.participants[index] = participant;
     },
 
     deleteParticipant: (state, { payload }: PayloadAction<number>) => {
-      const participantId = payload;
-      state.session.participants = filterListByIndex(
-        state.session.participants,
-        participantId
+      const participantIndex = payload;
+      state.session.participants = state.session.participants.filter(
+        (_, index) => index !== participantIndex
       );
     },
 
