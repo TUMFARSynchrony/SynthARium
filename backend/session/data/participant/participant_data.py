@@ -26,8 +26,7 @@ class ParticipantData(BaseData):
     Attributes
     ----------
     id : str
-    first_name : str
-    last_name : str
+    participant_name : str
     banned : bool
     size : SizeData
     muted_video : bool
@@ -54,11 +53,8 @@ class ParticipantData(BaseData):
     id: str
     """Participant ID."""
 
-    first_name: str
-    """First name of this participant."""
-
-    last_name: str
-    """Last name of this participant."""
+    participant_name: str
+    """Name of this participant."""
 
     banned: bool = field(repr=False)
     """Whether this participant is banned."""
@@ -117,8 +113,7 @@ class ParticipantData(BaseData):
         """
         return {
             "id": self.id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
+            "participant_name": self.participant_name,
             "banned": self.banned,
             "size": self.size.asdict(),
             "muted_video": self.muted_video,
@@ -138,8 +133,7 @@ class ParticipantData(BaseData):
             ParticipantSummaryDict with some of the data in this ParticipantData.
         """
         return {
-            "first_name": self.first_name,
-            "last_name": self.last_name,
+            "participant_name": self.participant_name,
             "size": self.size.asdict(),
             "position": self.position.asdict(),
             "chat": self.chat,

@@ -20,10 +20,8 @@ class ParticipantDict(TypedDict):
     id: str, default ""
         Unique id for this participant in a Session.  When creating a new Participant in
         a Session, this field is initially set to an empty string.
-    first_name : str
-        First name of the participant.
-    last_name : str
-        Last name of the participant.
+    participant_name : str
+        Name of the participant.
     muted_video : bool
         Whether the participants' video is forcefully muted by the experimenter.
     muted_audio : bool
@@ -51,8 +49,7 @@ class ParticipantDict(TypedDict):
     """
 
     id: str
-    first_name: str
-    last_name: str
+    participant_name: str
     muted_video: bool
     muted_audio: bool
     audio_filters: list[FilterDict]

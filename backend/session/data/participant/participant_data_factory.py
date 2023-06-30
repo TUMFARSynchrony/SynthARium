@@ -24,8 +24,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
     positionData = PositionData(pos["x"], pos["y"], pos["z"])
     return ParticipantData(
         participant_dict["id"],
-        participant_dict["first_name"],
-        participant_dict["last_name"],
+        participant_dict["participant_name"],
         participant_dict["banned"],
         sizeData,
         participant_dict["muted_video"],

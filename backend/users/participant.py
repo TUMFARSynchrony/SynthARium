@@ -92,8 +92,7 @@ class Participant(User):
         Currently, returns value of `__repr__`.
         """
         return (
-            f"id={self.id}, first_name={self._participant_data.first_name}, last_name="
-            f"{self._participant_data.last_name}, experiment="
+            f"id={self.id}, participant_name={self._participant_data.participant_name}, experiment="
             f"{self._experiment.session.id}"
         )
 
