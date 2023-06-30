@@ -1,6 +1,12 @@
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import { useState } from "react";
+import { useBackListener } from "../../../hooks/useBackListener";
 import EndVerificationModal from "../../../modals/EndVerificationModal/EndVerificationModal";
 import StartVerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
+import { useAppSelector } from "../../../redux/hooks";
+import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
+import { selectSessions } from "../../../redux/slices/sessionsListSlice";
+import { instructionsList } from "../../../utils/constants";
 import { getSessionById, integerToDateTime } from "../../../utils/utils";
 import {
   ActionButton,
@@ -10,13 +16,7 @@ import {
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
 import TextAreaField from "../TextAreaField/TextAreaField";
-import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import "./OverviewTab.css";
-import { instructionsList } from "../../../utils/constants";
-import { useAppSelector } from "../../../redux/hooks";
-import { selectSessions } from "../../../redux/slices/sessionsListSlice";
-import { useBackListener } from "../../../hooks/useBackListener";
-import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
 
 function OverviewTab({
   onLeaveExperiment,
