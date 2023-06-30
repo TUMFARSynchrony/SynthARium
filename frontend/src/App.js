@@ -1,35 +1,36 @@
-import "./App.css";
-import Lobby from "./pages/Lobby/Lobby";
-import SessionOverview from "./pages/SessionOverview/SessionOverview";
-import PostProcessing from "./pages/PostProcessing/PostProcessing";
-import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
-import SessionForm from "./pages/SessionForm/SessionForm";
-import Connection from "./networking/Connection";
-import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
-import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
-import ConnectionState from "./networking/ConnectionState";
-import {
-  addNote,
-  createSession,
-  getSessionsList,
-  updateSession,
-  setExperimentTimes
-} from "./features/sessionsList";
-import { deleteSession } from "./features/sessionsList";
-
-import { Routes, Route, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { getLocalStream, getSessionById } from "./utils/utils";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { saveSession } from "./features/openSession";
+import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
+import "./App.css";
 import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
+import Connection from "./networking/Connection";
+import ConnectionState from "./networking/ConnectionState";
+import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
+import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
+import Lobby from "./pages/Lobby/Lobby";
+import PostProcessing from "./pages/PostProcessing/PostProcessing";
+import SessionForm from "./pages/SessionForm/SessionForm";
+import SessionOverview from "./pages/SessionOverview/SessionOverview";
+import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
   changeExperimentState,
   createExperiment,
-  joinExperiment
-} from "./features/ongoingExperiment";
+  joinExperiment,
+  selectOngoingExperiment
+} from "./redux/slices/ongoingExperimentSlice";
+import { saveSession } from "./redux/slices/openSessionSlice";
+import {
+  addNote,
+  createSession,
+  deleteSession,
+  getSessionsList,
+  selectSessions,
+  setExperimentTimes,
+  updateSession
+} from "./redux/slices/sessionsListSlice";
 import { initialSnackbar } from "./utils/constants";
+import { ExperimentTimes } from "./utils/enums";
+import { getLocalStream, getSessionById } from "./utils/utils";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -37,18 +38,16 @@ function App() {
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
-  const sessionsList = useSelector((state) => state.sessionsList.value);
-  const ongoingExperiment = useSelector(
-    (state) => state.ongoingExperiment.value
-  );
-
+  const sessionsList = useAppSelector(selectSessions);
+  const ongoingExperiment = useAppSelector(selectOngoingExperiment);
+  console.log(connectedParticipants, "connectedParticipants");
   const sessionsListRef = useRef();
   sessionsListRef.current = sessionsList;
   const ongoingExperimentRef = useRef();
   ongoingExperimentRef.current = ongoingExperiment;
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
@@ -203,7 +202,7 @@ function App() {
   const handleSavedSession = (data) => {
     // Redirects to session overview page on saving a session.
     navigate("/");
-    if (getSessionById(data.id, sessionsListRef.current).length === 0) {
+    if (!getSessionById(data.id, sessionsListRef.current)) {
       setSnackbar({
         open: true,
         text: `Successfully created session ${data.title}`,
@@ -235,7 +234,7 @@ function App() {
   };
 
   const handleSessionChange = (data) => {
-    if (getSessionById(data.id, sessionsListRef.current).length === 0) {
+    if (!getSessionById(data.id, sessionsListRef.current)) {
       dispatch(createSession(data));
     } else {
       dispatch(updateSession(data));
@@ -245,7 +244,7 @@ function App() {
   const handleExperimentCreated = (data) => {
     dispatch(
       setExperimentTimes({
-        action: "creation_time",
+        action: ExperimentTimes.CREATION_TIME,
         value: data.creation_time,
         sessionId: data.session_id
       })
@@ -255,7 +254,7 @@ function App() {
   const handleExperimentStarted = (data) => {
     dispatch(
       setExperimentTimes({
-        action: "start_time",
+        action: ExperimentTimes.START_TIME,
         value: data.start_time,
         sessionId: ongoingExperimentRef.current.sessionId
       })
@@ -265,7 +264,7 @@ function App() {
   const handleExperimentEnded = (data) => {
     dispatch(
       setExperimentTimes({
-        action: "end_time",
+        action: ExperimentTimes.END_TIME,
         value: data.end_time,
         sessionId: ongoingExperimentRef.current.sessionId
       })
@@ -273,7 +272,7 @@ function App() {
 
     dispatch(
       setExperimentTimes({
-        action: "start_time",
+        action: ExperimentTimes.START_TIME,
         value: data.start_time,
         sessionId: ongoingExperimentRef.current.sessionId
       })

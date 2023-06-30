@@ -1,12 +1,7 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import EndVerificationModal from "../../../modals/EndVerificationModal/EndVerificationModal";
 import StartVerificationModal from "../../../modals/StartVerificationModal/StartVerificationModal";
-import {
-  getSessionById,
-  integerToDateTime,
-  useBackListener
-} from "../../../utils/utils";
+import { getSessionById, integerToDateTime } from "../../../utils/utils";
 import {
   ActionButton,
   ActionIconButton,
@@ -18,6 +13,10 @@ import TextAreaField from "../TextAreaField/TextAreaField";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import "./OverviewTab.css";
 import { instructionsList } from "../../../utils/constants";
+import { useAppSelector } from "../../../redux/hooks";
+import { selectSessions } from "../../../redux/slices/sessionsListSlice";
+import { useBackListener } from "../../../hooks/useBackListener";
+import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
 
 function OverviewTab({
   onLeaveExperiment,
@@ -28,12 +27,10 @@ function OverviewTab({
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
 
-  const ongoingExperiment = useSelector(
-    (state) => state.ongoingExperiment.value
-  );
+  const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionId = ongoingExperiment.sessionId;
-  const sessionsList = useSelector((state) => state.sessionsList.value);
-  const sessionData = getSessionById(sessionId, sessionsList)[0];
+  const sessionsList = useAppSelector(selectSessions);
+  const sessionData = getSessionById(sessionId, sessionsList);
 
   useBackListener(() => onLeaveExperiment());
 
