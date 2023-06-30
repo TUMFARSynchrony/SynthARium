@@ -32,7 +32,7 @@ class OpenFaceAUFilter(Filter):
     def name(self) -> str:
         return "OPENFACE_AU"
 
-    async def process(self, original: VideoFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
+    async def process(self, original: VideoFrame, ndarray: numpy.ndarray ) -> numpy.ndarray:
         self.frame = self.frame + 1
         exit_code, msg, result = self.au_extractor.extract(ndarray)
 
