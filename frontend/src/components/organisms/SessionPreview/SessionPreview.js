@@ -1,35 +1,41 @@
-import { integerToDateTime, isFutureSession } from "../../../utils/utils";
-import { useDispatch } from "react-redux";
-import { useState } from "react";
-import { copySession, initializeSession } from "../../../features/openSession";
-import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
+import EditOutlined from "@mui/icons-material/EditOutlined";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
+import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
-import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Chip from "@mui/material/Chip";
+import Collapse from "@mui/material/Collapse";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
-import Collapse from "@mui/material/Collapse";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import EditOutlined from "@mui/icons-material/EditOutlined";
-import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
-import { getParticipantInviteLink } from "../../../utils/utils";
-import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
+import { useState } from "react";
+import { useAppDispatch } from "../../../redux/hooks";
 import {
-  sessionCardBorderColor,
+  copySession,
+  initializeSession
+} from "../../../redux/slices/openSessionSlice";
+import {
   ongoingSessionCardBackgroundColor,
   ongoingSessionCardBorderColor,
-  ongoingSessionCardHeaderColor
+  ongoingSessionCardHeaderColor,
+  sessionCardBorderColor
 } from "../../../styles/styles";
 import { initialSnackbar } from "../../../utils/constants";
+import {
+  getParticipantInviteLink,
+  integerToDateTime,
+  isFutureSession
+} from "../../../utils/utils";
+import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
+import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
 
 function SessionPreview({
   selectedSession,
@@ -38,7 +44,7 @@ function SessionPreview({
   onJoinExperiment,
   onCreateExperiment
 }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const deleteSession = () => {
     const sessionId = selectedSession.id;
     onDeleteSession(sessionId);
@@ -66,8 +72,7 @@ function SessionPreview({
   // Method to copy the invite link to clipboard and display a snackbar notification.
   const handleCopyParticipantInviteLink = (
     participantId,
-    firstName,
-    lastName,
+    participantName,
     sessionId
   ) => {
     try {
@@ -79,7 +84,7 @@ function SessionPreview({
       setSnackbar({
         open: true,
         text: participantInviteLink
-          ? `Copied ${firstName} ${lastName}'s invite link to clipboard`
+          ? `Copied ${participantName}'s invite link to clipboard`
           : "Unfortunately, nothing got copied!",
         severity: "success"
       });
@@ -152,7 +157,7 @@ function SessionPreview({
                         }
                       >
                         <ListItemText
-                          primary={`${participant.first_name} ${participant.last_name}`}
+                          primary={`${participant.participant_name}`}
                         />
                         {expandedParticipant === participantIndex ? (
                           <ExpandLess />
@@ -222,8 +227,7 @@ function SessionPreview({
                               onClick={() =>
                                 handleCopyParticipantInviteLink(
                                   participant.id,
-                                  participant.first_name,
-                                  participant.last_name,
+                                  participant.participant_name,
                                   selectedSession.id
                                 )
                               }

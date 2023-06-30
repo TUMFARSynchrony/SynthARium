@@ -1,10 +1,10 @@
-import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
-import { useState } from "react";
-import { ActionIconButton } from "../../atoms/Button";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
 import EditOutlined from "@mui/icons-material/EditOutlined";
-import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import { useState } from "react";
+import ParticipantDataModal from "../../../modals/ParticipantDataModal/ParticipantDataModal";
+import { ActionIconButton } from "../../atoms/Button";
 
 function ParticipantData({
   onDeleteParticipant,
@@ -16,8 +16,9 @@ function ParticipantData({
 }) {
   // I first name and last name of the participant are empty, then we have a newly created participant. The default value is then true.
   // This is the flag used to display participant details in the ParticipantDataModal.
+  console.log("inside copy", sessionId);
   const [showParticipantInput, setShowParticipantInput] = useState(
-    participantData.first_name === "" && participantData.last_name === ""
+    participantData.participant_name === ""
   );
 
   const onAddAdditionalInformation = () => {
@@ -30,7 +31,7 @@ function ParticipantData({
       <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
         <TextField
           label="Participant Name"
-          value={[participantData.first_name, participantData.last_name]
+          value={[participantData.participant_name]
             .filter((str) => str.length > 0)
             .join(" ")}
           inputProps={{ readOnly: true }}
