@@ -25,7 +25,7 @@ In the project directory folder `frontend/`, you can run:
 
 ### `npm install`
 
-Which installs all our frontend dependancies. 
+Which installs all our frontend dependancies.
 
 ### `npm start`
 
