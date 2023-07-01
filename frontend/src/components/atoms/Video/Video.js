@@ -1,24 +1,23 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Image } from "react-konva";
 import { useUserStream } from "./streams";
 
 const Video = ({ src, participantData }) => {
   const useVideo = (stream) => {
-    const video = useMemo(() => {
-      return document.createElement("video");
-    });
+    const videoRef = useRef(document.createElement("video"));
 
     useEffect(() => {
+      const video = videoRef.current;
       if (!stream) {
         return;
       }
       video.srcObject = src;
-      video.onloadedmetadata = function (e) {
+      video.onloadedmetadata = function () {
         video.play();
       };
-    }, [stream, video]);
+    }, [stream]);
 
-    return video;
+    return videoRef.current;
   };
 
   const stream = useUserStream();

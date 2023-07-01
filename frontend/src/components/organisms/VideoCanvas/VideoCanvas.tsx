@@ -1,8 +1,8 @@
 import { Layer, Stage } from "react-konva";
 import { Session } from "../../../types";
 import { CANVAS_SIZE } from "../../../utils/constants";
-import Video from "../../atoms/Video/Video";
 import { getParticipantById } from "../../../utils/utils";
+import Video from "../../atoms/Video/Video";
 
 type Props = {
   connectedParticipants: any;
