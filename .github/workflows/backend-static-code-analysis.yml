@@ -1,0 +1,36 @@
+name: Backend Static Code Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  static-code-analysis:
+    runs-on: ubuntu-latest
+    env: 
+      CI_COMMIT_AUTHOR: Continuous Integration
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Upgrade pip
+        run: pip3 install --upgrade pip
+          
+      - name: Format with Black
+        run: |
+          pip3 install black
+          black --config=./backend/pyproject.toml --preview --check ./backend
+      
+      - name: Lint with Flake8
+        run: |
+          pip3 install flake8
+          flake8 --config=./backend/.flake8 ./backend
