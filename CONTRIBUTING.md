@@ -47,10 +47,10 @@ The following conventions should be followed when working on experimental-hub.
   - Note that black uses a line width of 88 characters instead of 79 proposed in pep8. We follow the black convention. [See black docs](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#line-length).
   - Configuration is available in `backend/pyproject.toml` file.
   - Github pre-commit hook is used in order to run automated formatting on the staged files at each commit.
-  - Github workflows for formatting are triggered at each push and pull request.
+  - Github workflows for formatting are triggered at each push and pull request to `main` branch.
 - For linting, we use [Flake8](https://flake8.pycqa.org/en/latest/).
   - Configuration is available in `backend/.flake8` file.
-  - Github workflows for linting are triggered at each pull request.
+  - Github workflows for linting are triggered at each pull request to `main` branch.
 - Static type checking should be enabled.
   - We use [Pyright](https://github.com/microsoft/pyright), which is included in the vscode extension [Pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance).
 
