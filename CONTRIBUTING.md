@@ -39,7 +39,7 @@ The following conventions should be followed when working on experimental-hub.
 
 ### Python for Backend
 
-- We suggest to use a virtual environment. All required libraries are installed with `pip install -r requirements.txt`.
+- We suggest to use a virtual environment. All required libraries are installed with `pip install -r ./backend/requirements.txt`.
 - The PEP 8 style guide is used: [PEP 8 - Style Guid for Python Code](https://peps.python.org/pep-0008/)
 - Since the corresponding [Docstring Conventions](https://peps.python.org/pep-0257/) are quite open, we use the [numpy Style Guide](https://numpydoc.readthedocs.io/en/latest/format.html) for docstrings.
   - Additional docstring examples can be taken from the [pandas docstring guide](https://python-sprints.github.io/pandas/guide/pandas_docstring.html), which follows the numpy docstring convention.
