@@ -173,5 +173,5 @@ export const getParticipantInviteLink = (
   participantId: string,
   sessionId: string
 ) => {
-  return `${window.location.origin}/lobby/?participantId=${participantId}&sessionId=${sessionId}`;
+  return `${window.location.origin}/lobby?participantId=${participantId}&sessionId=${sessionId}`;
 };
