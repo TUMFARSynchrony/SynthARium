@@ -40,4 +40,3 @@ class BaseData(AsyncIOEventEmitter):
                 self.emit("update", self)
         except AttributeError as e:
             pass
-

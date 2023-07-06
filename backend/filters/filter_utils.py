@@ -125,7 +125,8 @@ def get_filter_dict() -> dict:
         filter_name = concrete_filter.name(concrete_filter)
         if filter_name in filter_dict:
             logger.warning(
-                f"Filter name {filter_name} already exists for class {concrete_filter.__name__}"
+                f"Filter name {filter_name} already exists for class"
+                f" {concrete_filter.__name__}"
             )
         else:
             filter_dict[filter_name] = concrete_filter

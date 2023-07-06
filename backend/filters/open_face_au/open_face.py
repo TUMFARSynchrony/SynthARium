@@ -8,12 +8,20 @@ class OpenFace:
             self._openface_process = subprocess.Popen(
                 [
                     os.path.join(
-                        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))),
+                        os.path.dirname(
+                            os.path.dirname(
+                                os.path.dirname(
+                                    os.path.dirname(
+                                        os.path.dirname(os.path.abspath(__file__))
+                                    )
+                                )
+                            )
+                        ),
                         "build",
                         "bin",
-                        "OwnExtractor"
-                    ), 
-                    f"{port}"
+                        "OwnExtractor",
+                    ),
+                    f"{port}",
                 ],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,

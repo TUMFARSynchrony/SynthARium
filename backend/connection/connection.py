@@ -14,7 +14,11 @@ import asyncio
 import logging
 import json
 
-from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, ConnectionProposalDict
+from connection.messages import (
+    ConnectionAnswerDict,
+    ConnectionOfferDict,
+    ConnectionProposalDict,
+)
 from connection.sub_connection import SubConnection
 from hub.track_handler import TrackHandler
 from hub.exceptions import ErrorDictException
@@ -27,6 +31,7 @@ from filters import FilterDict
 from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
+
 
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
@@ -72,7 +77,7 @@ class Connection(ConnectionInterface):
         message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
         log_name_suffix: str,
         filter_api: FilterAPIInterface,
-        record_data: tuple
+        record_data: tuple,
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -110,8 +115,12 @@ class Connection(ConnectionInterface):
         self._incoming_video = TrackHandler("video", self, filter_api)
 
         (record, record_to) = record_data
-        self._audio_record_handler = RecordHandler(self._incoming_audio, record, record_to)
-        self._video_record_handler = RecordHandler(self._incoming_video, record, record_to)
+        self._audio_record_handler = RecordHandler(
+            self._incoming_audio, record, record_to
+        )
+        self._video_record_handler = RecordHandler(
+            self._incoming_video, record, record_to
+        )
 
         self._dc = None
         self._tasks = []
@@ -135,7 +144,7 @@ class Connection(ConnectionInterface):
         """
         await asyncio.gather(
             self._incoming_audio.complete_setup(audio_filters),
-            self._incoming_video.complete_setup(video_filters)
+            self._incoming_video.complete_setup(video_filters),
         )
 
     @property
@@ -260,11 +269,15 @@ class Connection(ConnectionInterface):
 
     async def start_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
-        await asyncio.gather(self._video_record_handler.start(), self._audio_record_handler.start())
+        await asyncio.gather(
+            self._video_record_handler.start(), self._audio_record_handler.start()
+        )
 
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
-        await asyncio.gather(self._video_record_handler.stop(), self._audio_record_handler.stop())
+        await asyncio.gather(
+            self._video_record_handler.stop(), self._audio_record_handler.stop()
+        )
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -447,7 +460,7 @@ async def connection_factory(
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
     filter_api: FilterAPIInterface,
-    record_data: list
+    record_data: list,
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -472,7 +485,9 @@ async def connection_factory(
     """
     pc = RTCPeerConnection()
     record_data = (record_data[0], record_data[1])
-    connection = Connection(pc, message_handler, log_name_suffix, filter_api, record_data)
+    connection = Connection(
+        pc, message_handler, log_name_suffix, filter_api, record_data
+    )
     await connection.complete_setup(audio_filters, video_filters)
 
     # handle offer

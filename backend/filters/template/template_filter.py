@@ -14,6 +14,7 @@ from filters.simple_line_writer import SimpleLineWriter
 class TemplateFilter(Filter):
     """A simple example filter printing `Hello World` on a video Track.
     Can be used to as a template to copy when creating an own filter."""
+
     line_writer: SimpleLineWriter
 
     def __init__(self, config, audio_track_handler, video_track_handler):

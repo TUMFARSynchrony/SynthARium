@@ -10,7 +10,11 @@ from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
-from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, RTCSessionDescriptionDict
+from connection.messages import (
+    ConnectionAnswerDict,
+    ConnectionOfferDict,
+    RTCSessionDescriptionDict,
+)
 from hub import BACKEND_DIR
 from server import Config
 from hub.exceptions import ErrorDictException
@@ -67,7 +71,7 @@ class ConnectionSubprocess(ConnectionInterface):
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
         filter_api: FilterAPI,
-        record_data: tuple
+        record_data: tuple,
     ):
         """Create new ConnectionSubprocess.
 
@@ -510,7 +514,7 @@ async def connection_subprocess_factory(
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
     filter_api: FilterAPI,
-    record_data: tuple
+    record_data: tuple,
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 
@@ -545,7 +549,7 @@ async def connection_subprocess_factory(
         audio_filters,
         video_filters,
         filter_api,
-        record_data
+        record_data,
     )
 
     local_description = await connection.get_local_description()
