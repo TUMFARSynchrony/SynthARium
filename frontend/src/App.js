@@ -132,8 +132,8 @@ function App() {
     const isConnectionTestPage =
       pathname === "/connectiontest" || pathname === "/connectionlatencytest";
 
-    //   // TODO: get experimenter password before creating Connection, e.g. from "login" page
-    //   // The following solution using `prompt` is only a placeholder.
+    // TODO: get experimenter password before creating Connection, e.g. from "login" page
+    // The following solution using `prompt` is only a placeholder.
     if (
       !isConnectionTestPage &&
       userType === "experimenter" &&
