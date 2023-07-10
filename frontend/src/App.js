@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import "./App.css";
 import Lobby from "./pages/Lobby/Lobby";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";

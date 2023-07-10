@@ -519,11 +519,13 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           Rotation + Edge Outline
         </button>
         <button
-          onClick={() => props.connection.sendMessage("SET_FILTERS", {
-            participant_id: "all",
-            audio_filters: [],
-            video_filters: [{ type: "OPENFACE_AU", id: "zmq" }],
-          })}
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [{ type: "OPENFACE_AU", id: "zmq" }]
+            })
+          }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           OPENFACE AU

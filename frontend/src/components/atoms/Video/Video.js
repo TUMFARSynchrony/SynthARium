@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useRef } from "react";
 import { Image } from "react-konva";
 import { useUserStream } from "./streams";
@@ -13,7 +14,7 @@ const Video = ({ src, participantData }) => {
         return;
       }
       video.srcObject = src;
-      video.onloadedmetadata = function (e) {
+      video.onloadedmetadata = function () {
         video.play();
       };
     }, [stream, video]);

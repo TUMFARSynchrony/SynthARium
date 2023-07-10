@@ -48,6 +48,7 @@ const ConnectionLatencyTest = (props: {
   };
   const [connectionState, setConnectionState] = useState(connection.state);
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>(
     []
   ); // eslint-disable-line @typescript-eslint/no-unused-vars
