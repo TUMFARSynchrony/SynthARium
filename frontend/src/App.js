@@ -158,7 +158,7 @@ function App() {
       userType,
       sessionId,
       participantId,
-      experimenterPassword || "no-password-given", // "no-password-given" is a placeholder if experimenterPassword is an empty string
+      experimenterPassword || "no-password-given", // "no-password-given" is a placeholder when experimenterPassword is an empty string
       true
     );
 
