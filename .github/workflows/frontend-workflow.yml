@@ -38,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
         working-directory: ./frontend
 
       - name: Run ESLint
