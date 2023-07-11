@@ -27,11 +27,11 @@ jobs:
           
       - name: Format with Black
         run: |
-          pip3 install black
+          pip3 install black~=23.3.0
           pwd
           black --config=./backend/pyproject.toml --preview --check ./backend
       
       - name: Lint with Flake8
         run: |
-          pip3 install flake8
+          pip3 install flake8~=6.0.0
           flake8 --config=./backend/.flake8 ./backend
