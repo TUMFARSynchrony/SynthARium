@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from session.data import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 
 
 class ConnectionProposalDict(TypedDict):

@@ -1,6 +1,5 @@
 # from typing import TypeGuard
 
-import cv2
 import numpy
 
 # from custom_types import util

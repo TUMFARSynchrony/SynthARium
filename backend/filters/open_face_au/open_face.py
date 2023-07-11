@@ -27,13 +27,13 @@ class OpenFace:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        except:
+        except Exception:
             pass
 
     def __del__(self):
         try:
             self._openface_process.terminate()
-        except:
+        except Exception:
             self._openface_process.kill()
 
     def flush_result(self):

@@ -27,13 +27,13 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
         True if `data` is a valid FilterDict.
     """
     if "type" not in data:
-        logger.debug(f"Missing key: type")
+        logger.debug("Missing key: type")
         return False
 
     filter_type = data["type"]
 
     if not isinstance(filter_type, str):
-        logger.debug(f'Filter "type" must be of type str.')
+        logger.debug('Filter "type" must be of type str.')
         return False
 
     filters = get_filter_dict()

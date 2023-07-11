@@ -46,8 +46,8 @@ class SimpleLineWriter:
 
     def write_lines(self, ndarray: numpy.ndarray, lines: list[str]) -> numpy.ndarray:
         for i, line in enumerate(lines):
-            l = list(self.origin)
-            l[1] = l[1] + self.offset * i
-            new_origin = tuple(l)
+            coords = list(self.origin)
+            coords[1] = coords[1] + self.offset * i
+            new_origin = tuple(coords)
             ndarray = self.write_line(ndarray, line, new_origin)
         return ndarray

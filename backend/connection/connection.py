@@ -351,7 +351,7 @@ class Connection(ConnectionInterface):
 
         # Handle invalid message type
         if not is_valid_messagedict(message_dict):
-            self._logger.info(f"Received invalid message.")
+            self._logger.info("Received invalid message.")
             self._logger.debug(f"Invalid message: {message}")
             err = ErrorDict(
                 type="INVALID_REQUEST",

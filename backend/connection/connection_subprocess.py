@@ -122,7 +122,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._responses = {}
 
         self._tasks = [
-            asyncio.create_task(self._run(), name=f"ConnectionSubprocess.run")
+            asyncio.create_task(self._run(), name="ConnectionSubprocess.run")
         ]
 
     @property
@@ -369,7 +369,7 @@ class ConnectionSubprocess(ConnectionInterface):
         if self._process is None:
             return
 
-        self._logger.debug(f"Wait for final stdout and stderr from subprocess")
+        self._logger.debug("Wait for final stdout and stderr from subprocess")
         stdout, stderr = await self._process.communicate()
         self._logger.debug(
             f"Subprocess exited with returncode: {self._process.returncode}"

@@ -23,7 +23,7 @@ try:
     shm = shared_memory.SharedMemory(name=shm_name, create=False, size=size)
     shm.close()
     shm.unlink()
-except:
+except Exception:
     pass
 
 
@@ -48,7 +48,7 @@ class PortManager:
             self._shared_port_slots = shared_memory.SharedMemory(
                 name=shm_name, create=False, size=size
             )
-        except:
+        except Exception:
             self._shared_port_slots = shared_memory.SharedMemory(
                 name=shm_name, create=True, size=size
             )

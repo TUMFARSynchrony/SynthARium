@@ -47,7 +47,7 @@ class OpenFaceAUExtractor:
         try:
             result = self._get_result()
             received = True
-        except zmq.ZMQError as e:
+        except zmq.ZMQError:
             if self.is_extracting:
                 return 1, port_msg, None
 
@@ -56,7 +56,7 @@ class OpenFaceAUExtractor:
             try:
                 result = self._get_result()
                 received = True
-            except zmq.ZMQError as e:
+            except zmq.ZMQError:
                 pass
 
             if received:
@@ -79,7 +79,7 @@ class OpenFaceAUExtractor:
             self.socket.send(im_64, flags=zmq.NOBLOCK)
             self.is_extracting = True
             return True
-        except zmq.ZMQError as e:
+        except zmq.ZMQError:
             return False
 
     def _get_result(self) -> object:

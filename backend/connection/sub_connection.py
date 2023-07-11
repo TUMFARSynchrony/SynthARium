@@ -8,7 +8,7 @@ from connection.messages import (
     ConnectionProposalDict,
     RTCSessionDescriptionDict,
 )
-from session.data import ParticipantSummaryDict
+from session.data.participant.participant_summary import ParticipantSummaryDict
 
 
 class SubConnection(AsyncIOEventEmitter):
