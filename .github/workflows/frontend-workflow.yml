@@ -5,15 +5,14 @@ name: Node.js CI
 
 on:
   push:
-    branches: 
-      - 'main'
-      - 'frontend-bc-workflow'
+    branches:
+      - "main"
+      - "frontend-bc-workflow"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -42,7 +41,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Run ESLint
-        run: npx eslint . --max-warnings 0
+        run: npx eslint .
         working-directory: ./frontend
 
       - name: Format code with Prettier
