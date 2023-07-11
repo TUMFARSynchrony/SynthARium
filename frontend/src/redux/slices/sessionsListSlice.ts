@@ -1,12 +1,12 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import {
-  filterListById,
-  sortSessions,
-  getSessionById,
-  getParticipantById
-} from "../../utils/utils";
 import { RootState } from "../../store";
 import { Session } from "../../types";
+import {
+  filterListById,
+  getParticipantById,
+  getSessionById,
+  sortSessions
+} from "../../utils/utils";
 import {
   BanMuteUnmuteParticipantPayload,
   ExperimentTypesPayload
