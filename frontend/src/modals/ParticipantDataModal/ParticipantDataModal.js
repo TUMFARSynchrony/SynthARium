@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import Box from "@mui/material/Box";

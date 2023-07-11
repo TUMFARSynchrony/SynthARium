@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
 import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
 import ConsentModal from "../../modals/ConsentModal/ConsentModal";

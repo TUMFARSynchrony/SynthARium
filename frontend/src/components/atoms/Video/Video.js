@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useRef } from "react";
 import { Image } from "react-konva";
 import { useUserStream } from "./streams";

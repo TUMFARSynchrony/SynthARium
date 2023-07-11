@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { CANVAS_SIZE, INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
