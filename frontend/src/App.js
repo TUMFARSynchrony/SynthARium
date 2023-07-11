@@ -64,7 +64,7 @@ function App() {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
 
-  /** Handle `connectionStateChange` event of {@link Connection}. */
+  /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
     console.log(
       `%cConnection state change Handler: ${ConnectionState[state]}`,

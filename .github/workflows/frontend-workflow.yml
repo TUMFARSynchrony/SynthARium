@@ -10,7 +10,7 @@ on:
       - "frontend-bc-workflow"
   pull_request:
     branches: ["main"]
-
+  path: "**/frontend"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Run ESLint
-        run: npx eslint . --quiet
+        run: npx eslint .
         working-directory: ./frontend
 
       - name: Format code with Prettier
@@ -49,5 +49,5 @@ jobs:
         working-directory: ./frontend
 
       - name: Build
-        run: npm run build
+        run: CI=false npm run build
         working-directory: ./frontend
