@@ -16,7 +16,6 @@ function ParticipantData({
 }) {
   // I first name and last name of the participant are empty, then we have a newly created participant. The default value is then true.
   // This is the flag used to display participant details in the ParticipantDataModal.
-  console.log("inside copy", sessionId);
   const [showParticipantInput, setShowParticipantInput] = useState(
     participantData.participant_name === ""
   );

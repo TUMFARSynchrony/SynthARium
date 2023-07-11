@@ -40,7 +40,6 @@ function App() {
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
-  console.log(connectedParticipants, "connectedParticipants");
   const sessionsListRef = useRef();
   sessionsListRef.current = sessionsList;
   const ongoingExperimentRef = useRef();
