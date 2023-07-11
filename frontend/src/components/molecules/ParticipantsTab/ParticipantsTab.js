@@ -1,21 +1,20 @@
+import { useAppSelector } from "../../../redux/hooks";
+import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
+import { selectSessions } from "../../../redux/slices/sessionsListSlice";
+import { getSessionById } from "../../../utils/utils";
 import Heading from "../../atoms/Heading/Heading";
 import JoinedParticipantCard from "../../organisms/JoinedParticipantCard/JoinedParticipantCard";
-import { useSelector } from "react-redux";
 import "./ParticipantsTab.css";
-import { getSessionById } from "../../../utils/utils";
 
 function ParticipantsTab({
   connectedParticipants,
   onKickBanParticipant,
   onMuteParticipant
 }) {
-  const ongoingExperiment = useSelector(
-    (state) => state.ongoingExperiment.value
-  );
+  const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionId = ongoingExperiment.sessionId;
-  const sessionsList = useSelector((state) => state.sessionsList.value);
-  const sessionData = getSessionById(sessionId, sessionsList)[0];
-
+  const sessionsList = useAppSelector(selectSessions);
+  const sessionData = getSessionById(sessionId, sessionsList);
   return (
     <>
       <Heading heading={"Joined participants"} />

@@ -1,10 +1,10 @@
-import { useDispatch } from "react-redux";
 import { ActionButton } from "../../components/atoms/Button";
 import Label from "../../components/atoms/Label/Label";
 import InputTextField from "../../components/molecules/InputTextField/InputTextField";
-import { banMuteUnmuteParticipant } from "../../features/sessionsList";
 import { PARTICIPANT_HOST } from "../../utils/constants";
 
+import { useAppDispatch } from "../../redux/hooks";
+import { banMuteUnmuteParticipant } from "../../redux/slices/sessionsListSlice";
 import "./JoinedParticipantModal.css";
 
 function JoinedParticipantModal({
@@ -14,7 +14,7 @@ function JoinedParticipantModal({
   sessionId,
   onMuteParticipant
 }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const muteParticipant = (muteAudio, muteVideo) => {
     onMuteParticipant({
@@ -46,9 +46,7 @@ function JoinedParticipantModal({
   return (
     <div className="joinedParticipantModalContainer">
       <div className="joinedParticipantModalData">
-        <Label
-          title={participantData.first_name + " " + participantData.last_name}
-        />
+        <Label title={participantData.participant_name} />
         <hr className="separatorLine"></hr>
         <ActionButton
           text={participantData.muted_audio ? "Unmute Audio" : "Mute Audio"}

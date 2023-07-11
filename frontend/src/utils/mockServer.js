@@ -14,8 +14,7 @@ export function getSessionJson() {
       participants: [
         {
           id: "",
-          first_name: "Anna",
-          last_name: "Mueller",
+          participant_name: "Anna Mueller",
           link: "",
           muted: true,
           filters: [],
@@ -31,8 +30,7 @@ export function getSessionJson() {
         },
         {
           id: "",
-          first_name: "Max",
-          last_name: "Mustermann",
+          participant_name: "Max Mustermann",
           link: "",
           muted: true,
           filters: [],
@@ -62,8 +60,7 @@ export function getSessionJson() {
       participants: [
         {
           id: "",
-          first_name: "Anna",
-          last_name: "Mueller",
+          participant_name: "Anna Mueller",
           link: "",
           muted: true,
           filters: [],
@@ -79,8 +76,7 @@ export function getSessionJson() {
         },
         {
           id: "",
-          first_name: "Max",
-          last_name: "Mustermann",
+          participant_name: "Max Mustermann",
           link: "",
           muted: true,
           filters: [],
@@ -107,8 +103,7 @@ export function getJoinedParticipants() {
   return [
     {
       id: "9c93d486fe",
-      first_name: "Max",
-      last_name: "Mustermann",
+      participant_name: "Max Mustermann",
       muted_video: false,
       muted_audio: false,
       filters: [],
@@ -133,8 +128,7 @@ export function getJoinedParticipants() {
     },
     {
       id: "2d1882e48b",
-      first_name: "Erika",
-      last_name: "Mustermann",
+      participant_name: "Erika Mustermann",
       muted_video: false,
       muted_audio: true,
       filters: [],

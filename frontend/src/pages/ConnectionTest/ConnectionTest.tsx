@@ -1,11 +1,11 @@
 import * as React from "react";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import "./ConnectionTest.css";
 import Connection from "../../networking/Connection";
 import ConnectionState from "../../networking/ConnectionState";
 import { ConnectedPeer } from "../../networking/typing";
 import { getLocalStream } from "../../utils/utils";
+import "./ConnectionTest.css";
 
 /**
  * Test page for testing the {@link Connection} & api.
@@ -28,7 +28,7 @@ function ConnectionTest(props: {
 
   /** Handle `remoteStreamChange` event of {@link Connection}. */
   const streamChangeHandler = async () => {
-    console.log("%cRemote Stream Change Handler", "color:blue");
+    console.log("%cRemote Stream Change Handler");
   };
 
   /** Handle `connectionStateChange` event of {@link Connection}. */
@@ -100,7 +100,7 @@ function ConnectionTest(props: {
   const getVideoTitle = (peer: ConnectedPeer, index: number) => {
     if (peer.summary) {
       if (peer.summary instanceof Object) {
-        return `${peer.summary.first_name} ${peer.summary.last_name}`;
+        return `${peer.summary.participant_name}`;
       }
       return `UserID: ${peer.summary}`;
     }
@@ -111,7 +111,7 @@ function ConnectionTest(props: {
   const getRemoteStreamTitle = () => {
     if (connection.participantSummary) {
       if (connection.participantSummary instanceof Object) {
-        return `remote stream (${connection.participantSummary.first_name} ${connection.participantSummary.last_name})`;
+        return `remote stream (${connection.participantSummary.participant_name})`;
       }
       return `remote stream: ${connection.participantSummary}`;
     }
