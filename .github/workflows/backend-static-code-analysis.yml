@@ -11,8 +11,6 @@ on:
 jobs:
   static-code-analysis:
     runs-on: ubuntu-latest
-    env: 
-      CI_COMMIT_AUTHOR: Continuous Integration
     steps:
       - name: Check out source repository
         uses: actions/checkout@v3
