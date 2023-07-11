@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import "./App.css";
 import Lobby from "./pages/Lobby/Lobby";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
@@ -66,7 +64,7 @@ function App() {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
 
-  /** Handle `connectionStateChange` event of {@link Connection}. */
+  /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
     console.log(
       `%cConnection state change Handler: ${ConnectionState[state]}`,
