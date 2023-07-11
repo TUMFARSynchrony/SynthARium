@@ -41,7 +41,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Run ESLint
-        run: npx eslint .
+        run: npx eslint . --quiet
         working-directory: ./frontend
 
       - name: Format code with Prettier
