@@ -1,4 +1,6 @@
-export const INITIAL_SESSION_DATA = {
+import { Note, Participant, Session } from "../types";
+
+export const INITIAL_SESSION_DATA: Session = {
   id: "",
   title: "",
   description: "",
@@ -10,7 +12,7 @@ export const INITIAL_SESSION_DATA = {
   end_time: 0,
   creation_time: 0,
   notes: [],
-  log: ""
+  log: []
 };
 
 export const CANVAS_SIZE = {
@@ -23,10 +25,9 @@ export const CANVAS_SIZE = {
   scale: 1.2
 };
 
-export const INITIAL_PARTICIPANT_DATA = {
+export const INITIAL_PARTICIPANT_DATA: Participant = {
   id: "",
-  first_name: "",
-  last_name: "",
+  participant_name: "",
   muted_audio: true,
   muted_video: true,
   banned: false,
@@ -44,7 +45,7 @@ export const INITIAL_PARTICIPANT_DATA = {
   }
 };
 
-export const INITIAL_NOTE_DATA = {
+export const INITIAL_NOTE_DATA: Note = {
   time: 0,
   speakers: [],
   content: ""

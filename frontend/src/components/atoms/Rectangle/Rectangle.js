@@ -81,8 +81,9 @@ const Rectangle = ({
     });
   };
 
-  let first_name = shapeProps.first_name ? shapeProps.first_name : "";
-  let last_name = shapeProps.last_name ? shapeProps.last_name : "";
+  let participant_name = shapeProps.participant_name
+    ? shapeProps.participant_name
+    : "";
 
   return (
     <>
@@ -100,7 +101,7 @@ const Rectangle = ({
           height={groupProps.height}
         />
         <Text
-          text={first_name.concat(" ", last_name)}
+          text={participant_name}
           x={shapeProps.x}
           y={shapeProps.y}
           fontSize={15}

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { ActionButton } from "../../components/atoms/Button";
-import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
-import { banMuteUnmuteParticipant } from "../../features/sessionsList";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
+import TextAreaField from "../../components/molecules/TextAreaField/TextAreaField";
+import { useAppDispatch } from "../../redux/hooks";
+import { banMuteUnmuteParticipant } from "../../redux/slices/sessionsListSlice";
 import { initialSnackbar } from "../../utils/constants";
 import "./KickParticipantModal.css";
 
@@ -16,7 +16,7 @@ function KickParticipantModal({
   action
 }) {
   const [reason, setReason] = useState("");
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
 
   const onChange = (newReason) => {

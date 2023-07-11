@@ -1,32 +1,32 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { initializeSession } from "../../features/openSession";
 
-import SessionCard from "../../components/organisms/SessionCard/SessionCard";
-import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
-import { INITIAL_SESSION_DATA } from "../../utils/constants";
-import { getPastAndFutureSessions } from "../../utils/utils";
-import HeroText from "../../components/atoms/HeroText/HeroText";
-import ExpandMore from "@mui/icons-material/ExpandMore";
 import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import styled from "@mui/material/styles/styled";
 import {
   ActionIconButton,
   LinkActionButton
 } from "../../components/atoms/Button";
-import Typography from "@mui/material/Typography";
-import styled from "@mui/material/styles/styled";
-import Grid from "@mui/material/Grid";
-import Divider from "@mui/material/Divider";
+import HeroText from "../../components/atoms/HeroText/HeroText";
 import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
+import SessionCard from "../../components/organisms/SessionCard/SessionCard";
+import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { initializeSession } from "../../redux/slices/openSessionSlice";
+import { selectSessions } from "../../redux/slices/sessionsListSlice";
+import { INITIAL_SESSION_DATA } from "../../utils/constants";
+import { getPastAndFutureSessions } from "../../utils/utils";
 
 function SessionOverview({
   onDeleteSession,
   onJoinExperiment,
   onCreateExperiment
 }) {
-  const dispatch = useDispatch();
-  const sessionsList = useSelector((state) => state.sessionsList.value);
+  const dispatch = useAppDispatch();
+  const sessionsList = useAppSelector(selectSessions);
   const [past, setPast] = useState([]);
   const [future, setFuture] = useState([]);
   const [selectedSession, setSelectedSession] = useState(

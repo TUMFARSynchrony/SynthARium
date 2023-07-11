@@ -1,128 +1,123 @@
 {
-    "id": "ae839e5e6f",
-    "title": "Example Session 1",
-    "date": 1650380763073,
-    "record": false,
-    "time_limit": 1800000,
-    "description": "Example description with 250 words and 1506 characters: Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum",
-    "creation_time": 0,
-    "end_time": 1684691314078,
-    "start_time": 1684691314078,
-    "notes": [
+  "id": "ae839e5e6f",
+  "title": "Example Session 1",
+  "date": 1650380763073,
+  "record": false,
+  "time_limit": 1800000,
+  "description": "Example description with 250 words and 1506 characters: Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum",
+  "creation_time": 0,
+  "end_time": 1684691314078,
+  "start_time": 1684691314078,
+  "notes": [
+    {
+      "time": 1650380763076,
+      "speakers": ["speaker"],
+      "content": "This is a note"
+    }
+  ],
+  "participants": [
+    {
+      "id": "9ba5fdccde",
+      "participant_name": "Max",
+      "banned": false,
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "muted_video": false,
+      "muted_audio": false,
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": 10
+      },
+      "chat": [
         {
-            "time": 1650380763076,
-            "speakers": [
-                "speaker"
-            ],
-            "content": "This is a note"
+          "message": "Welcome to todays experiment!",
+          "time": 1650380763075,
+          "author": "experimenter",
+          "target": "participants"
         }
-    ],
-    "participants": [
+      ],
+      "audio_filters": [],
+      "video_filters": []
+    },
+    {
+      "id": "25a882669d",
+      "participant_name": "Erika",
+      "banned": false,
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "muted_video": false,
+      "muted_audio": true,
+      "position": {
+        "x": 0,
+        "y": 150,
+        "z": 200
+      },
+      "chat": [
         {
-            "id": "9ba5fdccde",
-            "first_name": "Max",
-            "last_name": "Mustermann",
-            "banned": false,
-            "size": {
-                "width": 100,
-                "height": 100
-            },
-            "muted_video": false,
-            "muted_audio": false,
-            "position": {
-                "x": 0,
-                "y": 10,
-                "z": 10
-            },
-            "chat": [
-                {
-                    "message": "Welcome to todays experiment!",
-                    "time": 1650380763075,
-                    "author": "experimenter",
-                    "target": "participants"
-                }
-            ],
-            "audio_filters": [],
-            "video_filters": []
+          "message": "Welcome to todays experiment!",
+          "time": 1650380763075,
+          "author": "experimenter",
+          "target": "participants"
         },
         {
-            "id": "25a882669d",
-            "first_name": "Erika",
-            "last_name": "Mustermann",
-            "banned": false,
-            "size": {
-                "width": 100,
-                "height": 100
-            },
-            "muted_video": false,
-            "muted_audio": true,
-            "position": {
-                "x": 0,
-                "y": 150,
-                "z": 200
-            },
-            "chat": [
-                {
-                    "message": "Welcome to todays experiment!",
-                    "time": 1650380763075,
-                    "author": "experimenter",
-                    "target": "participants"
-                },
-                {
-                    "message": "Hello Erika. Please enable your video camera to start the experiment.",
-                    "time": 1650380764175,
-                    "author": "experimenter",
-                    "target": "25a882669d"
-                },
-                {
-                    "message": "Hello, of course. It should work now.",
-                    "time": 1650380765075,
-                    "author": "25a882669d",
-                    "target": "experimenter"
-                }
-            ],
-            "audio_filters": [],
-            "video_filters": []
+          "message": "Hello Erika. Please enable your video camera to start the experiment.",
+          "time": 1650380764175,
+          "author": "experimenter",
+          "target": "25a882669d"
         },
         {
-            "id": "8e39086e83",
-            "first_name": "Bob",
-            "last_name": "Builder",
-            "banned": false,
-            "size": {
-                "width": 100,
-                "height": 100
-            },
-            "muted_video": true,
-            "muted_audio": true,
-            "position": {
-                "x": 0,
-                "y": 300,
-                "z": 250
-            },
-            "chat": [
-                {
-                    "message": "Welcome to todays experiment!",
-                    "time": 1650380763075,
-                    "author": "experimenter",
-                    "target": "participants"
-                },
-                {
-                    "message": "Hello World!",
-                    "time": 1650380765075,
-                    "author": "8e39086e83",
-                    "target": "experimenter"
-                },
-                {
-                    "message": "Lets build the experimental hub!",
-                    "time": 1650380765075,
-                    "author": "8e39086e83",
-                    "target": "experimenter"
-                }
-            ],
-            "audio_filters": [],
-            "video_filters": []
+          "message": "Hello, of course. It should work now.",
+          "time": 1650380765075,
+          "author": "25a882669d",
+          "target": "experimenter"
         }
-    ],
-    "log": []
+      ],
+      "audio_filters": [],
+      "video_filters": []
+    },
+    {
+      "id": "8e39086e83",
+      "participant_name": "Bob",
+      "banned": false,
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "muted_video": true,
+      "muted_audio": true,
+      "position": {
+        "x": 0,
+        "y": 300,
+        "z": 250
+      },
+      "chat": [
+        {
+          "message": "Welcome to todays experiment!",
+          "time": 1650380763075,
+          "author": "experimenter",
+          "target": "participants"
+        },
+        {
+          "message": "Hello World!",
+          "time": 1650380765075,
+          "author": "8e39086e83",
+          "target": "experimenter"
+        },
+        {
+          "message": "Lets build the experimental hub!",
+          "time": 1650380765075,
+          "author": "8e39086e83",
+          "target": "experimenter"
+        }
+      ],
+      "audio_filters": [],
+      "video_filters": []
+    }
+  ],
+  "log": []
 }

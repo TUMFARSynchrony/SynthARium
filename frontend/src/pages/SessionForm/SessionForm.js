@@ -1,46 +1,47 @@
-import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
+import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
 import { CANVAS_SIZE, INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
 import {
+  checkValidSession,
   filterListByIndex,
-  getRandomColor,
-  getParticipantDimensions,
   formatDate,
-  checkValidSession
+  getParticipantDimensions,
+  getRandomColor
 } from "../../utils/utils";
 
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  addParticipant,
-  changeParticipant,
-  changeValue,
-  deleteParticipant,
-  initializeSession
-} from "../../features/openSession";
-import {
-  ActionButton,
-  ActionIconButton,
-  LinkButton
-} from "../../components/atoms/Button";
+import AddIcon from "@mui/icons-material/Add";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
-import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
-import AddIcon from "@mui/icons-material/Add";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { useEffect, useState } from "react";
+import {
+  ActionButton,
+  ActionIconButton,
+  LinkButton
+} from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import {
+  addParticipant,
+  changeParticipant,
+  changeValue,
+  deleteParticipant,
+  initializeSession,
+  selectOpenSession
+} from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
 
 function SessionForm({ onSendSessionToBackend }) {
-  const dispatch = useDispatch();
-  let openSession = useSelector((state) => state.openSession.value);
+  const dispatch = useAppDispatch();
+  const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
   // TO DO: remove the field time_limit from session.json
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
@@ -80,7 +81,7 @@ function SessionForm({ onSendSessionToBackend }) {
     if (snackbarResponse.requiredInformationMissing) {
       setSnackbar({
         open: true,
-        text: "Required information (First Name/Last Name) missing. Participant will be deleted now.",
+        text: "Required information (Participant Name) is missing. Participant will be deleted now.",
         severity: "warning"
       });
       return;
@@ -100,7 +101,7 @@ function SessionForm({ onSendSessionToBackend }) {
   }, [snackbarResponse]);
 
   const onDeleteParticipant = (index) => {
-    dispatch(deleteParticipant({ index: index }));
+    dispatch(deleteParticipant(index));
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
   };
 
@@ -129,8 +130,7 @@ function SessionForm({ onSendSessionToBackend }) {
     let newParticipantDimensions = [...participantDimensions];
     newParticipantDimensions[index].shapes = {
       ...newParticipantDimensions[index].shapes,
-      first_name: participant.first_name,
-      last_name: participant.last_name
+      participant_name: participant.participant_name
     };
     setParticipantDimensions(newParticipantDimensions);
   };
@@ -168,8 +168,7 @@ function SessionForm({ onSendSessionToBackend }) {
       participants: [
         {
           id: "",
-          first_name: "Max",
-          last_name: "Mustermann",
+          participant_name: "Max Mustermann",
           muted_audio: true,
           muted_video: true,
           banned: false,
