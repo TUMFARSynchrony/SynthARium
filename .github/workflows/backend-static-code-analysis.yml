@@ -28,6 +28,7 @@ jobs:
       - name: Format with Black
         run: |
           pip3 install black
+          pwd
           black --config=./backend/pyproject.toml --preview --check ./backend
       
       - name: Lint with Flake8
