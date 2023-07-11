@@ -62,7 +62,7 @@ function App() {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
 
-  /** Handle `connectionStateChange` event of {@link Connection}. */
+  /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
     console.log(
       `%cConnection state change Handler: ${ConnectionState[state]}`,
@@ -128,8 +128,8 @@ function App() {
     const isConnectionTestPage =
       pathname === "/connectiontest" || pathname === "/connectionlatencytest";
 
-    //   // TODO: get experimenter password before creating Connection, e.g. from "login" page
-    //   // The following solution using `prompt` is only a placeholder.
+    // TODO: get experimenter password before creating Connection, e.g. from "login" page
+    // The following solution using `prompt` is only a placeholder.
     if (
       !isConnectionTestPage &&
       userType === "experimenter" &&
@@ -154,7 +154,7 @@ function App() {
       userType,
       sessionId,
       participantId,
-      experimenterPassword || "no-password-given", // "no-password-given" is a placeholder if experimenterPassword is an empty string
+      experimenterPassword || "no-password-given", // "no-password-given" is a placeholder when experimenterPassword is an empty string
       true
     );
 
@@ -199,7 +199,7 @@ function App() {
   };
 
   const handleSavedSession = (data) => {
-    // Redirects to session overview page on saving a session.
+    // Redirects to session overview page on saving a session
     navigate("/");
     if (!getSessionById(data.id, sessionsListRef.current)) {
       setSnackbar({

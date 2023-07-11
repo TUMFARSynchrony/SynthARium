@@ -50,9 +50,9 @@ const ConnectionLatencyTest = (props: {
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
   const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>(
     []
-  ); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [localStreamData, setLocalStreamData] = useState<LocalStreamData[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [pingData, setPingData] = useState<PingData[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  );
+  const [localStreamData, setLocalStreamData] = useState<LocalStreamData[]>([]);
+  const [pingData, setPingData] = useState<PingData[]>([]);
   const [mergedData, setMergedData] = useState<MergedData[] | undefined>();
   const [config, setConfig] = useState<TestConfigObj>(defaultConfig);
   const canvasQRRef = useRef<HTMLCanvasElement>(null);
@@ -113,7 +113,6 @@ const ConnectionLatencyTest = (props: {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connection, config, startedRemoteStreamLoop, remoteStreamData]);
 
   // Handle API messages (ping / pong)
