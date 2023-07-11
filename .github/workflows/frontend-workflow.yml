@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - "main"
-      - "frontend-bc-workflow"
     paths: "frontend/**"
   pull_request:
     branches: ["main"]
