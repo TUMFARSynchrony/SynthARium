@@ -22,16 +22,13 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Upgrade pip
-        run: pip3 install --upgrade pip
+      - name: Upgrade pip and install packages
+        run: |
+          pip3 install --upgrade pip
+          pip3 install -r ./backend/requirements.dev.txt
           
       - name: Format with Black
-        run: |
-          pip3 install black~=23.3.0
-          pwd
-          black --config=./backend/pyproject.toml --preview --check ./backend
+        run: black --config=./backend/pyproject.toml --preview --check ./backend
       
       - name: Lint with Flake8
-        run: |
-          pip3 install flake8~=6.0.0
-          flake8 --config=./backend/.flake8 ./backend
+        run: flake8 --config=./backend/.flake8 ./backend
