@@ -5,14 +5,13 @@ __pycache__
 # Logging
 *.log
 
+# Config file
+config.json
+
 # Certificates
 *.key
 *.crt
 *.pem
 
-# PyCharm IDE
-.idea
-
-# Misc
-.DS_Store
+# Sessions
 sessions/*/

@@ -1,0 +1,9 @@
+# Misc
+.DS_Store
+
+# IDE
+.vscode
+.idea
+
+# Python Virtual Environment
+exp-hub-venv
