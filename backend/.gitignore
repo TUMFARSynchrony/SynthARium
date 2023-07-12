@@ -12,3 +12,7 @@ __pycache__
 
 # Sessions
 sessions/*/
+
+# IDE
+.vscode
+.idea
