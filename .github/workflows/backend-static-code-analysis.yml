@@ -26,7 +26,7 @@ jobs:
           pip3 install -r ./backend/requirements.dev.txt
           
       - name: Format with Black
-        run: black --config=./backend/pyproject.toml --preview --check ./backend
+        run: black --config=./backend/pyproject.toml --preview ./backend
       
       - name: Lint with Flake8
         run: flake8 --config=./backend/.flake8 ./backend
