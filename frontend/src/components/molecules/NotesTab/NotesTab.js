@@ -4,17 +4,17 @@ import { useState } from "react";
 import Note from "../../atoms/Note/Note";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import { INITIAL_NOTE_DATA } from "../../../utils/constants";
-import { useSelector } from "react-redux";
 import { getSessionById } from "../../../utils/utils";
 import { ActionIconButton } from "../../atoms/Button";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
+import { useAppSelector } from "../../../redux/hooks";
+import { selectSessions } from "../../../redux/slices/sessionsListSlice";
+import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
 
 function NotesTab({ onAddNote }) {
-  const sessionId = useSelector(
-    (state) => state.ongoingExperiment.value.sessionId
-  );
-  const sessionsList = useSelector((state) => state.sessionsList.value);
-  const sessionData = getSessionById(sessionId, sessionsList)[0];
+  const sessionId = useAppSelector(selectOngoingExperiment).sessionId;
+  const sessionsList = useAppSelector(selectSessions);
+  const sessionData = getSessionById(sessionId, sessionsList);
 
   const [notes, setNotes] = useState(
     sessionData.notes ? sessionData.notes : []
