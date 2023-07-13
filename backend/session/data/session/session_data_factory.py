@@ -1,8 +1,10 @@
 from hub.exceptions import ErrorDictException
 from session.data.participant import participant_data_factory
 from session.data.session import SessionDict, SessionData
-from session.data.session.session_data_functions import has_duplicate_participant_ids, \
-    _generate_participant_ids
+from session.data.session.session_data_functions import (
+    has_duplicate_participant_ids,
+    _generate_participant_ids,
+)
 
 
 def session_data_factory(session_dict: SessionDict) -> SessionData:

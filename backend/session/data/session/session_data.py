@@ -6,8 +6,11 @@ from hub.exceptions import ErrorDictException
 from session.data.base_data import BaseData
 from session.data.participant import ParticipantData, participant_data_factory
 from session.data.session.session_dict import SessionDict
-from session.data.session.session_data_functions import _generate_participant_ids, get_filtered_participant_ids, \
-    has_duplicate_participant_ids
+from session.data.session.session_data_functions import (
+    _generate_participant_ids,
+    get_filtered_participant_ids,
+    has_duplicate_participant_ids,
+)
 
 
 @dataclass(slots=True)

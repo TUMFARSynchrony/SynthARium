@@ -27,13 +27,13 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
         True if `data` is a valid FilterDict.
     """
     if "type" not in data:
-        logger.debug(f"Missing key: type")
+        logger.debug("Missing key: type")
         return False
 
     filter_type = data["type"]
 
     if not isinstance(filter_type, str):
-        logger.debug(f'Filter "type" must be of type str.')
+        logger.debug('Filter "type" must be of type str.')
         return False
 
     filters = get_filter_dict()
@@ -125,7 +125,8 @@ def get_filter_dict() -> dict:
         filter_name = concrete_filter.name(concrete_filter)
         if filter_name in filter_dict:
             logger.warning(
-                f"Filter name {filter_name} already exists for class {concrete_filter.__name__}"
+                f"Filter name {filter_name} already exists for class"
+                f" {concrete_filter.__name__}"
             )
         else:
             filter_dict[filter_name] = concrete_filter

@@ -6,10 +6,12 @@ class OpenFaceDataParser:
     def __init__(self):
         # TODO: get session and participant id
         path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
             "sessions",
             "ae839e5e6f",
-            "OpenFace"
+            "OpenFace",
         )
         filename = "9ba5fdccde"
         appendix = ".csv"

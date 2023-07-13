@@ -38,6 +38,5 @@ class BaseData(AsyncIOEventEmitter):
         try:
             if self._emit_updates:
                 self.emit("update", self)
-        except AttributeError as e:
+        except AttributeError:
             pass
-

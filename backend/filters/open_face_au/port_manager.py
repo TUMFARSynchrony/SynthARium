@@ -20,12 +20,10 @@ def find_open_slot(current_slots: int, max_slots: int):
 
 # Remove old shared memory resources if there is any
 try:
-    shm = shared_memory.SharedMemory(
-        name=shm_name, create=False, size=size
-    )
+    shm = shared_memory.SharedMemory(name=shm_name, create=False, size=size)
     shm.close()
     shm.unlink()
-except:
+except Exception:
     pass
 
 
@@ -50,7 +48,7 @@ class PortManager:
             self._shared_port_slots = shared_memory.SharedMemory(
                 name=shm_name, create=False, size=size
             )
-        except:
+        except Exception:
             self._shared_port_slots = shared_memory.SharedMemory(
                 name=shm_name, create=True, size=size
             )
@@ -78,7 +76,7 @@ class PortManager:
         self._lock.release()
 
     def _write_to_shared_memory(self, value: int) -> None:
-        self._shared_port_slots.buf[: size] = bytearray(value.to_bytes(size, "big"))
+        self._shared_port_slots.buf[:size] = bytearray(value.to_bytes(size, "big"))
 
     def _read_from_shared_memory(self) -> int:
-        return int.from_bytes(bytes(self._shared_port_slots.buf[: size]), "big")
+        return int.from_bytes(bytes(self._shared_port_slots.buf[:size]), "big")

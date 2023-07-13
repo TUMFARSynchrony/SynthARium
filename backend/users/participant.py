@@ -92,8 +92,8 @@ class Participant(User):
         Currently, returns value of `__repr__`.
         """
         return (
-            f"id={self.id}, participant_name={self._participant_data.participant_name}, experiment="
-            f"{self._experiment.session.id}"
+            f"id={self.id}, participant_name={self._participant_data.participant_name},"
+            f" experiment={self._experiment.session.id}"
         )
 
     def __repr__(self) -> str:
@@ -287,7 +287,7 @@ class Participant(User):
         record_directory_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "sessions",
-            self.experiment.session.id
+            self.experiment.session.id,
         )
         if not os.path.isdir(record_directory_path):
             os.mkdir(record_directory_path)

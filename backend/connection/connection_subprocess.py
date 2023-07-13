@@ -10,7 +10,11 @@ from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 
-from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, RTCSessionDescriptionDict
+from connection.messages import (
+    ConnectionAnswerDict,
+    ConnectionOfferDict,
+    RTCSessionDescriptionDict,
+)
 from hub import BACKEND_DIR
 from server import Config
 from hub.exceptions import ErrorDictException
@@ -67,7 +71,7 @@ class ConnectionSubprocess(ConnectionInterface):
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
         filter_api: FilterAPI,
-        record_data: tuple
+        record_data: tuple,
     ):
         """Create new ConnectionSubprocess.
 
@@ -118,7 +122,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._responses = {}
 
         self._tasks = [
-            asyncio.create_task(self._run(), name=f"ConnectionSubprocess.run")
+            asyncio.create_task(self._run(), name="ConnectionSubprocess.run")
         ]
 
     @property
@@ -365,7 +369,7 @@ class ConnectionSubprocess(ConnectionInterface):
         if self._process is None:
             return
 
-        self._logger.debug(f"Wait for final stdout and stderr from subprocess")
+        self._logger.debug("Wait for final stdout and stderr from subprocess")
         stdout, stderr = await self._process.communicate()
         self._logger.debug(
             f"Subprocess exited with returncode: {self._process.returncode}"
@@ -510,7 +514,7 @@ async def connection_subprocess_factory(
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
     filter_api: FilterAPI,
-    record_data: tuple
+    record_data: tuple,
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 
@@ -545,7 +549,7 @@ async def connection_subprocess_factory(
         audio_filters,
         video_filters,
         filter_api,
-        record_data
+        record_data,
     )
 
     local_description = await connection.get_local_description()

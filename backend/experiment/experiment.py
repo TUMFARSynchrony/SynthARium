@@ -178,7 +178,7 @@ class Experiment(AsyncIOEventEmitter):
                     raise ErrorDictException(
                         400,
                         "INVALID_REQUEST",
-                        f'Message target "all" is not allowed.',
+                        'Message target "all" is not allowed.',
                     )
                 targets.extend(self._participants.values())
                 targets.extend(self._experimenters)

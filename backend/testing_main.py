@@ -10,9 +10,6 @@ from session.data.session import SessionData
 from hub.hub import Hub
 import asyncio
 
-from session.data.session import SessionDict
-
-
 hub: Hub
 session: SessionData | None
 

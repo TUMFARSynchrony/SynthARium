@@ -11,9 +11,9 @@ from filters import FilterDict
 from connection.connection_runner import ConnectionRunner
 
 
-def parse_args() -> Tuple[
-    RTCSessionDescription, str, list[FilterDict], list[FilterDict]
-]:
+def parse_args() -> (
+    Tuple[RTCSessionDescription, str, list[FilterDict], list[FilterDict]]
+):
     """Parse command line arguments.
 
     Raises
@@ -32,9 +32,7 @@ def parse_args() -> Tuple[
     parser.add_argument(
         "--video-filters", dest="video_filters", required=False, default=[]
     )
-    parser.add_argument(
-        "--record-data", dest="record_data", required=False, default=[]
-    )
+    parser.add_argument("--record-data", dest="record_data", required=False, default=[])
     args = parser.parse_args()
 
     # Check and parse offer
@@ -45,8 +43,10 @@ def parse_args() -> Tuple[
         record_data = json.loads(args.record_data)
     except (json.JSONDecodeError, TypeError) as e:
         print(
-            "Failed to parse command line arguments received in command line arguments:"
-            f" {e}",
+            (
+                "Failed to parse command line arguments received in command line"
+                f" arguments: {e}"
+            ),
             file=sys.stderr,
         )
         raise e

@@ -196,8 +196,8 @@ class SessionManager:
         """
         if session_id not in self._sessions:
             self._logger.warning(
-                f"[SessionManager] Cannot delete session, no session with this ID: {session_id}"
-                " found"
+                "[SessionManager] Cannot delete session, no session with this ID:"
+                f" {session_id} found"
             )
             raise ErrorDictException(
                 code=404,

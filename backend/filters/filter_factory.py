@@ -6,7 +6,7 @@ from filters.filter_utils import get_filter_dict
 if TYPE_CHECKING:
     from hub.track_handler import TrackHandler
 
-from filters import *
+from filters import FilterDict, Filter, MuteVideoFilter, MuteAudioFilter
 
 from hub.exceptions import ErrorDictException
 

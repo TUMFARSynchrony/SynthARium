@@ -4,7 +4,3 @@ Provides: `SessionData`, `ParticipantData`, `PositionData` and `SizeData` as wel
 factory functions for `SessionData`: `session_data_factory` and `ParticipantData`:
 `participant_data_factory`, and more
 """
-from .participant import *
-from .position import *
-from .session import *
-from .size import *

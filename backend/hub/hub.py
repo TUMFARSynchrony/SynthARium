@@ -167,7 +167,9 @@ class Hub:
                     description="Invalid or missing experimenter password.",
                 )
 
-            experimenter_id = "E" + generate_unique_id([e.id for e in self.experimenters])
+            experimenter_id = "E" + generate_unique_id(
+                [e.id for e in self.experimenters]
+            )
             answer, experimenter = await experimenter_factory(
                 offer, experimenter_id, self
             )

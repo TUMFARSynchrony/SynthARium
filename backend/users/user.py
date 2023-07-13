@@ -376,7 +376,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         if endpoint == "CONNECTION_OFFER":
             if not is_valid_connection_offer_dict(message["data"]):
-                self._logger.warning(f"Received invalid CONNECTION_OFFER")
+                self._logger.warning("Received invalid CONNECTION_OFFER")
                 err = ErrorDict(
                     code=400,
                     type="INVALID_DATATYPE",

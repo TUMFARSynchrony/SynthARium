@@ -17,10 +17,7 @@ class RecordHandler:
     _track: TrackHandler
 
     def __init__(
-        self,
-        track: TrackHandler,
-        record: bool = False,
-        record_to: str = None
+        self, track: TrackHandler, record: bool = False, record_to: str = None
     ) -> None:
         """Initialize new RecordHandler for `track`.
 

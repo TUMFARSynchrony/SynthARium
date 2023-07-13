@@ -52,11 +52,17 @@ async def experimenter_factory(
             [],
             [],
             filter_api,
-            (False, '')
+            (False, ""),
         )
     else:
         answer, connection = await connection_factory(
-            offer, experimenter.handle_message, log_name_suffix, [], [], filter_api, (False, '')
+            offer,
+            experimenter.handle_message,
+            log_name_suffix,
+            [],
+            [],
+            filter_api,
+            (False, ""),
         )
 
     experimenter.set_connection(connection)
