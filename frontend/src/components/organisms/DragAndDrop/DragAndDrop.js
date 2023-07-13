@@ -1,13 +1,13 @@
-import { Stage, Layer, Text } from "react-konva";
 import { useState } from "react";
-import Rectangle from "../../atoms/Rectangle/Rectangle";
+import { Layer, Stage, Text } from "react-konva";
+import { useAppDispatch } from "../../../redux/hooks";
+import { changeParticipantDimensions } from "../../../redux/slices/openSessionSlice";
 import { CANVAS_SIZE } from "../../../utils/constants";
-import { useDispatch } from "react-redux";
-import { changeParticipantDimensions } from "../../../features/openSession";
+import Rectangle from "../../atoms/Rectangle/Rectangle";
 
 function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
   const [selectedShape, setSelectShape] = useState(null);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();

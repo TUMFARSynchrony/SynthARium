@@ -20,9 +20,7 @@ function JoinedParticipant({
   return (
     <div className="joinedParticipantContainer">
       <div className="participantSummary">
-        <Label
-          title={participantData.first_name + " " + participantData.last_name}
-        />
+        <Label title={participantData.participant_name} />
         <ActionButton
           text="Info"
           variant="contained"

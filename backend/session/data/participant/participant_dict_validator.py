@@ -54,8 +54,7 @@ def is_valid_participant(data, recursive: bool = True) -> TypeGuard[ParticipantD
 
     return (
         isinstance(data["id"], str)
-        and isinstance(data["first_name"], str)
-        and isinstance(data["last_name"], str)
+        and isinstance(data["participant_name"], str)
         and isinstance(data["muted_video"], bool)
         and isinstance(data["muted_audio"], bool)
         and isinstance(data["banned"], bool)
