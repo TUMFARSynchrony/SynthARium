@@ -18,7 +18,7 @@ class NameFilter(Filter):
     async def complete_setup(self) -> None:
         speaking_time_filter_id = self._config["speaking_time_filter_id"]
         speaking_time_filter = self.audio_track_handler.filters[speaking_time_filter_id]
-        self._speaking_time_filter =  speaking_time_filter.speaking_time # type: ignore
+        self._speaking_time_filter =  speaking_time_filter # type: ignore
 
     '''
     def __init__(
