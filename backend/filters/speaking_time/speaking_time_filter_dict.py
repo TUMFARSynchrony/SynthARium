@@ -1,8 +1,8 @@
 from filters.filter_dict import FilterDict
 
 
-class NameFilterDict(FilterDict):
-    """TypedDict for name filter.
+class SpeakingTimeFilterDict(FilterDict):
+    """TypedDict for speaking time filter.
 
     Attributes
     ----------
@@ -10,9 +10,11 @@ class NameFilterDict(FilterDict):
         filter type (unique identifier / name)
     id : str
         Filter id.  Empty string if adding a new filter.  Read only for client.
-    name : str
-        Name of the participant. Is displayed in left bottom corner.
+    frames : int
+        Amount of frames per second
+    seconds : int
+        Amount of seconds a participant speaks
     """
 
-    name: str
-    speaking_time_filter_id: str
+    frames: int
+    seconds: int

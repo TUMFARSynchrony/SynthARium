@@ -2,29 +2,30 @@ from typing import TypeGuard
 
 import cv2
 import numpy
+from filters.speaking_time import SpeakingTimeFilter
 
 from custom_types import util
 from filters.filter import Filter
 from .name_filter_dict import NameFilterDict
 
 class NameFilter(Filter):
-    """A simple example filter printing `Hello World` on a video Track.
-    Can be used to as a template to copy when creating an own filter."""
+    """A simple example filter printing `Name` on a video Track.
+    Can be used to as a template to copy when creating a new showing filter."""
 
-    name_participant: str
     _config: NameFilterDict
+    _speaking_time_filter: SpeakingTimeFilter
 
+    async def complete_setup(self) -> None:
+        speaking_time_filter_id = self._config["speaking_time_filter_id"]
+        speaking_time_filter = self.audio_track_handler.filters[speaking_time_filter_id]
+        self._speaking_time_filter =  speaking_time_filter.speaking_time # type: ignore
+
+    '''
     def __init__(
         self, config: NameFilterDict, audio_track_handler, video_track_handler
     ) -> None:
-        """Initialize new NameFilter.
-
-        Parameters
-        ----------
-        See base class: filters.filter.Filter.
-        """
         super().__init__(config, audio_track_handler, video_track_handler)
-        self.name_participant = config["name"]
+    '''
 
     @staticmethod
     def name(self) -> str:
@@ -38,8 +39,11 @@ class NameFilter(Filter):
         thickness = 3
         color = (0, 255, 0)
 
+        text = str(self._speaking_time_filter.speaking_time)
+        #text = "Test"
+
         # Put text on image
-        ndarray = cv2.putText(ndarray, self.name_participant, origin, font, font_size, color, thickness)
+        ndarray = cv2.putText(ndarray, text, origin, font, font_size, color, thickness)
 
         # Return modified frame
         return ndarray
