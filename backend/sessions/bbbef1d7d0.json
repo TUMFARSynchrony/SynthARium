@@ -1,13 +1,13 @@
 {
   "id": "bbbef1d7d0",
   "title": "CONNECTION TEST SESSION",
-  "date": 1689249266451,
+  "date": 1799844840000,
   "record": false,
   "time_limit": 3000000,
   "description": "Test session with 10 participants!",
   "creation_time": 0,
-  "end_time": 1677247613537,
-  "start_time": 1677247613537,
+  "end_time": 0,
+  "start_time": 0,
   "notes": [],
   "participants": [
     {
