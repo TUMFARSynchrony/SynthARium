@@ -58,7 +58,7 @@ type VideoFilter = {
   type: string;
 };
 
-type Chat = {
+export type Chat = {
   message: string;
   time: number;
   author: string;
