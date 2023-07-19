@@ -14,10 +14,12 @@ import {
 
 type SessionsListState = {
   sessions: Session[];
+  currentSession: Session;
 };
 
 const initialState: SessionsListState = {
-  sessions: []
+  sessions: [],
+  currentSession: null
 };
 
 export const sessionsListSlice = createSlice({
@@ -49,10 +51,25 @@ export const sessionsListSlice = createSlice({
     addNote: (state, { payload }) => {
       const session = getSessionById(payload.id, state.sessions);
       session.notes.push(payload.note);
-
-      const newSessionsList = filterListById(state.sessions, payload.id);
+    },
+    addMessage: (state, { payload }) => {
+      const session = getSessionById(payload.sessionId, state.sessions);
+      const participant = getParticipantById(payload.participantId, session);
+      console.log(participant);
+      participant.chat.push(payload.message);
+      const newParticipantList = filterListById(
+        session.participants,
+        payload.participantId
+      );
+      newParticipantList.push(participant);
+      session.participants = newParticipantList;
+      const newSessionsList = filterListById(state.sessions, payload.sessionId);
       state.sessions = [...newSessionsList, session];
       state.sessions = sortSessions(state.sessions);
+    },
+    setCurrentSession: (state, { payload }) => {
+      const session = payload;
+      state.currentSession = session;
     },
 
     banMuteUnmuteParticipant: (
@@ -96,7 +113,9 @@ export const {
   createSession,
   updateSession,
   addNote,
+  addMessage,
   banMuteUnmuteParticipant,
+  setCurrentSession,
   setExperimentTimes
 } = sessionsListSlice.actions;
 
