@@ -32,7 +32,7 @@ Continue with the steps bellow after both the frontend and backend are set up.
         - It is recommended to set `environment` to `prod` to disable [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
     - In your venv, run `pip install -r requirements.txt` [(click here for more detailed instructions on setting up a virtual environment)](https://github.com/TUMFARSynchrony/experimental-hub/wiki/Project-Setup#creating-a-virtual-environment)
     - Start the server by executing `main.py` in the backend directory. For example from the root directory: `python backend/main.py`
-  3. In your favorite browser (tested mainly with chrome) go to [http://localhost:3000/](http://localhost:3000/) or [https://localhost:3000/](https://localhost:3000/) depending on your projects configuration. 
+  3. In your favorite browser (tested mainly with chrome) go to [http://localhost:8080/](http://localhost:8080/) or [https://localhost:8080/](https://localhost:8080/) depending on your projects configuration. 
 
 ### Notes
 
