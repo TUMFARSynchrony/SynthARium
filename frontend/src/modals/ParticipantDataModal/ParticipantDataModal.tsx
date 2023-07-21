@@ -24,6 +24,7 @@ import { getParticipantInviteLink } from "../../utils/utils";
 
 // This is the current filters that is working integrated with the backend.
 import filtersData from "../../filters.json";
+import { Filter, Participant } from "../../types";
 
 // Loading filters data before the component renders, because the Select component needs value.
 const testData = filtersData.filters;
@@ -32,12 +33,22 @@ const testData = filtersData.filters;
 // For current filters, set default filter = "test", and for new filters set default filter = "none"
 const defaultFilterId = "test";
 
-const getIndividualFilters = () => {
-  return testData.filter((filter) => filter.groupFilter !== true);
-};
-
-const getGroupFilters = () => {
-  return testData.filter((filter) => filter.groupFilter === true);
+type Props = {
+  originalParticipant: Participant;
+  sessionId: string;
+  index: number;
+  showParticipantInput: boolean;
+  setShowParticipantInput: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteParticipant: (index: number) => void;
+  handleParticipantChange: (index: number, participant: Participant) => void;
+  setSnackbarResponse: React.Dispatch<
+    React.SetStateAction<{
+      newParticipantInputEmpty: boolean;
+      requiredInformationMissing: boolean;
+      participantOriginalEmpty: boolean;
+      newInputEqualsOld: boolean;
+    }>
+  >;
 };
 
 function ParticipantDataModal({
@@ -49,13 +60,11 @@ function ParticipantDataModal({
   handleParticipantChange,
   onDeleteParticipant,
   setSnackbarResponse
-}) {
+}: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  const [selectedFilter, setSelectedFilter] = useState(
+  const [selectedFilter, setSelectedFilter] = useState<Filter>(
     testData.find((filter) => filter.id === defaultFilterId)
   );
-  const individualFilters = getIndividualFilters();
-  const groupFilters = getGroupFilters();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   // Setting these snackbar response values to display the notification in Session Form Page.
   // These notifications cannot be displayed in this file, since on closing the Participant Modal,
@@ -68,7 +77,10 @@ function ParticipantDataModal({
     newInputEqualsOld: false
   };
 
-  const handleChange = (objKey, objValue) => {
+  const handleChange = <T extends keyof Participant>(
+    objKey: T,
+    objValue: Participant[T]
+  ) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
     setParticipantCopy(newParticipantData);
@@ -79,7 +91,7 @@ function ParticipantDataModal({
   const onCloseModalWithoutData = () => {
     setShowParticipantInput(!showParticipantInput);
 
-    let newParticipantInputEmpty = participantCopy.participant_name === "";
+    const newParticipantInputEmpty = participantCopy.participant_name === "";
     if (newParticipantInputEmpty) {
       setSnackbarResponse({
         ...snackbarResponse,
@@ -89,7 +101,7 @@ function ParticipantDataModal({
       return;
     }
 
-    let requiredInformationMissing = participantCopy.participant_name === "";
+    const requiredInformationMissing = participantCopy.participant_name === "";
     if (requiredInformationMissing) {
       setSnackbarResponse({
         ...snackbarResponse,
@@ -99,9 +111,9 @@ function ParticipantDataModal({
       return;
     }
 
-    let participantOriginalEmpty =
+    const participantOriginalEmpty =
       originalParticipant.participant_name.length === 0;
-    let newInputEqualsOld =
+    const newInputEqualsOld =
       JSON.stringify(participantCopy) === JSON.stringify(originalParticipant);
 
     if (participantOriginalEmpty && !newInputEqualsOld) {
@@ -144,14 +156,14 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = (filter) => {
+  const handleFilterSelect = (filter: Filter) => {
     setSelectedFilter(filter);
 
     // Use this line for current filters.
     if (["test", "edge", "rotation", "delay-v"].includes(filter.id)) {
       // Uncomment to use for new filters.
       // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
-      setParticipantCopy((oldParticipant) => ({
+      setParticipantCopy((oldParticipant: Participant) => ({
         ...oldParticipant,
         video_filters: [...oldParticipant.video_filters, filter]
       }));
@@ -160,15 +172,15 @@ function ParticipantDataModal({
     else if (["delay-a", "delay-a-test"].includes(filter.id)) {
       // Uncomment to use for new filters.
       // if (testData.map((f) => f.type === "audio" || f.type === "both" ? f.id : "").includes(filter.id)) {
-      setParticipantCopy((oldParticipant) => ({
+      setParticipantCopy((oldParticipant: Participant) => ({
         ...oldParticipant,
         audio_filters: [...oldParticipant.audio_filters, filter]
       }));
     }
   };
 
-  const handleDeleteVideoFilter = (filterCopyIndex) => {
-    setParticipantCopy((oldParticipant) => ({
+  const handleDeleteVideoFilter = (filterCopyIndex: number) => {
+    setParticipantCopy((oldParticipant: Participant) => ({
       ...oldParticipant,
       video_filters: oldParticipant.video_filters.filter(
         (filter, index) => index !== filterCopyIndex
@@ -176,8 +188,8 @@ function ParticipantDataModal({
     }));
   };
 
-  const handleDeleteAudioFilter = (filterCopyIndex) => {
-    setParticipantCopy((oldParticipant) => ({
+  const handleDeleteAudioFilter = (filterCopyIndex: number) => {
+    setParticipantCopy((oldParticipant: Participant) => ({
       ...oldParticipant,
       audio_filters: oldParticipant.audio_filters.filter(
         (filter, index) => index !== filterCopyIndex
@@ -295,7 +307,6 @@ function ParticipantDataModal({
                 {
                   <Select
                     value={selectedFilter}
-                    default=""
                     id="filters-select"
                     label="Filters"
                   >
@@ -323,7 +334,11 @@ function ParticipantDataModal({
                     {testData.map((filter, filterIndex) => {
                       if (filter.id === defaultFilterId) {
                         return (
-                          <MenuItem key={filterIndex} value={filter} disabled>
+                          <MenuItem
+                            key={filterIndex}
+                            value={filter.type}
+                            disabled
+                          >
                             <em>{filter.id}</em>
                           </MenuItem>
                         );
@@ -331,7 +346,7 @@ function ParticipantDataModal({
                         return (
                           <MenuItem
                             key={filterIndex}
-                            value={filter}
+                            value={filter.type}
                             onClick={() => handleFilterSelect(filter)}
                           >
                             {filter.id}
