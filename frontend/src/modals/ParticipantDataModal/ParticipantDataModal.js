@@ -20,7 +20,7 @@ import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar
 import { initialSnackbar } from "../../utils/constants";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
-// import filtersData from '../../filters_new.json'
+//import filtersData from '../../filters_new.json'
 
 // This is the current filters that is working integrated with the backend.
 import filtersData from "../../filters.json";
@@ -152,7 +152,11 @@ function ParticipantDataModal({
     setSelectedFilter(filter);
 
     // Use this line for current filters.
-    if (["test", "edge", "rotation", "delay-v", "name"].includes(filter.id)) {
+    if (
+      ["test", "edge", "rotation", "delay-v", "display-speaking-time"].includes(
+        filter.id
+      )
+    ) {
       // Uncomment to use for new filters.
       // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setParticipantCopy((oldParticipant) => ({
@@ -161,7 +165,9 @@ function ParticipantDataModal({
       }));
     }
     // Use this line for current filters.
-    else if (["delay-a", "delay-a-test", "speaking-time"].includes(filter.id)) {
+    else if (
+      ["delay-a", "delay-a-test", "audio-speaking-time"].includes(filter.id)
+    ) {
       // Uncomment to use for new filters.
       // if (testData.map((f) => f.type === "audio" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setParticipantCopy((oldParticipant) => ({

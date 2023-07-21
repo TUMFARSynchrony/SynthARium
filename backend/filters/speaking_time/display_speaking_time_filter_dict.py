@@ -1,7 +1,7 @@
 from filters.filter_dict import FilterDict
 
 
-class NameFilterDict(FilterDict):
+class DisplaySpeakingTimeFilterDict(FilterDict):
     """TypedDict for name filter.
 
     Attributes
@@ -15,4 +15,4 @@ class NameFilterDict(FilterDict):
     """
 
     name: str
-    speaking_time_filter_id: str
+    audio_speaking_time_filter_id: str

@@ -1,7 +1,7 @@
 from filters.filter_dict import FilterDict
 
 
-class SpeakingTimeFilterDict(FilterDict):
+class AudioSpeakingTimeFilterDict(FilterDict):
     """TypedDict for speaking time filter.
 
     Attributes

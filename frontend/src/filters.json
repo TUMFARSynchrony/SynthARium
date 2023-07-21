@@ -23,14 +23,14 @@
       "size": 60
     },
     {
-      "type": "NAME",
-      "id": "name",
+      "type": "DISPLAY_SPEAKING_TIME",
+      "id": "display-speaking-time",
       "name": "Test",
-      "speaking_time_filter_id": "speaking-time"
+      "speaking_time_filter_id": "audio-speaking-time"
     },
     {
-      "type": "SPEAKING_TIME",
-      "id": "speaking-time",
+      "type": "AUDIO_SPEAKING_TIME",
+      "id": "audio-speaking-time",
       "frames": 60,
       "seconds": 1
     }

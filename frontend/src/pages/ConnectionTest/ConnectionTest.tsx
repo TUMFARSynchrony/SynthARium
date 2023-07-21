@@ -573,9 +573,9 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               video_filters: [],
               audio_filters: [
                 {
-                  type: "SPEAKING_TIME",
-                  id: "speaking-time",
-                  frames: 60,
+                  type: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  frames: 30,
                   seconds: 0
                 }
               ]
@@ -591,17 +591,17 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               video_filters: [
                 {
-                  type: "NAME",
-                  id: "name",
+                  type: "DISPLAY_SPEAKING_TIME",
+                  id: "display-speaking-time",
                   name: "Test",
-                  speaking_time_filter_id: "speaking-time"
+                  audio_speaking_time_filter_id: "audio-speaking-time"
                 }
               ],
               audio_filters: [
                 {
-                  type: "SPEAKING_TIME",
-                  id: "speaking-time",
-                  frames: 60,
+                  type: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  frames: 30,
                   seconds: 0
                 }
               ]
@@ -609,7 +609,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          Name + Speaking Time
+          Display Speaking Time
         </button>
       </div>
     </>

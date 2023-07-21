@@ -6,8 +6,8 @@
     "time_limit": 3000000,
     "description": "Test session with 10 participants!",
     "creation_time": 0,
-    "end_time": 1677247613537,
-    "start_time": 1677247613537,
+    "end_time": 1689947077645,
+    "start_time": 1689947077645,
     "notes": [],
     "participants": [
         {
@@ -27,8 +27,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "b",
@@ -47,8 +61,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "c",
@@ -67,8 +95,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "d",
@@ -87,8 +129,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "e",
@@ -107,8 +163,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "f",
@@ -127,8 +197,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "g",
@@ -147,8 +231,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "h",
@@ -167,8 +265,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "i",
@@ -187,8 +299,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         },
         {
             "id": "j",
@@ -207,8 +333,22 @@
                 "z": 0
             },
             "chat": [],
-            "audio_filters": [],
-            "video_filters": []
+            "audio_filters": [
+                {
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time",
+                    "frames": 30,
+                    "seconds": 0
+                }
+            ],
+            "video_filters": [
+                {
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "name": "Test",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
+                }
+            ]
         }
     ],
     "log": []

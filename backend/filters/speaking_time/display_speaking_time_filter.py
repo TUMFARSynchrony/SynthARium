@@ -2,21 +2,21 @@ from typing import TypeGuard
 
 import cv2
 import numpy
-from filters.speaking_time import SpeakingTimeFilter
+from .audio_speaking_time_filter import AudioSpeakingTimeFilter
 
 from custom_types import util
 from filters.filter import Filter
-from .name_filter_dict import NameFilterDict
+from .display_speaking_time_filter_dict import DisplaySpeakingTimeFilterDict
 
-class NameFilter(Filter):
+class DisplaySpeakingTimeFilter(Filter):
     """A simple example filter printing `Name` on a video Track.
     Can be used to as a template to copy when creating a new showing filter."""
 
-    _config: NameFilterDict
-    _speaking_time_filter: SpeakingTimeFilter
+    _config: DisplaySpeakingTimeFilterDict
+    _speaking_time_filter: AudioSpeakingTimeFilter
 
     async def complete_setup(self) -> None:
-        speaking_time_filter_id = self._config["speaking_time_filter_id"]
+        speaking_time_filter_id = self._config["audio_speaking_time_filter_id"]
         speaking_time_filter = self.audio_track_handler.filters[speaking_time_filter_id]
         self._speaking_time_filter =  speaking_time_filter # type: ignore
 
@@ -29,7 +29,7 @@ class NameFilter(Filter):
 
     @staticmethod
     def name(self) -> str:
-        return "NAME"
+        return "DISPLAY_SPEAKING_TIME"
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape
@@ -49,10 +49,12 @@ class NameFilter(Filter):
         return ndarray
 
     @staticmethod
-    def validate_dict(data) -> TypeGuard[NameFilterDict]:
+    def validate_dict(data) -> TypeGuard[DisplaySpeakingTimeFilterDict]:
         return (
-            util.check_valid_typeddict_keys(data, NameFilterDict)
+            util.check_valid_typeddict_keys(data, DisplaySpeakingTimeFilterDict)
             and "name" in data
             and isinstance(data["name"], str)
+            and "audio_speaking_time_filter_id" in data
+            and isinstance(data["audio_speaking_time_filter_id"], str)
         )
 
