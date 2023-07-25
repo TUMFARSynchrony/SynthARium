@@ -11,6 +11,7 @@ from .mute import MuteAudioFilter, MuteVideoFilter
 from .delay import DelayFilter
 from .open_face_au import OpenFaceAUFilter
 from .speaking_time import DisplaySpeakingTimeFilter, AudioSpeakingTimeFilter
+from .glasses_detection import GlassesDetection
 
 # Do not import filters after here
 from . import filter_factory
