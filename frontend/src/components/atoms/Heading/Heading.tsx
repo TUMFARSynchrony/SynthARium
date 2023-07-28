@@ -1,6 +1,10 @@
 import "./Heading.css";
 
-function Heading({ heading }) {
+type HeadingProps = {
+  heading: string;
+};
+
+function Heading({ heading }: HeadingProps) {
   return <h2 className="heading">{heading}</h2>;
 }
 
