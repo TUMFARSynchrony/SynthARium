@@ -11,6 +11,7 @@ import {
   BanMuteUnmuteParticipantPayload,
   ExperimentTypesPayload
 } from "../payloadTypes";
+import { current } from "@reduxjs/toolkit";
 
 type SessionsListState = {
   sessions: Session[];
@@ -52,20 +53,17 @@ export const sessionsListSlice = createSlice({
       const session = getSessionById(payload.id, state.sessions);
       session.notes.push(payload.note);
     },
-    addMessage: (state, { payload }) => {
-      const session = getSessionById(payload.sessionId, state.sessions);
-      const participant = getParticipantById(payload.participantId, session);
-      console.log(participant);
-      participant.chat.push(payload.message);
-      const newParticipantList = filterListById(
-        session.participants,
-        payload.participantId
-      );
-      newParticipantList.push(participant);
-      session.participants = newParticipantList;
-      const newSessionsList = filterListById(state.sessions, payload.sessionId);
-      state.sessions = [...newSessionsList, session];
-      state.sessions = sortSessions(state.sessions);
+    addMessageToCurrentSession: (state, { payload }) => {
+      const session = state.currentSession;
+      const target = payload.target;
+      if (target === "participants") {
+        session.participants.map((participant) => {
+          participant.chat.push(payload.message);
+        });
+      } else {
+        const participant = getParticipantById(target, session);
+        participant.chat.push(payload.message);
+      }
     },
     setCurrentSession: (state, { payload }) => {
       const session = payload;
@@ -113,7 +111,8 @@ export const {
   createSession,
   updateSession,
   addNote,
-  addMessage,
+  // addMessage,
+  addMessageToCurrentSession,
   banMuteUnmuteParticipant,
   setCurrentSession,
   setExperimentTimes
@@ -122,3 +121,12 @@ export const {
 export default sessionsListSlice.reducer;
 
 export const selectSessions = (state: RootState) => state.sessionsList.sessions;
+export const selectCurrentSession = (state: RootState) =>
+  state.sessionsList.currentSession;
+export const selectMessagesCurrentSession = (
+  state: RootState,
+  participantId: string
+) =>
+  state.sessionsList.currentSession.participants.filter(
+    (participant) => participant.id === participantId
+  )[0].chat;
