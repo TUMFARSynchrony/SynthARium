@@ -6,6 +6,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from experiment import Experiment
 
+if TYPE_CHECKING:
+    from hub.hub import Hub
+
 from aiortc import RTCSessionDescription
 
 from connection.connection import connection_factory
@@ -22,6 +25,7 @@ async def participant_factory(
     participant_id: str,
     experiment: Experiment,
     participant_data: ParticipantData,
+    hub: Hub,
     config: Config,
 ) -> tuple[RTCSessionDescription, Participant]:
     """Instantiate connection with a new Participant based on WebRTC `offer`.
@@ -50,7 +54,7 @@ async def participant_factory(
         WebRTC answer that should be sent back to the client and Participant
         representing the client.
     """
-    participant = Participant(participant_id, experiment, participant_data)
+    participant = Participant(participant_id, experiment, participant_data, hub)
     filter_api = FilterAPI(participant)
     record_data = (experiment.session.record, participant.get_recording_path())
     log_name_suffix = f"P-{participant_id}"
