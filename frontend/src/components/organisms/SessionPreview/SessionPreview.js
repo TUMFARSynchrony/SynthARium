@@ -309,7 +309,7 @@ function SessionPreview({
                 variant="contained"
                 size="medium"
                 path="/watchingRoom"
-                onClick={() => onJoinExperiment(selectedSession.id)}
+                onClick={() => onJoinExperiment(selectedSession)}
                 icon={<PlayArrowOutlined />}
               />
             )}
