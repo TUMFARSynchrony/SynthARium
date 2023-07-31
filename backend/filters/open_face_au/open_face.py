@@ -35,10 +35,3 @@ class OpenFace:
             self._openface_process.terminate()
         except Exception:
             self._openface_process.kill()
-
-    def flush_result(self):
-        # This is a bit ugly/hacky, but it stops the stdout from overflowing
-        print(self._openface_process.stdout.readline())
-        print(self._openface_process.stdout.readline())
-        print(self._openface_process.stdout.readline())
-        print(self._openface_process.stdout.readline())
