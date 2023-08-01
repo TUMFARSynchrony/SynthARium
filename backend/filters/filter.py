@@ -38,7 +38,7 @@ class Filter(ABC):
     """Video hub.track_handler.TrackHandler for the stream this filter is part of.
 
     Use to communicate with video filters running on the same stream.  Depending on the
-    type of this filter, the filter is either managed by `video_track_handler` or
+    type of this filter, the filter is either managed by `audio_track_handler` or
     `video_track_handler`.
     """
 
@@ -47,6 +47,12 @@ class Filter(ABC):
 
     Call `TrackHandler.reset_execute_filters()` in case the value is changed manually
     after initialization.
+    """
+
+    group_filter: bool
+    """
+    Whether this filter should be executed as a group filter with all participants.
+    Default is False.
     """
 
     _config: FilterDict
@@ -77,6 +83,7 @@ class Filter(ABC):
         filters after __init__ (if they are designed to be).
         """
         self.run_if_muted = False
+        self.group_filter = False
         self._config = config
         self.audio_track_handler = audio_track_handler
         self.video_track_handler = video_track_handler
@@ -167,5 +174,5 @@ class Filter(ABC):
         """Get string representation for this filter."""
         return (
             f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
-            f" config={self.config})"
+            f"group_filter={self.group_filter} config={self.config})"
         )
