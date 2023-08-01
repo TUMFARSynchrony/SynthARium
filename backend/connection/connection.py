@@ -203,7 +203,7 @@ class Connection(ConnectionInterface):
             await self._set_failed_state_and_close()
             return
         stringified = json.dumps(data)
-        self._logger.debug(f"Sending data: {stringified}")
+        # self._logger.debug(f"Sending data: {stringified}")
         self._dc.send(stringified)
 
     @property
