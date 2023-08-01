@@ -91,6 +91,7 @@ function App() {
     connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
+    connection.api.on("GROUP_FILTER", handleGroupFilter);
 
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
@@ -106,6 +107,7 @@ function App() {
       connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
+      connection.api.off("GROUP_FILTER", handleGroupFilter);
     };
   }, [connection]);
 
@@ -276,6 +278,10 @@ function App() {
         sessionId: ongoingExperimentRef.current.sessionId
       })
     );
+  };
+
+  const handleGroupFilter = (data) => {
+    connection.sendMessage("GROUP_FILTER", data);
   };
 
   const onCreateExperiment = (sessionId) => {
