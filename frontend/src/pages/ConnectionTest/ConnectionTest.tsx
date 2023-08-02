@@ -612,18 +612,20 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "BUFFER", id: "buffer" },
                 {
+                  type: "SIMPLE_GLASSES_DETECTION",
+                  id: "simple-glasses-detection"
+                }
+                /* {
                   type: "GLASSES_DETECTION",
                   id: "glasses-detection",
-                  buffer_filter_id: "buffer"
-                }
+                } */
               ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          Glasses Detection with Buffer
+          Glasses Detection
         </button>
       </div>
     </>
