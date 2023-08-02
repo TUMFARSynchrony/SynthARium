@@ -1,2 +1,2 @@
 from .glasses_detection import GlassesDetection
-from .buffer_filter import BufferFilter
+from .simple_glasses_detection import SimpleGlassesDetection
