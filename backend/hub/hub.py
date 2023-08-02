@@ -4,6 +4,7 @@ from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
 import logging
+import json
 
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
@@ -12,6 +13,8 @@ from experiment import Experiment
 from hub.util import generate_unique_id
 from hub.exceptions import ErrorDictException
 from hub.util import get_system_specs
+
+from filters.filter import Filter
 
 import experiment.experiment as _experiment
 import session.session_manager as _sm
@@ -66,6 +69,8 @@ class Hub:
         logging.getLogger("PIL").setLevel(dependencies_log_level)
 
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
+
+        self.get_filters_config()
 
         self.experimenters = []
         self.experiments = {}
@@ -341,3 +346,22 @@ class Hub:
         for experimenter in self.experimenters:
             if experimenter is not exclude:
                 await experimenter.send(data)
+
+    def get_filters_config(self):
+        filters_config = {"filters": []}
+        # TODO: add get_config_json in all filters files
+        for filter in Filter.__subclasses__():
+            filter_name = filter.name(filter)
+            if filter_name == "FILTER_API_TEST" or filter_name == "AUDIO_SPEAKING_TIME":
+                filters_config["filters"].append(filter.get_config_json(filter))
+
+        # Syntax of write JSON data to file
+        # TODO: change path to frontend file
+        with open("data.json", "w") as outfile:
+            # json_data refers to the above JSON
+            json.dump(filters_config, outfile)
+
+        return filters_config
+
+
+

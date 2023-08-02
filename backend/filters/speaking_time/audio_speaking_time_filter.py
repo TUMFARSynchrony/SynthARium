@@ -31,6 +31,17 @@ class AudioSpeakingTimeFilter(Filter):
     def name(self) -> str:
         return "AUDIO_SPEAKING_TIME"
 
+    @staticmethod
+    def get_config_json(self) -> object:
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace('_', '-')
+        data = {
+            "type": name,
+            "id": id
+        }
+        return data
+
     async def process(self, original: AudioFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
         if numpy.abs(ndarray).mean() > 250:
             self.has_spoken = True

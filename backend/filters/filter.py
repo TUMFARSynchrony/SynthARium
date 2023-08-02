@@ -162,6 +162,18 @@ class Filter(ABC):
     def validate_dict(data) -> TypeGuard[FilterDict]:
         return util.check_valid_typeddict_keys(data, FilterDict)
 
+    @staticmethod
+    @abstractmethod
+    def get_config_json(self) -> object:
+        """Provide config of the filters.
+
+        It requires at least type and id
+        id should be unique
+        """
+        raise NotImplementedError(
+            f"{self} is missing it's implementation of the static abstract name() method."
+        )
+
     def __repr__(self) -> str:
         """Get string representation for this filter."""
         return f"{self.__class__.__name__}(run_if_muted={self.run_if_muted}, config={self.config})"

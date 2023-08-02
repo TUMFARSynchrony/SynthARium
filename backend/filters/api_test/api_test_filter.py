@@ -15,6 +15,18 @@ class FilterAPITestFilter(Filter):
     def name(self) -> str:
         return "FILTER_API_TEST"
 
+    @staticmethod
+    def get_config_json(self) -> object:
+        # TODO: add type, change current type to name
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace('_', '-')
+        data = {
+            "type": name,
+            "id": id
+        }
+        return data
+
     counter = 0
 
     async def process(self, _: VideoFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
