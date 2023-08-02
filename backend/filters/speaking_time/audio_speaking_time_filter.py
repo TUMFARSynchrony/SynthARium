@@ -1,47 +1,45 @@
 from typing import TypeGuard
 
-import cv2
 import numpy
 from queue import Queue
-from av import VideoFrame, AudioFrame
+from av import AudioFrame
+from filters.filter_dict import FilterDict
 
 from custom_types import util
 from filters.filter import Filter
-from .audio_speaking_time_filter_dict import AudioSpeakingTimeFilterDict
 
 
 class AudioSpeakingTimeFilter(Filter):
     """Filter calculating how much time the participant has spoken"""
 
-    buffer: Queue[int]
     speaking_time: int
-    _config: AudioSpeakingTimeFilterDict
+    seconds: int
+    sample_rate: int
+    has_spoken: bool
+    _config: FilterDict
 
     def __init__(
-        self, config: AudioSpeakingTimeFilterDict, audio_track_handler, video_track_handler
+        self, config: FilterDict, audio_track_handler, video_track_handler
     ) -> None:
         super().__init__(config, audio_track_handler, video_track_handler)
-        self.buffer = Queue(config["frames"])
-        self.speaking_time = config["seconds"]
+        self.seconds = 0
+        self.speaking_time = 0
+        self.has_spoken = False
+        self.sample_rate = 0
 
     @staticmethod
     def name(self) -> str:
         return "AUDIO_SPEAKING_TIME"
 
-    async def process(self, _: AudioFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
-        if numpy.abs(ndarray).mean() > 500:
-            self.speaking_time += 1
-
+    async def process(self, original: AudioFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
+        if numpy.abs(ndarray).mean() > 250:
+            self.has_spoken = True
+            self.sample_rate = original.sample_rate
+            self.speaking_time += original.samples
+        else:
+            self.has_spoken = False
+        self.seconds = self.speaking_time // original.sample_rate
+        # todo: seconds stimmt nicht mit original.time überein
+        # time ist 16.46, self.seconds ist 5 obwohl die ganze Zeit geredet (vielleicht aber nicht jeden Frame)
         return ndarray
 
-    @staticmethod
-    def validate_dict(data) -> TypeGuard[AudioSpeakingTimeFilterDict]:
-        return (
-            util.check_valid_typeddict_keys(data, AudioSpeakingTimeFilterDict)
-            and "frames" in data
-            and isinstance(data["frames"], int)
-            and data["frames"] > 0
-            and "seconds" in data
-            and isinstance(data["seconds"], int)
-            and data["seconds"] >= 0
-        )

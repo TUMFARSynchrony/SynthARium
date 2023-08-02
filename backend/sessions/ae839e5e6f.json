@@ -6,8 +6,8 @@
     "time_limit": 1800000,
     "description": "Example description with 250 words and 1506 characters: Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum",
     "creation_time": 0,
-    "end_time": 1689791957356,
-    "start_time": 1689791957356,
+    "end_time": 1690997968164,
+    "start_time": 1690997968164,
     "notes": [
         {
             "time": 1650380763076,
@@ -44,18 +44,15 @@
             ],
             "audio_filters": [
                 {
-                    "type": "SPEAKING_TIME",
-                    "id": "speaking-time",
-                    "frames": 60,
-                    "seconds": 0
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time"
                 }
             ],
             "video_filters": [
                 {
-                    "type": "NAME",
-                    "id": "name",
-                    "name": "Test",
-                    "speaking_time_filter_id": "speaking-time"
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
                 }
             ]
         },
@@ -97,18 +94,15 @@
             ],
             "audio_filters": [
                 {
-                    "type": "SPEAKING_TIME",
-                    "id": "speaking-time",
-                    "frames": 60,
-                    "seconds": 0
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time"
                 }
             ],
             "video_filters": [
                 {
-                    "type": "NAME",
-                    "id": "name",
-                    "name": "Test",
-                    "speaking_time_filter_id": "speaking-time"
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
                 }
             ]
         },
@@ -150,18 +144,15 @@
             ],
             "audio_filters": [
                 {
-                    "type": "SPEAKING_TIME",
-                    "id": "speaking-time",
-                    "frames": 60,
-                    "seconds": 0
+                    "type": "AUDIO_SPEAKING_TIME",
+                    "id": "audio-speaking-time"
                 }
             ],
             "video_filters": [
                 {
-                    "type": "NAME",
-                    "id": "name",
-                    "name": "Test",
-                    "speaking_time_filter_id": "speaking-time"
+                    "type": "DISPLAY_SPEAKING_TIME",
+                    "id": "display-speaking-time",
+                    "audio_speaking_time_filter_id": "audio-speaking-time"
                 }
             ]
         }
