@@ -357,7 +357,8 @@ class Hub:
 
         # Syntax of write JSON data to file
         # TODO: change path to frontend file
-        with open("data.json", "w") as outfile:
+        path = "./frontend/src/data.json"
+        with open(path, "w") as outfile:
             # json_data refers to the above JSON
             json.dump(filters_config, outfile)
 
