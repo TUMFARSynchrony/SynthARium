@@ -22,7 +22,8 @@ class FilterAPITestFilter(Filter):
         id = name.lower()
         id = id.replace('_', '-')
         data = {
-            "type": name,
+            "name": name,
+            "type": "video",
             "id": id
         }
         return data
