@@ -111,7 +111,6 @@ export const {
   createSession,
   updateSession,
   addNote,
-  // addMessage,
   addMessageToCurrentSession,
   banMuteUnmuteParticipant,
   setCurrentSession,
