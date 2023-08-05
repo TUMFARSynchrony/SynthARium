@@ -6,7 +6,8 @@ import {
   filterListByIndex,
   formatDate,
   getParticipantDimensions,
-  getRandomColor
+  getRandomColor,
+  getRandomLocationOnCanvas
 } from "../../utils/utils";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -107,13 +108,13 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onAddParticipant = () => {
     dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
-
+    const { xAxis, yAxis } = getRandomLocationOnCanvas(300, 300);
     const newParticipantDimensions = [
       ...participantDimensions,
       {
         shapes: {
-          x: 0,
-          y: 0,
+          x: xAxis,
+          y: yAxis,
           fill: getRandomColor(),
           z: 0
         },
