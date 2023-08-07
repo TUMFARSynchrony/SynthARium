@@ -4,7 +4,7 @@ from av import VideoFrame
 from filters.filter import Filter
 from filters.open_face_au import OpenFaceAUFilter
 from custom_types import util
-from typing import TypeGuard
+from typing import Callable, TypeGuard
 from .bow_dict import BoWDict
 from pyts.bag_of_words import BagOfWords
 import numpy as np
@@ -67,20 +67,20 @@ class BoWFilter(Filter):
             return ndarray
 
         # Apply BoW algorithm on AU data
-        words_in_bins = self.apply_bow(list(self.au_data.values()))
+        words_in_bins = self.apply_bow(list(self.au_data.values()), self.derivative)
 
-        data = dict(zip(self.au_data.keys(), words_in_bins))
+        data = {max(list(self.au_data.keys())): words_in_bins}
 
         await self.send_group_filter_message(data)
 
         return ndarray
 
-    def apply_bow(self, data: np.ndarray):
+    def apply_bow(self, data: np.ndarray, preprocessing: Callable) -> np.ndarray:
         # Normalize data
         data = self.normalize_data(data)
 
         # Apply custom preprocessing on data
-        data = self.derivative(data)
+        data = preprocessing(data)
 
         # Transform data into BoW
         bow_list = self.bow.transform([data])
