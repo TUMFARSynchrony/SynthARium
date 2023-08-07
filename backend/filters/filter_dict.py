@@ -19,3 +19,6 @@ class FilterDict(TypedDict):
 
     type: str
     id: str
+    channel: str
+    groupFilter: bool
+    #config: dict
