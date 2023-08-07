@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { ActionButton } from "../../components/atoms/Button";
 import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import ListSubheader from "@mui/material/ListSubheader";
-import Chip from "@mui/material/Chip";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Checkbox from "@mui/material/Checkbox";
-import { getParticipantInviteLink } from "../../utils/utils";
+import { useState } from "react";
+import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
+import { getParticipantInviteLink } from "../../utils/utils";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
 //import filtersData from '../../filters_new.json'
@@ -57,7 +57,6 @@ function ParticipantDataModal({
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
-
   // Setting these snackbar response values to display the notification in Session Form Page.
   // These notifications cannot be displayed in this file, since on closing the Participant Modal,
   // this component and the immediate parent are deleted -> hence sending the snackbar responses
@@ -80,8 +79,7 @@ function ParticipantDataModal({
   const onCloseModalWithoutData = () => {
     setShowParticipantInput(!showParticipantInput);
 
-    let newParticipantInputEmpty =
-      participantCopy.first_name === "" && participantCopy.last_name === "";
+    let newParticipantInputEmpty = participantCopy.participant_name === "";
     if (newParticipantInputEmpty) {
       setSnackbarResponse({
         ...snackbarResponse,
@@ -91,8 +89,7 @@ function ParticipantDataModal({
       return;
     }
 
-    let requiredInformationMissing =
-      participantCopy.first_name === "" || participantCopy.last_name === "";
+    let requiredInformationMissing = participantCopy.participant_name === "";
     if (requiredInformationMissing) {
       setSnackbarResponse({
         ...snackbarResponse,
@@ -103,8 +100,7 @@ function ParticipantDataModal({
     }
 
     let participantOriginalEmpty =
-      originalParticipant.first_name.length === 0 &&
-      originalParticipant.last_name.length === 0;
+      originalParticipant.participant_name.length === 0;
     let newInputEqualsOld =
       JSON.stringify(participantCopy) === JSON.stringify(originalParticipant);
 
@@ -130,7 +126,7 @@ function ParticipantDataModal({
   };
 
   const onSaveParticipantData = () => {
-    if (participantCopy.first_name === "" || participantCopy.last_name === "") {
+    if (participantCopy.participant_name === "") {
       setSnackbar({
         open: true,
         text: "Failed to save participant since required fields are missing!",
@@ -141,7 +137,7 @@ function ParticipantDataModal({
 
     setSnackbar({
       open: true,
-      text: `Saved participant: ${participantCopy.first_name} ${participantCopy.last_name}`,
+      text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
     setShowParticipantInput(!showParticipantInput);
@@ -221,23 +217,13 @@ function ParticipantDataModal({
               }}
             >
               <TextField
-                label="First Name"
-                value={participantCopy.first_name}
+                label="Participant Name"
+                value={participantCopy.participant_name}
                 size="small"
                 fullWidth
                 required
                 onChange={(event) => {
-                  handleChange("first_name", event.target.value);
-                }}
-              />
-              <TextField
-                label="Last Name"
-                value={participantCopy.last_name}
-                size="small"
-                fullWidth
-                required
-                onChange={(event) => {
-                  handleChange("last_name", event.target.value);
+                  handleChange("participant_name", event.target.value);
                 }}
               />
             </Box>

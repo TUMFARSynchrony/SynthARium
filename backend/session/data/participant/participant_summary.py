@@ -21,10 +21,8 @@ class ParticipantSummaryDict(TypedDict):
 
     Attributes
     ----------
-    first_name : str
-        First name of the participant.
-    last_name : str
-        Last name of the participant.
+    participant_name : str
+        Name of the participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
     size : custom_types.size_types.SizeDict
@@ -40,8 +38,7 @@ class ParticipantSummaryDict(TypedDict):
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#participantsummary
     """
 
-    first_name: str
-    last_name: str
+    participant_name: str
     position: PositionDict
     size: SizeDict
     chat: list[ChatMessageDict]

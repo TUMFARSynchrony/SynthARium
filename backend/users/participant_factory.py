@@ -64,7 +64,7 @@ async def participant_factory(
             participant_data.audio_filters,
             participant_data.video_filters,
             filter_api,
-            record_data
+            record_data,
         )
     else:
         answer, connection = await connection_factory(
@@ -74,7 +74,7 @@ async def participant_factory(
             participant_data.audio_filters,
             participant_data.video_filters,
             filter_api,
-            record_data
+            record_data,
         )
 
     participant.set_connection(connection)

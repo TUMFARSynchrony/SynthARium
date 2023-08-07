@@ -126,7 +126,8 @@ class Filter(ABC):
         between frontend and backend.
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract name() method."
+            f"{self} is missing it's implementation of the static abstract name()"
+            " method."
         )
 
     @abstractmethod
@@ -176,4 +177,7 @@ class Filter(ABC):
 
     def __repr__(self) -> str:
         """Get string representation for this filter."""
-        return f"{self.__class__.__name__}(run_if_muted={self.run_if_muted}, config={self.config})"
+        return (
+            f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
+            f" config={self.config})"
+        )

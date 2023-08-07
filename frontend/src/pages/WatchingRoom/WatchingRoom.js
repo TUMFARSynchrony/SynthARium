@@ -1,9 +1,11 @@
-import { useSelector } from "react-redux";
+import { LinkButton } from "../../components/atoms/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
+import { useAppSelector } from "../../redux/hooks";
+import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
+import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../utils/utils";
-import { LinkButton } from "../../components/atoms/Button";
 import "./WatchingRoom.css";
 
 function WatchingRoom({
@@ -15,15 +17,10 @@ function WatchingRoom({
   onStartExperiment,
   onEndExperiment
 }) {
-  const ongoingExperiment = useSelector(
-    (state) => state.ongoingExperiment.value
-  );
+  const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const state = ongoingExperiment.experimentState;
-  const sessionsList = useSelector((state) => state.sessionsList.value);
-  const sessionData = getSessionById(
-    ongoingExperiment.sessionId,
-    sessionsList
-  )[0];
+  const sessionsList = useAppSelector(selectSessions);
+  const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
 
   return (
     <div className="watchingRoomContainer">

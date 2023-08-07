@@ -92,8 +92,7 @@ export function isValidConnectionAnswer(data: any): data is ConnectionAnswer {
  * @see https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#participantsummary ParticipantSummary data type documentation.
  */
 export type ParticipantSummary = {
-  first_name: string;
-  last_name: string;
+  participant_name: string;
   position: {
     x: number;
     y: number;

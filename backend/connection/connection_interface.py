@@ -5,7 +5,11 @@ from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
 
 from connection.connection_state import ConnectionState
-from connection.messages import ConnectionAnswerDict, ConnectionOfferDict, ConnectionProposalDict
+from connection.messages import (
+    ConnectionAnswerDict,
+    ConnectionOfferDict,
+    ConnectionProposalDict,
+)
 
 from filters import FilterDict
 from custom_types.message import MessageDict
@@ -186,4 +190,3 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Both audio and video recorder will stop.
         """
         pass
-

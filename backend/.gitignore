@@ -15,3 +15,7 @@ config.json
 
 # Sessions
 sessions/*/
+
+# IDE
+.vscode
+.idea

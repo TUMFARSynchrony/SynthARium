@@ -1,0 +1,16 @@
+[flake8]
+
+# Recommend matching the black line length
+max-line-length = 88
+
+# =====================
+# flake-quote settings:
+# =====================
+# Set this to match black style:
+inline-quotes = double
+
+exclude = .git,__pycache__,.toml,.sh,.ini,Dockerfile,Jenkinfile
+
+per-file-ignores = __init__.py:F401
+
+extend-ignore = E501
