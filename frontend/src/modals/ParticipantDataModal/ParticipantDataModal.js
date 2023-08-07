@@ -20,17 +20,18 @@ import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
-//import filtersData from '../../filters_new.json'
+import filtersData from "../../filters_new.json";
 
 // This is the current filters that is working integrated with the backend.
-import filtersData from "../../filters.json";
+//import filtersData from "../../filters.json";
 
 // Loading filters data before the component renders, because the Select component needs value.
 const testData = filtersData.filters;
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
 // For current filters, set default filter = "test", and for new filters set default filter = "none"
-const defaultFilterId = "test";
+//const defaultFilterId = "test";
+const defaultFilterId = "none";
 
 const getIndividualFilters = () => {
   return testData.filter((filter) => filter.groupFilter !== true);
@@ -148,24 +149,32 @@ function ParticipantDataModal({
     setSelectedFilter(filter);
 
     // Use this line for current filters.
-    if (
+    /* if (
       ["test", "edge", "rotation", "delay-v", "display-speaking-time"].includes(
         filter.id
       )
+    ) { */
+    // Uncomment to use for new filters.
+    if (
+      testData
+        .map((f) => (f.type === "video" || f.type === "both" ? f.id : ""))
+        .includes(filter.id)
     ) {
-      // Uncomment to use for new filters.
-      // if (testData.map((f) => f.type === "video" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setParticipantCopy((oldParticipant) => ({
         ...oldParticipant,
         video_filters: [...oldParticipant.video_filters, filter]
       }));
     }
     // Use this line for current filters.
-    else if (
+    /* else if (
       ["delay-a", "delay-a-test", "audio-speaking-time"].includes(filter.id)
+    ) { */
+    // Uncomment to use for new filters.
+    if (
+      testData
+        .map((f) => (f.type === "audio" || f.type === "both" ? f.id : ""))
+        .includes(filter.id)
     ) {
-      // Uncomment to use for new filters.
-      // if (testData.map((f) => f.type === "audio" || f.type === "both" ? f.id : "").includes(filter.id)) {
       setParticipantCopy((oldParticipant) => ({
         ...oldParticipant,
         audio_filters: [...oldParticipant.audio_filters, filter]
@@ -309,24 +318,45 @@ function ParticipantDataModal({
                       Individual Filters
                     </ListSubheader>
                     {/* Uncomment the below block to use new filters. */}
-                    {/* {
-                      individualFilters.map((individualFilter) => {
-                        if (individualFilter.id == defaultFilterId) {
-                          return <MenuItem key={individualFilter.id} value={individualFilter} disabled><em>{individualFilter.id}</em></MenuItem>
-                        }
-                        else {
-                          return <MenuItem key={individualFilter.id} value={individualFilter} onClick={() => handleFilterSelect(individualFilter)}>{individualFilter.id}</MenuItem>
-                        }
-                      })
-                    }
-                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>Group Filters</ListSubheader>
-                    {
-                      groupFilters.map((groupFilter) => {
-                        return <MenuItem key={groupFilter.id} value={groupFilter} onClick={() => handleFilterSelect(groupFilter)}>{groupFilter.id}</MenuItem>
-                      })
-                    } */}
+                    {individualFilters.map((individualFilter) => {
+                      if (individualFilter.id == defaultFilterId) {
+                        return (
+                          <MenuItem
+                            key={individualFilter.id}
+                            value={individualFilter}
+                            disabled
+                          >
+                            <em>{individualFilter.id}</em>
+                          </MenuItem>
+                        );
+                      } else {
+                        return (
+                          <MenuItem
+                            key={individualFilter.id}
+                            value={individualFilter}
+                            onClick={() => handleFilterSelect(individualFilter)}
+                          >
+                            {individualFilter.id}
+                          </MenuItem>
+                        );
+                      }
+                    })}
+                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
+                      Group Filters
+                    </ListSubheader>
+                    {groupFilters.map((groupFilter) => {
+                      return (
+                        <MenuItem
+                          key={groupFilter.id}
+                          value={groupFilter}
+                          onClick={() => handleFilterSelect(groupFilter)}
+                        >
+                          {groupFilter.id}
+                        </MenuItem>
+                      );
+                    })}
                     {/* Use the below block for current filters. */}
-                    {testData.map((filter, filterIndex) => {
+                    {/* {testData.map((filter, filterIndex) => {
                       if (filter.id === defaultFilterId) {
                         return (
                           <MenuItem key={filterIndex} value={filter} disabled>
@@ -344,7 +374,7 @@ function ParticipantDataModal({
                           </MenuItem>
                         );
                       }
-                    })}
+                    })} */}
                   </Select>
                 }
               </FormControl>
@@ -380,31 +410,71 @@ function ParticipantDataModal({
 
                       {/* Uncomment the below block while using new filters (audio). */}
                       {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
-                      {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
-                        {
-                          Object.keys(audioFilter.config).map((configType, configIndex) => {
-                            if (Array.isArray(audioFilter["config"][configType]["value"])) {
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          flexWrap: "wrap"
+                        }}
+                      >
+                        {Object.keys(audioFilter.config).map(
+                          (configType, configIndex) => {
+                            if (
+                              Array.isArray(
+                                audioFilter["config"][configType]["value"]
+                              )
+                            ) {
                               return (
-                                <FormControl key={configIndex} sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
-                                  <InputLabel htmlFor="audio-filters-config">{configType.charAt(0).toUpperCase() + configType.slice(1)}</InputLabel>
-                                  <Select key={configIndex} defaultValue="" id="audio-filters-config" label="Direction">
-                                    {
-                                      audioFilter["config"][configType]["value"].map((value) => {
-                                        return <MenuItem key={value} value={value}>{value}</MenuItem>
-                                      })
-                                    }
+                                <FormControl
+                                  key={configIndex}
+                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                  size="small"
+                                >
+                                  <InputLabel htmlFor="audio-filters-config">
+                                    {configType.charAt(0).toUpperCase() +
+                                      configType.slice(1)}
+                                  </InputLabel>
+                                  <Select
+                                    key={configIndex}
+                                    defaultValue=""
+                                    id="audio-filters-config"
+                                    label="Direction"
+                                  >
+                                    {audioFilter["config"][configType][
+                                      "value"
+                                    ].map((value) => {
+                                      return (
+                                        <MenuItem key={value} value={value}>
+                                          {value}
+                                        </MenuItem>
+                                      );
+                                    })}
                                   </Select>
                                 </FormControl>
-                              )
-                            } else if (typeof audioFilter["config"][configType]["value"] == "number") {
+                              );
+                            } else if (
+                              typeof audioFilter["config"][configType][
+                                "value"
+                              ] == "number"
+                            ) {
                               return (
-                                <TextField key={configIndex} label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
-                                  sx={{ m: 1, width: '10vw', minWidth: 130 }} />
-                              )
+                                <TextField
+                                  key={configIndex}
+                                  label={
+                                    configType.charAt(0).toUpperCase() +
+                                    configType.slice(1)
+                                  }
+                                  id=""
+                                  defaultValue=""
+                                  type="number"
+                                  size="small"
+                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                />
+                              );
                             }
-                          })
-                        }
-                      </Box> */}
+                          }
+                        )}
+                      </Box>
                     </Box>
                   );
                 }
@@ -436,31 +506,70 @@ function ParticipantDataModal({
 
                       {/* Uncomment the below block while using new filters (video). */}
                       {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
-                      {/* <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
-                        {
-                          Object.keys(videoFilter.config).map((configType, configIndex) => {
-                            if (Array.isArray(videoFilter["config"][configType]["value"])) {
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          flexWrap: "wrap"
+                        }}
+                      >
+                        {Object.keys(videoFilter.config).map(
+                          (configType, configIndex) => {
+                            if (
+                              Array.isArray(
+                                videoFilter["config"][configType]["value"]
+                              )
+                            ) {
                               return (
-                                <FormControl key={configIndex} sx={{ m: 1, width: '10vw', minWidth: 130 }} size="small">
-                                  <InputLabel htmlFor="grouped-select">{configType.charAt(0).toUpperCase() + configType.slice(1)}</InputLabel>
-                                  <Select key={configIndex} defaultValue="" id="grouped-select">
-                                    {
-                                      videoFilter["config"][configType]["value"].map((value) => {
-                                        return <MenuItem key={value} value={value}>{value}</MenuItem>
-                                      })
-                                    }
+                                <FormControl
+                                  key={configIndex}
+                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                  size="small"
+                                >
+                                  <InputLabel htmlFor="grouped-select">
+                                    {configType.charAt(0).toUpperCase() +
+                                      configType.slice(1)}
+                                  </InputLabel>
+                                  <Select
+                                    key={configIndex}
+                                    defaultValue=""
+                                    id="grouped-select"
+                                  >
+                                    {videoFilter["config"][configType][
+                                      "value"
+                                    ].map((value) => {
+                                      return (
+                                        <MenuItem key={value} value={value}>
+                                          {value}
+                                        </MenuItem>
+                                      );
+                                    })}
                                   </Select>
                                 </FormControl>
-                              )
-                            } else if (typeof videoFilter["config"][configType]["value"] == "number") {
+                              );
+                            } else if (
+                              typeof videoFilter["config"][configType][
+                                "value"
+                              ] == "number"
+                            ) {
                               return (
-                                <TextField key={configIndex} label={configType.charAt(0).toUpperCase() + configType.slice(1)} id="" defaultValue="" type="number" size="small"
-                                  sx={{ m: 1, width: '10vw', minWidth: 130 }} />
-                              )
+                                <TextField
+                                  key={configIndex}
+                                  label={
+                                    configType.charAt(0).toUpperCase() +
+                                    configType.slice(1)
+                                  }
+                                  id=""
+                                  defaultValue=""
+                                  type="number"
+                                  size="small"
+                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                />
+                              );
                             }
-                          })
-                        }
-                      </Box> */}
+                          }
+                        )}
+                      </Box>
                     </Box>
                   );
                 }
