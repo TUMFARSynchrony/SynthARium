@@ -47,6 +47,14 @@ class MuteVideoFilter(Filter):
     def name(self) -> str:
         return "MUTE_VIDEO"
 
+    @staticmethod
+    def get_config_json(self) -> object:
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        data = {"type": name, "id": id}
+        return data
+
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray | None = None
     ) -> numpy.ndarray | VideoFrame:
