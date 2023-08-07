@@ -1,14 +1,16 @@
 {
   "filters": [
     {
+      "type": "NONE",
       "id": "none",
-      "type": "both",
+      "channel": "both",
       "groupFilter": false,
       "config": {}
     },
     {
+      "type": "ROTATION",
       "id": "rotation",
-      "type": "video",
+      "channel": "video",
       "groupFilter": false,
       "config": {
         "direction": {
@@ -22,8 +24,9 @@
       }
     },
     {
+      "type": "SYNCHRONY",
       "id": "synchrony",
-      "type": "both",
+      "channel": "both",
       "groupFilter": true,
       "config": {
         "numOfParticipants": {
@@ -32,14 +35,16 @@
       }
     },
     {
+      "type": "EDGE_OUTLINE",
       "id": "edge-outline",
-      "type": "video",
+      "channel": "video",
       "groupFilter": false,
       "config": {}
     },
     {
+      "type": "DELAY",
       "id": "delay-audio",
-      "type": "audio",
+      "channel": "audio",
       "groupFilter": false,
       "config": {
         "size": {
@@ -48,8 +53,9 @@
       }
     },
     {
+      "type": "DELAY",
       "id": "delay-video",
-      "type": "video",
+      "channel": "video",
       "groupFilter": false,
       "config": {
         "size": {

@@ -157,7 +157,7 @@ function ParticipantDataModal({
     // Uncomment to use for new filters.
     if (
       testData
-        .map((f) => (f.type === "video" || f.type === "both" ? f.id : ""))
+        .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
       setParticipantCopy((oldParticipant) => ({
@@ -172,7 +172,7 @@ function ParticipantDataModal({
     // Uncomment to use for new filters.
     if (
       testData
-        .map((f) => (f.type === "audio" || f.type === "both" ? f.id : ""))
+        .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
       setParticipantCopy((oldParticipant) => ({
