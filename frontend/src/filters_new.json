@@ -16,10 +16,10 @@
         "direction": {
           "value": ["clockwise", "anti-clockwise"]
         },
-        "speed": {
-          "min": 0.0,
-          "max": 1.0,
-          "value": 0.7
+        "angle": {
+          "min": 1,
+          "max": 180,
+          "value": 45
         }
       }
     },

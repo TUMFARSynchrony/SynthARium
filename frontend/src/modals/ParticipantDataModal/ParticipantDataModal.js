@@ -13,7 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
@@ -52,6 +52,8 @@ function ParticipantDataModal({
   setSnackbarResponse
 }) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
+  const [videoFilters, setVideoFilters] = useState();
+  const [audioFilters, setAudioFilters] = useState();
   const [selectedFilter, setSelectedFilter] = useState(
     testData.find((filter) => filter.id === defaultFilterId)
   );
@@ -69,10 +71,53 @@ function ParticipantDataModal({
     newInputEqualsOld: false
   };
 
+  useEffect(() => {
+    var video_filters = [];
+    originalParticipant.video_filters.forEach((filter) => {
+      video_filters.push(parseFilter(filter));
+    });
+    setVideoFilters(video_filters);
+
+    var audio_filters = [];
+    originalParticipant.audio_filters.forEach((filter) => {
+      audio_filters.push(parseFilter(filter));
+    });
+    setAudioFilters(audio_filters);
+  }, [originalParticipant.audio_filters, originalParticipant.video_filters]);
+
   const handleChange = (objKey, objValue) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
+    //console.log("New Participant Data: " + JSON.stringify(newParticipantData));
     setParticipantCopy(newParticipantData);
+  };
+
+  const handleFilterChange = (index, key, value, keyParticipantData) => {
+    const newFilterData = [...participantCopy.video_filters];
+    console.log("New Filter Data: " + JSON.stringify(newFilterData));
+    newFilterData[index][key] = value;
+    handleChange(keyParticipantData, newFilterData);
+  };
+
+  const parseFilter = async (filter) => {
+    var filter_new = {
+      type: filter["type"],
+      id: filter["id"],
+      channel: filter["channel"],
+      groupFilter: filter["groupFilter"],
+      config: filter["config"]
+    };
+    for (var configType in filter["config"]) {
+      if (configType in filter) {
+        filter_new[configType] = filter[configType];
+      } else if (Array.isArray(filter["config"][configType]["value"])) {
+        filter_new[configType] = filter["config"][configType]["value"][0];
+      } else if (typeof filter["config"][configType]["value"] == "number") {
+        filter_new[configType] = filter["config"][configType]["value"];
+      }
+    }
+    console.log("Filter new: " + JSON.stringify(filter_new));
+    return filter_new;
   };
 
   // On closing the edit participant dialog, the entered data is checked (if data is not saved,
@@ -141,11 +186,13 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
+    participantCopy["video_filters"] = videoFilters;
+    //handleChange("video_filters", videoFilters);
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = (filter) => {
+  const handleFilterSelect = async (filter) => {
     setSelectedFilter(filter);
 
     // Use this line for current filters.
@@ -164,6 +211,7 @@ function ParticipantDataModal({
         ...oldParticipant,
         video_filters: [...oldParticipant.video_filters, filter]
       }));
+      setVideoFilters([await parseFilter(filter)]);
     }
     // Use this line for current filters.
     /* else if (
@@ -559,11 +607,52 @@ function ParticipantDataModal({
                                     configType.charAt(0).toUpperCase() +
                                     configType.slice(1)
                                   }
-                                  id=""
-                                  defaultValue=""
+                                  defaultValue={
+                                    /* videoFilters.includes(videoFilterIndex)
+                                      ? videoFilters[videoFilterIndex][
+                                          configType
+                                        ]
+                                      : videoFilter["config"][configType][
+                                          "value"
+                                        ] */
+                                    configType in videoFilter
+                                      ? videoFilter[configType]
+                                      : videoFilter["config"][configType][
+                                          "value"
+                                        ]
+                                  }
+                                  InputProps={{
+                                    inputProps: {
+                                      min: videoFilter["config"][configType][
+                                        "min"
+                                      ],
+                                      max: videoFilter["config"][configType][
+                                        "max"
+                                      ],
+                                      step: "1"
+                                    }
+                                  }}
                                   type="number"
                                   size="small"
                                   sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                  onChange={(e) => {
+                                    /* console.log(
+                                      "Video Filters: " +
+                                        JSON.stringify(videoFilters)
+                                    );
+                                    videoFilters[videoFilterIndex][configType] =
+                                      e.target.value;
+                                    setVideoFilters(videoFilters);
+                                    handleChange("video_filters", videoFilters); */
+                                    /* videoFilterCopy[configType] =
+                                      e.target.value; */
+                                    handleFilterChange(
+                                      videoFilterIndex,
+                                      configType,
+                                      e.target.value,
+                                      "video_filters"
+                                    );
+                                  }}
                                 />
                               );
                             }
