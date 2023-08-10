@@ -20,6 +20,7 @@ class BoWFilter(Filter):
         self._openface_au_filter = None
         self.au_data = dict()
         self.group_filter = True
+        self.frame = 0
 
         window_length = 8  # how many frames each window contains
         word_length = 4  # how many symbols each window is mapped to (window_length / word_length is a prositive integer)
@@ -54,6 +55,8 @@ class BoWFilter(Filter):
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
+        self.frame = self.frame + 1
+
         au06_c = self._openface_au_filter.data.get("presence", {}).get("AU06", "-")
         au12_r = self._openface_au_filter.data.get("intensity", {}).get("AU12", "-")
 
@@ -61,7 +64,7 @@ class BoWFilter(Filter):
             return ndarray
 
         smile = au12_r if au06_c == 1 else 0
-        self.au_data[original.time] = smile
+        self.au_data[self.frame] = smile
 
         if len(self.au_data) < 2 * self.bow.window_size - 1:
             return ndarray
@@ -101,9 +104,9 @@ class BoWFilter(Filter):
             else:
                 return data
 
-        data_norm = (data - min_val) / (max_val - min_val)
+        data_normalized = (data - min_val) / (max_val - min_val)
 
-        return data_norm
+        return data_normalized
 
     def derivative(self, data: np.ndarray) -> np.ndarray:
         dx = 0.1
@@ -116,3 +119,75 @@ class BoWFilter(Filter):
             bin.append(word)
             buckets.insert(i % n_buckets, bin)
         return buckets
+
+    def apply_oasis(
+        self,
+        word_bins_user1: list[list[str]],
+        au_data_user1: list[float],
+        word_bins_user2: list[list[str]],
+        au_data_user2: list[float],
+        window_size: int,
+        num_bins: int,
+        energy_threshold: float = 0.1,
+    ) -> float:
+        sync_score_list = list()
+        original_bin = word_bins_user1[0]
+        for i, word in enumerate(original_bin):
+            # Initialize the synchrony score as 0
+            sync_score = 0
+
+            # Calculate the signal energy for AU data of both user
+            energy_user1 = self.calc_signal_energy(
+                i * window_size, window_size, au_data_user1
+            )
+            energy_user2 = self.calc_signal_energy(
+                i * window_size, window_size, au_data_user2
+            )
+            min_energy = min(energy_user1, energy_user2)
+
+            # Continue only if the minimum signal energy > threshold
+            if min_energy > energy_threshold:
+                n_buckets = len(word_bins_user2)
+                for j, compare_bin in enumerate(word_bins_user2):
+                    if i < len(compare_bin):
+                        offset_coefficient = 1 - (j / n_buckets)
+                        if sync_score >= offset_coefficient:
+                            break
+
+                        # Calculate shape similarity
+                        compare_word = compare_bin[i]
+                        shape_similarity = 1 - self.calc_euclidean_word_distance(
+                            word, compare_word, num_bins
+                        )
+
+                        # Calculate value similarity
+                        energy_user2_with_offset = self.calc_signal_energy(
+                            (i * window_size) + j, window_size, au_data_user2
+                        )
+                        value_similarity = 1 - (
+                            abs((energy_user1 - energy_user2_with_offset)) / window_size
+                        )
+
+                        # Update synchrony score
+                        sync_score = max(
+                            sync_score,
+                            offset_coefficient * shape_similarity * value_similarity,
+                        )
+
+            for _ in range(window_size):
+                sync_score_list.append(sync_score)
+        return sync_score_list
+
+    def calc_signal_energy(self, pos, window_size, signal):
+        sum = 0
+        for i in range(window_size):
+            if pos + i < len(signal):
+                sum += abs(signal[pos + i])
+        return sum / window_size
+
+    def calc_euclidean_word_distance(self, word, compare_word, num_bins):
+        distance = 0
+        for c1, c2 in zip(word, compare_word):
+            char_distance = abs(ord(c1) - ord(c2)) / (num_bins - 1)
+            distance += char_distance
+        return distance / len(word)
