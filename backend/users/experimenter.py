@@ -62,6 +62,7 @@ class Experimenter(User):
         self._logger = logging.getLogger(f"Experimenter-{experimenter_id}")
         self._hub = hub
         self._experiment = None
+        self.participants = dict()
 
         # Add API endpoints
         self.on_message("GET_SESSION_LIST", self._handle_get_session_list)
@@ -746,3 +747,34 @@ class Experimenter(User):
 
     async def _handle_group_filters(self, data: Any) -> None:
         self._logger.debug(f"Data received: {data}")
+        participant = data["participant"]
+
+        self.participants[participant] = data
+
+        if len(self.participants) > 1:
+            for p1 in self.participants.keys():
+                for p2 in self.participants.keys():
+                    if p1 != p2:
+                        p1_frame = int(list(self.participants[p1].keys())[0])
+                        p2_frame = int(list(self.participants[p2].keys())[0])
+
+                        if p1_frame > p2_frame:
+                            p1_data_aligned, p2_data_aligned = self.align(
+                                list(self.participants[p1].values())[0],
+                                list(self.participants[p2].values())[0],
+                            )
+                        else:
+                            p2_data_aligned, p1_data_aligned = self.align(
+                                list(self.participants[p2].values())[0],
+                                list(self.participants[p1].values())[0],
+                            )
+
+                        self.apply_oasis()
+
+    def align(self, longer_data, shorter_data):
+        for l, s in zip(longer_data, shorter_data):
+            if len(l) != len(s):
+                for _ in range(len(l) - len(s)):
+                    l.pop(0)
+
+        return longer_data, shorter_data
