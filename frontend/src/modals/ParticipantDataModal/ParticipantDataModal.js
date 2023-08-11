@@ -52,8 +52,6 @@ function ParticipantDataModal({
   setSnackbarResponse
 }) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  const [videoFilters, setVideoFilters] = useState();
-  const [audioFilters, setAudioFilters] = useState();
   const [selectedFilter, setSelectedFilter] = useState(
     testData.find((filter) => filter.id === defaultFilterId)
   );
@@ -71,67 +69,16 @@ function ParticipantDataModal({
     newInputEqualsOld: false
   };
 
-  useEffect(() => {
-    var video_filters = [];
-    originalParticipant.video_filters.forEach((filter) => {
-      video_filters.push(parseFilter(filter));
-    });
-    setVideoFilters(video_filters);
-
-    var audio_filters = [];
-    originalParticipant.audio_filters.forEach((filter) => {
-      audio_filters.push(parseFilter(filter));
-    });
-    setAudioFilters(audio_filters);
-  }, [originalParticipant.audio_filters, originalParticipant.video_filters]);
-
-  function initFilters() {
-    var video_filters = [];
-    participantCopy.video_filters.forEach((filter) => {
-      video_filters.push(parseFilter(filter));
-    });
-    setVideoFilters(video_filters);
-
-    var audio_filters = [];
-    participantCopy.audio_filters.forEach((filter) => {
-      audio_filters.push(parseFilter(filter));
-    });
-    setAudioFilters(audio_filters);
-  }
-
   const handleChange = (objKey, objValue) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
-    //console.log("New Participant Data: " + JSON.stringify(newParticipantData));
     setParticipantCopy(newParticipantData);
   };
 
   const handleFilterChange = (index, key, value, keyParticipantData) => {
-    console.log("Parameters: " + index + " " + key + " " + value);
-    const filtersCopy = [...participantCopy.video_filters];
+    const filtersCopy = structuredClone(participantCopy.video_filters);
     filtersCopy[index]["config"][key]["value"] = value;
     handleChange(keyParticipantData, filtersCopy);
-  };
-
-  const parseFilter = async (filter) => {
-    var filter_new = {
-      type: filter["type"],
-      id: filter["id"],
-      channel: filter["channel"],
-      groupFilter: filter["groupFilter"],
-      config: filter["config"]
-    };
-    for (var configType in filter["config"]) {
-      if (configType in filter) {
-        filter_new[configType] = filter[configType];
-      } else if (Array.isArray(filter["config"][configType]["value"])) {
-        filter_new[configType] = filter["config"][configType]["value"][0];
-      } else if (typeof filter["config"][configType]["value"] == "number") {
-        filter_new[configType] = filter["config"][configType]["value"];
-      }
-    }
-    console.log("Filter new: " + JSON.stringify(filter_new));
-    return filter_new;
   };
 
   // On closing the edit participant dialog, the entered data is checked (if data is not saved,
@@ -599,10 +546,18 @@ function ParticipantDataModal({
                                   </InputLabel>
                                   <Select
                                     key={configIndex}
-                                    defaultValue={
+                                    value={
                                       videoFilter["config"][configType]["value"]
                                     }
                                     id="grouped-select"
+                                    onChange={(e) => {
+                                      handleFilterChange(
+                                        videoFilterIndex,
+                                        configType,
+                                        e.target.value,
+                                        "video_filters"
+                                      );
+                                    }}
                                   >
                                     {videoFilter["config"][configType][
                                       "defaultValue"
