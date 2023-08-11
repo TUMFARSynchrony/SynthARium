@@ -13,7 +13,7 @@ function InputTextField({
   label,
   required,
   min
-}) {
+}: any) {
   return (
     <div className="inputFieldContainer">
       <Label title={title} />

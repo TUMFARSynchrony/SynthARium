@@ -1,7 +1,13 @@
+import React from "react";
 import { ActionButton, LinkActionButton } from "../../components/atoms/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 
-function EndVerificationModal({ setShowModal, onEndExperiment }) {
+type Props = {
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  onEndExperiment: () => void;
+};
+
+function EndVerificationModal({ setShowModal, onEndExperiment }: Props) {
   const endExperiment = () => {
     setShowModal(false);
     onEndExperiment();
