@@ -1,4 +1,5 @@
 import { Note, Participant, Session } from "../types";
+import { AlertColor } from "@mui/material/Alert";
 
 export const INITIAL_SESSION_DATA: Session = {
   id: "",
@@ -100,5 +101,5 @@ export const instructionsList = [
 export const initialSnackbar = {
   open: false,
   text: "",
-  severity: "success"
+  severity: "success" as AlertColor
 };

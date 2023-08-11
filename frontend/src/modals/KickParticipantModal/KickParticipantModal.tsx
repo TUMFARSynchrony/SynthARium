@@ -6,6 +6,21 @@ import { useAppDispatch } from "../../redux/hooks";
 import { banMuteUnmuteParticipant } from "../../redux/slices/sessionsListSlice";
 import { initialSnackbar } from "../../utils/constants";
 import "./KickParticipantModal.css";
+import { BanMuteUnmuteActions } from "../../utils/enums";
+
+type KickParticipant = {
+  participant_id: string;
+  reason: string;
+};
+
+type Props = {
+  participantId: string;
+  sessionId: string;
+  showModal: boolean;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  onKickBanParticipant: (participant: KickParticipant, action: string) => void;
+  action: string;
+};
 
 function KickParticipantModal({
   participantId,
@@ -14,12 +29,12 @@ function KickParticipantModal({
   setShowModal,
   onKickBanParticipant,
   action
-}) {
+}: Props) {
   const [reason, setReason] = useState("");
   const dispatch = useAppDispatch();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
 
-  const onChange = (newReason) => {
+  const onChange = (newReason: string) => {
     setReason(newReason);
   };
 
@@ -46,7 +61,7 @@ function KickParticipantModal({
       dispatch(
         banMuteUnmuteParticipant({
           participantId: participantId,
-          action: "banned",
+          action: BanMuteUnmuteActions.BANNED,
           value: true,
           sessionId: sessionId
         })
@@ -60,7 +75,8 @@ function KickParticipantModal({
         <TextAreaField
           title={`Enter your reason for kicking/banning here:`}
           value={reason}
-          onChange={(newReason) => onChange(newReason)}
+          placeholder=""
+          onChange={(newReason: string) => onChange(newReason)}
           required={true}
         />
         <ActionButton

@@ -2,7 +2,12 @@ import { ActionButton } from "../../components/atoms/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 import "./StartVerificationModal.css";
 
-function StartVerificationModal({ setShowModal, onStartExperiment }) {
+type Props = {
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  onStartExperiment: () => void;
+};
+
+function StartVerificationModal({ setShowModal, onStartExperiment }: Props) {
   const startExperiment = () => {
     setShowModal(false);
     onStartExperiment();
