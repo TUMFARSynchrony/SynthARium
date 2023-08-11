@@ -9,7 +9,7 @@ function InputField({
   checked,
   required,
   min
-}: any) {
+}) {
   return (
     <input
       type={inputType}
