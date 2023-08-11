@@ -1,6 +1,6 @@
 # Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app, npx create-react-app my-app)
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), npx create-react-app my-app
 
 ## Using HTTPS
 
@@ -25,7 +25,7 @@ In the project directory folder `frontend/`, you can run:
 
 ### `npm install`
 
-Which installs all our frontend dependancies. 
+Which installs all our frontend dependancies.
 
 ### `npm start`
 

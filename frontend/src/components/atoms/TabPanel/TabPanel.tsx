@@ -1,10 +1,16 @@
-import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { ReactNode } from "react";
+
+type TabPanelProps = {
+  children: ReactNode;
+  index: number;
+  value: number;
+};
 
 // This component is currently unused, it can be used in the watching room to
 // replace the "Overview", "Notes" and "Participants" tabs.
-function TabPanel(props) {
+function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -17,11 +23,5 @@ function TabPanel(props) {
     </div>
   );
 }
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired
-};
 
 export default TabPanel;

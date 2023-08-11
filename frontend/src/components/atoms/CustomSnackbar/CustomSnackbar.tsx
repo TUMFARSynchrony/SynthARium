@@ -1,12 +1,27 @@
-import MuiAlert from "@mui/material/Alert";
+import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import React from "react";
+import { forwardRef } from "react";
+
+type CustomSnackbarProps = {
+  open: boolean;
+  text: string;
+  severity: AlertColor;
+  handleClose: () => void;
+};
 
 // Using MUI Snackbar and Alert to display notifications in :
 // Session Overview Page - when participant invite link is copied to clipboard
 // Session Form - upon entry of data and save in the ParticipantDataModal
-function CustomSnackbar({ open, text, severity, handleClose }) {
-  const Alert = React.forwardRef(function Alert(props, ref) {
+function CustomSnackbar({
+  open,
+  text,
+  severity,
+  handleClose
+}: CustomSnackbarProps) {
+  const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
+    props,
+    ref
+  ): JSX.Element {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
 

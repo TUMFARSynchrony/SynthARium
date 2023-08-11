@@ -14,7 +14,7 @@ For in detail motivation about the Experimental hub see our [introduciton to the
 **TODO**: _quick setup / start + requirements_
 --- -->
 
-## Building & Starting
+## Building & Quick Starting Guide
 
 In case you want to build the frontend yourself, follow the steps in this section.
 
@@ -24,12 +24,15 @@ Continue with the steps bellow after both the frontend and backend are set up.
 1. Build frontend
     - Skip this step if there where no changes to the frontend since the last build process
     - Go to the frontend directory: `cd frontend`
+    - If this is your first time running the experimental hub run: `npm install`
     - Build the frontend: `npm run build`. Make sure the build process finishes without any errors
 2. (Re-) Start server
     - If the server is already running: stop the server
     - Make sure to take a look at the settings. For more details see [backend configuration](./backend/README.md#configuration)
         - It is recommended to set `environment` to `prod` to disable [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+    - In your venv, run `pip install -r requirements.txt` [(click here for more detailed instructions on setting up a virtual environment)](https://github.com/TUMFARSynchrony/experimental-hub/wiki/Project-Setup#creating-a-virtual-environment)
     - Start the server by executing `main.py` in the backend directory. For example from the root directory: `python backend/main.py`
+  3. In your favorite browser (tested mainly with chrome) go to [http://localhost:8080/](http://localhost:8080/) or [https://localhost:8080/](https://localhost:8080/) depending on your projects configuration. 
 
 ### Notes
 

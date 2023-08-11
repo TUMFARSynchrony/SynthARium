@@ -1,9 +1,16 @@
 import { useEffect, useRef } from "react";
 import { Image } from "react-konva";
-import { useUserStream } from "./streams";
+import { useUserStream } from "./Streams";
+import { Participant } from "../../../types";
+import Konva from "konva";
 
-const Video = ({ src, participantData }) => {
-  const useVideo = (stream) => {
+type VideoProps = {
+  src: MediaProvider;
+  participantData: Participant;
+};
+
+const Video = ({ src, participantData }: VideoProps) => {
+  const useVideo = (stream: MediaStream | null) => {
     const videoRef = useRef(document.createElement("video"));
 
     useEffect(() => {
@@ -22,7 +29,7 @@ const Video = ({ src, participantData }) => {
 
   const stream = useUserStream();
   const video = useVideo(stream);
-  const shapeRef = useRef();
+  const shapeRef: React.MutableRefObject<Konva.Image> = useRef();
 
   useEffect(() => {
     const interval = setInterval(() => {

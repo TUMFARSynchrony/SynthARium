@@ -28,7 +28,7 @@ export type Participant = {
   muted_audio: boolean;
   position: { x: number; y: number; z: number };
   chat: Chat[];
-  audio_filters: [];
+  audio_filters: AudioFilter[];
   video_filters: VideoFilter[];
 };
 
@@ -58,9 +58,21 @@ type VideoFilter = {
   type: string;
 };
 
+type AudioFilter = {
+  id: string;
+  type: string;
+  size?: number;
+};
+
 export type Chat = {
   message: string;
   time: number;
   author: string;
   target: string;
+};
+
+export type Filter = {
+  type: string;
+  id: string;
+  size?: number;
 };

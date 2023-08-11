@@ -1,7 +1,10 @@
 import Typography from "@mui/material/Typography";
 import { styled } from "@mui/material/styles";
 
-function HeroText({ text }) {
+type HeroTextProps = {
+  text: string;
+};
+function HeroText({ text }: HeroTextProps) {
   // This is the main heading of the page - used in Session Overview and
   // the Post Processing Room.
   const Text = styled(Typography)(({ theme }) => ({
