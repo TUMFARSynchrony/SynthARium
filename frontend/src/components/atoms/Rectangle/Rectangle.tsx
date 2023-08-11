@@ -1,7 +1,17 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import Konva from "konva";
 import { Group, Rect, Text, Transformer } from "react-konva";
 import { CANVAS_SIZE } from "../../../utils/constants";
 import { getTotalBox } from "../../../utils/utils";
+import { Shape, Group as GroupProps } from "../../../types";
+
+type RectangleProps = {
+  shapeProps: Shape;
+  groupProps: GroupProps;
+  isSelected: boolean;
+  onSelect: () => void;
+  onChange: (newAttr: GroupProps) => void;
+};
 
 const Rectangle = ({
   shapeProps,
@@ -9,9 +19,9 @@ const Rectangle = ({
   isSelected,
   onSelect,
   onChange
-}) => {
-  const shapeRef = useRef();
-  const trRef = useRef();
+}: RectangleProps) => {
+  const shapeRef = useRef<Konva.Group>();
+  const trRef = useRef<Konva.Transformer>();
 
   useEffect(() => {
     if (!trRef.current) {
@@ -43,9 +53,9 @@ const Rectangle = ({
     });
   };
 
-  const onDragMove = (e) => {
-    onSelect(e);
-    let newAbsPos = {};
+  const onDragMove = () => {
+    onSelect();
+    let newAbsPos: { x: number; y: number } | undefined = undefined;
 
     if (!trRef.current) {
       return;
@@ -81,7 +91,7 @@ const Rectangle = ({
     });
   };
 
-  let participant_name = shapeProps.participant_name
+  const participant_name = shapeProps.participant_name
     ? shapeProps.participant_name
     : "";
 
@@ -92,7 +102,7 @@ const Rectangle = ({
         {...groupProps}
         onClick={onSelect}
         onTransformEnd={() => onTransformEnd()}
-        onDragMove={(e) => onDragMove(e)}
+        onDragMove={() => onDragMove()}
         ref={shapeRef}
       >
         <Rect
