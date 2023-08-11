@@ -40,9 +40,12 @@
     "build-storybook": "storybook build"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,md,json,yaml,yml}": [
+    "*.{ts,tsx,js,jsx,json,yaml,yml}": [
       "prettier --write",
       "eslint"
+    ],
+    "*.{md}": [
+      "prettier --write"
     ]
   },
   "eslintConfig": {
