@@ -2,7 +2,7 @@ import { styled } from "@mui/material/styles";
 import Toolbar from "@mui/material/Toolbar";
 
 export default function AppToolbar() {
-  // This is the toolbar view for partcipants only and used in the lobby,
+  // This is the toolbar view for participants only and used in the lobby,
   // with the title - SYNCHRONY HUB. Can add a logo in the future
   const AppToolbar = styled(Toolbar)(() => ({
     backgroundColor: "#899499",

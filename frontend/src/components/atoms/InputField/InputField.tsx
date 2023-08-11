@@ -1,5 +1,16 @@
 import "./InputField.css";
 
+type InputFieldProps = {
+  inputType: string;
+  value: string;
+  placeholder?: string;
+  readonly?: boolean;
+  onChange: (value: string) => void;
+  checked?: boolean;
+  required?: boolean;
+  min?: number | string;
+};
+
 function InputField({
   inputType,
   value,
@@ -9,7 +20,7 @@ function InputField({
   checked,
   required,
   min
-}) {
+}: InputFieldProps) {
   return (
     <input
       type={inputType}

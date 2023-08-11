@@ -6,6 +6,16 @@ import { PARTICIPANT_HOST } from "../../utils/constants";
 import { useAppDispatch } from "../../redux/hooks";
 import { banMuteUnmuteParticipant } from "../../redux/slices/sessionsListSlice";
 import "./JoinedParticipantModal.css";
+import { Participant } from "../../types";
+import { BanMuteUnmuteActions } from "../../utils/enums";
+
+type Props = {
+  participantData: Participant;
+  showModal: boolean;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  sessionId: string;
+  onMuteParticipant: (data: any) => void;
+};
 
 function JoinedParticipantModal({
   participantData,
@@ -13,10 +23,10 @@ function JoinedParticipantModal({
   setShowModal,
   sessionId,
   onMuteParticipant
-}) {
+}: Props) {
   const dispatch = useAppDispatch();
 
-  const muteParticipant = (muteAudio, muteVideo) => {
+  const muteParticipant = (muteAudio: boolean, muteVideo: boolean) => {
     onMuteParticipant({
       participant_id: participantData.id,
       mute_video: muteVideo,
@@ -26,7 +36,7 @@ function JoinedParticipantModal({
     dispatch(
       banMuteUnmuteParticipant({
         participantId: participantData.id,
-        action: "muted_audio",
+        action: BanMuteUnmuteActions.MUTED_AUDIO,
         value: muteAudio,
         sessionId: sessionId
       })
@@ -35,7 +45,7 @@ function JoinedParticipantModal({
     dispatch(
       banMuteUnmuteParticipant({
         participantId: participantData.id,
-        action: "muted_video",
+        action: BanMuteUnmuteActions.MUTED_VIDEO,
         value: muteVideo,
         sessionId: sessionId
       })

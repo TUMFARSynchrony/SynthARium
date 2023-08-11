@@ -5,14 +5,14 @@ The current list of filters currently offered within the main project are:
 |rotation | continuously rotates video feed.| manipulation| included | Alexander Liebald | 
 |v delay | delays the video feed by X seconds. | manipulation| included | Alexander Liebald|
 |a delay| delays the audio feed by X seconds. | manipulation | included |Alexander Liebald|
-| openfaceAU12 | reads and displays AU12 to video stream  | analysis | not yet in main branch| Julian Geheeb |
+| openfaceAU12 | reads and displays AU12 to video stream  | analysis | included | Julian Geheeb |
 
 
 **Filter Name** is the name of the filter as you will find in the front end drop down selection. 
 
 **Description** is the expected behavior of the filter when applied to a video stream. 
 
-**Filter Type** is a label to determine if the filter is for real time *analysis* of the video stream or if it *manipulates* the visual output of the stream, or if it does *both* (e.g. a filter that makes someone look more sweaty if their visually detected heart rate goes up.)
+**Filter Type** is a label to determine if the filter is for real time *analysis* of the video stream or if it *manipulates* the visual output of the stream, or if it does *both* (e.g. could be a filter that makes someone look more sweaty if their visually detected heart rate goes up.)
 
 **Filter Link** is the link to filters made by external collaborators and contributors. If it is included in the project main by *default* it is also indicated as such. 
 

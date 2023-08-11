@@ -1,6 +1,9 @@
 import "./Label.css";
 
-function Label({ title }) {
+type LabelProps = {
+  title: string;
+};
+function Label({ title }: LabelProps) {
   return <label className="label">{title}</label>;
 }
 
