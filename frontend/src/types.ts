@@ -64,7 +64,7 @@ type AudioFilter = {
   size?: number;
 };
 
-type Chat = {
+export type Chat = {
   message: string;
   time: number;
   author: string;

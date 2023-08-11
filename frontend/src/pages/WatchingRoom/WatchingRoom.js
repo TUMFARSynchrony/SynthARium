@@ -11,6 +11,8 @@ import "./WatchingRoom.css";
 function WatchingRoom({
   connectedParticipants,
   onKickBanParticipant,
+  onChat,
+  onGetSession,
   onAddNote,
   onLeaveExperiment,
   onMuteParticipant,
@@ -47,6 +49,8 @@ function WatchingRoom({
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
                 onAddNote={onAddNote}
+                onChat={onChat}
+                onGetSession={onGetSession}
                 onLeaveExperiment={onLeaveExperiment}
                 onStartExperiment={onStartExperiment}
                 onMuteParticipant={onMuteParticipant}

@@ -1,4 +1,4 @@
-import { Note, Participant, Session } from "../types";
+import { Chat, Note, Participant, Session } from "../types";
 import { AlertColor } from "@mui/material/Alert";
 
 export const INITIAL_SESSION_DATA: Session = {
@@ -50,6 +50,13 @@ export const INITIAL_NOTE_DATA: Note = {
   time: 0,
   speakers: [],
   content: ""
+};
+
+export const INITIAL_CHAT_DATA: Chat = {
+  time: 0,
+  message: "",
+  author: "",
+  target: ""
 };
 
 /**

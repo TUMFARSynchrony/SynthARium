@@ -11,13 +11,16 @@ import {
   BanMuteUnmuteParticipantPayload,
   ExperimentTypesPayload
 } from "../payloadTypes";
+import { current } from "@reduxjs/toolkit";
 
 type SessionsListState = {
   sessions: Session[];
+  currentSession: Session;
 };
 
 const initialState: SessionsListState = {
-  sessions: []
+  sessions: [],
+  currentSession: null
 };
 
 export const sessionsListSlice = createSlice({
@@ -49,10 +52,22 @@ export const sessionsListSlice = createSlice({
     addNote: (state, { payload }) => {
       const session = getSessionById(payload.id, state.sessions);
       session.notes.push(payload.note);
-
-      const newSessionsList = filterListById(state.sessions, payload.id);
-      state.sessions = [...newSessionsList, session];
-      state.sessions = sortSessions(state.sessions);
+    },
+    addMessageToCurrentSession: (state, { payload }) => {
+      const session = state.currentSession;
+      const target = payload.target;
+      if (target === "participants") {
+        session.participants.map((participant) => {
+          participant.chat.push(payload.message);
+        });
+      } else {
+        const participant = getParticipantById(target, session);
+        participant.chat.push(payload.message);
+      }
+    },
+    setCurrentSession: (state, { payload }) => {
+      const session = payload;
+      state.currentSession = session;
     },
 
     banMuteUnmuteParticipant: (
@@ -96,10 +111,21 @@ export const {
   createSession,
   updateSession,
   addNote,
+  addMessageToCurrentSession,
   banMuteUnmuteParticipant,
+  setCurrentSession,
   setExperimentTimes
 } = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;
 
 export const selectSessions = (state: RootState) => state.sessionsList.sessions;
+export const selectCurrentSession = (state: RootState) =>
+  state.sessionsList.currentSession;
+export const selectMessagesCurrentSession = (
+  state: RootState,
+  participantId: string
+) =>
+  state.sessionsList.currentSession.participants.filter(
+    (participant) => participant.id === participantId
+  )[0].chat;

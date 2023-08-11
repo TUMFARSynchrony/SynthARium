@@ -2,11 +2,11 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 import { Participant, Session } from "../../types";
 
-type OpenStateState = {
+type OpenSessionState = {
   session: Session;
 };
 
-const initialState: OpenStateState = {
+const initialState: OpenSessionState = {
   session: {
     id: "",
     title: "",

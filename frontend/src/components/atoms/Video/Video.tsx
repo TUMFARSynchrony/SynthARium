@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Image } from "react-konva";
 import { useUserStream } from "./Streams";
-import { Participant, Shape } from "../../../types";
+import { Participant } from "../../../types";
 import Konva from "konva";
 
 type VideoProps = {
