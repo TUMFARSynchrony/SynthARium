@@ -21,4 +21,4 @@ class FilterDict(TypedDict):
     id: str
     channel: str
     groupFilter: bool
-    #config: dict
+    config: dict

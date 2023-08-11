@@ -14,12 +14,15 @@
       "groupFilter": false,
       "config": {
         "direction": {
-          "value": ["clockwise", "anti-clockwise"]
+          "defaultValue": ["clockwise", "anti-clockwise"],
+          "value": "clockwise"
         },
         "angle": {
           "min": 1,
           "max": 180,
-          "value": 45
+          "step": 1,
+          "value": 45,
+          "defaultValue": 45
         }
       }
     },

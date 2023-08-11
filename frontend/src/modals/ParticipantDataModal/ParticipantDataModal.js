@@ -85,6 +85,20 @@ function ParticipantDataModal({
     setAudioFilters(audio_filters);
   }, [originalParticipant.audio_filters, originalParticipant.video_filters]);
 
+  function initFilters() {
+    var video_filters = [];
+    participantCopy.video_filters.forEach((filter) => {
+      video_filters.push(parseFilter(filter));
+    });
+    setVideoFilters(video_filters);
+
+    var audio_filters = [];
+    participantCopy.audio_filters.forEach((filter) => {
+      audio_filters.push(parseFilter(filter));
+    });
+    setAudioFilters(audio_filters);
+  }
+
   const handleChange = (objKey, objValue) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
@@ -93,10 +107,10 @@ function ParticipantDataModal({
   };
 
   const handleFilterChange = (index, key, value, keyParticipantData) => {
-    const newFilterData = [...participantCopy.video_filters];
-    console.log("New Filter Data: " + JSON.stringify(newFilterData));
-    newFilterData[index][key] = value;
-    handleChange(keyParticipantData, newFilterData);
+    console.log("Parameters: " + index + " " + key + " " + value);
+    const filtersCopy = [...participantCopy.video_filters];
+    filtersCopy[index]["config"][key]["value"] = value;
+    handleChange(keyParticipantData, filtersCopy);
   };
 
   const parseFilter = async (filter) => {
@@ -186,8 +200,8 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
-    participantCopy["video_filters"] = videoFilters;
-    //handleChange("video_filters", videoFilters);
+    //const copyParticipant = { ...participantCopy };
+    //copyParticipant["video_filters"] = videoFilters;
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };
@@ -211,7 +225,10 @@ function ParticipantDataModal({
         ...oldParticipant,
         video_filters: [...oldParticipant.video_filters, filter]
       }));
-      setVideoFilters([await parseFilter(filter)]);
+      /* setVideoFilters([
+        ...participantCopy.video_filters,
+        await parseFilter(filter)
+      ]); */
     }
     // Use this line for current filters.
     /* else if (
@@ -565,7 +582,9 @@ function ParticipantDataModal({
                           (configType, configIndex) => {
                             if (
                               Array.isArray(
-                                videoFilter["config"][configType]["value"]
+                                videoFilter["config"][configType][
+                                  "defaultValue"
+                                ]
                               )
                             ) {
                               return (
@@ -580,11 +599,13 @@ function ParticipantDataModal({
                                   </InputLabel>
                                   <Select
                                     key={configIndex}
-                                    defaultValue=""
+                                    defaultValue={
+                                      videoFilter["config"][configType]["value"]
+                                    }
                                     id="grouped-select"
                                   >
                                     {videoFilter["config"][configType][
-                                      "value"
+                                      "defaultValue"
                                     ].map((value) => {
                                       return (
                                         <MenuItem key={value} value={value}>
@@ -597,7 +618,7 @@ function ParticipantDataModal({
                               );
                             } else if (
                               typeof videoFilter["config"][configType][
-                                "value"
+                                "defaultValue"
                               ] == "number"
                             ) {
                               return (
@@ -608,18 +629,7 @@ function ParticipantDataModal({
                                     configType.slice(1)
                                   }
                                   defaultValue={
-                                    /* videoFilters.includes(videoFilterIndex)
-                                      ? videoFilters[videoFilterIndex][
-                                          configType
-                                        ]
-                                      : videoFilter["config"][configType][
-                                          "value"
-                                        ] */
-                                    configType in videoFilter
-                                      ? videoFilter[configType]
-                                      : videoFilter["config"][configType][
-                                          "value"
-                                        ]
+                                    videoFilter["config"][configType]["value"]
                                   }
                                   InputProps={{
                                     inputProps: {
@@ -629,23 +639,15 @@ function ParticipantDataModal({
                                       max: videoFilter["config"][configType][
                                         "max"
                                       ],
-                                      step: "1"
+                                      step: videoFilter["config"][configType][
+                                        "step"
+                                      ]
                                     }
                                   }}
                                   type="number"
                                   size="small"
                                   sx={{ m: 1, width: "10vw", minWidth: 130 }}
                                   onChange={(e) => {
-                                    /* console.log(
-                                      "Video Filters: " +
-                                        JSON.stringify(videoFilters)
-                                    );
-                                    videoFilters[videoFilterIndex][configType] =
-                                      e.target.value;
-                                    setVideoFilters(videoFilters);
-                                    handleChange("video_filters", videoFilters); */
-                                    /* videoFilterCopy[configType] =
-                                      e.target.value; */
                                     handleFilterChange(
                                       videoFilterIndex,
                                       configType,
