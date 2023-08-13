@@ -627,6 +627,38 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
         >
           Glasses Detection
         </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [
+                {
+                  type: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "anti-clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 15,
+                      defaultValue: 45
+                    }
+                  }
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          New Rotation Filter
+        </button>
       </div>
     </>
   );

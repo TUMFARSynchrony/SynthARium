@@ -606,7 +606,7 @@ function ParticipantDataModal({
                                     handleFilterChange(
                                       videoFilterIndex,
                                       configType,
-                                      e.target.value,
+                                      parseInt(e.target.value),
                                       "video_filters"
                                     );
                                   }}

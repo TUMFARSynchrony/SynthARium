@@ -354,7 +354,11 @@ class Hub:
         # TODO: add get_config_json in all filters files
         for filter in Filter.__subclasses__():
             filter_name = filter.name(filter)
-            if filter_name == "FILTER_API_TEST" or filter_name == "AUDIO_SPEAKING_TIME":
+            if (
+                filter_name == "ROTATION"
+                or filter_name == "FILTER_API_TEST"
+                or filter_name == "AUDIO_SPEAKING_TIME"
+            ):
                 filters_config["filters"].append(filter.get_config_json(filter))
 
         # Syntax of write JSON data to file
@@ -365,6 +369,3 @@ class Hub:
             json.dump(filters_config, outfile)
 
         return filters_config
-
-
-
