@@ -67,3 +67,20 @@ export type Filter = {
   groupFilter: boolean;
   config: object;
 };
+
+type FilterConfig = {
+  [key: string]: FilterConfigArray | FilterConfigNumber;
+};
+
+type FilterConfigNumber = {
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  defaultValue: number;
+};
+
+type FilterConfigArray = {
+  value: string;
+  defaultValue: string[];
+};
