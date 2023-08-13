@@ -6,7 +6,7 @@ import StartVerificationModal from "../../../modals/StartVerificationModal/Start
 import { useAppSelector } from "../../../redux/hooks";
 import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
 import { selectSessions } from "../../../redux/slices/sessionsListSlice";
-import { instructionsList } from "../../../utils/constants";
+import { INITIAL_CHAT_DATA, instructionsList } from "../../../utils/constants";
 import { getSessionById, integerToDateTime } from "../../../utils/utils";
 import {
   ActionButton,
@@ -17,22 +17,44 @@ import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import "./OverviewTab.css";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 function OverviewTab({
   onLeaveExperiment,
   onStartExperiment,
-  onEndExperiment
+  onEndExperiment,
+  onChat,
+  onGetSession
 }) {
   const [message, setMessage] = useState("");
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
-
-  const ongoingExperiment = useAppSelector(selectOngoingExperiment);
-  const sessionId = ongoingExperiment.sessionId;
+  const [messageOption, setMessageOption] = useState("participants");
+  const sessionId = useAppSelector(selectOngoingExperiment).sessionId;
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(sessionId, sessionsList);
+  console.log(messageOption);
 
   useBackListener(() => onLeaveExperiment());
+
+  const onSendMessage = (messageTarget) => {
+    let newMessage = { ...INITIAL_CHAT_DATA };
+    newMessage["message"] = message;
+    newMessage["time"] = Date.now();
+    newMessage["author"] = "experimenter";
+    newMessage["target"] = messageTarget;
+
+    onChat(newMessage);
+    onGetSession(sessionId);
+    if (message.length === 0) {
+      return;
+    }
+    setMessage("");
+  };
+
+  const handleChange = (value) => {
+    setMessageOption(value);
+  };
 
   return (
     <div className="overviewTabContainer">
@@ -67,7 +89,27 @@ function OverviewTab({
         <hr className="separatorLine"></hr>
       </div>
       <div className="sessionInformation">
-        <h3>Send Message to all participants</h3>
+        {messageOption && (
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">
+              Message target
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={messageOption}
+              label="Message target"
+              onChange={(e) => handleChange(e.target.value)}
+            >
+              <MenuItem value={"participants"}>All participants</MenuItem>
+              {sessionData.participants.map((participant, index) => (
+                <MenuItem key={index} value={participant.id}>
+                  {participant.participant_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <TextAreaField
           placeholder={"Enter your message here"}
           value={message}
@@ -78,6 +120,7 @@ function OverviewTab({
           variant="outlined"
           color="primary"
           size="medium"
+          onClick={() => onSendMessage(messageOption)}
           icon={<PlayArrowOutlined />}
         />
       </div>

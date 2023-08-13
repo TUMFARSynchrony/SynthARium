@@ -5,6 +5,7 @@ export enum ExperimentTimes {
 }
 
 export enum BanMuteUnmuteActions {
+  BANNED = "banned",
   MUTED_AUDIO = "muted_audio",
   MUTED_VIDEO = "muted_video"
 }

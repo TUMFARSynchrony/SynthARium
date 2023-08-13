@@ -9,11 +9,9 @@ function InputTextField({
   readonly,
   onChange,
   inputType,
-  register,
-  label,
   required,
   min
-}) {
+}: any) {
   return (
     <div className="inputFieldContainer">
       <Label title={title} />
@@ -23,8 +21,6 @@ function InputTextField({
         onChange={onChange}
         placeholder={placeholder}
         readonly={readonly}
-        register={register}
-        label={label}
         required={required}
         min={min}
       />
