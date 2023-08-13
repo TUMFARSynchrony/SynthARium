@@ -13,11 +13,12 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
+import { Filter, Participant } from "../../types";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
 import filtersData from "../../filters_new.json";
@@ -41,6 +42,24 @@ const getGroupFilters = () => {
   return testData.filter((filter) => filter.groupFilter === true);
 };
 
+type Props = {
+  originalParticipant: Participant;
+  sessionId: string;
+  index: number;
+  showParticipantInput: boolean;
+  setShowParticipantInput: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteParticipant: (index: number) => void;
+  handleParticipantChange: (index: number, participant: Participant) => void;
+  setSnackbarResponse: React.Dispatch<
+    React.SetStateAction<{
+      newParticipantInputEmpty: boolean;
+      requiredInformationMissing: boolean;
+      participantOriginalEmpty: boolean;
+      newInputEqualsOld: boolean;
+    }>
+  >;
+};
+
 function ParticipantDataModal({
   originalParticipant,
   sessionId,
@@ -50,9 +69,9 @@ function ParticipantDataModal({
   handleParticipantChange,
   onDeleteParticipant,
   setSnackbarResponse
-}) {
+}: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  const [selectedFilter, setSelectedFilter] = useState(
+  const [selectedFilter, setSelectedFilter] = useState<Filter>(
     testData.find((filter) => filter.id === defaultFilterId)
   );
   const individualFilters = getIndividualFilters();
@@ -69,14 +88,22 @@ function ParticipantDataModal({
     newInputEqualsOld: false
   };
 
-  const handleChange = (objKey, objValue) => {
+  const handleChange = <T extends keyof Participant>(
+    objKey: T,
+    objValue: Participant[T]
+  ) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
     setParticipantCopy(newParticipantData);
   };
 
-  const handleFilterChange = (index, key, value, keyParticipantData) => {
-    const filtersCopy = structuredClone(participantCopy.video_filters);
+  const handleFilterChange = <T extends keyof Participant>(
+    index: number,
+    key: string,
+    value: number | string,
+    keyParticipantData: T
+  ) => {
+    const filtersCopy: any = structuredClone(participantCopy.video_filters);
     filtersCopy[index]["config"][key]["value"] = value;
     handleChange(keyParticipantData, filtersCopy);
   };
@@ -86,7 +113,7 @@ function ParticipantDataModal({
   const onCloseModalWithoutData = () => {
     setShowParticipantInput(!showParticipantInput);
 
-    let newParticipantInputEmpty = participantCopy.participant_name === "";
+    const newParticipantInputEmpty = participantCopy.participant_name === "";
     if (newParticipantInputEmpty) {
       setSnackbarResponse({
         ...snackbarResponse,
@@ -96,7 +123,7 @@ function ParticipantDataModal({
       return;
     }
 
-    let requiredInformationMissing = participantCopy.participant_name === "";
+    const requiredInformationMissing = participantCopy.participant_name === "";
     if (requiredInformationMissing) {
       setSnackbarResponse({
         ...snackbarResponse,
@@ -106,9 +133,9 @@ function ParticipantDataModal({
       return;
     }
 
-    let participantOriginalEmpty =
+    const participantOriginalEmpty =
       originalParticipant.participant_name.length === 0;
-    let newInputEqualsOld =
+    const newInputEqualsOld =
       JSON.stringify(participantCopy) === JSON.stringify(originalParticipant);
 
     if (participantOriginalEmpty && !newInputEqualsOld) {
@@ -147,13 +174,11 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
-    //const copyParticipant = { ...participantCopy };
-    //copyParticipant["video_filters"] = videoFilters;
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = async (filter) => {
+  const handleFilterSelect = async (filter: Filter) => {
     setSelectedFilter(filter);
 
     // Use this line for current filters.
@@ -194,7 +219,7 @@ function ParticipantDataModal({
     }
   };
 
-  const handleDeleteVideoFilter = (filterCopyIndex) => {
+  const handleDeleteVideoFilter = (filterCopyIndex: number) => {
     setParticipantCopy((oldParticipant) => ({
       ...oldParticipant,
       video_filters: oldParticipant.video_filters.filter(
@@ -203,7 +228,7 @@ function ParticipantDataModal({
     }));
   };
 
-  const handleDeleteAudioFilter = (filterCopyIndex) => {
+  const handleDeleteAudioFilter = (filterCopyIndex: number) => {
     setParticipantCopy((oldParticipant) => ({
       ...oldParticipant,
       audio_filters: oldParticipant.audio_filters.filter(
@@ -322,7 +347,6 @@ function ParticipantDataModal({
                 {
                   <Select
                     value={selectedFilter}
-                    default=""
                     id="filters-select"
                     label="Filters"
                   >
@@ -330,12 +354,12 @@ function ParticipantDataModal({
                       Individual Filters
                     </ListSubheader>
                     {/* Uncomment the below block to use new filters. */}
-                    {individualFilters.map((individualFilter) => {
+                    {individualFilters.map((individualFilter: Filter) => {
                       if (individualFilter.id == defaultFilterId) {
                         return (
                           <MenuItem
                             key={individualFilter.id}
-                            value={individualFilter}
+                            value={individualFilter.type}
                             disabled
                           >
                             <em>{individualFilter.id}</em>
@@ -345,7 +369,7 @@ function ParticipantDataModal({
                         return (
                           <MenuItem
                             key={individualFilter.id}
-                            value={individualFilter}
+                            value={individualFilter.type}
                             onClick={() => handleFilterSelect(individualFilter)}
                           >
                             {individualFilter.id}
@@ -360,7 +384,7 @@ function ParticipantDataModal({
                       return (
                         <MenuItem
                           key={groupFilter.id}
-                          value={groupFilter}
+                          value={groupFilter.type}
                           onClick={() => handleFilterSelect(groupFilter)}
                         >
                           {groupFilter.id}
@@ -401,7 +425,7 @@ function ParticipantDataModal({
                 Audio Filters
               </Typography>
               {participantCopy.audio_filters.map(
-                (audioFilter, audioFilterIndex) => {
+                (audioFilter: any, audioFilterIndex: number) => {
                   return (
                     <Box
                       key={audioFilterIndex}
@@ -454,7 +478,7 @@ function ParticipantDataModal({
                                   >
                                     {audioFilter["config"][configType][
                                       "value"
-                                    ].map((value) => {
+                                    ].map((value: string) => {
                                       return (
                                         <MenuItem key={value} value={value}>
                                           {value}
@@ -497,7 +521,7 @@ function ParticipantDataModal({
                 Video Filters
               </Typography>
               {participantCopy.video_filters.map(
-                (videoFilter, videoFilterIndex) => {
+                (videoFilter: any, videoFilterIndex: number) => {
                   return (
                     <Box
                       key={videoFilterIndex}
@@ -561,7 +585,7 @@ function ParticipantDataModal({
                                   >
                                     {videoFilter["config"][configType][
                                       "defaultValue"
-                                    ].map((value) => {
+                                    ].map((value: string) => {
                                       return (
                                         <MenuItem key={value} value={value}>
                                           {value}

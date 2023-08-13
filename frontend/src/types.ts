@@ -28,8 +28,8 @@ export type Participant = {
   muted_audio: boolean;
   position: { x: number; y: number; z: number };
   chat: Chat[];
-  audio_filters: AudioFilter[];
-  video_filters: VideoFilter[];
+  audio_filters: Filter[];
+  video_filters: Filter[];
 };
 
 export type Box = {
@@ -53,17 +53,6 @@ export type Group = {
   height: number;
 };
 
-type VideoFilter = {
-  id: string;
-  type: string;
-};
-
-type AudioFilter = {
-  id: string;
-  type: string;
-  size?: number;
-};
-
 export type Chat = {
   message: string;
   time: number;
@@ -72,7 +61,9 @@ export type Chat = {
 };
 
 export type Filter = {
-  type: string;
   id: string;
-  size?: number;
+  type: string;
+  channel: string;
+  groupFilter: boolean;
+  config: object;
 };
