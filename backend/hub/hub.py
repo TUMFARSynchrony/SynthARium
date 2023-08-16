@@ -354,7 +354,8 @@ class Hub:
         # TODO: add get_config_json in all filters files
         for filter in Filter.__subclasses__():
             filter_name = filter.name(filter)
-            if not filter_name == "MUTE_AUDIO" or filter_name == "MUTE_VIDEO":
+            if not (filter_name == "MUTE_AUDIO"
+                    or filter_name == "MUTE_VIDEO"):
                 filter_json = filter.get_filter_json(filter)
 
                 if not filter.validate_filter_json(filter_json):

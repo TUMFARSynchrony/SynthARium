@@ -34,13 +34,6 @@
       }
     },
     {
-      "type": "MUTE_VIDEO",
-      "id": "mute-video",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {}
-    },
-    {
       "type": "DELAY",
       "id": "delay",
       "channel": "both",

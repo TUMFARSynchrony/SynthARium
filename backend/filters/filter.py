@@ -190,7 +190,6 @@ class Filter(ABC):
                     and isinstance(filter_json["config"][config]["step"], (float, int))
                     and isinstance(filter_json["config"][config]["value"], int)
                 ):
-                    print(type(filter_json["config"][config]["step"]))
                     return False
             else:
                 return False
