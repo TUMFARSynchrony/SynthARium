@@ -65,14 +65,14 @@ export type Filter = {
   type: string;
   channel: string;
   groupFilter: boolean;
-  config: object;
+  config: FilterConfig;
 };
 
-type FilterConfig = {
+export type FilterConfig = {
   [key: string]: FilterConfigArray | FilterConfigNumber;
 };
 
-type FilterConfigNumber = {
+export type FilterConfigNumber = {
   min: number;
   max: number;
   step: number;
@@ -80,7 +80,7 @@ type FilterConfigNumber = {
   defaultValue: number;
 };
 
-type FilterConfigArray = {
+export type FilterConfigArray = {
   value: string;
   defaultValue: string[];
 };

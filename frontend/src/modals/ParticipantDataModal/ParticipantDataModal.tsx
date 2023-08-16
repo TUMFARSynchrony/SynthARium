@@ -18,7 +18,7 @@ import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
-import { Filter, Participant } from "../../types";
+import { Filter, FilterConfigNumber, Participant } from "../../types";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
 // import filtersData from "../../filters_new.json";
@@ -74,7 +74,7 @@ function ParticipantDataModal({
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(
-    testData.find((filter) => filter.id === defaultFilterId)
+    testData.find((filter: Filter) => filter.id === defaultFilterId)
   );
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
@@ -382,7 +382,7 @@ function ParticipantDataModal({
                     <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
                       Group Filters
                     </ListSubheader>
-                    {groupFilters.map((groupFilter) => {
+                    {groupFilters.map((groupFilter: Filter) => {
                       return (
                         <MenuItem
                           key={groupFilter.id}
@@ -427,7 +427,7 @@ function ParticipantDataModal({
                 Audio Filters
               </Typography>
               {participantCopy.audio_filters.map(
-                (audioFilter: any, audioFilterIndex: number) => {
+                (audioFilter: Filter, audioFilterIndex: number) => {
                   return (
                     <Box
                       key={audioFilterIndex}
@@ -459,7 +459,9 @@ function ParticipantDataModal({
                           (configType, configIndex) => {
                             if (
                               Array.isArray(
-                                audioFilter["config"][configType]["value"]
+                                audioFilter["config"][configType][
+                                  "defaultValue"
+                                ]
                               )
                             ) {
                               return (
@@ -468,19 +470,30 @@ function ParticipantDataModal({
                                   sx={{ m: 1, width: "10vw", minWidth: 130 }}
                                   size="small"
                                 >
-                                  <InputLabel htmlFor="audio-filters-config">
+                                  <InputLabel htmlFor="grouped-select">
                                     {configType.charAt(0).toUpperCase() +
                                       configType.slice(1)}
                                   </InputLabel>
                                   <Select
                                     key={configIndex}
-                                    defaultValue=""
-                                    id="audio-filters-config"
-                                    label="Direction"
+                                    value={
+                                      audioFilter["config"][configType]["value"]
+                                    }
+                                    id="grouped-select"
+                                    onChange={(e) => {
+                                      handleFilterChange(
+                                        audioFilterIndex,
+                                        configType,
+                                        e.target.value,
+                                        "audio_filters"
+                                      );
+                                    }}
                                   >
-                                    {audioFilter["config"][configType][
-                                      "value"
-                                    ].map((value: string) => {
+                                    {(
+                                      audioFilter["config"][configType][
+                                        "defaultValue"
+                                      ] as string[]
+                                    ).map((value: string) => {
                                       return (
                                         <MenuItem key={value} value={value}>
                                           {value}
@@ -492,7 +505,7 @@ function ParticipantDataModal({
                               );
                             } else if (
                               typeof audioFilter["config"][configType][
-                                "value"
+                                "defaultValue"
                               ] == "number"
                             ) {
                               return (
@@ -502,11 +515,39 @@ function ParticipantDataModal({
                                     configType.charAt(0).toUpperCase() +
                                     configType.slice(1)
                                   }
-                                  id=""
-                                  defaultValue=""
+                                  defaultValue={
+                                    audioFilter["config"][configType]["value"]
+                                  }
+                                  InputProps={{
+                                    inputProps: {
+                                      min: (
+                                        audioFilter["config"][
+                                          configType
+                                        ] as FilterConfigNumber
+                                      )["min"],
+                                      max: (
+                                        audioFilter["config"][
+                                          configType
+                                        ] as FilterConfigNumber
+                                      )["max"],
+                                      step: (
+                                        audioFilter["config"][
+                                          configType
+                                        ] as FilterConfigNumber
+                                      )["step"]
+                                    }
+                                  }}
                                   type="number"
                                   size="small"
                                   sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                  onChange={(e) => {
+                                    handleFilterChange(
+                                      audioFilterIndex,
+                                      configType,
+                                      parseInt(e.target.value),
+                                      "audio_filters"
+                                    );
+                                  }}
                                 />
                               );
                             }
@@ -523,7 +564,7 @@ function ParticipantDataModal({
                 Video Filters
               </Typography>
               {participantCopy.video_filters.map(
-                (videoFilter: any, videoFilterIndex: number) => {
+                (videoFilter: Filter, videoFilterIndex: number) => {
                   return (
                     <Box
                       key={videoFilterIndex}
@@ -585,9 +626,11 @@ function ParticipantDataModal({
                                       );
                                     }}
                                   >
-                                    {videoFilter["config"][configType][
-                                      "defaultValue"
-                                    ].map((value: string) => {
+                                    {(
+                                      videoFilter["config"][configType][
+                                        "defaultValue"
+                                      ] as string[]
+                                    ).map((value: string) => {
                                       return (
                                         <MenuItem key={value} value={value}>
                                           {value}
@@ -614,15 +657,21 @@ function ParticipantDataModal({
                                   }
                                   InputProps={{
                                     inputProps: {
-                                      min: videoFilter["config"][configType][
-                                        "min"
-                                      ],
-                                      max: videoFilter["config"][configType][
-                                        "max"
-                                      ],
-                                      step: videoFilter["config"][configType][
-                                        "step"
-                                      ]
+                                      min: (
+                                        videoFilter["config"][
+                                          configType
+                                        ] as FilterConfigNumber
+                                      )["min"],
+                                      max: (
+                                        videoFilter["config"][
+                                          configType
+                                        ] as FilterConfigNumber
+                                      )["max"],
+                                      step: (
+                                        videoFilter["config"][
+                                          configType
+                                        ] as FilterConfigNumber
+                                      )["step"]
                                     }
                                   }}
                                   type="number"
