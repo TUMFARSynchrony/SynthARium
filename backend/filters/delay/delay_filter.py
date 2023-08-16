@@ -8,6 +8,7 @@ from av import VideoFrame, AudioFrame
 from custom_types import util
 from filters.filter import Filter
 from .delay_filter_dict import DelayFilterDict
+from filters.filter import FilterDict
 
 
 class DelayFilter(Filter):
@@ -17,10 +18,9 @@ class DelayFilter(Filter):
     """
 
     buffer: Queue[numpy.ndarray]
-    _config: DelayFilterDict
 
     def __init__(
-        self, config: DelayFilterDict, audio_track_handler, video_track_handler
+        self, config: FilterDict, audio_track_handler, video_track_handler
     ) -> None:
         """Initialize new MuteVideoFilter.
 
@@ -32,7 +32,7 @@ class DelayFilter(Filter):
         See base class: filters.filter.Filter.
         """
         super().__init__(config, audio_track_handler, video_track_handler)
-        self.buffer = Queue(config["size"])
+        self.buffer = Queue(config["config"]["size"]["value"])
 
     @staticmethod
     def name(self) -> str:
@@ -68,11 +68,11 @@ class DelayFilter(Filter):
             return self.buffer.get()
         return self.buffer.queue[0]
 
-    @staticmethod
+    """ @staticmethod
     def validate_dict(data) -> TypeGuard[DelayFilterDict]:
         return (
             util.check_valid_typeddict_keys(data, DelayFilterDict)
             and "size" in data
             and isinstance(data["size"], int)
             and data["size"] > 0
-        )
+        ) """

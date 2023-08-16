@@ -21,7 +21,8 @@ import { getParticipantInviteLink } from "../../utils/utils";
 import { Filter, Participant } from "../../types";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
-import filtersData from "../../filters_new.json";
+// import filtersData from "../../filters_new.json";
+import filtersData from "../../data.json";
 
 // This is the current filters that is working integrated with the backend.
 //import filtersData from "../../filters.json";
@@ -32,7 +33,8 @@ const testData = filtersData.filters;
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
 // For current filters, set default filter = "test", and for new filters set default filter = "none"
 //const defaultFilterId = "test";
-const defaultFilterId = "none";
+//const defaultFilterId = "none";
+const defaultFilterId = "filter-api-test";
 
 const getIndividualFilters = () => {
   return testData.filter((filter) => filter.groupFilter !== true);
