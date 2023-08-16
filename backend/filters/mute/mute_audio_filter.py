@@ -44,12 +44,18 @@ class MuteAudioFilter(Filter):
         return "MUTE_AUDIO"
 
     @staticmethod
-    def get_config_json(self) -> object:
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        data = {"type": name, "id": id}
-        return data
+        return {
+            "type": name,
+            "id": id,
+            "channel": "video",
+            "groupFilter": False,
+            "config": {}
+        }
 
     async def process(
         self, original: AudioFrame, ndarray: numpy.ndarray | None = None

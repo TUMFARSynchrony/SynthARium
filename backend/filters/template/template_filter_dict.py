@@ -15,4 +15,5 @@ class TemplateFilterDict(FilterDict):
         Example value for template
     """
 
+    direction: str
     size: int

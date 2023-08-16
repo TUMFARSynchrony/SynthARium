@@ -41,6 +41,20 @@ class SimpleGlassesDetection(Filter):
     def name(self) -> str:
         return "SIMPLE_GLASSES_DETECTION"
 
+    @staticmethod
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "type": name,
+            "id": id,
+            "channel": "video",
+            "groupFilter": False,
+            "config": {}
+        }
+
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape
         origin = (10,height - 10)

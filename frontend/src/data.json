@@ -1,0 +1,99 @@
+{
+  "filters": [
+    {
+      "type": "FILTER_API_TEST",
+      "id": "filter-api-test",
+      "channel": "both",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "EDGE_OUTLINE",
+      "id": "edge-outline",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "ROTATION",
+      "id": "rotation",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {
+        "direction": {
+          "defaultValue": ["clockwise", "anti-clockwise"],
+          "value": "clockwise"
+        },
+        "angle": {
+          "min": 1,
+          "max": 180,
+          "step": 1,
+          "value": 45,
+          "defaultValue": 45
+        }
+      }
+    },
+    {
+      "type": "MUTE_VIDEO",
+      "id": "mute-video",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "DELAY",
+      "id": "delay",
+      "channel": "both",
+      "groupFilter": false,
+      "config": {
+        "size": {
+          "min": 0,
+          "max": 120,
+          "step": 1,
+          "value": 60,
+          "defaultValue": 60
+        }
+      }
+    },
+    {
+      "type": "OPENFACE_AU",
+      "id": "openface-au",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "AUDIO_SPEAKING_TIME",
+      "id": "audio-speaking-time",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "DISPLAY_SPEAKING_TIME",
+      "id": "display-speaking-time",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {
+        "filterId": {
+          "defaultValue": ["audio-speaking-time"],
+          "value": "audio-speaking-time"
+        }
+      }
+    },
+    {
+      "type": "GLASSES_DETECTION",
+      "id": "glasses-detection",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "SIMPLE_GLASSES_DETECTION",
+      "id": "simple-glasses-detection",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    }
+  ]
+}

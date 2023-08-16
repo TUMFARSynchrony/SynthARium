@@ -165,7 +165,7 @@ class Filter(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_config_json(self) -> object:
+    def get_filter_json(self) -> object:
         """Provide config of the filters.
 
         It requires at least type and id
@@ -173,6 +173,33 @@ class Filter(ABC):
         """
         raise NotImplementedError(
             f"{self} is missing it's implementation of the static abstract name() method."
+        )
+
+    def validate_filter_json(filter_json) -> bool:
+        for config in filter_json["config"]:
+            if isinstance(filter_json["config"][config]["defaultValue"], list):
+                for defaultValue in filter_json["config"][config]["defaultValue"]:
+                    if not isinstance(defaultValue, str):
+                        return False
+                if not isinstance(filter_json["config"][config]["value"], str):
+                    return False
+            elif isinstance(filter_json["config"][config]["defaultValue"], int):
+                if not (
+                    isinstance(filter_json["config"][config]["min"], int)
+                    and isinstance(filter_json["config"][config]["max"], int)
+                    and isinstance(filter_json["config"][config]["step"], (float, int))
+                    and isinstance(filter_json["config"][config]["value"], int)
+                ):
+                    print(type(filter_json["config"][config]["step"]))
+                    return False
+            else:
+                return False
+        return (
+            isinstance(filter_json["type"], str)
+            and isinstance(filter_json["id"], str)
+            and isinstance(filter_json["channel"], str)
+            and isinstance(filter_json["groupFilter"], bool)
+            and isinstance(filter_json["config"], dict)
         )
 
     def __repr__(self) -> str:

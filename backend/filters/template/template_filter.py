@@ -25,6 +25,34 @@ class TemplateFilter(Filter):
         # change this name
         return "TEMPLATE"
 
+    @staticmethod
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "type": name,
+            "id": id,
+            "channel": "video",
+            "groupFilter": False,
+            "config": {
+                # add or delete this, example of how a filter config can look like
+                """
+                "direction": {
+                    "defaultValue": ["clockwise", "anti-clockwise"],
+                    "value": "clockwise",
+                },
+                "size": {
+                    "min": 1,
+                    "max": 60,
+                    "step": 1,
+                    "value": 45,
+                    "defaultValue": 45,
+                }, """
+            }
+        }
+
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # change this to implement filter
         self.line_writer.write_line(ndarray, "Hello World")

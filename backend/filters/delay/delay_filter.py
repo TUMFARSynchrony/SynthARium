@@ -38,6 +38,28 @@ class DelayFilter(Filter):
     def name(self) -> str:
         return "DELAY"
 
+    @staticmethod
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "type": name,
+            "id": id,
+            "channel": "both",
+            "groupFilter": False,
+            "config": {
+                "size": {
+                    "min": 0,
+                    "max": 120,
+                    "step": 1,
+                    "value": 60,
+                    "defaultValue": 60,
+                },
+            },
+        }
+
     async def process(
         self, _: VideoFrame | AudioFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:

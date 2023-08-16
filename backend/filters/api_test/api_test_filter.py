@@ -16,17 +16,17 @@ class FilterAPITestFilter(Filter):
         return "FILTER_API_TEST"
 
     @staticmethod
-    def get_config_json(self) -> object:
-        # TODO: add type, change current type to name
+    def get_filter_json(self) -> object:
         name = self.name(self)
         id = name.lower()
-        id = id.replace('_', '-')
-        data = {
-            "name": name,
-            "type": "video",
-            "id": id
+        id = id.replace("_", "-")
+        return {
+            "type": name,
+            "id": id,
+            "channel": "both",
+            "groupFilter": False,
+            "config": {},
         }
-        return data
 
     counter = 0
 

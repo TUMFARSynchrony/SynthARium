@@ -70,7 +70,7 @@ class Hub:
 
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
-        self.get_filters_config()
+        self.get_filters_json()
 
         self.experimenters = []
         self.experiments = {}
@@ -349,23 +349,26 @@ class Hub:
             if experimenter is not exclude:
                 await experimenter.send(data)
 
-    def get_filters_config(self):
-        filters_config = {"filters": []}
+    def get_filters_json(self):
+        filters_json = {"filters": []}
         # TODO: add get_config_json in all filters files
         for filter in Filter.__subclasses__():
             filter_name = filter.name(filter)
-            if (
-                filter_name == "ROTATION"
-                or filter_name == "FILTER_API_TEST"
-                or filter_name == "AUDIO_SPEAKING_TIME"
-            ):
-                filters_config["filters"].append(filter.get_config_json(filter))
+            if not filter_name == "MUTE_AUDIO" or filter_name == "MUTE_VIDEO":
+                filter_json = filter.get_filter_json(filter)
+
+                if not filter.validate_filter_json(filter_json):
+                    raise ValueError(
+                        f"{filter} has incorrect values in get_filter_json."
+                    )
+
+                filters_json["filters"].append(filter_json)
 
         # Syntax of write JSON data to file
         # TODO: change path to frontend file
         path = "./frontend/src/data.json"
         with open(path, "w") as outfile:
             # json_data refers to the above JSON
-            json.dump(filters_config, outfile)
+            json.dump(filters_json, outfile)
 
-        return filters_config
+        return filters_json

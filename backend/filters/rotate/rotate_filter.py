@@ -28,12 +28,12 @@ class RotationFilter(Filter):
         return "ROTATION"
 
     @staticmethod
-    def get_config_json(self) -> object:
+    def get_filter_json(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        data = {
+        return {
             "type": name,
             "id": id,
             "channel": "video",
@@ -52,7 +52,6 @@ class RotationFilter(Filter):
                 },
             },
         }
-        return data
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
