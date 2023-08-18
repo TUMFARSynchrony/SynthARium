@@ -196,9 +196,7 @@ function ParticipantDataModal({
       />
       <Dialog
         open={showParticipantInput}
-        onClose={() => {
-          onCloseModalWithoutData();
-        }}
+        onClose={() => onCloseModalWithoutData()}
       >
         <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
           Participant Details
@@ -471,9 +469,7 @@ function ParticipantDataModal({
             variant="contained"
             color="error"
             size="medium"
-            onClick={() => {
-              onCloseModalWithoutData();
-            }}
+            onClick={() => onCloseModalWithoutData()}
           />
           <ActionButton
             text="SAVE"
