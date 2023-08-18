@@ -10,23 +10,6 @@ export const getRandomColor = () => {
   return color;
 };
 
-const getRandomNumberInclusive = (min: number, max: number) => {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1) + min);
-};
-export const getRandomLocationOnCanvas = (
-  canvasWidth: number,
-  canvasHeight: number
-): {
-  xAxis: number;
-  yAxis: number;
-} => {
-  // added 10px margin on both axes to not stick participant's video frame to the container
-  const xAxis = getRandomNumberInclusive(10, 1024 - canvasWidth - 10);
-  const yAxis = getRandomNumberInclusive(10, 640 - canvasHeight - 10);
-  return { xAxis, yAxis };
-};
 export const filterListByIndex = <T>(list: T[], index: number): T[] => {
   const filteredList = list.filter((_, i) => {
     return i !== index;
