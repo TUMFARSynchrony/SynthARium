@@ -76,6 +76,7 @@
     "@storybook/react-webpack5": "^7.0.27",
     "@storybook/testing-library": "^0.0.14-next.2",
     "@types/qrcode": "^1.4.2",
+    "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^5.59.9",
     "@typescript-eslint/parser": "^5.59.9",
     "babel-plugin-named-exports-order": "^0.0.2",
