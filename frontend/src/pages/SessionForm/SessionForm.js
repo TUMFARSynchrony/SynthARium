@@ -35,6 +35,7 @@ import {
   changeValue,
   deleteParticipant,
   initializeSession,
+  selectNumberOfParticipants,
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
@@ -43,9 +44,12 @@ function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useAppDispatch();
   const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
+  const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
+  const [xAxis, setXAxis] = useState(0);
+  const [yAxis, setYAxis] = useState(0);
   // TO DO: remove the field time_limit from session.json
   const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
-  const [numOfParticipants, setNumOfParticipants] = useState();
+  // const [numOfParticipants, setNumOfParticipants] = useState();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [participantDimensions, setParticipantDimensions] = useState(
@@ -66,6 +70,10 @@ function SessionForm({ onSendSessionToBackend }) {
 
   useEffect(() => {
     setSessionData(openSession);
+    if (openSession.participants.length === 0) {
+      setXAxis(0);
+      setYAxis(0);
+    }
   }, [openSession]);
 
   useEffect(() => {
@@ -100,6 +108,11 @@ function SessionForm({ onSendSessionToBackend }) {
     }
   }, [snackbarResponse]);
 
+  const handleCanvasPlacement = () => {
+    setXAxis(xAxis + 25);
+    setYAxis(yAxis + 25);
+  };
+
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant(index));
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
@@ -107,20 +120,18 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const onAddParticipant = () => {
     dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
-
     const newParticipantDimensions = [
       ...participantDimensions,
       {
         shapes: {
-          x: 0,
-          y: 0,
+          x: xAxis,
+          y: yAxis,
           fill: getRandomColor(),
           z: 0
         },
-        groups: { x: 10, y: 10, z: 0, width: 300, height: 300 }
+        groups: { x: 0, y: 0, z: 0, width: 300, height: 300 }
       }
     ];
-
     setParticipantDimensions(newParticipantDimensions);
   };
 
@@ -206,7 +217,6 @@ function SessionForm({ onSendSessionToBackend }) {
   //     console.log(sessionData);
   //   }
   // };
-
   return (
     <>
       <Grid container sx={{ mx: 4, my: 2 }}>
@@ -278,11 +288,10 @@ function SessionForm({ onSendSessionToBackend }) {
                       />
                       <TextField
                         label="Number of Participants"
-                        value={sessionData.participants.length}
+                        value={numberOfParticipants}
                         type="number"
                         size="small"
                         disabled
-                        onChange={(num) => setNumOfParticipants(num)}
                       />
                     </Box>
                     <Box sx={{ mt: 1, mb: 3 }}>
@@ -322,6 +331,7 @@ function SessionForm({ onSendSessionToBackend }) {
                         sessionId={sessionData.id}
                         handleParticipantChange={handleParticipantChange}
                         setSnackbarResponse={setSnackbarResponse}
+                        handleCanvasPlacement={handleCanvasPlacement}
                       />
                     );
                   })}
