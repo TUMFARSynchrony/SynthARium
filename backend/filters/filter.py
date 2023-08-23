@@ -208,7 +208,7 @@ class Filter(ABC):
             else:
                 return False
         return (
-            isinstance(filter_json["type"], str)
+            isinstance(filter_json["name"], str)
             and isinstance(filter_json["id"], str)
             and isinstance(filter_json["channel"], str)
             and isinstance(filter_json["groupFilter"], bool)

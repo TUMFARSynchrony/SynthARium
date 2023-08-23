@@ -1,14 +1,14 @@
 {
   "TEST": [
     {
-      "type": "GLASSES_DETECTION",
+      "name": "GLASSES_DETECTION",
       "id": "glasses-detection",
       "channel": "video",
       "groupFilter": false,
       "config": {}
     },
     {
-      "type": "SIMPLE_GLASSES_DETECTION",
+      "name": "SIMPLE_GLASSES_DETECTION",
       "id": "simple-glasses-detection",
       "channel": "video",
       "groupFilter": false,
@@ -17,21 +17,21 @@
   ],
   "SESSION": [
     {
-      "type": "FILTER_API_TEST",
+      "name": "FILTER_API_TEST",
       "id": "filter-api-test",
       "channel": "both",
       "groupFilter": false,
       "config": {}
     },
     {
-      "type": "EDGE_OUTLINE",
+      "name": "EDGE_OUTLINE",
       "id": "edge-outline",
       "channel": "video",
       "groupFilter": false,
       "config": {}
     },
     {
-      "type": "ROTATION",
+      "name": "ROTATION",
       "id": "rotation",
       "channel": "video",
       "groupFilter": false,
@@ -50,7 +50,7 @@
       }
     },
     {
-      "type": "DELAY",
+      "name": "DELAY",
       "id": "delay",
       "channel": "both",
       "groupFilter": false,
@@ -65,21 +65,21 @@
       }
     },
     {
-      "type": "OPENFACE_AU",
+      "name": "OPENFACE_AU",
       "id": "openface-au",
       "channel": "video",
       "groupFilter": false,
       "config": {}
     },
     {
-      "type": "AUDIO_SPEAKING_TIME",
+      "name": "AUDIO_SPEAKING_TIME",
       "id": "audio-speaking-time",
       "channel": "video",
       "groupFilter": false,
       "config": {}
     },
     {
-      "type": "DISPLAY_SPEAKING_TIME",
+      "name": "DISPLAY_SPEAKING_TIME",
       "id": "display-speaking-time",
       "channel": "video",
       "groupFilter": false,

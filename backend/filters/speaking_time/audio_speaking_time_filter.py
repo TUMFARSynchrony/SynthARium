@@ -42,14 +42,16 @@ class AudioSpeakingTimeFilter(Filter):
         id = name.lower()
         id = id.replace("_", "-")
         return {
-            "type": name,
+            "name": name,
             "id": id,
             "channel": "video",
             "groupFilter": False,
-            "config": {}
+            "config": {},
         }
 
-    async def process(self, original: AudioFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
+    async def process(
+        self, original: AudioFrame, ndarray: numpy.ndarray
+    ) -> numpy.ndarray:
         if numpy.abs(ndarray).mean() > 250:
             self.has_spoken = True
             self.sample_rate = original.sample_rate
@@ -60,4 +62,3 @@ class AudioSpeakingTimeFilter(Filter):
         # todo: seconds stimmt nicht mit original.time überein
         # time ist 16.46, self.seconds ist 5 obwohl die ganze Zeit geredet (vielleicht aber nicht jeden Frame)
         return ndarray
-

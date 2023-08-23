@@ -32,18 +32,18 @@ def create_filter(
     hub.exceptions.ErrorDictException
         If the filter type is unknown.
     """
-    filter_type = filter_config["type"]
+    filter_name = filter_config["name"]
 
     filters = get_filter_dict()
 
-    if filter_type not in filters:
+    if filter_name not in filters:
         raise ErrorDictException(
             code=404,
             type="UNKNOWN_FILTER_TYPE",
-            description=f'Unknown filter type "{filter_type}".',
+            description=f'Unknown filter type "{filter_name}".',
         )
 
-    return filters[filter_type](filter_config, audio_track_handler, video_track_handler)
+    return filters[filter_name](filter_config, audio_track_handler, video_track_handler)
 
 
 def init_mute_filter(
@@ -68,13 +68,13 @@ def init_mute_filter(
     """
     if kind == "audio":
         return MuteAudioFilter(
-            {"id": "0", "type": "MUTE_AUDIO"},
+            {"id": "0", "name": "MUTE_AUDIO"},
             audio_track_handler,
             video_track_handler,
         )
     else:
         return MuteVideoFilter(
-            {"id": "0", "type": "MUTE_VIDEO"},
+            {"id": "0", "name": "MUTE_VIDEO"},
             audio_track_handler,
             video_track_handler,
         )

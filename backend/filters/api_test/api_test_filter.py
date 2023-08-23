@@ -25,7 +25,7 @@ class FilterAPITestFilter(Filter):
         id = name.lower()
         id = id.replace("_", "-")
         return {
-            "type": name,
+            "name": name,
             "id": id,
             "channel": "both",
             "groupFilter": False,

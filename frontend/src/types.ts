@@ -62,7 +62,7 @@ export type Chat = {
 
 export type Filter = {
   id: string;
-  type: string;
+  name: string;
   channel: string;
   groupFilter: boolean;
   config: FilterConfig;

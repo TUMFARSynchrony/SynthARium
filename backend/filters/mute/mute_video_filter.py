@@ -58,11 +58,11 @@ class MuteVideoFilter(Filter):
         id = name.lower()
         id = id.replace("_", "-")
         return {
-            "type": name,
+            "name": name,
             "id": id,
             "channel": "video",
             "groupFilter": False,
-            "config": {}
+            "config": {},
         }
 
     async def process(

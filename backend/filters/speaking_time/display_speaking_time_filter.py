@@ -8,6 +8,7 @@ from av import VideoFrame
 from custom_types import util
 from filters.filter import Filter
 
+
 class DisplaySpeakingTimeFilter(Filter):
     _speaking_time_filter: AudioSpeakingTimeFilter
 
@@ -31,7 +32,7 @@ class DisplaySpeakingTimeFilter(Filter):
         id = name.lower()
         id = id.replace("_", "-")
         return {
-            "type": name,
+            "name": name,
             "id": id,
             "channel": "video",
             "groupFilter": False,

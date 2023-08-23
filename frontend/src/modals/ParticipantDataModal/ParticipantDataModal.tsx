@@ -27,7 +27,7 @@ import filtersData from "../../filters_data.json";
 const testData = filtersData.SESSION;
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-const defaultFilterType = "FILTER_API_TEST";
+const defaultFilterName = "FILTER_API_TEST";
 
 const getIndividualFilters = () => {
   return testData.filter((filter) => filter.groupFilter !== true);
@@ -67,7 +67,7 @@ function ParticipantDataModal({
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(
-    testData.find((filter: Filter) => filter.type === defaultFilterType)
+    testData.find((filter: Filter) => filter.name === defaultFilterName)
   );
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
@@ -329,7 +329,7 @@ function ParticipantDataModal({
                 <InputLabel id="filters-select">Filters</InputLabel>
                 {
                   <Select
-                    value={selectedFilter.type}
+                    value={selectedFilter.name}
                     id="filters-select"
                     label="Filters"
                   >
@@ -341,10 +341,10 @@ function ParticipantDataModal({
                       return (
                         <MenuItem
                           key={individualFilter.id}
-                          value={individualFilter.type}
+                          value={individualFilter.name}
                           onClick={() => handleFilterSelect(individualFilter)}
                         >
-                          {individualFilter.type}
+                          {individualFilter.name}
                         </MenuItem>
                       );
                     })}
@@ -355,10 +355,10 @@ function ParticipantDataModal({
                       return (
                         <MenuItem
                           key={groupFilter.id}
-                          value={groupFilter.type}
+                          value={groupFilter.name}
                           onClick={() => handleFilterSelect(groupFilter)}
                         >
-                          {groupFilter.type}
+                          {groupFilter.name}
                         </MenuItem>
                       );
                     })}
@@ -385,7 +385,7 @@ function ParticipantDataModal({
                       <Box sx={{ minWidth: 140 }}>
                         <Chip
                           key={audioFilterIndex}
-                          label={audioFilter.type}
+                          label={audioFilter.name}
                           variant="outlined"
                           size="medium"
                           color="secondary"
@@ -521,7 +521,7 @@ function ParticipantDataModal({
                       <Box sx={{ minWidth: 140 }}>
                         <Chip
                           key={videoFilterIndex}
-                          label={videoFilter.type}
+                          label={videoFilter.name}
                           variant="outlined"
                           size="medium"
                           color="secondary"

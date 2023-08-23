@@ -73,6 +73,7 @@ class Hub:
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
         self.get_filters_json()
+        self._logger.debug(f"Successfully created filters_data.json")
 
         self.experimenters = []
         self.experiments = {}
@@ -352,6 +353,7 @@ class Hub:
                 await experimenter.send(data)
 
     def get_filters_json(self):
+        """Generate the filters_data.json file."""
         filters_json = {"TEST": [], "SESSION": []}
         for filter in Filter.__subclasses__():
             filter_type = filter.filter_type(filter)
@@ -374,5 +376,3 @@ class Hub:
         path = join(FRONTEND_DIR, "src/filters_data.json")
         with open(path, "w") as outfile:
             json.dump(filters_json, outfile)
-
-        return filters_json

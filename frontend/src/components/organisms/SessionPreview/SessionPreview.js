@@ -199,7 +199,7 @@ function SessionPreview({
                                       <Chip
                                         key={audioFilterIndex}
                                         variant="outlined"
-                                        label={audioFilter.type}
+                                        label={audioFilter.name}
                                         size="small"
                                         color="secondary"
                                       />
@@ -232,7 +232,7 @@ function SessionPreview({
                                     <Chip
                                       key={videoFilterindex}
                                       variant="outlined"
-                                      label={videoFilter.type}
+                                      label={videoFilter.name}
                                       size="small"
                                       color="secondary"
                                     />
