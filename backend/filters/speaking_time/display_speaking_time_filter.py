@@ -62,11 +62,3 @@ class DisplaySpeakingTimeFilter(Filter):
 
         # Return modified frame
         return ndarray
-
-    """ @staticmethod
-    def validate_dict(data) -> TypeGuard[DisplaySpeakingTimeFilterDict]:
-        return (
-            util.check_valid_typeddict_keys(data, DisplaySpeakingTimeFilterDict)
-            and "audio_speaking_time_filter_id" in data
-            and isinstance(data["audio_speaking_time_filter_id"], str)
-        ) """
