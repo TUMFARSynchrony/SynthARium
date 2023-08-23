@@ -13,6 +13,7 @@ import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import PageTemplate from "./components/templates/PageTemplate";
 import HeaderActionArea from "./components/atoms/Button/HeaderActionArea";
+import Consent from "./pages/Consent/Consent";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
   changeExperimentState,
@@ -55,7 +56,10 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
+    console.groupCollapsed(
+      "%cConnection peer streams change Handler",
+      "color:blue"
+    );
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -66,7 +70,10 @@ function App() {
 
   /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
-    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
+    console.log(
+      `%cConnection state change Handler: ${ConnectionState[state]}`,
+      "color:blue"
+    );
 
     setConnectionState(state);
   };
@@ -392,7 +399,12 @@ function App() {
               />
             }
           />
-          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
+          <Route exact path="/consent" element={<Consent />} />
+          <Route
+            exact
+            path="/postProcessingRoom"
+            element={<PostProcessing />}
+          />
           <Route
             exact
             path="/lobby"
@@ -516,7 +528,11 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
+                customComponent={
+                  <SessionForm
+                    onSendSessionToBackend={onSendSessionToBackend}
+                  />
+                }
                 centerContentOnYAxis={true}
               />
             }
