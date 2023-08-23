@@ -7,8 +7,6 @@ from av import VideoFrame
 
 from custom_types import util
 from filters.filter import Filter
-from .display_speaking_time_filter_dict import DisplaySpeakingTimeFilterDict
-
 
 class DisplaySpeakingTimeFilter(Filter):
     _speaking_time_filter: AudioSpeakingTimeFilter

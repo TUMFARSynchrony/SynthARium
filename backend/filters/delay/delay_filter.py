@@ -7,7 +7,6 @@ from av import VideoFrame, AudioFrame
 
 from custom_types import util
 from filters.filter import Filter
-from .delay_filter_dict import DelayFilterDict
 from filters.filter import FilterDict
 
 
