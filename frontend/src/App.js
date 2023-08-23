@@ -11,6 +11,7 @@ import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import Consent from "./pages/Consent/Consent";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
   changeExperimentState,
@@ -378,6 +379,7 @@ function App() {
               />
             }
           />
+          <Route exact path="/consent" element={<Consent />} />
           <Route
             exact
             path="/postProcessingRoom"
