@@ -8,6 +8,5 @@ BACKEND_DIR = Path(__file__).parent.parent
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
 """Root directory for frontend"""
 
-
 FRONTEND_BUILD_DIR = FRONTEND_DIR / "build"
 """Directory with frontend build."""

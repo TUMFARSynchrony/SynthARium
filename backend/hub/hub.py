@@ -365,12 +365,9 @@ class Hub:
 
                 filters_json["filters"].append(filter_json)
 
-        # Syntax of write JSON data to file
-        # TODO: change path to frontend file
         path = join(FRONTEND_DIR, "src/filters_data.json")
         print("Path: ", path)
         with open(path, "w") as outfile:
-            # json_data refers to the above JSON
             json.dump(filters_json, outfile)
 
         return filters_json
