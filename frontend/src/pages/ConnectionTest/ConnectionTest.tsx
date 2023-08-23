@@ -729,7 +729,7 @@ function ReplaceConnection(props: {
  * @param props.srcObject video and audio source
  * @param props.ignoreAudio if true, audio tracks in `srcObject` will be ignored.
  */
-function Video(props: {
+export function Video(props: {
   title: string;
   srcObject: MediaStream;
   ignoreAudio?: boolean;

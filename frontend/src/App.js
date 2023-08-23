@@ -391,7 +391,6 @@ function App() {
                 <Lobby
                   localStream={localStream}
                   connection={connection}
-                  connectionState={connectionState}
                   onGetSession={onGetSession}
                 />
               ) : (

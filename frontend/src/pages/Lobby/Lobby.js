@@ -5,11 +5,13 @@ import ListItem from "@mui/material/ListItem";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { Video } from "../ConnectionTest/ConnectionTest";
 import styled from "@mui/material/styles/styled";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
 import { ActionIconButton } from "../../components/atoms/Button";
+import { ConnectedPeer } from "../../networking/typing";
 import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
@@ -17,60 +19,116 @@ import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 import { instructionsList } from "../../utils/constants";
 import Note from "../../components/atoms/Note/Note";
 
-function Lobby({ localStream, connection, connectionState, onGetSession }) {
+function Lobby({ localStream, connection, onGetSession }) {
   const videoElement = useRef(null);
   const [message, setMessage] = useState("");
-  const [participantStream, setParticipantStream] = useState(localStream);
+  const [userConsent, setUserConsent] = useState(false);
+  const [participantStream, setParticipantStream] = useState(null);
+  const [connectionState, setConnectionState] = useState(null);
   const currentSession = useAppSelector(selectCurrentSession);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  console.log(sessionIdParam);
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
     }
   }, [connection, connectionState, sessionIdParam]);
+  const connectedPeersChangeHandler = async (peers) => {
+    console.groupCollapsed(
+      "%cConnection peer streams change Handler",
+      "color:blue"
+    );
+    console.groupEnd();
+    setConnectedParticipants(peers);
+  };
+  useEffect(() => {
+    connection.on("remoteStreamChange", streamChangeHandler);
+    connection.on("connectionStateChange", stateChangeHandler);
+    connection.on("connectedPeersChange", connectedPeersChangeHandler);
+    return () => {
+      // Remove event handlers when component is deconstructed
+      connection.off("remoteStreamChange", streamChangeHandler);
+      connection.off("connectionStateChange", stateChangeHandler);
+      connection.off("connectedPeersChange", connectedPeersChangeHandler);
+    };
+  }, [connection]);
+  useEffect(() => {
+    if (userConsent) {
+      setParticipantStream(localStream);
+    }
+  }, [localStream, userConsent]);
 
   useEffect(() => {
-    setParticipantStream(localStream);
-  }, [localStream]);
-
-  useEffect(() => {
-    if (participantStream) {
+    if (participantStream && userConsent) {
       videoElement.current.srcObject = localStream;
     }
-  }, [participantStream]);
+  }, [participantStream, userConsent]);
 
   const TabText = styled(Typography)(({ theme }) => ({
     color: theme.palette.primary.main
   }));
 
+  const streamChangeHandler = async () => {
+    console.log("%cRemote Stream Change Handler", "color:blue");
+  };
+  /** Handle `connectionStateChange` event of {@link Connection} */
+  const stateChangeHandler = async (state) => {
+    setConnectionState(state);
+  };
+
+  /** Get the title displayed in a {@link Video} element for `peer`. */
+  const getVideoTitle = (peer: ConnectedPeer, index: number) => {
+    if (peer.summary) {
+      if (peer.summary instanceof Object) {
+        return `${peer.summary.participant_name}`;
+      }
+      return `UserID: ${peer.summary}`;
+    }
+    return `Peer stream ${index + 1}`;
+  };
   return (
     <>
       <AppToolbar />
-      <ConsentModal />
+      <ConsentModal onConsentGiven={setUserConsent} />
       {/* Grid takes up screen space left from the AppToolbar */}
       <Box sx={{ height: "92vh", display: "flex" }}>
         <Paper
           elevation={2}
           sx={{ backgroundColor: "whitesmoke", height: "100%", width: "75%" }}
         >
-          {participantStream ? (
-            // Displaying local stream of participant
-            <video
-              ref={videoElement}
-              autoPlay
-              playsInline
-              width="100%"
-              height="100%"
-            ></video>
+          {userConsent ? (
+            participantStream ? (
+              currentSession ? (
+                <div className="peerStreams">
+                  <Video title="You" srcObject={localStream} key={0} />
+                  {connectedParticipants.map((peer, i) => (
+                    <Video
+                      title={getVideoTitle(peer, i)}
+                      srcObject={peer.stream}
+                      key={i}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <video
+                  ref={videoElement}
+                  autoPlay
+                  playsInline
+                  width="100%"
+                  height="100%"
+                ></video>
+              )
+            ) : (
+              <Typography>
+                Unable to access your video. Please check that you have allowed
+                access to your camera and microphone.
+              </Typography>
+            )
           ) : (
-            <Typography>
-              Unable to access your video. Please check that you have allowed
-              access to your camera and microphone.
-            </Typography>
+            <Typography>Please check if you gave your consent!</Typography>
           )}
         </Paper>
         <Paper
