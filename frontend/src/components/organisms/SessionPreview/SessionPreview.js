@@ -181,11 +181,13 @@ function SessionPreview({
                             }}
                           >
                             <Typography variant="overline">
-                              Filters :{" "}
+                              Audio Filters :{" "}
                             </Typography>
                             {participant.audio_filters.length === 0 &&
                               participant.video_filters.length === 0 && (
-                                <Typography>No filters applied!</Typography>
+                                <Typography>
+                                  No audio filters applied!
+                                </Typography>
                               )}
                             <Box>
                               {
@@ -197,7 +199,7 @@ function SessionPreview({
                                       <Chip
                                         key={audioFilterIndex}
                                         variant="outlined"
-                                        label={audioFilter.id}
+                                        label={audioFilter.type}
                                         size="small"
                                         color="secondary"
                                       />
@@ -205,13 +207,32 @@ function SessionPreview({
                                   }
                                 )
                               }
+                            </Box>
+                          </ListItem>
+                          <ListItem
+                            sx={{
+                              pl: 4,
+                              display: "flex",
+                              justifyContent: "space-between"
+                            }}
+                          >
+                            <Typography variant="overline">
+                              Video Filters :{" "}
+                            </Typography>
+                            {participant.audio_filters.length === 0 &&
+                              participant.video_filters.length === 0 && (
+                                <Typography>
+                                  No video filters applied!
+                                </Typography>
+                              )}
+                            <Box>
                               {participant.video_filters.map(
                                 (videoFilter, videoFilterindex) => {
                                   return (
                                     <Chip
                                       key={videoFilterindex}
                                       variant="outlined"
-                                      label={videoFilter.id}
+                                      label={videoFilter.type}
                                       size="small"
                                       color="secondary"
                                     />
@@ -219,6 +240,13 @@ function SessionPreview({
                                 }
                               )}
                             </Box>
+                          </ListItem>
+                          <ListItem
+                            sx={{
+                              display: "flex",
+                              justifyContent: "flex-end"
+                            }}
+                          >
                             <ActionIconButton
                               text="INVITE"
                               variant="outlined"
