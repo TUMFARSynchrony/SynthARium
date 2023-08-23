@@ -5,6 +5,8 @@ from aiortc import RTCSessionDescription
 import asyncio
 import logging
 import json
+from os.path import join
+from hub import FRONTEND_DIR
 
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
@@ -351,11 +353,9 @@ class Hub:
 
     def get_filters_json(self):
         filters_json = {"filters": []}
-        # TODO: add get_config_json in all filters files
         for filter in Filter.__subclasses__():
             filter_name = filter.name(filter)
-            if not (filter_name == "MUTE_AUDIO"
-                    or filter_name == "MUTE_VIDEO"):
+            if not (filter_name == "MUTE_AUDIO" or filter_name == "MUTE_VIDEO"):
                 filter_json = filter.get_filter_json(filter)
 
                 if not filter.validate_filter_json(filter_json):
@@ -367,7 +367,8 @@ class Hub:
 
         # Syntax of write JSON data to file
         # TODO: change path to frontend file
-        path = "./frontend/src/data.json"
+        path = join(FRONTEND_DIR, "src/filters_data.json")
+        print("Path: ", path)
         with open(path, "w") as outfile:
             # json_data refers to the above JSON
             json.dump(filters_json, outfile)

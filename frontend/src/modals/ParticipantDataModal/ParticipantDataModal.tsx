@@ -23,7 +23,7 @@ import { v4 as uuid } from "uuid";
 // TO REMOVE: Mocking filters data until filter API call is established, remove once done
 // This is new filters, with dynamic config parameters.
 // import filtersData from "../../filters_new.json";
-import filtersData from "../../data.json";
+import filtersData from "../../filters_data.json";
 
 // This is the current filters that is working integrated with the backend.
 //import filtersData from "../../filters.json";
