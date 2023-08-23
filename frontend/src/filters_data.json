@@ -1,5 +1,21 @@
 {
-  "filters": [
+  "TEST": [
+    {
+      "type": "GLASSES_DETECTION",
+      "id": "glasses-detection",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    },
+    {
+      "type": "SIMPLE_GLASSES_DETECTION",
+      "id": "simple-glasses-detection",
+      "channel": "video",
+      "groupFilter": false,
+      "config": {}
+    }
+  ],
+  "SESSION": [
     {
       "type": "FILTER_API_TEST",
       "id": "filter-api-test",
@@ -73,20 +89,6 @@
           "value": "audio-speaking-time"
         }
       }
-    },
-    {
-      "type": "GLASSES_DETECTION",
-      "id": "glasses-detection",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {}
-    },
-    {
-      "type": "SIMPLE_GLASSES_DETECTION",
-      "id": "simple-glasses-detection",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {}
     }
   ]
 }

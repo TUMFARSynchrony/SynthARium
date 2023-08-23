@@ -24,7 +24,7 @@ import { v4 as uuid } from "uuid";
 import filtersData from "../../filters_data.json";
 
 // Loading filters data before the component renders, because the Select component needs value.
-const testData = filtersData.filters;
+const testData = filtersData.SESSION;
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
 const defaultFilterType = "FILTER_API_TEST";

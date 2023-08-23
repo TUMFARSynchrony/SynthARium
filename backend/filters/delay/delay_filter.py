@@ -38,6 +38,10 @@ class DelayFilter(Filter):
         return "DELAY"
 
     @staticmethod
+    def filter_type(self) -> str:
+        return "SESSION"
+
+    @staticmethod
     def get_filter_json(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)

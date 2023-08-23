@@ -20,6 +20,11 @@ class TemplateFilter(Filter):
         return "TEMPLATE"
 
     @staticmethod
+    def filter_type(self) -> str:
+        # change this according to your filter type (SESSION or TEST)
+        return "SESSION"
+
+    @staticmethod
     def get_filter_json(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)

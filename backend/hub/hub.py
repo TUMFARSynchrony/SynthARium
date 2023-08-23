@@ -352,10 +352,12 @@ class Hub:
                 await experimenter.send(data)
 
     def get_filters_json(self):
-        filters_json = {"filters": []}
+        filters_json = {"TEST": [], "SESSION": []}
         for filter in Filter.__subclasses__():
-            filter_name = filter.name(filter)
-            if not (filter_name == "MUTE_AUDIO" or filter_name == "MUTE_VIDEO"):
+            filter_type = filter.filter_type(filter)
+            if filter_type == "NONE":
+                continue
+            elif filter_type == "TEST" or filter_type == "SESSION":
                 filter_json = filter.get_filter_json(filter)
 
                 if not filter.validate_filter_json(filter_json):
@@ -363,10 +365,13 @@ class Hub:
                         f"{filter} has incorrect values in get_filter_json."
                     )
 
-                filters_json["filters"].append(filter_json)
+                filters_json[filter_type].append(filter_json)
+            else:
+                raise ValueError(
+                    f"{filter} has incorrect filter_type. Allowed types are: 'NONE', 'TEST', 'SESSION'"
+                )
 
         path = join(FRONTEND_DIR, "src/filters_data.json")
-        print("Path: ", path)
         with open(path, "w") as outfile:
             json.dump(filters_json, outfile)
 

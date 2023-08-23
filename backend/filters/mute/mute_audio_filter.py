@@ -44,6 +44,10 @@ class MuteAudioFilter(Filter):
         return "MUTE_AUDIO"
 
     @staticmethod
+    def filter_type(self) -> str:
+        return "NONE"
+
+    @staticmethod
     def get_filter_json(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)

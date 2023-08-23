@@ -48,6 +48,10 @@ class MuteVideoFilter(Filter):
         return "MUTE_VIDEO"
 
     @staticmethod
+    def filter_type(self) -> str:
+        return "NONE"
+
+    @staticmethod
     def get_filter_json(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)

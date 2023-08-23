@@ -130,6 +130,20 @@ class Filter(ABC):
             " method."
         )
 
+    @staticmethod
+    @abstractmethod
+    def filter_type(self) -> str:
+        """Provide the type of the filter.
+
+        It can be either "TEST" or "SESSION"
+        "NONE" type is used for mute filters
+        This is used to build the filters_data.json file
+        """
+        raise NotImplementedError(
+            f"{self} is missing it's implementation of the static abstract name()"
+            " method."
+        )
+
     @abstractmethod
     async def process(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
