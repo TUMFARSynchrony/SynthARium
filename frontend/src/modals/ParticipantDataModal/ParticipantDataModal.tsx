@@ -20,21 +20,13 @@ import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
 import { Filter, FilterConfigNumber, Participant } from "../../types";
 import { v4 as uuid } from "uuid";
-// TO REMOVE: Mocking filters data until filter API call is established, remove once done
-// This is new filters, with dynamic config parameters.
-// import filtersData from "../../filters_new.json";
-import filtersData from "../../filters_data.json";
 
-// This is the current filters that is working integrated with the backend.
-//import filtersData from "../../filters.json";
+import filtersData from "../../filters_data.json";
 
 // Loading filters data before the component renders, because the Select component needs value.
 const testData = filtersData.filters;
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-// For current filters, set default filter = "test", and for new filters set default filter = "none"
-//const defaultFilterId = "test";
-//const defaultFilterId = "none";
 const defaultFilterType = "FILTER_API_TEST";
 
 const getIndividualFilters = () => {
@@ -186,13 +178,6 @@ function ParticipantDataModal({
   const handleFilterSelect = async (filter: Filter) => {
     setSelectedFilter(filter);
 
-    // Use this line for current filters.
-    /* if (
-      ["test", "edge", "rotation", "delay-v", "display-speaking-time"].includes(
-        filter.id
-      )
-    ) { */
-    // Uncomment to use for new filters.
     if (
       testData
         .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
@@ -203,16 +188,7 @@ function ParticipantDataModal({
         ...oldParticipant,
         video_filters: [...oldParticipant.video_filters, filter]
       }));
-      /* setVideoFilters([
-        ...participantCopy.video_filters,
-        await parseFilter(filter)
-      ]); */
     }
-    // Use this line for current filters.
-    /* else if (
-      ["delay-a", "delay-a-test", "audio-speaking-time"].includes(filter.id)
-    ) { */
-    // Uncomment to use for new filters.
     if (
       testData
         .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
@@ -386,26 +362,6 @@ function ParticipantDataModal({
                         </MenuItem>
                       );
                     })}
-                    {/* Use the below block for current filters. */}
-                    {/* {testData.map((filter, filterIndex) => {
-                      if (filter.id === defaultFilterId) {
-                        return (
-                          <MenuItem key={filterIndex} value={filter} disabled>
-                            <em>{filter.id}</em>
-                          </MenuItem>
-                        );
-                      } else {
-                        return (
-                          <MenuItem
-                            key={filterIndex}
-                            value={filter}
-                            onClick={() => handleFilterSelect(filter)}
-                          >
-                            {filter.id}
-                          </MenuItem>
-                        );
-                      }
-                    })} */}
                   </Select>
                 }
               </FormControl>
@@ -439,7 +395,6 @@ function ParticipantDataModal({
                         />
                       </Box>
 
-                      {/* Uncomment the below block while using new filters (audio). */}
                       {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
                       <Box
                         sx={{
@@ -576,7 +531,6 @@ function ParticipantDataModal({
                         />
                       </Box>
 
-                      {/* Uncomment the below block while using new filters (video). */}
                       {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
                       <Box
                         sx={{
