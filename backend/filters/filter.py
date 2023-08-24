@@ -62,7 +62,7 @@ class Filter(ABC):
         Parameters
         ----------
         config : custom_types.filter.FilterDict
-            Configuration for filter.  `config["type"]` must match the filter
+            Configuration for filter.  `config["name"]` must match the filter
             implementation.
         audio_track_handler : modules.track_handler.TrackHandler
             Audio TrackHandler for the stream this filter is part of.
