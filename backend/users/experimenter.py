@@ -78,6 +78,7 @@ class Experimenter(User):
         self.on_message("BAN_PARTICIPANT", self._handle_ban)
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
+        self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -742,3 +743,6 @@ class Experimenter(User):
             type="SET_FILTERS", description="Successfully changed filters."
         )
         return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        return MessageDict()
