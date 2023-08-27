@@ -177,28 +177,24 @@ function ParticipantDataModal({
 
   const handleFilterSelect = async (filter: Filter) => {
     setSelectedFilter(filter);
-
+    filter.id = uuid();
     if (
       testData
         .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
-      filter.id = uuid();
-      setParticipantCopy((oldParticipant) => ({
-        ...oldParticipant,
-        video_filters: [...oldParticipant.video_filters, filter]
-      }));
+      const newParticipantData = structuredClone(participantCopy);
+      newParticipantData.video_filters.push(filter);
+      setParticipantCopy(newParticipantData);
     }
     if (
       testData
         .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
-      filter.id = uuid();
-      setParticipantCopy((oldParticipant) => ({
-        ...oldParticipant,
-        audio_filters: [...oldParticipant.audio_filters, filter]
-      }));
+      const newParticipantData = structuredClone(participantCopy);
+      newParticipantData.audio_filters.push(filter);
+      setParticipantCopy(newParticipantData);
     }
   };
 
