@@ -3,7 +3,7 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 
-from recorded_data import RecordedData
+from .recorded_data import RecordedData
 
 class PostProcessingInterface(metaclass=ABCMeta):
     """Abstract interface for post-processing of the experiments.
@@ -17,6 +17,8 @@ class PostProcessingInterface(metaclass=ABCMeta):
     --------
     post_processing.video_processing : Implementation for PostProcessingInterface.
     """
+
+    _recorded_data: RecordedData
 
     @abstractmethod
     async def execute(self) -> None:
@@ -37,7 +39,6 @@ class PostProcessingInterface(metaclass=ABCMeta):
         pass
 
     @property
-    @abstractmethod
     def recorded_data(self) -> RecordedData:
         """Get the post_processing.RecordedData."""
-        pass
+        return self._recorded_data

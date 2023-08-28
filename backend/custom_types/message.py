@@ -72,6 +72,7 @@ MESSAGE_TYPES = Literal[
     "SET_FILTERS",
     "PING",
     "PONG",
+    "VIDEO_PROCESSING",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

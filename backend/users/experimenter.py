@@ -23,6 +23,7 @@ from custom_types.session_id_request import is_valid_session_id_request
 
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
+from post_processing.video_processing import VideoProcessing
 from users.user import User
 import experiment.experiment as _exp
 import hub.hub as _h
@@ -78,6 +79,7 @@ class Experimenter(User):
         self.on_message("BAN_PARTICIPANT", self._handle_ban)
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
+        self.on_message("DO_POST_PROCESSING", self._handle_post_processing)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -740,5 +742,62 @@ class Experimenter(User):
         # Respond with success message
         success = SuccessDict(
             type="SET_FILTERS", description="Successfully changed filters."
+        )
+        return MessageDict(type="SUCCESS", data=success)
+    
+
+    async def _handle_post_processing(self, data: Any) -> MessageDict:
+        """Handle requests with type `DO_POST_PROCESSING`.
+
+        Check if data is a valid custom_types.post_processing.PostProcessingRequestDict.
+
+        Parameters
+        ----------
+        data : any or post_processing.PostProcessingRequestDict
+            Message data.  Checks if data is a valid PostProcessingRequestDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `ERROR`, data: custom_types.error.ErrorDict and
+            ErrorType type: `NOT_IMPLEMENTED`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.post_processing.PostProcessingRequestDict.
+        """
+        #if not filter_utils.is_valid_set_filters_request(data):
+        #    raise ErrorDictException(
+        #        code=400,
+        #        type="INVALID_DATATYPE",
+        #        description="Message data is not a valid SetFiltersRequest.",
+        #    )
+
+        participant_ids = data["participant_ids"]
+        session_id = data["session_id"]
+        experiment = self.get_experiment_or_raise("Failed to do post processing.")
+        coroutines = []
+        responses = []
+        
+        video_processing = VideoProcessing()
+        for participant_id in participant_ids:
+            video_processing.set_recorded_data("/Users/normapuspitasari/Documents/experimental-hub/backend/sessions/2ac9f3ccb2/2589ba512d_20230718_135858.mp4",
+                                        "2ac9f3ccb2",
+                                        "2589ba512d")
+            response = video_processing.execute()
+            responses.append(response)
+            #coroutines.append(video_processing.execute())
+
+        #await asyncio.gather(*coroutines)
+
+        # Notify Experimenters connected to the hub about the data change
+        message = MessageDict(type="VIDEO_PROCESSING", data=responses.asdict())
+        await self._hub.send_to_experimenters(message)
+
+        # Respond with success message
+        success = SuccessDict(
+            type="VIDEO_PROCESSING", description="Successfully do video post-processing."
         )
         return MessageDict(type="SUCCESS", data=success)

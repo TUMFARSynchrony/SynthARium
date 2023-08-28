@@ -41,6 +41,7 @@ SUCCESS_TYPES = Literal[
     "BAN_PARTICIPANT",
     "MUTE",
     "SET_FILTERS",
+    "VIDEO_PROCESSING",
 ]
 """Possible success types for custom_types.success.SuccessDict.
 

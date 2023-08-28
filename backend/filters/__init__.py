@@ -9,7 +9,7 @@ from .edge_outline import EdgeOutlineFilter
 from .rotate import RotationFilter
 from .mute import MuteAudioFilter, MuteVideoFilter
 from .delay import DelayFilter
-from .open_face_au import OpenFaceAUFilter
+from .open_face_au import OpenFaceAUFilter, OpenFace
 
 # Do not import filters after here
 from . import filter_factory

@@ -291,6 +291,16 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           GET_SESSION_LIST
         </button>
         <button
+          onClick={() =>
+            props.connection.sendMessage("DO_POST_PROCESSING", {
+              participant_id: participantId,
+              session_id: sessionId
+            })
+          }
+        >
+          DO_POST_PROCESSING
+        </button>
+        <button
           onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
