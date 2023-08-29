@@ -1,10 +1,11 @@
 """Provide RecordedData to represent video/audio of the experiments."""
 
 from __future__ import annotations
+
 import logging
 
 
-class RecordedData:
+class RecordedData():
     """Object class for the recorded data of the experiments."""
 
     _logger: logging.Logger

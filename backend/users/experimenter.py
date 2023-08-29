@@ -9,6 +9,7 @@ hub.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
+import os
 from typing import Any, Coroutine
 
 from filters import filter_utils
@@ -79,7 +80,8 @@ class Experimenter(User):
         self.on_message("BAN_PARTICIPANT", self._handle_ban)
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
-        self.on_message("DO_POST_PROCESSING", self._handle_post_processing)
+        self.on_message("VIDEO_PROCESSING", self._handle_post_processing)
+        self.on_message("GET_RECORDING_LIST", self._handle_get_recording_list)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -747,7 +749,7 @@ class Experimenter(User):
     
 
     async def _handle_post_processing(self, data: Any) -> MessageDict:
-        """Handle requests with type `DO_POST_PROCESSING`.
+        """Handle requests with type `VIDEO_PROCESSING`.
 
         Check if data is a valid custom_types.post_processing.PostProcessingRequestDict.
 
@@ -801,3 +803,57 @@ class Experimenter(User):
             type="VIDEO_PROCESSING", description="Successfully do video post-processing."
         )
         return MessageDict(type="SUCCESS", data=success)
+    
+
+    async def _handle_get_recording_list(self, _) -> MessageDict:
+        """Handle requests with type `GET_RECORDING_LIST`.
+
+        Loads all known sessions from session manager.  Responds with type:
+        `RECORDING_LIST`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `RECORDING_LIST` and data: list of
+            custom_types.session.SessionDict.
+        """
+        recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
+        recordings = [ item for item in os.listdir(recording_path) 
+                      if os.path.isdir(os.path.join(recording_path, item)) ]
+        result = []
+        for session_id in recordings:
+            past_experiment_path = os.path.join(recording_path, session_id)
+            recorded_list = os.listdir(past_experiment_path)
+            participants = []
+            videos = []
+            audios = []
+            prev_participant_id = ""
+            for filename in recorded_list:
+                curr_participant_id = filename.split("_")[0]
+                if prev_participant_id != curr_participant_id:
+                    participants.append({
+                        "participant_id": curr_participant_id,
+                        "video": videos,
+                        "audio": audios
+                    })
+                    prev_participant_id = curr_participant_id
+                
+                _, file_extension = os.path.splitext(filename)
+                if file_extension == ".mp4":
+                    videos.append(filename)
+                elif file_extension == ".mp3":
+                    audios.append(filename)
+                else:
+                    self._logger.debug("Not an audio or video file: " + filename)
+            
+            result.append({
+                "session_id": session_id,
+                "participants": participants
+            })
+                    
+        return MessageDict(type="RECORDING_LIST", data=result)

@@ -291,14 +291,19 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           GET_SESSION_LIST
         </button>
         <button
+          onClick={() => props.connection.sendMessage("GET_RECORDING_LIST", {})}
+        >
+          GET_RECORDING_LIST
+        </button>
+        <button
           onClick={() =>
-            props.connection.sendMessage("DO_POST_PROCESSING", {
+            props.connection.sendMessage("VIDEO_PROCESSING", {
               participant_id: participantId,
               session_id: sessionId
             })
           }
         >
-          DO_POST_PROCESSING
+          VIDEO_PROCESSING
         </button>
         <button
           onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
