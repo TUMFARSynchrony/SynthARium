@@ -13,7 +13,8 @@ import os
 from typing import Any, Coroutine
 
 
-from session.data.participant.participant_summary import ParticipantSummaryDict
+from session.data.participant import ParticipantSummaryDict
+from session.data.participant import ParticipantDict
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
@@ -90,6 +91,7 @@ class Participant(User):
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
         self.on_message("GET_SESSION", self._handle_get_session)
+        self.on_message("GET_FILTER_TEST_STATUS", self._handle_get_filter_test_status)
 
     def __str__(self) -> str:
         """Get string representation of this participant.
@@ -322,3 +324,33 @@ class Participant(User):
         if not os.path.isdir(record_directory_path):
             os.mkdir(record_directory_path)
         return record_directory_path + "/" + self.id
+
+    def get_participant_data(self) -> ParticipantDict:
+        """Get `self._experiment` or raise ErrorDictException if it is None.
+
+        Use to check if this Experimenter is connected to an
+        hub.experiment.Experiment.
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None
+        """
+        if self._participant_data is not None:
+            return self._participant_data.asdict()
+
+        raise ErrorDictException(
+            code=409, type="INVALID_REQUEST", description="Participant has no data"
+        )
+
+    async def _handle_get_filter_test_status(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA`.
+
+        Design:
+            1. get participant data
+            2. fetch correct filter
+            3.
+        """
+        participant_data = self.get_participant_data("Failed to get participant data.")
+        filter_id = data["filter_id"]
+        return MessageDict()

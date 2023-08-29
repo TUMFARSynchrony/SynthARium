@@ -51,6 +51,8 @@ class Filter(ABC):
 
     _config: FilterDict
 
+    _id: str
+
     def __init__(
         self,
         config: FilterDict,
@@ -80,6 +82,7 @@ class Filter(ABC):
         self._config = config
         self.audio_track_handler = audio_track_handler
         self.video_track_handler = video_track_handler
+        self._id = self._config["id"]
 
     @property
     def config(self) -> FilterDict:
@@ -95,6 +98,21 @@ class Filter(ABC):
         filter should react to config changes.
         """
         self._config = config
+
+    @property
+    def id(self) -> str:
+        """Get Filter id."""
+        return self._id
+
+    def set_id(self, id: str) -> None:
+        """Update filter id.
+
+        Notes
+        -----
+        Provide a custom implementation for this function in a subclass in case the
+        filter should react to id changes.
+        """
+        self._id = id
 
     async def complete_setup(self) -> None:
         """Complete setup, allowing for asynchronous setup and accessing other filters.
