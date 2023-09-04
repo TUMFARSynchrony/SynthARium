@@ -25,7 +25,6 @@ function Lobby({ localStream, connection, connectionState, onGetSession }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  console.log(sessionIdParam);
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
@@ -50,7 +49,6 @@ function Lobby({ localStream, connection, connectionState, onGetSession }) {
   return (
     <>
       <AppToolbar />
-      <ConsentModal />
       {/* Grid takes up screen space left from the AppToolbar */}
       <Box sx={{ height: "92vh", display: "flex" }}>
         <Paper
