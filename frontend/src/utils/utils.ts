@@ -166,6 +166,9 @@ export const getVideoTitle = (peer: any, index: number) => {
 };
 
 // Generating the dynamic participant invite link based on the host domain.
-export const getParticipantInviteLink = (participantId: string, sessionId: string) => {
-  return `${window.location.origin}/lobby?participantId=${participantId}&sessionId=${sessionId}`;
+export const getParticipantInviteLink = (
+  participantId: string,
+  sessionId: string
+) => {
+  return `${window.location.origin}/consent?participantId=${participantId}&sessionId=${sessionId}`;
 };
