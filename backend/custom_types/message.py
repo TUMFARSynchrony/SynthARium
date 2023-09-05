@@ -70,7 +70,6 @@ MESSAGE_TYPES = Literal[
     "SET_FILTERS",
     "PING",
     "PONG",
-    "GROUP_FILTER",
 ]
 """Possible message types for custom_types.message.MessageDict.
 
