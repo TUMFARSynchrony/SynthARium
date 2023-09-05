@@ -5,7 +5,11 @@ import { changeParticipantDimensions } from "../../../redux/slices/openSessionSl
 import { CANVAS_SIZE } from "../../../utils/constants";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
 
-function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
+function DragAndDrop({
+  participantDimensions,
+  setParticipantDimensions,
+  addDimensionToHistory
+}) {
   const [selectedShape, setSelectShape] = useState(null);
   const dispatch = useAppDispatch();
 
@@ -36,6 +40,7 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
                     setSelectShape(index);
                   }}
                   onChange={(newAttrs) => {
+                    addDimensionToHistory();
                     const dimensions = participantDimensions.slice();
                     dimensions[index].groups = newAttrs;
                     setParticipantDimensions(dimensions);

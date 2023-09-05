@@ -53,7 +53,7 @@ const Rectangle = ({
     });
   };
 
-  const onDragMove = () => {
+  const onDragEnd = () => {
     onSelect();
     let newAbsPos: { x: number; y: number } | undefined = undefined;
 
@@ -102,7 +102,8 @@ const Rectangle = ({
         {...groupProps}
         onClick={onSelect}
         onTransformEnd={() => onTransformEnd()}
-        onDragMove={() => onDragMove()}
+        onDragStart={onSelect}
+        onDragEnd={() => onDragEnd()}
         ref={shapeRef}
       >
         <Rect

@@ -39,6 +39,7 @@ import {
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
+import { Button } from "@mui/material";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useAppDispatch();
@@ -56,6 +57,12 @@ function SessionForm({ onSendSessionToBackend }) {
     getParticipantDimensions(
       sessionData.participants ? sessionData.participants : []
     )
+  );
+  const [participantDimensionPast, setParticipantDimensionPast] = useState([
+    []
+  ]);
+  const [participantDimensionFuture, setParticipantDimensionFuture] = useState(
+    []
   );
 
   // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
@@ -108,13 +115,57 @@ function SessionForm({ onSendSessionToBackend }) {
     }
   }, [snackbarResponse]);
 
+  const handleUndo = () => {
+    if (participantDimensionPast.length === 0) {
+      return;
+    }
+
+    setParticipantDimensionFuture([
+      ...participantDimensionFuture,
+      participantDimensions
+    ]);
+    const lastElement = participantDimensionPast.pop();
+    setParticipantDimensions(lastElement);
+    setParticipantDimensionPast([...participantDimensionPast]);
+  };
+
+  const handleRedo = () => {
+    if (participantDimensionFuture.length === 0) {
+      return;
+    }
+
+    setParticipantDimensionPast([
+      ...participantDimensionPast,
+      participantDimensions
+    ]);
+    const lastElement = participantDimensionFuture.pop();
+    setParticipantDimensions(lastElement);
+    setParticipantDimensionFuture([...participantDimensionFuture]);
+  };
+
   const handleCanvasPlacement = () => {
     setXAxis(xAxis + 25);
     setYAxis(yAxis + 25);
   };
 
+  const addDimensionToHistory = () => {
+    let dimensions = [];
+    participantDimensions.map((participantDimension) => {
+      dimensions = [
+        ...dimensions,
+        {
+          groups: participantDimension.groups,
+          shapes: participantDimension.shapes
+        }
+      ];
+    });
+    setParticipantDimensionPast([...participantDimensionPast, dimensions]);
+    setParticipantDimensionFuture([]);
+  };
+
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant(index));
+    addDimensionToHistory();
     setParticipantDimensions(filterListByIndex(participantDimensions, index));
   };
 
@@ -133,9 +184,11 @@ function SessionForm({ onSendSessionToBackend }) {
       }
     ];
     setParticipantDimensions(newParticipantDimensions);
+    // TODO: automatically select the new participant
   };
 
   const handleParticipantChange = (index, participant) => {
+    addDimensionToHistory();
     dispatch(changeParticipant({ participant: participant, index: index }));
 
     let newParticipantDimensions = [...participantDimensions];
@@ -167,6 +220,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const addRandomSessionData = () => {
+    addDimensionToHistory();
     const futureDate = new Date().setDate(new Date().getDate() + 7);
 
     let newSessionData = {
@@ -361,6 +415,8 @@ function SessionForm({ onSendSessionToBackend }) {
           />
         </Grid>
         <Grid item sm={5}>
+          <Button onClick={handleUndo}>undo</Button>
+          <Button onClick={handleRedo}>redo</Button>
           <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
             {/* <Link variant="body2" sx={{ color: "gray", textDecorationColor: "gray", fontWeight: "bold" }}>
               Expand Video Canvas
@@ -377,6 +433,7 @@ function SessionForm({ onSendSessionToBackend }) {
             <DragAndDrop
               participantDimensions={participantDimensions}
               setParticipantDimensions={setParticipantDimensions}
+              addDimensionToHistory={addDimensionToHistory}
             />
           </Paper>
         </Grid>
