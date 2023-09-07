@@ -10,7 +10,7 @@ from .rotate import RotationFilter
 from .mute import MuteAudioFilter, MuteVideoFilter
 from .delay import DelayFilter
 from .open_face_au import OpenFaceAUFilter
-from .glasses_detection import GlassesDetection
+from .glasses_detection import SimpleGlassesDetection, GlassesDetection
 
 # Do not import filters after here
 from . import filter_factory
