@@ -11,6 +11,9 @@ import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import Consent from "./pages/Consent/Consent";
+import PageTemplate from "./components/templates/PageTemplate";
+import ButtonList from "./components/atoms/Button/ButtonList";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
   changeExperimentState,
@@ -49,7 +52,11 @@ function App() {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  const actionButtonProps = {
+    text: "Template Button",
+    variant: "contained",
+    disabled: false // Set the initial disabled state as needed
+  };
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
       "%cConnection peer streams change Handler",
@@ -397,6 +404,23 @@ function App() {
               ) : (
                 "Loading..."
               )
+            }
+          />
+          <Route exact path="/consent" element={<Consent />} />
+          <Route
+            exact
+            path="/template"
+            element={
+              <PageTemplate
+                title={"Template Page Title"}
+                contentTitle={"Template Page Content Title"}
+                content={"Template Page Content"}
+                buttonListComponent={
+                  <ButtonList type="chatInstructionsParticipants" />
+                }
+                minusMarginRight={true}
+                actionButtonProps={actionButtonProps} // Pass the actionButtonProps
+              />
             }
           />
           <Route
