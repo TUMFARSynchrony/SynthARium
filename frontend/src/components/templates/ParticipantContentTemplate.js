@@ -1,5 +1,5 @@
 import ActionButton from "../atoms/Button/ActionButton";
-function PageTemplate({
+function ParticipantContentTemplate({
   content,
   customComponent,
   actionButtonProps,
@@ -21,4 +21,4 @@ function PageTemplate({
   );
 }
 
-export default PageTemplate;
+export default ParticipantContentTemplate;

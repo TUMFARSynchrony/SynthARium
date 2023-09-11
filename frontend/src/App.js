@@ -11,7 +11,6 @@ import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
-import Consent from "./pages/Consent/Consent";
 import PageTemplate from "./components/templates/PageTemplate";
 import ButtonList from "./components/atoms/Button/ButtonList";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
@@ -406,7 +405,6 @@ function App() {
               )
             }
           />
-          <Route exact path="/consent" element={<Consent />} />
           <Route
             exact
             path="/template"

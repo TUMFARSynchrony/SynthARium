@@ -1,4 +1,3 @@
-import ActionButton from "../atoms/Button/ActionButton";
 import ParticipantContentTemplate from "./ParticipantContentTemplate";
 function PageTemplate({
   title,
