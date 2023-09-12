@@ -1,30 +1,41 @@
-import SendIcon from "@mui/icons-material/Send";
 import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import Paper from "@mui/material/Paper";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import styled from "@mui/material/styles/styled";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
-import { ActionIconButton } from "../../components/atoms/Button";
 import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import ConnectionState from "../../networking/ConnectionState";
-import { useAppSelector } from "../../redux/hooks";
-import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
-import { instructionsList } from "../../utils/constants";
-import Note from "../../components/atoms/Note/Note";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import Heading from "../../components/atoms/Heading/Heading";
+import { IconButton } from "../../components/atoms/Button/IconButton";
+import { HiOutlineChatAlt2 } from "react-icons/hi";
+import { Tabs } from "../../utils/enums";
+import { BiTask } from "react-icons/bi";
+import {
+  selectChatTab,
+  selectInstructionsTab,
+  toggleSingleTab
+} from "../../redux/slices/tabsSlice";
+import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import { initialSnackbar } from "../../utils/constants";
 
-function Lobby({ localStream, connection, connectionState, onGetSession }) {
+function Lobby({
+  localStream,
+  connection,
+  connectionState,
+  onGetSession,
+  onChat
+}) {
   const videoElement = useRef(null);
-  const [message, setMessage] = useState("");
   const [participantStream, setParticipantStream] = useState(localStream);
-  const currentSession = useAppSelector(selectCurrentSession);
+  const [snackbar, setSnackbar] = useState(initialSnackbar);
+  const isChatModalActive = useAppSelector(selectChatTab);
+  const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
+  const dispatch = useAppDispatch();
   console.log(sessionIdParam);
 
   useEffect(() => {
@@ -43,13 +54,27 @@ function Lobby({ localStream, connection, connectionState, onGetSession }) {
     }
   }, [participantStream]);
 
-  const TabText = styled(Typography)(({ theme }) => ({
-    color: theme.palette.primary.main
-  }));
+  const toggleModal = (modal) => {
+    dispatch(toggleSingleTab(modal));
+  };
 
   return (
     <>
-      <AppToolbar />
+      <div className="watchingRoomHeader flex flex-row justify-between items-center h-16 px-6">
+        <Heading heading={"SYNCHRONY HUB"} />{" "}
+        <div className="flex flex-row space-x-4">
+          <IconButton
+            icon={HiOutlineChatAlt2}
+            size={24}
+            onToggle={() => toggleModal(Tabs.CHAT)}
+          />
+          <IconButton
+            icon={BiTask}
+            size={24}
+            onToggle={() => toggleModal(Tabs.INSTRUCTIONS)}
+          />
+        </div>
+      </div>
       <ConsentModal />
       {/* Grid takes up screen space left from the AppToolbar */}
       <Box sx={{ height: "92vh", display: "flex" }}>
@@ -73,79 +98,23 @@ function Lobby({ localStream, connection, connectionState, onGetSession }) {
             </Typography>
           )}
         </Paper>
-        <Paper
-          elevation={2}
-          sx={{
-            backgroundColor: "whitesmoke",
-            height: "100%",
-            width: "25%",
-            overflow: "auto"
-          }}
-        >
-          <Box sx={{ py: 2 }}>
-            {/* Displays instructions from constants.js */}
-            <TabText variant="button">Instructions</TabText>
-            <List sx={{ listStyleType: "disc", lineHeight: 1.3, pl: 4 }}>
-              {instructionsList.map((instruction, index) => {
-                return (
-                  <ListItem key={index} sx={{ display: "list-item" }}>
-                    {instruction}
-                  </ListItem>
-                );
-              })}
-            </List>
-          </Box>
-          <Box
-            sx={{
-              py: 1,
-              height: "90%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between"
-            }}
-          >
-            <Box>
-              <TabText variant="button">Chat</TabText>
-              {/* Placeholder for the chat feature (only with experimenter) */}
-              {currentSession &&
-                currentSession.participants
-                  .find((participant) => participant.id === participantIdParam)
-                  .chat.map((message, index) => (
-                    <Note
-                      key={index}
-                      content={message.message}
-                      date={message.time}
-                    />
-                  ))}
-            </Box>
+        <div className="w-1/4">
+          {connectionState !== ConnectionState.CONNECTED && (
+            <div>Trying to connect...</div>
+          )}
+          {connectionState === ConnectionState.CONNECTED &&
+            isChatModalActive && (
+              <ChatTab
+                onChat={onChat}
+                onGetSession={onGetSession}
+                currentUser="participant"
+                participantId={participantIdParam}
+              />
+            )}
 
-            <Box
-              sx={{
-                px: 1,
-                py: 2,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-around"
-              }}
-            >
-              <TextField
-                label="Type your message"
-                value={message}
-                size="small"
-                onChange={(event) => {
-                  setMessage(event.target.value);
-                }}
-              />
-              <ActionIconButton
-                text="Send"
-                variant="contained"
-                color="primary"
-                size="small"
-                icon={<SendIcon />}
-              />
-            </Box>
-          </Box>
-        </Paper>
+          {connectionState === ConnectionState.CONNECTED &&
+            isInstructionsModalActive && <InstructionsTab />}
+        </div>
       </Box>
     </>
   );
