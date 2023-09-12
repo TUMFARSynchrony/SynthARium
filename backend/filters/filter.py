@@ -1,9 +1,10 @@
 """Provide abstract `Filter`, `VideoFilter` and `AudioFilter` classes."""
 
 from __future__ import annotations
+import json
 
 import numpy
-from typing import TYPE_CHECKING, TypeGuard
+from typing import TYPE_CHECKING, Any, TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
@@ -118,7 +119,7 @@ class Filter(ABC):
         """Complete setup, allowing for asynchronous setup and accessing other filters.
 
         If the initiation / setup of a filter requires anything asynchronous or other
-        filters must be accessed, it should be donne in `complete_setup`.
+        filters must be accessed, it should be done in `complete_setup`.
         `complete_setup` is called when all filters have been set up, therefore other
         filters will be available (may not be the case in __init__, depending on the
         position in the filter pipeline).
@@ -132,6 +133,10 @@ class Filter(ABC):
         asyncio.Task tasks they should be stopped & awaited in a custom implementation
         overriding this function.
         """
+        return
+
+    async def get_filter_data(self) -> None | dict[Any]:
+        """Get the data of a filter"""
         return
 
     @staticmethod
@@ -197,7 +202,7 @@ class Filter(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_filter_json(self) -> object:
+    def get_filter_json(self) -> dict[str, Any]:
         """Provide config of the filters.
 
         It requires at least type and id
@@ -239,3 +244,7 @@ class Filter(ABC):
             f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
             f" config={self.config})"
         )
+
+    def toJson(self) -> str:
+        # TODO: remove if unnecessary
+        return json.dumps(self, default=lambda o: o.__dict__)
