@@ -13,6 +13,7 @@ import shortuuid
 import asyncio
 import logging
 import json
+from filters.filter import Filter
 
 from connection.messages import (
     ConnectionAnswerDict,
@@ -286,6 +287,41 @@ class Connection(ConnectionInterface):
     async def set_audio_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._incoming_audio.set_filters(filters)
+
+    def get_video_filters_data(self, id, name) -> list:
+        # For docstring see ConnectionInterface or hover over function declaration
+        filters_data = []
+        for filter in self._incoming_video.filters.values():
+            if filter.name(filter) == name:
+                if id == "all":
+                    filters_data.append(filter.get_filter_data())
+                elif id == filter.id:
+                    filters_data.append(filter.get_filter_data())
+                    break
+                else:
+                    raise ErrorDictException(
+                        code=404,
+                        type="UNKNOWN_FILTER_ID",
+                        description=f'Unknown filter ID: "{id}".',
+                    )
+        return filters_data
+
+    def get_audio_filters_data(self, id, name) -> list:
+        filters_data = []
+        for filter in self._incoming_audio.filters.values():
+            if filter.name(filter) == name:
+                if id == "all":
+                    filters_data.append(filter.get_filter_data())
+                elif id == filter.id:
+                    filters_data.append(filter.get_filter_data())
+                    break
+                else:
+                    raise ErrorDictException(
+                        code=404,
+                        type="UNKNOWN_FILTER_ID",
+                        description=f'Unknown filter ID: "{id}".',
+                    )
+        return filters_data
 
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
