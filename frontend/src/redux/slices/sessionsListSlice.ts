@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 import { Session } from "../../types";
 import {
@@ -11,7 +11,6 @@ import {
   BanMuteUnmuteParticipantPayload,
   ExperimentTypesPayload
 } from "../payloadTypes";
-import { current } from "@reduxjs/toolkit";
 
 type SessionsListState = {
   sessions: Session[];
@@ -56,18 +55,22 @@ export const sessionsListSlice = createSlice({
     addMessageToCurrentSession: (state, { payload }) => {
       const session = state.currentSession;
       const target = payload.target;
+      const author = payload.author;
       if (target === "participants") {
         session.participants.map((participant) => {
           participant.chat.push(payload.message);
         });
+      } else if (target === "experimenter") {
+        session.participants
+          .find((participant) => participant.id === author)
+          .chat.push(payload.message);
       } else {
         const participant = getParticipantById(target, session);
         participant.chat.push(payload.message);
       }
     },
     setCurrentSession: (state, { payload }) => {
-      const session = payload;
-      state.currentSession = session;
+      state.currentSession = payload;
     },
 
     banMuteUnmuteParticipant: (
