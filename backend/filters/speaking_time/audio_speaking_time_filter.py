@@ -1,5 +1,3 @@
-import time
-
 import numpy
 from av import AudioFrame
 from filters.filter_dict import FilterDict
