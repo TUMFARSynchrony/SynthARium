@@ -204,9 +204,19 @@ function App() {
       addMessageToCurrentSession({
         message: data,
         sessionId: data.session,
+        author: data.author,
         target: data.target
       })
     );
+    if (data.author === "experimenter" && data.target === "participants") {
+      setSnackbar({
+        open: true,
+        text: data.message,
+        severity: "info",
+        autoHideDuration: 10000,
+        anchorOrigin: { vertical: "top", horizontal: "center" }
+      });
+    }
   };
 
   const handleDeletedSession = (data) => {
@@ -393,6 +403,7 @@ function App() {
                   connection={connection}
                   connectionState={connectionState}
                   onGetSession={onGetSession}
+                  onChat={onChat}
                 />
               ) : (
                 "Loading..."
@@ -463,6 +474,8 @@ function App() {
         text={snackbar.text}
         severity={snackbar.severity}
         handleClose={() => setSnackbar(initialSnackbar)}
+        autoHideDuration={snackbar.autoHideDuration}
+        anchorOrigin={snackbar.anchorOrigin}
       />
     </div>
   );
