@@ -68,10 +68,7 @@ class SimpleGlassesDetection(Filter):
         return ndarray
 
     def simple_glasses_detection(self, img):
-        print("perform simple glasses detection")
-
         if len(self.detector(img)) > 0:
-            print("if statement")
             rect = self.detector(img)[0]
             sp = self.predictor(img, rect)
             landmarks = numpy.array([[p.x, p.y] for p in sp.parts()])
@@ -83,11 +80,9 @@ class SimpleGlassesDetection(Filter):
                 nose_bridge_x.append(landmarks[i][0])
                 nose_bridge_y.append(landmarks[i][1])
 
-            ### x_min and x_max
             x_min = min(nose_bridge_x)
             x_max = max(nose_bridge_x)
 
-            ### ymin (from top eyebrow coordinate),  ymax
             y_min = landmarks[20][1]
             y_max = landmarks[30][1]
 

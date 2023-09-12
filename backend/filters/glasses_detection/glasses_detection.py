@@ -208,9 +208,9 @@ class GlassesDetection(Filter):
         y_2 = numpy.int32(d * 8 / 7)
         h_2 = numpy.int32(d * 1 / 2)
 
-        roi_1 = thresh[y : y + h, x : x + w]
-        roi_2_1 = thresh[y_2 : y_2 + h_2, x_2_1 : x_2_1 + w_2]
-        roi_2_2 = thresh[y_2 : y_2 + h_2, x_2_2 : x_2_2 + w_2]
+        roi_1 = thresh[y: y + h, x: x + w]
+        roi_2_1 = thresh[y_2: y_2 + h_2, x_2_1: x_2_1 + w_2]
+        roi_2_2 = thresh[y_2: y_2 + h_2, x_2_2: x_2_2 + w_2]
         roi_2 = numpy.hstack([roi_2_1, roi_2_2])
 
         measure_1 = sum([sum(roi_1 / 255)]) / (
