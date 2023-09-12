@@ -5,9 +5,6 @@ __pycache__
 # Logging
 *.log
 
-# Config file
-config.json
-
 # Certificates
 *.key
 *.crt
