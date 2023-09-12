@@ -167,6 +167,17 @@ class ConnectionRunner:
                 await self._connection.set_video_filters(data)
             case "SET_AUDIO_FILTERS":
                 await self._connection.set_audio_filters(data)
+            case "GET_VIDEO_FILTERS":
+                filters = self._connection.get_video_filters_data(
+                    data["id"], data["name"]
+                )
+                # filters = list(self._connection._incoming_video.filters.values())
+                self._send_command("ACTIVE_VIDEO_FILTERS", filters, command_nr)
+            case "GET_AUDIO_FILTERS":
+                filters = self._connection.get_audio_filters_data(
+                    data["id"], data["name"]
+                )
+                self._send_command("ACTIVE_AUDIO_FILTERS", filters, command_nr)
             case "START_RECORDING":
                 await self._connection.start_recording()
             case "STOP_RECORDING":

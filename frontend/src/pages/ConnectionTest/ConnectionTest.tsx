@@ -246,6 +246,8 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         console.log("Ping RTT:", rtt, "ms");
       }
     };
+    const handleFiltersData = (data: any) =>
+      saveGenericApiResponse("FILTERS_DATA", data);
 
     // Add listeners to connection
     props.connection.api.on("TEST", handleTest);
@@ -258,6 +260,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
+    props.connection.api.on("FILTERS_DATA", handleFiltersData);
 
     return () => {
       // Remove listeners from connection
@@ -271,6 +274,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
       props.connection.api.off("PONG", handlePong);
+      props.connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [props.connection.api, responses]);
 
@@ -289,6 +293,18 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           GET_SESSION_LIST
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("GET_FILTERS_DATA", {
+              filter_id: "simple-glasses-detection",
+              filter_channel: "video",
+              filter_name: "SIMPLE_GLASSES_DETECTION"
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_DATA
         </button>
         <button
           onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
@@ -457,7 +473,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "FILTER_API_TEST", id: "test" }]
+              video_filters: [
+                {
+                  name: "FILTER_API_TEST",
+                  id: "test",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -469,7 +493,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }]
+              video_filters: [
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -481,7 +513,27 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "ROTATION", id: "rotation" }]
+              video_filters: [
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -494,8 +546,32 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "EDGE_OUTLINE", id: "edge" },
-                { type: "ROTATION", id: "rotation" }
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                },
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                }
               ]
             })
           }
@@ -509,8 +585,32 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "ROTATION", id: "rotation" },
-                { type: "EDGE_OUTLINE", id: "edge" }
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                },
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
               ]
             })
           }
@@ -523,7 +623,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "OPENFACE_AU", id: "zmq" }]
+              video_filters: [
+                {
+                  name: "OPENFACE_AU",
+                  id: "zmq",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -535,7 +643,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+              video_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-v",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -546,7 +670,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
-              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+              audio_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-a",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ],
               video_filters: []
             })
           }
@@ -558,8 +698,40 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
-              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
-              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+              audio_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-a",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ],
+              video_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-v",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -573,8 +745,11 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               video_filters: [],
               audio_filters: [
                 {
-                  type: "AUDIO_SPEAKING_TIME",
-                  id: "audio-speaking-time"
+                  name: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
                 }
               ]
             })
@@ -589,15 +764,25 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [
                 {
-                  type: "AUDIO_SPEAKING_TIME",
-                  id: "audio-speaking-time"
+                  name: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
                 }
               ],
               video_filters: [
                 {
-                  type: "DISPLAY_SPEAKING_TIME",
+                  name: "DISPLAY_SPEAKING_TIME",
                   id: "display-speaking-time",
-                  audio_speaking_time_filter_id: "audio-speaking-time"
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    filterId: {
+                      defaultValue: ["audio-speaking-time"],
+                      value: "audio-speaking-time"
+                    }
+                  }
                 }
               ]
             })
@@ -613,12 +798,19 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               audio_filters: [],
               video_filters: [
                 {
-                  type: "SIMPLE_GLASSES_DETECTION",
-                  id: "simple-glasses-detection"
+                  name: "SIMPLE_GLASSES_DETECTION",
+                  id: "simple-glasses-detection",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {}
                 }
-                /* {
-                  type: "GLASSES_DETECTION",
+                /* ,
+                {
+                  name: "GLASSES_DETECTION",
                   id: "glasses-detection",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {}
                 } */
               ]
             })
@@ -626,38 +818,6 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           Glasses Detection
-        </button>
-        <button
-          onClick={() =>
-            props.connection.sendMessage("SET_FILTERS", {
-              participant_id: "all",
-              audio_filters: [],
-              video_filters: [
-                {
-                  type: "ROTATION",
-                  id: "rotation",
-                  channel: "video",
-                  groupFilter: false,
-                  config: {
-                    direction: {
-                      defaultValue: ["clockwise", "anti-clockwise"],
-                      value: "anti-clockwise"
-                    },
-                    angle: {
-                      min: 1,
-                      max: 180,
-                      step: 1,
-                      value: 15,
-                      defaultValue: 45
-                    }
-                  }
-                }
-              ]
-            })
-          }
-          disabled={props.connection.state !== ConnectionState.CONNECTED}
-        >
-          New Rotation Filter
         </button>
       </div>
     </>

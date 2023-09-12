@@ -388,7 +388,29 @@ class Participant(User):
                     description=f'Unknown filter channel: "{filter_channel}".',
                 )
         elif isinstance(self._connection, ConnectionSubprocess):
-            pass
+            if filter_channel == "video":
+                video_filters = await self._connection._send_command_wait_for_response(
+                    "GET_VIDEO_FILTERS", {"id": filter_id, "name": filter_name}, 5
+                )
+
+                # msg = self._connection._responses.pop(self._connection._command_nr)
+            elif filter_channel == "audio":
+                audio_filters = await self._connection._send_command_wait_for_response(
+                    "GET_AUDIO_FILTERS", None
+                )
+            elif filter_channel == "both":
+                video_filters = await self._connection._send_command_wait_for_response(
+                    "GET_VIDEO_FILTERS", None
+                )
+                audio_filters = await self._connection._send_command_wait_for_response(
+                    "GET_AUDIO_FILTERS", None
+                )
+            else:
+                raise ErrorDictException(
+                    code=404,
+                    type="INVALID_REQUEST",
+                    description=f'Unknown filter channel: "{filter_channel}".',
+                )
         else:
             raise ErrorDictException(
                 code=404,

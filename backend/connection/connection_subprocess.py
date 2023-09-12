@@ -353,7 +353,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._set_state(ConnectionState(data))
             case "API":
                 await self._message_handler(data)
-            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER":
+            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER" | "ACTIVE_VIDEO_FILTERS" | "ACTIVE_AUDIO_FILTERS":
                 await self._set_answer(command_nr, data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)

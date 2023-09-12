@@ -95,6 +95,7 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -111,6 +112,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
     };
   }, [connection]);
 
@@ -310,6 +312,10 @@ function App() {
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
     dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
+  };
+
+  const handleGetFiltersData = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA", data);
   };
 
   const onDeleteSession = (sessionId) => {
