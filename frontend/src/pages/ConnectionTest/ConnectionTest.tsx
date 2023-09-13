@@ -570,6 +570,46 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
+              video_filters: [],
+              audio_filters: [
+                {
+                  type: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time"
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Speaking Time
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [
+                {
+                  type: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time"
+                }
+              ],
+              video_filters: [
+                {
+                  type: "DISPLAY_SPEAKING_TIME",
+                  id: "display-speaking-time",
+                  audio_speaking_time_filter_id: "audio-speaking-time"
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Display Speaking Time
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
               audio_filters: [],
               video_filters: [
                 {
