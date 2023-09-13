@@ -215,10 +215,10 @@ class GlassesDetection(Filter):
 
         measure_1 = sum([sum(roi_1 / 255)]) / (
             numpy.shape(roi_1)[0] * numpy.shape(roi_1)[1]
-        )  # 计算评价值
+        )
         measure_2 = sum([sum(roi_2 / 255)]) / (
             numpy.shape(roi_2)[0] * numpy.shape(roi_2)[1]
-        )  # 计算评价值
+        )
         measure = measure_1 * 0.3 + measure_2 * 0.7
 
         print(measure)
