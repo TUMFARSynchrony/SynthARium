@@ -16,8 +16,13 @@ class DisplaySpeakingTimeFilter(Filter):
 
     async def complete_setup(self) -> None:
         speaking_time_filter_id = self._config["audio_speaking_time_filter_id"]
-        speaking_time_filter = self.audio_track_handler.filters[speaking_time_filter_id]
-        self._speaking_time_filter = speaking_time_filter  # type: ignore
+        if speaking_time_filter_id in self.audio_track_handler.filters:
+            speaking_time_filter = self.audio_track_handler.filters[speaking_time_filter_id]
+            self._speaking_time_filter = speaking_time_filter  # type: ignore
+
+        else:
+            # TODO check if audio speaking time filter is instantiated
+            pass
 
     @staticmethod
     def name(self) -> str:
@@ -37,6 +42,7 @@ class DisplaySpeakingTimeFilter(Filter):
             self._speaking_time_filter.speaking_time += self._speaking_time_filter.sample_rate // original.pts
             self._speaking_time_filter.seconds = self._speaking_time_filter.speaking_time // self._speaking_time_filter.sample_rate
         """
+        # TODO if/else check if speaking time filter is instantiated
         text = str(self._speaking_time_filter.seconds)
 
         # Put text on image
