@@ -616,10 +616,6 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
                   type: "SIMPLE_GLASSES_DETECTION",
                   id: "simple-glasses-detection"
                 }
-                /* {
-                  type: "GLASSES_DETECTION",
-                  id: "glasses-detection",
-                } */
               ]
             })
           }
