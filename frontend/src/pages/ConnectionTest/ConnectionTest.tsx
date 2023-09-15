@@ -606,6 +606,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
         >
           Display Speaking Time
         </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [
+                {
+                  type: "SIMPLE_GLASSES_DETECTION",
+                  id: "simple-glasses-detection"
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          Glasses Detection
+        </button>
       </div>
     </>
   );
