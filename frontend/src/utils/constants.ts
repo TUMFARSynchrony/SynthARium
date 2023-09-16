@@ -1,4 +1,5 @@
-import { Note, Participant, Session } from "../types";
+import { Chat, Note, Participant, Session } from "../types";
+import { AlertColor } from "@mui/material/Alert";
 
 export const INITIAL_SESSION_DATA: Session = {
   id: "",
@@ -51,6 +52,13 @@ export const INITIAL_NOTE_DATA: Note = {
   content: ""
 };
 
+export const INITIAL_CHAT_DATA: Chat = {
+  time: 0,
+  message: "",
+  author: "",
+  target: ""
+};
+
 /**
  * Environment of the client. Set by CreateReactApp depending on how you start it.
  * @type {("development" | "test" | "production")}
@@ -100,5 +108,5 @@ export const instructionsList = [
 export const initialSnackbar = {
   open: false,
   text: "",
-  severity: "success"
+  severity: "success" as AlertColor
 };

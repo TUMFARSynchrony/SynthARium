@@ -12,7 +12,8 @@ function ParticipantData({
   sessionId,
   index,
   handleParticipantChange,
-  setSnackbarResponse
+  setSnackbarResponse,
+  handleCanvasPlacement
 }) {
   // I first name and last name of the participant are empty, then we have a newly created participant. The default value is then true.
   // This is the flag used to display participant details in the ParticipantDataModal.
@@ -70,6 +71,7 @@ function ParticipantData({
         handleParticipantChange={handleParticipantChange}
         onDeleteParticipant={onDeleteParticipant}
         setSnackbarResponse={setSnackbarResponse}
+        handleCanvasPlacement={handleCanvasPlacement}
       />
     </>
   );

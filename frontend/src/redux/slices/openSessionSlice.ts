@@ -2,11 +2,11 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 import { Participant, Session } from "../../types";
 
-type OpenStateState = {
+type OpenSessionState = {
   session: Session;
 };
 
-const initialState: OpenStateState = {
+const initialState: OpenSessionState = {
   session: {
     id: "",
     title: "",
@@ -94,5 +94,8 @@ export const {
 
 export default openSessionSlice.reducer;
 
-export const selectOpenSession = (state: RootState) =>
+export const selectOpenSession = (state: RootState): Session =>
   state.openSession.session;
+
+export const selectNumberOfParticipants = (state: RootState): number =>
+  state.openSession.session.participants.length;

@@ -48,7 +48,8 @@ function ParticipantDataModal({
   setShowParticipantInput,
   handleParticipantChange,
   onDeleteParticipant,
-  setSnackbarResponse
+  setSnackbarResponse,
+  handleCanvasPlacement
 }) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState(
@@ -78,7 +79,6 @@ function ParticipantDataModal({
   // if required data is missing) to display appropriate notification.
   const onCloseModalWithoutData = () => {
     setShowParticipantInput(!showParticipantInput);
-
     let newParticipantInputEmpty = participantCopy.participant_name === "";
     if (newParticipantInputEmpty) {
       setSnackbarResponse({
@@ -140,6 +140,7 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
+    handleCanvasPlacement();
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };

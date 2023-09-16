@@ -1,17 +1,19 @@
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import NotesTab from "../../molecules/NotesTab/NotesTab";
-import ParticipantsTab from "../../molecules/ParticipantsTab/ParticipantsTab";
 import OverviewTab from "../../molecules/OverviewTab/OverviewTab";
+import ParticipantsTab from "../../molecules/ParticipantsTab/ParticipantsTab";
 
 function WatchingRoomTabs({
   connectedParticipants,
   onKickBanParticipant,
+  onChat,
   onAddNote,
   onLeaveExperiment,
   onStartExperiment,
   onMuteParticipant,
-  onEndExperiment
+  onEndExperiment,
+  onGetSession
 }) {
   return (
     <>
@@ -27,6 +29,8 @@ function WatchingRoomTabs({
             onLeaveExperiment={onLeaveExperiment}
             onStartExperiment={onStartExperiment}
             onEndExperiment={onEndExperiment}
+            onChat={onChat}
+            onGetSession={onGetSession}
           />
         </TabPanel>
         <TabPanel>

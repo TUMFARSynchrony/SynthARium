@@ -25,6 +25,7 @@ from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
 from session.data.participant import ParticipantData
 from users.user import User
+import hub.hub as _h
 
 
 class Participant(User):
@@ -51,12 +52,14 @@ class Participant(User):
 
     _experiment: _exp.Experiment
     _participant_data: ParticipantData
+    _hub: _h.Hub
 
     def __init__(
         self,
         participant_id: str,
         experiment: _exp.Experiment,
         participant_data: ParticipantData,
+        hub: _h.Hub,
     ) -> None:
         """Instantiate new Participant instance.
 
@@ -80,11 +83,13 @@ class Participant(User):
         self._logger = logging.getLogger(f"Participant-{participant_id}")
         self._participant_data = participant_data
         self._experiment = experiment
+        self._hub = hub
         experiment.add_participant(self)
         experiment.on("state", self._handle_state)
 
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
+        self.on_message("GET_SESSION", self._handle_get_session)
 
     def __str__(self) -> str:
         """Get string representation of this participant.
@@ -275,6 +280,31 @@ class Participant(User):
             type="CHAT", description="Successfully send chat message."
         )
         return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_get_session(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_SESSION`.
+
+        Loads session with given id from session manager.  Responds with type:
+        `GET_SESSION`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict with type: `SESSION` and data: custom_types.session.SessionDict.
+        """
+        session = self._hub.session_manager.get_session(data["session_id"])
+        if session is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_SESSION",
+                description="No session with the given ID found to update.",
+            )
+        session_dict = session.asdict()
+        return MessageDict(type="SESSION", data=session_dict)
 
     def get_recording_path(self):
         """Get the recording path for current participant.

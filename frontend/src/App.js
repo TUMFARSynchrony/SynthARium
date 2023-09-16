@@ -20,11 +20,13 @@ import {
 } from "./redux/slices/ongoingExperimentSlice";
 import { saveSession } from "./redux/slices/openSessionSlice";
 import {
+  addMessageToCurrentSession,
   addNote,
   createSession,
   deleteSession,
   getSessionsList,
   selectSessions,
+  setCurrentSession,
   setExperimentTimes,
   updateSession
 } from "./redux/slices/sessionsListSlice";
@@ -83,6 +85,7 @@ function App() {
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
 
     connection.api.on("SESSION_LIST", handleSessionList);
+    connection.api.on("SESSION", handleSession);
     connection.api.on("DELETED_SESSION", handleDeletedSession);
     connection.api.on("SAVED_SESSION", handleSavedSession);
     connection.api.on("SESSION_CHANGE", handleSessionChange);
@@ -91,13 +94,14 @@ function App() {
     connection.api.on("EXPERIMENT_CREATED", handleExperimentCreated);
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
-
+    connection.api.on("CHAT", handleChatMessages);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
 
       connection.api.off("SESSION_LIST", handleSessionList);
+      connection.api.off("SESSION", handleSession);
       connection.api.off("DELETED_SESSION", handleDeletedSession);
       connection.api.off("SAVED_SESSION", handleSavedSession);
       connection.api.off("SESSION_CHANGE", handleSessionChange);
@@ -106,6 +110,7 @@ function App() {
       connection.api.off("EXPERIMENT_CREATED", handleExperimentCreated);
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
+      connection.api.off("CHAT", handleChatMessages);
     };
   }, [connection]);
 
@@ -187,6 +192,21 @@ function App() {
 
   const handleSessionList = (data) => {
     dispatch(getSessionsList(data));
+  };
+
+  const handleSession = (data) => {
+    dispatch(setCurrentSession(data));
+  };
+
+  const handleChatMessages = (data) => {
+    // this is logged on participant's view
+    dispatch(
+      addMessageToCurrentSession({
+        message: data,
+        sessionId: data.session,
+        target: data.target
+      })
+    );
   };
 
   const handleDeletedSession = (data) => {
@@ -278,6 +298,15 @@ function App() {
     );
   };
 
+  /**
+   * Get a specific session information
+   * Used in participant's view
+   * @param sessionId
+   */
+  const onGetSession = (sessionId) => {
+    connection.sendMessage("GET_SESSION", { session_id: sessionId });
+  };
+
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
     dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
@@ -301,14 +330,20 @@ function App() {
     }
   };
 
-  const onJoinExperiment = (sessionId) => {
+  const onJoinExperiment = (session) => {
+    const sessionId = session.id;
     connection.sendMessage("JOIN_EXPERIMENT", { session_id: sessionId });
     dispatch(joinExperiment(sessionId));
+    dispatch(setCurrentSession(session));
   };
 
   const onAddNote = (note, sessionId) => {
     connection.sendMessage("ADD_NOTE", note);
     dispatch(addNote({ note: note, id: sessionId }));
+  };
+
+  const onChat = (message) => {
+    connection.sendMessage("CHAT", message);
   };
 
   const onLeaveExperiment = () => {
@@ -353,7 +388,12 @@ function App() {
             path="/lobby"
             element={
               connection ? (
-                <Lobby localStream={localStream} connection={connection} />
+                <Lobby
+                  localStream={localStream}
+                  connection={connection}
+                  connectionState={connectionState}
+                  onGetSession={onGetSession}
+                />
               ) : (
                 "Loading..."
               )
@@ -367,6 +407,8 @@ function App() {
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
                 onAddNote={onAddNote}
+                onChat={onChat}
+                onGetSession={onGetSession}
                 onLeaveExperiment={onLeaveExperiment}
                 onMuteParticipant={onMuteParticipant}
                 onStartExperiment={onStartExperiment}

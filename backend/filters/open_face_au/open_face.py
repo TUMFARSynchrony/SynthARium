@@ -24,7 +24,7 @@ class OpenFace:
                     f"{port}",
                 ],
                 stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
             )
         except Exception:
