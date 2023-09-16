@@ -22,8 +22,7 @@ See [backend readme](./../backend/README.md#using-a-ssl-certificate) for details
 
 ## Configuring the Development Server
 
-In the `frontend` folder: copy the `.env.template` file and rename it to `.env`
-The file can be configured:
+In frontend/.env:
 
 - `REACT_APP_BACKEND`: address of the backend server
 - `HTTPS`: If true, the frontend dev server will use HTTPS. See [Create React App Docs](https://create-react-app.dev/docs/using-https-in-development/)
