@@ -25,7 +25,6 @@ class SimpleGlassesDetection(Filter):
         self, config: FilterDict, audio_track_handler, video_track_handler
     ) -> None:
         """Initialize new Simple Glasses Detection Filter.
-
         Parameters
         ----------
         See base class: filters.filter.Filter.
@@ -44,6 +43,24 @@ class SimpleGlassesDetection(Filter):
     @staticmethod
     def name(self) -> str:
         return "SIMPLE_GLASSES_DETECTION"
+
+    @staticmethod
+    def filter_type(self) -> str:
+        return "TEST"
+
+    @staticmethod
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "name": name,
+            "id": id,
+            "channel": "video",
+            "groupFilter": False,
+            "config": {},
+        }
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape
