@@ -441,13 +441,17 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
       <p className="apiSubsectionHeader">Filter Presets:</p>
       <div className="requestButtons">
         <button
-          onClick={() =>
+          onClick={() => {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
               video_filters: []
-            })
-          }
+            });
+            props.connection.sendMessage("SET_GROUP_FILTERS", {
+              audio_group_filters: [],
+              video_group_filters: []
+            });
+          }}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           None
