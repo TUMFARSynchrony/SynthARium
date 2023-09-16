@@ -8,7 +8,6 @@ import zmq.asyncio
 from queue import Queue
 from itertools import combinations
 from typing import Any
-import numpy as np
 
 
 class GroupFilterAggregator(object):
@@ -97,7 +96,7 @@ class GroupFilterAggregator(object):
                             # Aggregate data
                             aggregated_data = self._group_filter.aggregate(data)
                             self._logger.debug(
-                                f"Data aggregation is triggered by participant"
+                                "Data aggregation is triggered by participant"
                                 + f" {message['participant_id']}: {message}"
                                 + f" with data: {data},"
                                 + f" aggregation result: {aggregated_data}"

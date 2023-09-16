@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy
 import zmq
 import zmq.asyncio
-from typing import TYPE_CHECKING, TypeGuard
+from typing import TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
