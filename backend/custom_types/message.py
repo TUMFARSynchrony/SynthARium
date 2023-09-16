@@ -68,6 +68,7 @@ MESSAGE_TYPES = Literal[
     "BAN_NOTIFICATION",
     "MUTE",
     "SET_FILTERS",
+    "SET_GROUP_FILTERS",
     "PING",
     "PONG",
 ]
