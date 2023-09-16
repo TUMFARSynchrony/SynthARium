@@ -9,7 +9,6 @@ from av import VideoFrame, AudioFrame
 
 from custom_types import util
 from .filter_dict import FilterDict
-from custom_types.message import MessageDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error
@@ -50,12 +49,6 @@ class Filter(ABC):
     after initialization.
     """
 
-    group_filter: bool
-    """
-    Whether this filter should be executed as a group filter with all participants.
-    Default is False.
-    """
-
     _config: FilterDict
 
     def __init__(
@@ -84,7 +77,6 @@ class Filter(ABC):
         filters after __init__ (if they are designed to be).
         """
         self.run_if_muted = False
-        self.group_filter = False
         self._config = config
         self.audio_track_handler = audio_track_handler
         self.video_track_handler = video_track_handler
@@ -175,23 +167,5 @@ class Filter(ABC):
         """Get string representation for this filter."""
         return (
             f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
-            f"group_filter={self.group_filter} config={self.config})"
-        )
-
-    async def send_group_filter_message(self, data: dict) -> None:
-        """Send a group filter message to the experimenters
-
-        Parameters:
-        data: dict
-            Data to be sent to the experimenters.
-        """
-        msg = MessageDict(
-            type="GROUP_FILTER",
-            data={
-                "participant": self.video_track_handler.connection._log_name_suffix[2:],
-                "data": data,
-            },
-        )
-        await self.video_track_handler.filter_api.experiment_send(
-            "experimenter", msg, ""
+            f" config={self.config})"
         )
