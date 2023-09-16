@@ -45,6 +45,7 @@ type Props = {
   setShowParticipantInput: React.Dispatch<React.SetStateAction<boolean>>;
   onDeleteParticipant: (index: number) => void;
   handleParticipantChange: (index: number, participant: Participant) => void;
+  handleCanvasPlacement: () => void;
   setSnackbarResponse: React.Dispatch<
     React.SetStateAction<{
       newParticipantInputEmpty: boolean;
@@ -63,7 +64,8 @@ function ParticipantDataModal({
   setShowParticipantInput,
   handleParticipantChange,
   onDeleteParticipant,
-  setSnackbarResponse
+  setSnackbarResponse,
+  handleCanvasPlacement
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(
@@ -171,6 +173,7 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
+    handleCanvasPlacement();
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };
