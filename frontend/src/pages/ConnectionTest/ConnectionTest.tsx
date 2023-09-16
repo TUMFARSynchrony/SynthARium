@@ -788,14 +788,6 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
                   groupFilter: false,
                   config: {}
                 }
-                /* ,
-                {
-                  name: "GLASSES_DETECTION",
-                  id: "glasses-detection",
-                  channel: "video",
-                  groupFilter: false,
-                  config: {}
-                } */
               ]
             })
           }
