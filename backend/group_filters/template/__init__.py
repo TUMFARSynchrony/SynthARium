@@ -1,0 +1,1 @@
+from group_filters.template.template_group_filter import TemplateGroupFilter
