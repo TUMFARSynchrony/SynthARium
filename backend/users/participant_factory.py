@@ -63,6 +63,8 @@ async def participant_factory(
             config,
             participant_data.audio_filters,
             participant_data.video_filters,
+            participant_data.audio_group_filters,
+            participant_data.video_group_filters,
             filter_api,
             record_data,
         )
@@ -73,6 +75,8 @@ async def participant_factory(
             log_name_suffix,
             participant_data.audio_filters,
             participant_data.video_filters,
+            participant_data.audio_group_filters,
+            participant_data.video_group_filters,
             filter_api,
             record_data,
         )
