@@ -22,7 +22,8 @@ For testing, the `testing_main.py` provides an alternative to the above `main.py
 
 # Configuration
 
-The backend can be configured using the `backend/config.json`.
+In the `backend` folder: copy the `config.json.template` file and rename it to `config.json`.
+Then the backend can be configured using the `backend/config.json`.
 
 -   `experimenter_password` - str: password experimenters must provide to authenticate themselves
 -   `host` - str : host address the backend should use

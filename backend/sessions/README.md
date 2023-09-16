@@ -1,4 +1,4 @@
-Here is a current description of the default available experimental templates:
+Here is a current description of the available experimental templates:
 
 |Experiment Name| File Name | Experiment Description| Creator |
 | ----- | ---- | ----| --- |

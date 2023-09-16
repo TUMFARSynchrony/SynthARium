@@ -84,6 +84,7 @@ class OpenFaceAUExtractor:
 
     def _get_result(self) -> object:
         message = self.socket.recv(flags=zmq.NOBLOCK)
+        self.open_face.flush_result()
         data = json.loads(message)
         self.is_extracting = False
         return data

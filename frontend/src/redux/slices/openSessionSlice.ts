@@ -94,8 +94,5 @@ export const {
 
 export default openSessionSlice.reducer;
 
-export const selectOpenSession = (state: RootState): Session =>
+export const selectOpenSession = (state: RootState) =>
   state.openSession.session;
-
-export const selectNumberOfParticipants = (state: RootState): number =>
-  state.openSession.session.participants.length;
