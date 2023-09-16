@@ -73,7 +73,7 @@ class Hub:
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
         self.get_filters_json()
-        self._logger.debug(f"Successfully created filters_data.json")
+        self._logger.debug("Successfully created filters_data.json in frontend folder")
 
         self.experimenters = []
         self.experiments = {}

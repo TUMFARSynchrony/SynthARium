@@ -1,11 +1,8 @@
-from typing import TypeGuard
-
 import cv2
 import numpy
 from .audio_speaking_time_filter import AudioSpeakingTimeFilter
 from av import VideoFrame
 
-from custom_types import util
 from filters.filter import Filter
 
 
