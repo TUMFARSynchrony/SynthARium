@@ -12,6 +12,7 @@ import logging
 from typing import Any, Coroutine
 
 from filters import filter_utils
+from group_filters import group_filter_utils
 from session.data.session import is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
@@ -79,7 +80,7 @@ class Experimenter(User):
         self.on_message("BAN_PARTICIPANT", self._handle_ban)
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
-        self.on_message("GROUP_FILTER", self._handle_group_filters)
+        self.on_message("SET_GROUP_FILTERS", self._handle_set_group_filters)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -745,36 +746,65 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
-    async def _handle_group_filters(self, data: Any) -> None:
-        self._logger.debug(f"Data received: {data}")
-        participant = data["participant"]
+    async def _handle_set_group_filters(self, data: Any) -> MessageDict:
+        if not group_filter_utils.is_valid_set_group_filters_request(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid SetGroupFiltersRequest.",
+            )
 
-        self.participants[participant] = data
+        video_group_filters = data["video_group_filters"]
+        video_group_filter_ports = []
+        for _ in video_group_filters:
+            video_group_filter_ports.append(group_filter_utils.find_an_available_port())
 
-        if len(self.participants) > 1:
-            for p1 in self.participants.keys():
-                for p2 in self.participants.keys():
-                    if p1 != p2:
-                        p1_frame = int(list(self.participants[p1].keys())[0])
-                        p2_frame = int(list(self.participants[p2].keys())[0])
+        audio_group_filters = data["audio_group_filters"]
+        audio_group_filter_ports = []
+        for _ in audio_group_filters:
+            audio_group_filter_ports.append(group_filter_utils.find_an_available_port())
 
-                        if p1_frame > p2_frame:
-                            p1_data_aligned, p2_data_aligned = self.align(
-                                list(self.participants[p1].values())[0],
-                                list(self.participants[p2].values())[0],
-                            )
-                        else:
-                            p2_data_aligned, p1_data_aligned = self.align(
-                                list(self.participants[p2].values())[0],
-                                list(self.participants[p1].values())[0],
-                            )
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
+        coroutines = []
 
-                        self.apply_oasis()
+        # Update experiment with group filter aggregator
+        coroutines.append(
+            experiment.set_video_group_filter_aggregators(
+                video_group_filters, video_group_filter_ports
+            )
+        )
+        coroutines.append(
+            experiment.set_audio_group_filter_aggregators(
+                audio_group_filters, audio_group_filter_ports
+            )
+        )
 
-    def align(self, longer_data, shorter_data):
-        for l, s in zip(longer_data, shorter_data):
-            if len(l) != len(s):
-                for _ in range(len(l) - len(s)):
-                    l.pop(0)
+        # Update participant data
+        for p_data in experiment.session.participants.values():
+            p_data.video_group_filters = video_group_filters
+            p_data.audio_group_filters = audio_group_filters
 
-        return longer_data, shorter_data
+        # Update connected Participants
+        for p in experiment.participants.values():
+            if p.connection is not None:
+                coroutines.append(
+                    p.set_video_group_filters(
+                        video_group_filters, video_group_filter_ports
+                    )
+                )
+                coroutines.append(
+                    p.set_audio_group_filters(
+                        audio_group_filters, audio_group_filter_ports
+                    )
+                )
+        await asyncio.gather(*coroutines)
+
+        # Notify Experimenters connected to the hub about the data change
+        message = MessageDict(type="SESSION_CHANGE", data=experiment.session.asdict())
+        await self._hub.send_to_experimenters(message)
+
+        # Respond with success message
+        success = SuccessDict(
+            type="SET_GROUP_FILTERS", description="Successfully changed group filters."
+        )
+        return MessageDict(type="SUCCESS", data=success)
