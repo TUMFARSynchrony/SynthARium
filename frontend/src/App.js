@@ -12,6 +12,7 @@ import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import PageTemplate from "./components/templates/PageTemplate";
+import ParticipantContentTemplate from "./components/templates/ParticipantContentTemplate";
 import ButtonList from "./components/atoms/Button/ButtonList";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
@@ -411,10 +412,17 @@ function App() {
             element={
               <PageTemplate
                 title={"Template Page Title"}
-                contentTitle={"Template Page Content Title"}
-                content={"Template Page Content"}
                 buttonListComponent={
                   <ButtonList type="chatInstructionsParticipants" />
+                }
+                customComponent={
+                  <ParticipantContentTemplate
+                    content={"Template Page Content"}
+                    contentTitle={"Template Page Content Title"}
+                    sideComponent={<div>Template Side Component</div>}
+                    customComponent={<div>Template Custom Component</div>}
+                    actionButtonProps={actionButtonProps}
+                  />
                 }
                 minusMarginRight={true}
                 actionButtonProps={actionButtonProps} // Pass the actionButtonProps

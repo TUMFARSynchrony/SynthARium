@@ -17,9 +17,8 @@ function ActionButton({
   disabled = false
 }: ActionButtonProps) {
   const navigate = useNavigate();
-
-  const handleButtonClick = () => {
-    path ? navigate(path) : onClick && onClick();
+  const handleNavigation = () => {
+    if (path) navigate(path);
   };
   return (
     <Button
@@ -27,7 +26,7 @@ function ActionButton({
       color={color}
       size={size}
       onClick={() => {
-        handleButtonClick();
+        handleNavigation();
         onClick();
       }}
       disabled={disabled}

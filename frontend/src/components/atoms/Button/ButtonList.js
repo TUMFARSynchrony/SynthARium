@@ -10,9 +10,9 @@ import {
 
 const buttonConfigs = {
   // not only icons but general buttons with different looks etc.
-  undoRedo: [faUndo, faRedo],
-  chatInstructionsParticipants: [faCommentAlt, faClipboardCheck, faUsers],
-  chatInstructions: [faCommentAlt, faClipboardCheck]
+  undoRedoButtonList: [faUndo, faRedo],
+  experimenterButtonList: [faCommentAlt, faClipboardCheck, faUsers],
+  participantButtonList: [faCommentAlt, faClipboardCheck]
 };
 
 const ButtonList = ({ type }) => {
