@@ -34,7 +34,7 @@ class AudioSpeakingTimeFilter(Filter):
         return {
             "name": name,
             "id": id,
-            "channel": "video",
+            "channel": "audio",
             "groupFilter": False,
             "config": {},
         }

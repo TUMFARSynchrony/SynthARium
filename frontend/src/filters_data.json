@@ -67,7 +67,7 @@
     {
       "name": "AUDIO_SPEAKING_TIME",
       "id": "audio-speaking-time",
-      "channel": "video",
+      "channel": "audio",
       "groupFilter": false,
       "config": {}
     },
