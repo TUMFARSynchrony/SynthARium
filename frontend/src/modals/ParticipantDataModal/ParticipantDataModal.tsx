@@ -27,7 +27,13 @@ import filtersData from "../../filters_data.json";
 const testData = filtersData.SESSION;
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-const defaultFilterName = "FILTER_API_TEST";
+const defaultFilter = {
+  id: "",
+  name: "Placeholder",
+  channel: "",
+  groupFilter: false,
+  config: {}
+};
 
 const getIndividualFilters = () => {
   return testData.filter((filter) => filter.groupFilter !== true);
@@ -68,9 +74,7 @@ function ParticipantDataModal({
   handleCanvasPlacement
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
-  const [selectedFilter, setSelectedFilter] = useState<Filter>(
-    testData.find((filter: Filter) => filter.name === defaultFilterName)
-  );
+  const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
@@ -189,7 +193,6 @@ function ParticipantDataModal({
       const newFilter = structuredClone(filter);
       newFilter.id = uuid();
       newParticipantData.video_filters.push(newFilter);
-      console.log("Video Filter added");
     }
     if (
       testData
@@ -199,10 +202,8 @@ function ParticipantDataModal({
       const newFilter = structuredClone(filter);
       newFilter.id = uuid();
       newParticipantData.audio_filters.push(newFilter);
-      console.log("Audio Filter added");
     }
     setParticipantCopy(newParticipantData);
-    console.log(newParticipantData);
   };
 
   const handleDeleteVideoFilter = (filterCopyIndex: number) => {
@@ -335,6 +336,13 @@ function ParticipantDataModal({
                     value={selectedFilter.name}
                     id="filters-select"
                     label="Filters"
+                    displayEmpty={true}
+                    renderValue={(selected) => {
+                      if (selected === "Placeholder") {
+                        return <em>Select a Filter</em>;
+                      }
+                      return selected;
+                    }}
                   >
                     <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
                       Individual Filters
