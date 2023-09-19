@@ -419,7 +419,6 @@ function App() {
                   <ParticipantContentTemplate
                     content={"Template Page Content"}
                     contentTitle={"Template Page Content Title"}
-                    sideComponent={<div>Template Side Component</div>}
                     customComponent={<div>Template Custom Component</div>}
                     actionButtonProps={actionButtonProps}
                   />

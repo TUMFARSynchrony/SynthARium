@@ -3,22 +3,15 @@ function ParticipantContentTemplate({
   content,
   customComponent,
   actionButtonProps,
-  contentTitle,
-  sideComponent
+  contentTitle
 }) {
-  const chatClasses = ` ${sideComponent ? "-mr-[60px]" : ""}`;
   return (
-    <div className="h-[calc(100vh-72px)] flex flex-col text-left xl:items-center bg-pink-400">
-      <div className="flex flex-row h-full w-full justify-center bg-purple-400">
-        <div className="flex flex-col justify-between items-center w-full bg-orange-400">
-          <div className="font-bold text-lg">{contentTitle}</div>
-          <p className="text-justify">{content}</p>
-          <div className="flex flex-row h-full w-full justify-center bg-yellow-400">
-            {customComponent}
-          </div>
-        </div>
-        <div className={`flex flex-col ${chatClasses} bg-black`}>
-          {sideComponent}
+    <div className="h-screen flex flex-col mx-[100px] py-4 text-left gap-y-4 xl:items-center">
+      <div className="flex flex-col h-full overflow-y-auto justify-center gap-y-4 xl:w-1/2">
+        <div className="font-bold text-lg">{contentTitle}</div>
+        <p className="text-justify">{content}</p>
+        <div className="flex flex-col h-full overflow-y-auto justify-center gap-y-4 xl:w-1/2">
+          <div className="flex flex-col">{customComponent}</div>
         </div>
       </div>
       <div className="self-center h-fit">
