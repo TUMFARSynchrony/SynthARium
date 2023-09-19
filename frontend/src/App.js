@@ -55,7 +55,6 @@ function App() {
       "%cConnection peer streams change Handler",
       "color:blue"
     );
-    console.log(peers);
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -389,6 +388,7 @@ function App() {
             element={
               connection ? (
                 <Lobby
+                  connectedParticipants={connectedParticipants}
                   localStream={localStream}
                   connection={connection}
                   onGetSession={onGetSession}

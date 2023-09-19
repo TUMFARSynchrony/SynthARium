@@ -5,14 +5,13 @@ import ListItem from "@mui/material/ListItem";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { Video } from "../ConnectionTest/ConnectionTest";
 import styled from "@mui/material/styles/styled";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
 import { ActionIconButton } from "../../components/atoms/Button";
-import { ConnectedPeer } from "../../networking/typing";
 import ConsentModal from "../../modals/ConsentModal/ConsentModal";
+import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
@@ -25,12 +24,11 @@ function Lobby({ localStream, connection, onGetSession }) {
   const [userConsent, setUserConsent] = useState(false);
   const [participantStream, setParticipantStream] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
-  const currentSession = useAppSelector(selectCurrentSession);
-  const [searchParams, setSearchParams] = useSearchParams();
   const [connectedParticipants, setConnectedParticipants] = useState([]);
+  const sessionData = useAppSelector(selectCurrentSession);
+  const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
@@ -65,7 +63,7 @@ function Lobby({ localStream, connection, onGetSession }) {
     if (participantStream && userConsent) {
       videoElement.current.srcObject = localStream;
     }
-  }, [participantStream, userConsent]);
+  }, [localStream, participantStream, userConsent]);
 
   const TabText = styled(Typography)(({ theme }) => ({
     color: theme.palette.primary.main
@@ -79,16 +77,6 @@ function Lobby({ localStream, connection, onGetSession }) {
     setConnectionState(state);
   };
 
-  /** Get the title displayed in a {@link Video} element for `peer`. */
-  const getVideoTitle = (peer: ConnectedPeer, index: number) => {
-    if (peer.summary) {
-      if (peer.summary instanceof Object) {
-        return `${peer.summary.participant_name}`;
-      }
-      return `UserID: ${peer.summary}`;
-    }
-    return `Peer stream ${index + 1}`;
-  };
   return (
     <>
       <AppToolbar />
@@ -101,16 +89,14 @@ function Lobby({ localStream, connection, onGetSession }) {
         >
           {userConsent ? (
             participantStream ? (
-              currentSession ? (
-                <div className="peerStreams">
-                  <Video title="You" srcObject={localStream} key={0} />
-                  {connectedParticipants.map((peer, i) => (
-                    <Video
-                      title={getVideoTitle(peer, i)}
-                      srcObject={peer.stream}
-                      key={i}
-                    />
-                  ))}
+              sessionData && connectedParticipants ? (
+                <div className="shadow-md rounded-md bg-whitesmoke inline-block">
+                  <VideoCanvas
+                    connectedParticipants={connectedParticipants}
+                    sessionData={sessionData}
+                    localStream={localStream}
+                    ownParticipantId={participantIdParam}
+                  />
                 </div>
               ) : (
                 <video
@@ -165,8 +151,8 @@ function Lobby({ localStream, connection, onGetSession }) {
             <Box>
               <TabText variant="button">Chat</TabText>
               {/* Placeholder for the chat feature (only with experimenter) */}
-              {currentSession &&
-                currentSession.participants
+              {sessionData &&
+                sessionData.participants
                   .find((participant) => participant.id === participantIdParam)
                   .chat.map((message, index) => (
                     <Note
