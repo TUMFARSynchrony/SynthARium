@@ -751,4 +751,4 @@ class Experimenter(User):
         for p in experiment.participants.values():
             if p.connection is not None:
                 res[p.id] = await p.get_filters_data(data)
-        return res
+        return MessageDict(type="FILTERS_DATA", data=res)

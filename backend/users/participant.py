@@ -357,4 +357,6 @@ class Participant(User):
         return MessageDict()
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
-        return await self.get_filters_data(data)
+        res = await self.get_filters_data(data)
+
+        return MessageDict(type="FILTERS_DATA", data=res)

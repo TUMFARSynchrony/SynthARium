@@ -540,8 +540,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 description=f'Unknown filter channel: "{filter_channel}".',
             )
 
-        filter_data = {"video": video_filters, "audio": audio_filters}
-        return MessageDict(type="FILTERS_DATA", data=filter_data)
+        return {"video": video_filters, "audio": audio_filters}
 
     async def start_recording(self) -> None:
         """Start recording for this user."""
