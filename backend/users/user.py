@@ -519,7 +519,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     return
                 await self._connection.set_audio_filters(filters)
 
-    async def get_filters_data(self, data: Any) -> MessageDict:
+    async def get_filters_data(self, data: Any) -> dict:
         filter_id = data["filter_id"]
         filter_name = data["filter_name"]
         filter_channel = data["filter_channel"]
