@@ -8,6 +8,7 @@ from hub import BACKEND_DIR
 
 
 from filters import FilterDict
+from filters import FilterDataDict
 
 from filters.filter import Filter
 
@@ -65,8 +66,12 @@ class SimpleGlassesDetection(Filter):
             "config": {},
         }
 
-    async def get_filter_data(self) -> None | dict[Any]:
-        return {"Glasses Detected": self._glasses_detected}
+    async def get_filter_data(self) -> None | FilterDataDict:
+        dict: FilterDataDict = {
+            "id": self.id,
+            "data": {"Glasses Detected": self._glasses_detected},
+        }
+        return dict
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape

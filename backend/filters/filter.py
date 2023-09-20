@@ -10,6 +10,7 @@ from av import VideoFrame, AudioFrame
 
 from custom_types import util
 from .filter_dict import FilterDict
+from .filter_data_dict import FilterDataDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error
@@ -135,7 +136,7 @@ class Filter(ABC):
         """
         return
 
-    async def get_filter_data(self) -> None | dict[Any]:
+    async def get_filter_data(self) -> None | FilterDataDict:
         """Get the data of a filter"""
         return
 
