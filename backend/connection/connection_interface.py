@@ -193,8 +193,28 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
 
     @abstractmethod
     async def get_video_filters_data(self, id, name) -> list:
-        return
+        """Get Data from a specific video filter
+
+        Parameters
+        ----------
+        name: name of the filter
+            This is the unique name with which the filter can be identified
+        id : id of the filter
+            Can be either 'all' for all filters with the name
+            or specific id for just one filter
+        """
+        pass
 
     @abstractmethod
     async def get_audio_filters_data(self, id, name) -> list:
-        return
+        """Get Data from a specific audio filter
+
+        Parameters
+        ----------
+        name: name of the filter
+            This is the unique name with which the filter can be identified
+        id : id of the filter
+            Can be either 'all' for all filters with the name
+            or specific id for just one filter
+        """
+        pass
