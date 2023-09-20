@@ -519,6 +519,30 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     return
                 await self._connection.set_audio_filters(filters)
 
+    async def get_filters_data(self, data: Any) -> MessageDict:
+        filter_id = data["filter_id"]
+        filter_name = data["filter_name"]
+        filter_channel = data["filter_channel"]
+        audio_filters = []
+        video_filters = []
+        if filter_channel == "video" or filter_channel == "both":
+            video_filters = await self._connection.get_video_filters_data(
+                filter_id, filter_name
+            )
+        if filter_channel == "audio" or filter_channel == "both":
+            audio_filters = await self._connection.get_audio_filters_data(
+                filter_id, filter_name
+            )
+        if filter_channel not in ["video", "audio", "both"]:
+            raise ErrorDictException(
+                code=404,
+                type="INVALID_REQUEST",
+                description=f'Unknown filter channel: "{filter_channel}".',
+            )
+
+        filter_data = {"video": video_filters, "audio": audio_filters}
+        return MessageDict(type="FILTERS_DATA", data=filter_data)
+
     async def start_recording(self) -> None:
         """Start recording for this user."""
         if self._connection is not None:

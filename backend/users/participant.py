@@ -11,8 +11,6 @@ import asyncio
 import logging
 import os
 from typing import Any, Coroutine
-from connection.connection import Connection
-from connection.connection_subprocess import ConnectionSubprocess
 
 
 from session.data.participant import ParticipantSummaryDict
@@ -359,64 +357,4 @@ class Participant(User):
         return MessageDict()
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
-        filter_id = data["filter_id"]
-        filter_name = data["filter_name"]
-        filter_channel = data["filter_channel"]
-        audio_filters = []
-        video_filters = []
-        if isinstance(self._connection, Connection):
-            if filter_channel == "video":
-                # video_filters = self._connection.get_video_filters()
-                video_filters = self._connection.get_video_filters_data(
-                    filter_id, filter_name
-                )
-            elif filter_channel == "audio":
-                audio_filters = self._connection.get_audio_filters_data(
-                    filter_id, filter_name
-                )
-            elif filter_channel == "both":
-                video_filters = self._connection.get_video_filters_data(
-                    filter_id, filter_name
-                )
-                audio_filters = self._connection.get_audio_filters_data(
-                    filter_id, filter_name
-                )
-            else:
-                raise ErrorDictException(
-                    code=404,
-                    type="INVALID_REQUEST",
-                    description=f'Unknown filter channel: "{filter_channel}".',
-                )
-        elif isinstance(self._connection, ConnectionSubprocess):
-            if filter_channel == "video":
-                video_filters = await self._connection._send_command_wait_for_response(
-                    "GET_VIDEO_FILTERS", {"id": filter_id, "name": filter_name}, 5
-                )
-
-                # msg = self._connection._responses.pop(self._connection._command_nr)
-            elif filter_channel == "audio":
-                audio_filters = await self._connection._send_command_wait_for_response(
-                    "GET_AUDIO_FILTERS", None
-                )
-            elif filter_channel == "both":
-                video_filters = await self._connection._send_command_wait_for_response(
-                    "GET_VIDEO_FILTERS", None
-                )
-                audio_filters = await self._connection._send_command_wait_for_response(
-                    "GET_AUDIO_FILTERS", None
-                )
-            else:
-                raise ErrorDictException(
-                    code=404,
-                    type="INVALID_REQUEST",
-                    description=f'Unknown filter channel: "{filter_channel}".',
-                )
-        else:
-            raise ErrorDictException(
-                code=404,
-                type="INVALID_REQUEST",
-                description="Connection type not supported.",
-            )
-
-        filter_data = {"video": video_filters, "audio": audio_filters}
-        return MessageDict(type="FILTERS_DATA", data=filter_data)
+        return await self.get_filters_data(data)

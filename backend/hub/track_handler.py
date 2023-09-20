@@ -1,6 +1,7 @@
 """Provide TrackHandler for handing and distributing tracks."""
 
 from __future__ import annotations
+from hub.exceptions import ErrorDictException
 import numpy
 import asyncio
 import logging
@@ -249,6 +250,28 @@ class TrackHandler(MediaStreamTrack):
         self._execute_filters = len(self._filters) > 0 and (
             not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
+
+    async def get_filters_data(self, id, name) -> list:
+        async with self.__lock:
+            return await self._get_filters_data(id, name)
+
+    async def _get_filters_data(self, id, name) -> list:
+        # For docstring see ConnectionInterface or hover over function declaration
+        filters_data = []
+        for filter in self._filters.values():
+            if filter.name(filter) == name:
+                if id == "all":
+                    filters_data.append(await filter.get_filter_data())
+                elif id == filter.id:
+                    filters_data.append(await filter.get_filter_data())
+                    break
+                else:
+                    raise ErrorDictException(
+                        code=404,
+                        type="UNKNOWN_FILTER_ID",
+                        description=f'Unknown filter ID: "{id}".',
+                    )
+        return filters_data
 
     async def recv(self) -> AudioFrame | VideoFrame:
         """Receive the next av.AudioFrame from this track and apply filter pipeline.

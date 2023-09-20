@@ -745,4 +745,10 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
-        return MessageDict()
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
+        res = {}
+
+        for p in experiment.participants.values():
+            if p.connection is not None:
+                res[p.id] = await p.get_filters_data(data)
+        return res
