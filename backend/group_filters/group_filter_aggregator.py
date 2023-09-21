@@ -74,20 +74,28 @@ class GroupFilterAggregator(object):
                     + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
                 )
 
-                if len(self._data) >= self._group_filter.min_participants:
+                num_participants_in_aggregation = None
+                if self._group_filter.min_participants == "all":
+                    num_participants_in_aggregation = len(self._data)
+                else:
+                    num_participants_in_aggregation = (
+                        self._group_filter.min_participants
+                    )
+
+                if len(self._data) >= num_participants_in_aggregation:
                     for c in combinations(
-                        self._data.keys(), self._group_filter.min_participants
+                        self._data.keys(), num_participants_in_aggregation
                     ):
                         # Check if all participants have enough data to align
                         participants_have_enough_data = True
-                        for pid in c:
-                            if (
-                                self._group_filter.data_len != 0
-                                and self._data[pid].qsize()
-                                != self._group_filter.data_len
-                            ):
-                                participants_have_enough_data = False
-                                break
+                        if self._group_filter.data_len != 0:
+                            for pid in c:
+                                if (
+                                    self._data[pid].qsize()
+                                    != self._group_filter.data_len
+                                ):
+                                    participants_have_enough_data = False
+                                    break
 
                         if participants_have_enough_data:
                             # Align data
