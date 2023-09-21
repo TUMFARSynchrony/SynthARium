@@ -53,7 +53,9 @@ class GroupFilterAggregator(object):
         self._data = {}
 
     def add_data(self, participant_id: str, time: float, data: Any) -> None:
-        q = self._data.get(participant_id, Queue(maxsize=self._group_filter.data_len))
+        q = self._data.get(
+            participant_id, Queue(maxsize=self._group_filter.data_len_per_participant)
+        )
 
         if q.full():
             q.get()
@@ -75,11 +77,11 @@ class GroupFilterAggregator(object):
                 )
 
                 num_participants_in_aggregation = None
-                if self._group_filter.min_participants == "all":
+                if self._group_filter.num_participants_in_aggregation == "all":
                     num_participants_in_aggregation = len(self._data)
                 else:
                     num_participants_in_aggregation = (
-                        self._group_filter.min_participants
+                        self._group_filter.num_participants_in_aggregation
                     )
 
                 if len(self._data) >= num_participants_in_aggregation:
@@ -88,11 +90,11 @@ class GroupFilterAggregator(object):
                     ):
                         # Check if all participants have enough data to align
                         participants_have_enough_data = True
-                        if self._group_filter.data_len != 0:
+                        if self._group_filter.data_len_per_participant != 0:
                             for pid in c:
                                 if (
                                     self._data[pid].qsize()
-                                    != self._group_filter.data_len
+                                    != self._group_filter.data_len_per_participant
                                 ):
                                     participants_have_enough_data = False
                                     break

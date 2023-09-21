@@ -29,8 +29,8 @@ class GroupFilter(ABC):
     is_socket_connected: bool
     _socket: zmq.Socket | None
 
-    data_len: int = 0
-    min_participants: int = 2
+    data_len_per_participant: int = 0
+    num_participants_in_aggregation: int = 2
     align_fn: interpolate = interpolate.interp1d
     align_fn_kwargs: dict = {}
 
@@ -115,7 +115,7 @@ class GroupFilter(ABC):
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray, ts: int
     ) -> None:
         data = await self.process_individual_frame(original, ndarray)
-        if self.is_socket_connected:
+        if self.is_socket_connected and data is not None:
             message = dict()
             message["participant_id"] = self.participant_id
             message["time"] = ts

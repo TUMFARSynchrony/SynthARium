@@ -11,8 +11,8 @@ def custom_align_fn(x: list, y: list, **kwargs: dict) -> Callable:
 
 
 class TemplateGroupFilter(GroupFilter):
-    data_len = 8
-    min_participants = 2
+    data_len_per_participant = 1
+    num_participants_in_aggregation = 2
     align_fn = custom_align_fn
     align_fn_kwargs = {"kind": "nearest", "fill_value": "extrapolate"}
 
