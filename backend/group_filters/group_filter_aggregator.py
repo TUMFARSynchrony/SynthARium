@@ -27,8 +27,7 @@ class GroupFilterAggregator(object):
         self._logger = logging.getLogger(
             f"{group_filter.name()}-GroupFilterAggregator-Port-{port}"
         )
-        ctx = zmq.asyncio.Context()
-        self._socket = ctx.socket(zmq.PULL)
+        self._socket = zmq.asyncio.Context().socket(zmq.PULL)
         self._kind = kind
         self._group_filter = group_filter
         self._data = {}
