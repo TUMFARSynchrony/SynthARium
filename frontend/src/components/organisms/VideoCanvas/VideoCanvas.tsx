@@ -37,13 +37,14 @@ function VideoCanvas({
     <Stage width={CANVAS_SIZE.width} height={CANVAS_SIZE.height}>
       <Layer>
         {/* Render the video for the participant themselves */}
-        <Video
-          key="0" // Add a unique key
-          src={localStream}
-          participantData={getParticipantById(ownParticipantId, sessionData)}
-          title="You"
-        />
-
+        {ownParticipantId ? (
+          <Video
+            key="0"
+            src={localStream}
+            participantData={getParticipantById(ownParticipantId, sessionData)}
+            title="You"
+          />
+        ) : null}
         {/* Render videos for other connected participants */}
         {connectedParticipants?.map((peer: any, i: number) => {
           if (peer.id === ownParticipantId) {
