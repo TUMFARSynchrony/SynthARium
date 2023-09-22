@@ -55,6 +55,8 @@ ERROR_TYPES = Literal[
     "NOT_CONNECTED_TO_EXPERIMENT",
     "EXPERIMENT_RUNNING",
     "ALREADY_JOINED_EXPERIMENT",
+    "FILE_NOT_FOUND",
+    "FILE_ALREADY_EXISTS",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

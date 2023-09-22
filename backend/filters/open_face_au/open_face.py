@@ -9,16 +9,11 @@ class OpenFace:
     _logger: logging.Logger
     _own_extractor: None
     _feature_extraction: None
+    _root_dir: str
 
     def __init__(self):
         self._logger = logging.getLogger(f"OpenFace")
-
-    def run_feature_extraction(self, video_path: str, out_dir: str):
-        try:
-            self._feature_extraction = subprocess.Popen(
-                [
-                    os.path.join(
-                        os.path.dirname(
+        self._root_dir = os.path.dirname(
                             os.path.dirname(
                                 os.path.dirname(
                                     os.path.dirname(
@@ -26,23 +21,33 @@ class OpenFace:
                                     )
                                 )
                             )
-                        ),
+                        )
+
+    async def run_feature_extraction(self, video_path: str, out_dir: str):
+        try:
+            self._feature_extraction = subprocess.Popen(
+                [
+                    os.path.join(
+                        self._root_dir,
                         "build",
                         "bin",
                         "FeatureExtraction",
                     ),
                     "-f",
-                    f"'{video_path}'",
+                    f"{video_path}",
                     "-out_dir",
-                    f"'{out_dir}'",
+                    f"{out_dir}",
                 ],
                 stdin=subprocess.PIPE,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
             )
+            self._logger.debug("PID: " + str(self._feature_extraction.pid))
+            return self._feature_extraction
         except Exception as error:
-            self._logger.error("Error running OpenFace. Video path: " + video_path + ", Out dir: " + out_dir
-                               + ". Exception: " + error)
+            self._logger.error("Error running OpenFace. Video path: " + str(video_path) 
+                               + ", Out dir: " + str(out_dir)
+                               + ". Exception: " + str(error))
 
     #customize the OwnExtractor and port
     # differentiate between windows/unix/macOS
@@ -51,15 +56,7 @@ class OpenFace:
             self._own_extractor = subprocess.Popen(
                 [
                     os.path.join(
-                        os.path.dirname(
-                            os.path.dirname(
-                                os.path.dirname(
-                                    os.path.dirname(
-                                        os.path.dirname(os.path.abspath(__file__))
-                                    )
-                                )
-                            )
-                        ),
+                        self._root_dir,
                         "build",
                         "bin",
                         "OwnExtractor",
@@ -73,18 +70,8 @@ class OpenFace:
         except Exception as error:
             self._logger.error("Error running OwnExtractor. Port: " + port + ". Exception: " + error)
 
-    def stop(self):
+    def cleanup_own_extractor(self):
         try:
             self._own_extractor.terminate()
-            self._feature_extraction.terminate()
         except Exception:
             self._own_extractor.kill()
-            self._feature_extraction.kill()
-            
-    def __del__(self):
-        try:
-            self._own_extractor.terminate()
-            self._feature_extraction.terminate()
-        except Exception:
-            self._own_extractor.kill()
-            self._feature_extraction.kill()

@@ -10,12 +10,12 @@ class RecordedData():
 
     _logger: logging.Logger
     _type: str
-    _file_path: str
+    _filename: str
     _session_id: str
     _participant_id: str
 
     def __init__(
-        self, type: str, file_path: str, session_id: str, participant_id: str
+        self, type: str, filename: str, session_id: str, participant_id: str
     ) -> None:
         """Initialize new RecordedData.
 
@@ -23,8 +23,8 @@ class RecordedData():
         ----------
         type : str
             The value would be video/audio.
-        file_path : str
-            The recorded data file path.
+        filename : str
+            The filename of the recorded data.
         session_id : str
             Session ID of the recorded data.
         participant_id : str
@@ -33,7 +33,7 @@ class RecordedData():
         super().__init__()
         self._logger = logging.getLogger(f"{type.capitalize()}-RecordedData")
         self._type = type
-        self._file_path = file_path
+        self._filename = filename
         self._session_id = session_id
         self._participant_id = participant_id
 
@@ -43,9 +43,9 @@ class RecordedData():
         return self._type
 
     @property
-    def file_path(self) -> str:
-        """Get file path of RecordedData."""
-        return self._file_path
+    def filename(self) -> str:
+        """Get filename of RecordedData."""
+        return self._filename
     
     @property
     def session_id(self) -> str:

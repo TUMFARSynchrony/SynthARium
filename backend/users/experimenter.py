@@ -24,6 +24,7 @@ from custom_types.session_id_request import is_valid_session_id_request
 
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
+from post_processing.recorded_data import RecordedData
 from post_processing.video_processing import VideoProcessing
 from users.user import User
 import experiment.experiment as _exp
@@ -764,43 +765,61 @@ class Experimenter(User):
         custom_types.message.MessageDict
             MessageDict with type: `ERROR`, data: custom_types.error.ErrorDict and
             ErrorType type: `NOT_IMPLEMENTED`.
-
+        
         Raises
         ------
         ErrorDictException
-            If data is not a valid custom_types.post_processing.PostProcessingRequestDict.
+            If data is not a valid custom_types.filters.SetFiltersRequestDict.
         """
-        #if not filter_utils.is_valid_set_filters_request(data):
-        #    raise ErrorDictException(
-        #        code=400,
-        #        type="INVALID_DATATYPE",
-        #        description="Message data is not a valid SetFiltersRequest.",
-        #    )
 
-        participant_ids = data["participant_ids"]
+        participants = data["participants"]
         session_id = data["session_id"]
-        experiment = self.get_experiment_or_raise("Failed to do post processing.")
         coroutines = []
-        responses = []
+        
+        out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions", 
+                                    session_id,
+                                    "processed")
+        
+        if os.path.exists(out_dir):
+            raise ErrorDictException(
+                code=409,
+                type="FILE_ALREADY_EXISTS",
+                description=f'File already exists: "{out_dir}".'
+            )
         
         video_processing = VideoProcessing()
-        for participant_id in participant_ids:
-            video_processing.set_recorded_data("/Users/normapuspitasari/Documents/experimental-hub/backend/sessions/2ac9f3ccb2/2589ba512d_20230718_135858.mp4",
-                                        "2ac9f3ccb2",
-                                        "2589ba512d")
-            response = video_processing.execute()
-            responses.append(response)
-            #coroutines.append(video_processing.execute())
+        video_list = []
+        if participants is None or len(participants) == 0:
+            recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
+            try:
+                recorded_list = os.listdir(os.path.join(recording_path, session_id))
+            except FileNotFoundError:
+                raise ErrorDictException(
+                    code=404,
+                    type="FILE_NOT_FOUND",
+                    description=f'File not found: "{os.path.join(recording_path, session_id)}".'
+                )
+            for i in range(len(recorded_list)):
+                filename = recorded_list[i]
+                _, file_extension = os.path.splitext(filename)
+                if file_extension == ".mp4":
+                    participant_id = filename.split("_")[0]
+                    video_list.append(RecordedData("video", filename, session_id, participant_id))
+                else:
+                    continue
+        else:
+            for participant in participants:
+                video_list.append(RecordedData("video", participant["filename"], 
+                                               session_id, 
+                                               participant["participant_id"]))
 
-        #await asyncio.gather(*coroutines)
-
-        # Notify Experimenters connected to the hub about the data change
-        message = MessageDict(type="VIDEO_PROCESSING", data=responses.asdict())
-        await self._hub.send_to_experimenters(message)
+        video_processing.recording_list = video_list
+        coroutines.append(video_processing.execute())
+        await asyncio.gather(*coroutines)
 
         # Respond with success message
         success = SuccessDict(
-            type="VIDEO_PROCESSING", description="Successfully do video post-processing."
+            type="VIDEO_PROCESSING", description="Successfully start video post-processing."
         )
         return MessageDict(type="SUCCESS", data=success)
     
@@ -833,24 +852,44 @@ class Experimenter(User):
             videos = []
             audios = []
             prev_participant_id = ""
-            for filename in recorded_list:
+            curr_participant_id = ""
+
+            for i in range(len(recorded_list)):
+                filename = recorded_list[i]
+                _, file_extension = os.path.splitext(filename)
+                if file_extension not in [".mp4", ".mp3"]:
+                    self._logger.debug("Not an audio or video file: " + filename)
+                    continue
+                elif file_extension == ".mp4":
+                    videos.append(filename)
+                elif file_extension == ".mp3":
+                    audios.append(filename)
+
+
                 curr_participant_id = filename.split("_")[0]
+                if (i == 0):
+                    prev_participant_id = curr_participant_id
+                
                 if prev_participant_id != curr_participant_id:
                     participants.append({
-                        "participant_id": curr_participant_id,
+                        "participant_id": prev_participant_id,
                         "video": videos,
                         "audio": audios
                     })
                     prev_participant_id = curr_participant_id
+                    videos = []
+                    audios = []
                 
-                _, file_extension = os.path.splitext(filename)
-                if file_extension == ".mp4":
-                    videos.append(filename)
-                elif file_extension == ".mp3":
-                    audios.append(filename)
-                else:
-                    self._logger.debug("Not an audio or video file: " + filename)
             
+            if len(videos) > 0 or len(audios) > 0:
+                participants.append({
+                    "participant_id": prev_participant_id,
+                    "video": videos,
+                    "audio": audios
+                })
+                videos = []
+                audios = []
+
             result.append({
                 "session_id": session_id,
                 "participants": participants
