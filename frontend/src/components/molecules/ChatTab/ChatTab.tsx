@@ -1,14 +1,15 @@
-import { ChatMessage } from "../../../types";
 import { useAppSelector } from "../../../redux/hooks";
 import { selectCurrentSession } from "../../../redux/slices/sessionsListSlice";
-import { ActionIconButton } from "../../atoms/Button";
-import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import { useEffect, useRef, useState } from "react";
 import { INITIAL_CHAT_DATA } from "../../../utils/constants";
 import { SpeechBubble } from "../../atoms/ChatMessage/SpeechBubble";
 import { useBackListener } from "../../../hooks/useBackListener";
 import useAutosizeTextArea from "../../../hooks/useAutosizeTextArea";
 import { useSearchParams } from "react-router-dom";
+import { Button } from "@nextui-org/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { ChatMessage } from "../../../types";
 
 type Props = {
   onChat: (newMessage: ChatMessage) => void;
@@ -61,14 +62,14 @@ export const ChatTab = (props: Props) => {
     }
     setMessage("");
   };
-  console.log(
-    currentUser === "experimenter" &&
-      currentSession &&
-      messageTarget !== "participants"
-  );
+  const onEnterPressed = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter") onSendMessage(messageTarget);
+  };
   return (
-    <div className="flex flex-col border-l-gray-100 border-l-2 h-[calc(100vh-4rem)] w-full items-center gap-y-5">
-      <div className="text-3xl">Chat</div>
+    <div className="flex flex-col border-l-gray-200 border-l-2 h-[calc(100vh-4rem)] w-full items-center">
+      <div className="text-3xl w-full text-center border-b-2 border-b-gray-200 py-2">
+        Chat
+      </div>
       <div className="w-full flex flex-col justify-between overflow-y-auto h-full">
         <div className="p-4 overflow-y-auto">
           {currentUser === "experimenter" &&
@@ -119,11 +120,36 @@ export const ChatTab = (props: Props) => {
               ))}
         </div>
         <div className="flex flex-col p-4">
+          <div className="flex flex-row justify-between gap-x-2 items-center">
+            <textarea
+              className="resize-none border-2 border-stone-300 p-2 py-2 h-full w-full rounded outline-none text-sm"
+              placeholder="Enter your message here"
+              value={message}
+              ref={textAreaRef}
+              rows={1}
+              onChange={(event) => setMessage(event.target.value)}
+              onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) =>
+                onEnterPressed(event)
+              }
+            />
+            <Button
+              className="h-8 rounded-sm"
+              color="primary"
+              size="md"
+              isIconOnly={true}
+              onClick={() => onSendMessage(messageTarget)}
+            >
+              <FontAwesomeIcon
+                icon={faPaperPlane}
+                style={{ color: "#ffffff" }}
+              />{" "}
+            </Button>
+          </div>
           {currentUser === "experimenter" && (
-            <div>
+            <div className="flex flex-row justify-center items-center gap-x-2 text-sm pt-2">
               <label htmlFor="participant-names">Send to </label>
               <select
-                className="bg-gray-200 px-2 py-2 my-2 rounded"
+                className="bg-zinc-500 text-white px-2 py-1 rounded focus:outline-none"
                 name="participant-names"
                 id="participant-names"
                 onChange={(event) => handleChange(event.target.value)}
@@ -137,25 +163,6 @@ export const ChatTab = (props: Props) => {
               </select>
             </div>
           )}
-
-          <div>
-            <textarea
-              className="resize-none border-2 border-stone-300 p-3 rounded outline-none w-full"
-              placeholder="Enter your message here"
-              value={message}
-              ref={textAreaRef}
-              rows={1}
-              onChange={(event) => setMessage(event.target.value)}
-            />
-          </div>
-          <ActionIconButton
-            text="Send"
-            variant="outlined"
-            color="primary"
-            size="medium"
-            onClick={() => onSendMessage(messageTarget)}
-            icon={<PlayArrowOutlined />}
-          />
         </div>
       </div>
     </div>
