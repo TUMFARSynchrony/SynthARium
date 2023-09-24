@@ -12,7 +12,6 @@ import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import PageTemplate from "./components/templates/PageTemplate";
-import ParticipantContentTemplate from "./components/templates/ParticipantContentTemplate";
 import ButtonList from "./components/atoms/Button/ButtonList";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
@@ -52,11 +51,6 @@ function App() {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const actionButtonProps = {
-    text: "Template Button",
-    variant: "contained",
-    disabled: false // Set the initial disabled state as needed
-  };
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
       "%cConnection peer streams change Handler",
@@ -378,10 +372,17 @@ function App() {
             exact
             path="/"
             element={
-              <SessionOverview
-                onDeleteSession={onDeleteSession}
-                onCreateExperiment={onCreateExperiment}
-                onJoinExperiment={onJoinExperiment}
+              <PageTemplate
+                title={"Synchrony Experimental Hub"}
+                customComponent={
+                  <SessionOverview
+                    onDeleteSession={onDeleteSession}
+                    onCreateExperiment={onCreateExperiment}
+                    onJoinExperiment={onJoinExperiment}
+                  />
+                }
+                minusMarginRight={false}
+                centerContentOnYAxis={true}
               />
             }
           />
@@ -395,11 +396,19 @@ function App() {
             path="/lobby"
             element={
               connection ? (
-                <Lobby
-                  localStream={localStream}
-                  connection={connection}
-                  connectionState={connectionState}
-                  onGetSession={onGetSession}
+                <PageTemplate
+                  title={"Experimental Hub Lobby"}
+                  buttonListComponent={
+                    <ButtonList type="participantButtonList" />
+                  }
+                  customComponent={
+                    <Lobby
+                      localStream={localStream}
+                      connection={connection}
+                      connectionState={connectionState}
+                      onGetSession={onGetSession}
+                    />
+                  }
                 />
               ) : (
                 "Loading..."
@@ -411,20 +420,23 @@ function App() {
             path="/template"
             element={
               <PageTemplate
-                title={"Template Page Title"}
+                title={"Experimental Hub Template"}
                 buttonListComponent={
-                  <ButtonList type="chatInstructionsParticipants" />
+                  <ButtonList type="experimenterButtonList" />
                 }
                 customComponent={
-                  <ParticipantContentTemplate
-                    content={"Template Page Content"}
-                    contentTitle={"Template Page Content Title"}
-                    customComponent={<div>Template Custom Component</div>}
-                    actionButtonProps={actionButtonProps}
+                  <WatchingRoom
+                    connectedParticipants={connectedParticipants}
+                    onKickBanParticipant={onKickBanParticipant}
+                    onAddNote={onAddNote}
+                    onChat={onChat}
+                    onGetSession={onGetSession}
+                    onLeaveExperiment={onLeaveExperiment}
+                    onMuteParticipant={onMuteParticipant}
+                    onStartExperiment={onStartExperiment}
+                    onEndExperiment={onEndExperiment}
                   />
                 }
-                minusMarginRight={true}
-                actionButtonProps={actionButtonProps} // Pass the actionButtonProps
               />
             }
           />
@@ -432,16 +444,25 @@ function App() {
             exact
             path="/watchingRoom"
             element={
-              <WatchingRoom
-                connectedParticipants={connectedParticipants}
-                onKickBanParticipant={onKickBanParticipant}
-                onAddNote={onAddNote}
-                onChat={onChat}
-                onGetSession={onGetSession}
-                onLeaveExperiment={onLeaveExperiment}
-                onMuteParticipant={onMuteParticipant}
-                onStartExperiment={onStartExperiment}
-                onEndExperiment={onEndExperiment}
+              <PageTemplate
+                title={"Experimental Hub"}
+                buttonListComponent={
+                  <ButtonList type="experimenterButtonList" />
+                }
+                customComponent={
+                  <WatchingRoom
+                    connectedParticipants={connectedParticipants}
+                    onKickBanParticipant={onKickBanParticipant}
+                    onAddNote={onAddNote}
+                    onChat={onChat}
+                    onGetSession={onGetSession}
+                    onLeaveExperiment={onLeaveExperiment}
+                    onMuteParticipant={onMuteParticipant}
+                    onStartExperiment={onStartExperiment}
+                    onEndExperiment={onEndExperiment}
+                  />
+                }
+                centerContentOnYAxis={true}
               />
             }
           />
