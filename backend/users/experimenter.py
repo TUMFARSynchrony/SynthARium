@@ -83,6 +83,7 @@ class Experimenter(User):
         self.on_message("SET_FILTERS", self._handle_set_filters)
         self.on_message("VIDEO_PROCESSING", self._handle_post_processing)
         self.on_message("GET_RECORDING_LIST", self._handle_get_recording_list)
+        self.on_message("VIDEO_PROCESSING_STARTED", self._handle_start_post_processing)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -770,12 +771,8 @@ class Experimenter(User):
         ------
         ErrorDictException
             If data is not a valid custom_types.filters.SetFiltersRequestDict.
-        """
-
-        participants = data["participants"]
+        """        
         session_id = data["session_id"]
-        coroutines = []
-        
         out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions", 
                                     session_id,
                                     "processed")
@@ -784,42 +781,21 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=409,
                 type="FILE_ALREADY_EXISTS",
-                description=f'File already exists: "{out_dir}".'
+                description=f'File already exists: "{out_dir}". Current session videos has been processed.'
             )
         
-        video_processing = VideoProcessing()
-        video_list = []
-        if participants is None or len(participants) == 0:
-            recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
-            try:
-                recorded_list = os.listdir(os.path.join(recording_path, session_id))
-            except FileNotFoundError:
-                raise ErrorDictException(
-                    code=404,
-                    type="FILE_NOT_FOUND",
-                    description=f'File not found: "{os.path.join(recording_path, session_id)}".'
-                )
-            for i in range(len(recorded_list)):
-                filename = recorded_list[i]
-                _, file_extension = os.path.splitext(filename)
-                if file_extension == ".mp4":
-                    participant_id = filename.split("_")[0]
-                    video_list.append(RecordedData("video", filename, session_id, participant_id))
-                else:
-                    continue
-        else:
-            for participant in participants:
-                video_list.append(RecordedData("video", participant["filename"], 
-                                               session_id, 
-                                               participant["participant_id"]))
-
-        video_processing.recording_list = video_list
-        coroutines.append(video_processing.execute())
-        await asyncio.gather(*coroutines)
+        message = MessageDict(
+            type="VIDEO_PROCESSING_STARTED",
+            data=data,
+        )
+        #TODO: SEND TO ZEROMQ OR TRY SEND COMMAND IN CONNECTION PAGE AGAIN TILL SUCCESS
+        await self._connection.start_video_processing()
+        #await self.send(message)
 
         # Respond with success message
         success = SuccessDict(
-            type="VIDEO_PROCESSING", description="Successfully start video post-processing."
+            type="VIDEO_PROCESSING",
+            description=f"Successfully start video post-processing. Result directory: {out_dir}"
         )
         return MessageDict(type="SUCCESS", data=success)
     
@@ -896,3 +872,60 @@ class Experimenter(User):
             })
                     
         return MessageDict(type="RECORDING_LIST", data=result)
+    
+    async def _handle_start_post_processing(self, data: Any) -> MessageDict:
+        """Handle requests with type `VIDEO_PROCESSING_STARTED`.
+
+        Check if data is a valid custom_types.post_processing.PostProcessingRequestDict.
+
+        Parameters
+        ----------
+        data : any or post_processing.PostProcessingRequestDict
+            Message data.  Checks if data is a valid PostProcessingRequestDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `ERROR`, data: custom_types.error.ErrorDict and
+            ErrorType type: `NOT_IMPLEMENTED`.
+        
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.SetFiltersRequestDict.
+        """
+
+        participants = data["participants"]
+        session_id = data["session_id"]
+        
+        video_processing = VideoProcessing()
+        video_list = []
+        if participants is None or len(participants) == 0:
+            recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
+            try:
+                recorded_list = os.listdir(os.path.join(recording_path, session_id))
+            except FileNotFoundError:
+                raise ErrorDictException(
+                    code=404,
+                    type="FILE_NOT_FOUND",
+                    description=f'File not found: "{os.path.join(recording_path, session_id)}".'
+                )
+            for i in range(len(recorded_list)):
+                filename = recorded_list[i]
+                _, file_extension = os.path.splitext(filename)
+                if file_extension == ".mp4":
+                    participant_id = filename.split("_")[0]
+                    video_list.append(RecordedData("video", filename, session_id, participant_id))
+                else:
+                    continue
+        else:
+            for participant in participants:
+                video_list.append(RecordedData("video", participant["filename"], 
+                                               session_id, 
+                                               participant["participant_id"]))
+
+        video_processing.recording_list = video_list
+        await video_processing.execute()
+
+        self._logger.info(f"Successfully completed video post-processing for session {session_id}")

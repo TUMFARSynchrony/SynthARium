@@ -74,6 +74,7 @@ MESSAGE_TYPES = Literal[
     "PONG",
     "VIDEO_PROCESSING",
     "GET_RECORDING_LIST",
+    "VIDEO_PROCESSING_STARTED"
 ]
 """Possible message types for custom_types.message.MessageDict.
 

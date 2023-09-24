@@ -42,6 +42,7 @@ class OpenFace:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
             )
+            self._logger.debug("Processing: " + str(video_path))
             self._logger.debug("PID: " + str(self._feature_extraction.pid))
             return self._feature_extraction
         except Exception as error:

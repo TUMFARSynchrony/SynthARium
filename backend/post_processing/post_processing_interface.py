@@ -29,15 +29,6 @@ class PostProcessingInterface(metaclass=ABCMeta):
         """
         pass
 
-    @abstractmethod
-    async def cleanup(self) -> None:
-        """Kill all external processes after the post-processing is done.
-
-        The implementation would depend on the recorded data type, whether it is
-        a video or audio, e.g. it will stop the OpenFace process for video data.
-        """
-        pass
-
     @property
     def recording_list(self):
         """Get the array of post_processing.RecordedData."""
