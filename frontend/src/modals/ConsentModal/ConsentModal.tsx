@@ -26,13 +26,48 @@ function ConsentModal() {
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1" align="justify" sx={{ mb: 3 }}>
-          Study description... Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-          ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-          fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-          sunt in culpa qui officia deserunt mollit anim id est laborum.
+          DESCRIPTION: You are invited to participate in a study about usability
+          of the experimental hub. The study investigates the experimental hub,
+          a self-hosted video conferencing tool to conduct customizable online
+          experiments.
+          <br />
+          <br />
+          TIME INVOLVEMENT: The study takes about 30min including filling out
+          the survey and conducting the experiment.
+          <br />
+          <br />
+          DATA COLLECTION: For this study, we will collect your demographics and
+          evaluation using the online survey. During the study, we will record
+          the video conversation through the experimental hub which will only be
+          accessed by our research group team.
+          <br />
+          <br />
+          RISKS AND BENEFITS: There are no known risk for this user study. The
+          benefits would be to support me in my Master&apos;s Thesis and the
+          students in our research team.
+          <br />
+          <br />
+          PAYMENT: You will receive the opportunity to help developing a
+          groundbreaking unique experimental tool that will hopefully help
+          numerous researchers to conduct online experiments customized to their
+          experiment requirements.
+          <br />
+          <br />
+          PARTICIPANT&apos;S RIGHTS: If you have read this form and have decided
+          to participate in this project, please understand that although your
+          participation is voluntary, we would like your involvement as much as
+          you can afford. That being said, you have the right to withdraw your
+          consent or discontinue participation at any time without penalty or
+          loss of benefits to which you are otherwise entitled. You have the
+          right to refuse to answer particular questions. The results of this
+          research study may be presented at scientific or professional meetings
+          or published in scientific journals. Your identity is not disclosed
+          unless we directly inform and ask for your permission.
+          <br />
+          <br />
+          CONTACT INFORMATION: If you have any questions, concerns or complaints
+          about this research, its procedures, risks and benefits, contact the
+          following persons:
         </Typography>
         <FormControlLabel
           control={<Checkbox />}
