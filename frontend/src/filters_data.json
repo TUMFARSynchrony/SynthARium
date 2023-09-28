@@ -31,7 +31,8 @@
       "config": {
         "direction": {
           "defaultValue": ["clockwise", "anti-clockwise"],
-          "value": "clockwise"
+          "value": "clockwise",
+          "requiresOtherFilter": false
         },
         "angle": {
           "min": 1,
@@ -78,8 +79,9 @@
       "groupFilter": false,
       "config": {
         "filterId": {
-          "defaultValue": ["audio-speaking-time"],
-          "value": "audio-speaking-time"
+          "defaultValue": ["AUDIO_SPEAKING_TIME"],
+          "value": "",
+          "requiresOtherFilter": true
         }
       }
     }

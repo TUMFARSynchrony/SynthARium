@@ -18,13 +18,20 @@ import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
-import { Filter, FilterConfigNumber, Participant } from "../../types";
+import {
+  Filter,
+  FilterConfigArray,
+  FilterConfigNumber,
+  Participant
+} from "../../types";
 import { v4 as uuid } from "uuid";
 
 import filtersData from "../../filters_data.json";
 
 // Loading filters data before the component renders, because the Select component needs value.
-const testData = filtersData.SESSION;
+const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
+  return filter;
+});
 
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
 const defaultFilter = {
@@ -185,13 +192,43 @@ function ParticipantDataModal({
   const handleFilterSelect = async (filter: Filter) => {
     setSelectedFilter(filter);
     const newParticipantData = structuredClone(participantCopy);
+    const newFilter = structuredClone(filter);
+    newFilter.id = uuid();
+
+    for (const key in filter["config"]) {
+      if (Array.isArray(filter["config"][key]["defaultValue"])) {
+        for (let i = 0; i < testData.length; i++) {
+          if (
+            (filter["config"][key]["defaultValue"] as string[])[0] ===
+            testData[i]["name"]
+          ) {
+            console.log(newFilter);
+            const otherFilter = structuredClone(testData[i]);
+            const id = uuid();
+            otherFilter.id = id;
+            newFilter["config"][key]["value"] = id;
+            if (
+              otherFilter.channel === "video" ||
+              otherFilter.channel === "both"
+            ) {
+              newParticipantData.video_filters.push(otherFilter);
+            }
+            if (
+              otherFilter.channel === "audio" ||
+              otherFilter.channel === "both"
+            ) {
+              newParticipantData.audio_filters.push(otherFilter);
+            }
+          }
+        }
+      }
+    }
+
     if (
       testData
         .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
-      const newFilter = structuredClone(filter);
-      newFilter.id = uuid();
       newParticipantData.video_filters.push(newFilter);
     }
     if (
@@ -199,11 +236,10 @@ function ParticipantDataModal({
         .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
-      const newFilter = structuredClone(filter);
-      newFilter.id = uuid();
       newParticipantData.audio_filters.push(newFilter);
     }
     setParticipantCopy(newParticipantData);
+    console.log(newParticipantData);
   };
 
   const handleDeleteVideoFilter = (filterCopyIndex: number) => {
@@ -436,7 +472,19 @@ function ParticipantDataModal({
                                   <Select
                                     key={configIndex}
                                     value={
-                                      audioFilter["config"][configType]["value"]
+                                      (
+                                        audioFilter["config"][
+                                          configType
+                                        ] as FilterConfigArray
+                                      )["requiresOtherFilter"]
+                                        ? (
+                                            audioFilter["config"][configType][
+                                              "defaultValue"
+                                            ] as string[]
+                                          )[0]
+                                        : audioFilter["config"][configType][
+                                            "value"
+                                          ]
                                     }
                                     id="grouped-select"
                                     onChange={(e) => {
@@ -572,7 +620,19 @@ function ParticipantDataModal({
                                   <Select
                                     key={configIndex}
                                     value={
-                                      videoFilter["config"][configType]["value"]
+                                      (
+                                        videoFilter["config"][
+                                          configType
+                                        ] as FilterConfigArray
+                                      )["requiresOtherFilter"]
+                                        ? (
+                                            videoFilter["config"][configType][
+                                              "defaultValue"
+                                            ] as string[]
+                                          )[0]
+                                        : videoFilter["config"][configType][
+                                            "value"
+                                          ]
                                     }
                                     id="grouped-select"
                                     onChange={(e) => {

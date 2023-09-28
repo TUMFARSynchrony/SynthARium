@@ -35,8 +35,9 @@ class DisplaySpeakingTimeFilter(Filter):
             "groupFilter": False,
             "config": {
                 "filterId": {
-                    "defaultValue": ["audio-speaking-time"],
-                    "value": "audio-speaking-time",
+                    "defaultValue": ["AUDIO_SPEAKING_TIME"],
+                    "value": "",
+                    "requiresOtherFilter": True,
                 },
             },
         }

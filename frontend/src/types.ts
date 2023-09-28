@@ -83,4 +83,5 @@ export type FilterConfigNumber = {
 export type FilterConfigArray = {
   value: string;
   defaultValue: string[];
+  requiresOtherFilter: boolean;
 };
