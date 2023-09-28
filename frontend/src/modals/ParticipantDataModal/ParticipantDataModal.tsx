@@ -197,28 +197,30 @@ function ParticipantDataModal({
 
     for (const key in filter["config"]) {
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
-        for (let i = 0; i < testData.length; i++) {
+        if (
+          (filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]
+        ) {
+          const otherFilter = testData
+            .filter(
+              (filteredFilter) =>
+                filteredFilter.name ===
+                (filter.config[key]["defaultValue"] as string[])[0]
+            )
+            .pop();
+          const id = uuid();
+          otherFilter.id = id;
+          newFilter["config"][key]["value"] = id;
           if (
-            (filter["config"][key]["defaultValue"] as string[])[0] ===
-            testData[i]["name"]
+            otherFilter.channel === "video" ||
+            otherFilter.channel === "both"
           ) {
-            console.log(newFilter);
-            const otherFilter = structuredClone(testData[i]);
-            const id = uuid();
-            otherFilter.id = id;
-            newFilter["config"][key]["value"] = id;
-            if (
-              otherFilter.channel === "video" ||
-              otherFilter.channel === "both"
-            ) {
-              newParticipantData.video_filters.push(otherFilter);
-            }
-            if (
-              otherFilter.channel === "audio" ||
-              otherFilter.channel === "both"
-            ) {
-              newParticipantData.audio_filters.push(otherFilter);
-            }
+            newParticipantData.video_filters.push(otherFilter);
+          }
+          if (
+            otherFilter.channel === "audio" ||
+            otherFilter.channel === "both"
+          ) {
+            newParticipantData.audio_filters.push(otherFilter);
           }
         }
       }
