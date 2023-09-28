@@ -1,7 +1,6 @@
 """Provide RecordedData to represent video/audio of the experiments."""
 
 from __future__ import annotations
-
 import logging
 
 

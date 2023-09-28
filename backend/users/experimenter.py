@@ -789,8 +789,7 @@ class Experimenter(User):
             data=data,
         )
         #TODO: SEND TO ZEROMQ OR TRY SEND COMMAND IN CONNECTION PAGE AGAIN TILL SUCCESS
-        await self._connection.start_video_processing()
-        #await self.send(message)
+        await self._handle_start_post_processing(data)
 
         # Respond with success message
         success = SuccessDict(
@@ -927,5 +926,3 @@ class Experimenter(User):
 
         video_processing.recording_list = video_list
         await video_processing.execute()
-
-        self._logger.info(f"Successfully completed video post-processing for session {session_id}")

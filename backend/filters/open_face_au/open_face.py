@@ -23,7 +23,7 @@ class OpenFace:
                             )
                         )
 
-    async def run_feature_extraction(self, video_path: str, out_dir: str):
+    def run_feature_extraction(self, video_path: str, out_dir: str):
         try:
             self._feature_extraction = subprocess.Popen(
                 [
