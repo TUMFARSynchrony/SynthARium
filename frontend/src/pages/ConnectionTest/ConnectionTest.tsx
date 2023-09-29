@@ -446,14 +446,13 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           /> */}
           <button
             onClick={() =>
-              props.connection.sendMessage("VIDEO_PROCESSING", {
-                session_id: sessionId,
-                participants: []
+              props.connection.sendMessage("POST_PROCESSING_VIDEO", {
+                session_id: sessionId
               })
             }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
-            VIDEO_PROCESSING
+            POST_PROCESSING_VIDEO
           </button>
         </div>
       </div>

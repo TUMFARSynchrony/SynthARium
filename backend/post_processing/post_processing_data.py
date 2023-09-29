@@ -1,11 +1,9 @@
-"""Provide RecordedData to represent video/audio of the experiments."""
-
 from __future__ import annotations
 import logging
 
 
-class RecordedData():
-    """Object class for the recorded data of the experiments."""
+class PostProcessingData():
+    """Object class for the post processing data of the experiments."""
 
     _logger: logging.Logger
     _type: str
@@ -16,7 +14,7 @@ class RecordedData():
     def __init__(
         self, type: str, filename: str, session_id: str, participant_id: str
     ) -> None:
-        """Initialize new RecordedData.
+        """Initialize new PostProcessingData.
 
         Parameters
         ----------
@@ -30,7 +28,7 @@ class RecordedData():
             Participant ID of the recorded data.
         """
         super().__init__()
-        self._logger = logging.getLogger(f"{type.capitalize()}-RecordedData")
+        self._logger = logging.getLogger(f"{type.capitalize()}-PostProcessingData")
         self._type = type
         self._filename = filename
         self._session_id = session_id
@@ -38,20 +36,20 @@ class RecordedData():
 
     @property
     def type(self) -> str:
-        """Get type of RecordedData."""
+        """Get type of PostProcessingData."""
         return self._type
 
     @property
     def filename(self) -> str:
-        """Get filename of RecordedData."""
+        """Get filename of PostProcessingData."""
         return self._filename
     
     @property
     def session_id(self) -> str:
-        """Get session ID of RecordedData."""
+        """Get session ID of PostProcessingData."""
         return self._session_id
     
     @property
     def participant_id(self) -> str:
-        """Get participant ID of RecordedData."""
+        """Get participant ID of PostProcessingData."""
         return self._participant_id

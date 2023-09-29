@@ -1,8 +1,6 @@
-"""Provide the abstract `PostProcessingInterface`."""
-
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from .recorded_data import RecordedData
+from .post_processing_data import PostProcessingData
 
 
 class PostProcessingInterface(metaclass=ABCMeta):
@@ -15,10 +13,10 @@ class PostProcessingInterface(metaclass=ABCMeta):
 
     See Also
     --------
-    post_processing.video_processing : Implementation for PostProcessingInterface.
+    post_processing.video.producer : Implementation for PostProcessingInterface.
     """
 
-    _recording_list: list[RecordedData]
+    _recording_list: list[PostProcessingData]
 
     @abstractmethod
     async def execute(self) -> None:
@@ -31,10 +29,10 @@ class PostProcessingInterface(metaclass=ABCMeta):
 
     @property
     def recording_list(self):
-        """Get the array of post_processing.RecordedData."""
+        """Get the array of post_processing.PostProcessingData."""
         return self._recording_list
     
     @recording_list.setter
     def recording_list(self, value):
-        """Set recording value list."""
+        """Set recording list value."""
         self._recording_list = value

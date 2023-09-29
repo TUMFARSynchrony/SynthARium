@@ -9,7 +9,7 @@ import os
 import time
 import zmq
 
-class VideoProcessingConsumer():
+class PostVideoConsumer():
     """Consume and process the recorded video of experiments."""
 
     _logger: logging.Logger
@@ -17,18 +17,19 @@ class VideoProcessingConsumer():
     _sock: zmq.Socket
 
     def __init__(self) -> None:
-        """Initialize new VideoProcessingConsumer."""
+        """Initialize new PostVideoConsumer."""
         super().__init__()
         logging.basicConfig(
             level=logging.DEBUG,
             format="%(asctime)s:%(levelname)s:%(name)s: %(message)s"
         )
-        self._logger = logging.getLogger(f"VideoProcessingConsumer")
+        self._logger = logging.getLogger(f"PostVideoConsumer")
         
         self._root_dir = os.path.dirname(
                             os.path.dirname(
                                 os.path.dirname(
-                                    os.path.dirname(os.path.abspath(__file__))
+                                    os.path.dirname(
+                                        os.path.dirname(os.path.abspath(__file__)))
                                 )
                             )
                         )
@@ -36,18 +37,12 @@ class VideoProcessingConsumer():
         context = zmq.Context()
         self._sock = context.socket(zmq.SUB)
         try:
-             self._sock.connect("tcp://localhost:5680")
+             self._sock.connect("tcp://localhost:6000")
              self._sock.setsockopt_string(zmq.SUBSCRIBE, "")
         except zmq.ZMQError as e:
             self._logger.error(f"ZMQError: {e}")
-        
-        start_time = time.time()
-        self.activate()
-        end_time = time.time()
-        self._logger.info(f"Total time video post-processing is " +
-                          f"{(end_time - start_time)} seconds")
 
-    def activate(self):
+    def consume(self):
         """Activate consumer to receive messages."""
         while True:
             self._logger.info(f"Waiting for a message")
@@ -61,8 +56,10 @@ class VideoProcessingConsumer():
                 video = json.loads(videoJSON)
                 start_video = time.time()
 
-                parent_directory =  os.path.dirname(os.path.dirname(
-                    os.path.abspath(__file__)))
+                parent_directory =  os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(
+                            os.path.abspath(__file__))))
                 out_dir = os.path.join(parent_directory,
                                        "sessions",
                                        video["_session_id"],
@@ -99,10 +96,7 @@ class VideoProcessingConsumer():
                     f"{video_path}",
                     "-out_dir",
                     f"{out_dir}",
-                ],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                ]
             )
             self._logger.info(f"[PID {self._feature_extraction.pid}]. Processing: {video_path}")
             return self._feature_extraction
@@ -113,4 +107,5 @@ class VideoProcessingConsumer():
                                f"Exception: {error}")
 
 if __name__ == "__main__":
-    consumer = VideoProcessingConsumer()
+    consumer = PostVideoConsumer()
+    consumer.consume()
