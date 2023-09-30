@@ -12,7 +12,7 @@ import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
 import PageTemplate from "./components/templates/PageTemplate";
-import ButtonList from "./components/atoms/Button/ButtonList";
+import HeaderActionArea from "./components/atoms/Button/HeaderActionArea";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
   changeExperimentState,
@@ -381,7 +381,6 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
-                minusMarginRight={false}
                 centerContentOnYAxis={true}
               />
             }
@@ -397,9 +396,9 @@ function App() {
             element={
               connection ? (
                 <PageTemplate
-                  title={"Experimental Hub Lobby"}
+                  title={"Lobby"}
                   buttonListComponent={
-                    <ButtonList type="participantButtonList" />
+                    <HeaderActionArea type="participantButtonList" />
                   }
                   customComponent={
                     <Lobby
@@ -422,7 +421,7 @@ function App() {
               <PageTemplate
                 title={"Experimental Hub Template"}
                 buttonListComponent={
-                  <ButtonList type="experimenterButtonList" />
+                  <HeaderActionArea type="experimenterButtonList" />
                 }
                 customComponent={
                   <WatchingRoom
@@ -445,9 +444,9 @@ function App() {
             path="/watchingRoom"
             element={
               <PageTemplate
-                title={"Experimental Hub"}
+                title={"Watching Room"}
                 buttonListComponent={
-                  <ButtonList type="experimenterButtonList" />
+                  <HeaderActionArea type="experimenterButtonList" />
                 }
                 customComponent={
                   <WatchingRoom

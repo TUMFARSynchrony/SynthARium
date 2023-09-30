@@ -2,13 +2,10 @@ function PageTemplate({
   title,
   customComponent,
   buttonListComponent,
-  minusMarginRight,
-  centerContentOnYAxis
+  centerContentOnYAxis,
+  centerContentOnXAxis
 }) {
-  const buttonClasses = `py-4 font-bold text-3xl ${
-    minusMarginRight ? "-mr-16" : ""
-  }`;
-
+  const buttonClasses = `py-4 font-bold text-3xl`;
   return (
     <div className="h-full w-full flex flex-col">
       <div className="h-20 flex flex-row justify-between items-center w-full px-8">
@@ -24,7 +21,7 @@ function PageTemplate({
       <div
         className={`flex flex-col overflow-y-auto h-[calc(100vh-84px)] w-full ${
           centerContentOnYAxis && "justify-center"
-        } `}
+        } ${centerContentOnXAxis && "items-center"}`}
       >
         {customComponent}
       </div>

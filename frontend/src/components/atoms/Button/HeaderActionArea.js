@@ -15,7 +15,7 @@ const buttonConfigs = {
   participantButtonList: [faCommentAlt, faClipboardCheck]
 };
 
-const ButtonList = ({ type }) => {
+const HeaderActionArea = ({ type }) => {
   const buttons = buttonConfigs[type] || [];
 
   return (
@@ -23,7 +23,7 @@ const ButtonList = ({ type }) => {
       {buttons.map((icon, index) => (
         <button
           key={index}
-          className="w-12 h-9 px-4 py-2 bg-neutral-200 rounded-2xl border border-neutral-200 flex justify-center items-center"
+          className="px-4 py-2 bg-neutral-200 rounded-2xl border border-neutral-200 flex justify-center items-center"
         >
           <FontAwesomeIcon icon={icon} className="w-4 h-4" />
         </button>
@@ -32,4 +32,4 @@ const ButtonList = ({ type }) => {
   );
 };
 
-export default ButtonList;
+export default HeaderActionArea;
