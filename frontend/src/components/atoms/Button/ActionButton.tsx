@@ -2,7 +2,6 @@ import Button, { ButtonProps } from "@mui/material/Button";
 
 interface ActionButtonProps extends ButtonProps {
   text: string;
-  path?: string;
   onClick: () => void;
 }
 
