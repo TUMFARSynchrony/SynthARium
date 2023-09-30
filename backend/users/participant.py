@@ -91,7 +91,6 @@ class Participant(User):
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
         self.on_message("GET_SESSION", self._handle_get_session)
-        self.on_message("GET_FILTER_TEST_STATUS", self._handle_get_filter_test_status)
         self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
 
     def __str__(self) -> str:
@@ -343,18 +342,6 @@ class Participant(User):
         raise ErrorDictException(
             code=409, type="INVALID_REQUEST", description="Participant has no data"
         )
-
-    async def _handle_get_filter_test_status(self, data: Any) -> MessageDict:
-        """Handle requests with type `GET_FILTERS_DATA`.
-
-        Design:
-            1. get participant data
-            2. fetch correct filter
-            3.
-        """
-        participant_data = self.get_participant_data("Failed to get participant data.")
-        filter_id = data["filter_id"]
-        return MessageDict()
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
         res = await self.get_filters_data(data)

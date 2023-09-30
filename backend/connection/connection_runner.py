@@ -171,7 +171,6 @@ class ConnectionRunner:
                 filters = await self._connection.get_video_filters_data(
                     data["id"], data["name"]
                 )
-                # filters = list(self._connection._incoming_video.filters.values())
                 self._send_command("ACTIVE_VIDEO_FILTERS", filters, command_nr)
             case "GET_AUDIO_FILTERS":
                 filters = await self._connection.get_audio_filters_data(
