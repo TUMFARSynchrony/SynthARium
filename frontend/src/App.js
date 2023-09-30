@@ -11,6 +11,8 @@ import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import PageTemplate from "./components/templates/PageTemplate";
+import HeaderActionArea from "./components/atoms/Button/HeaderActionArea";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
   changeExperimentState,
@@ -31,8 +33,11 @@ import {
   updateSession
 } from "./redux/slices/sessionsListSlice";
 import { initialSnackbar } from "./utils/constants";
-import { ExperimentTimes } from "./utils/enums";
+import { ExperimentTimes, Tabs } from "./utils/enums";
 import { getLocalStream, getSessionById } from "./utils/utils";
+import { toggleSingleTab } from "./redux/slices/tabsSlice";
+import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
+import { faClipboardCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -49,7 +54,6 @@ function App() {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
       "%cConnection peer streams change Handler",
@@ -352,8 +356,11 @@ function App() {
     dispatch(addNote({ note: note, id: sessionId }));
   };
 
-  const onChat = (message) => {
-    connection.sendMessage("CHAT", message);
+  const onChat = (messageObj) => {
+    // do not send a message if it's empty
+    if (messageObj.message && messageObj.message !== "") {
+      connection.sendMessage("CHAT", messageObj);
+    }
   };
 
   const onLeaveExperiment = () => {
@@ -373,6 +380,10 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
+  const toggleModal = (modal) => {
+    dispatch(toggleSingleTab(modal));
+  };
+
   return (
     <div className="App">
       {sessionsList ? (
@@ -381,10 +392,16 @@ function App() {
             exact
             path="/"
             element={
-              <SessionOverview
-                onDeleteSession={onDeleteSession}
-                onCreateExperiment={onCreateExperiment}
-                onJoinExperiment={onJoinExperiment}
+              <PageTemplate
+                title={"Synchrony Experimental Hub"}
+                customComponent={
+                  <SessionOverview
+                    onDeleteSession={onDeleteSession}
+                    onCreateExperiment={onCreateExperiment}
+                    onJoinExperiment={onJoinExperiment}
+                  />
+                }
+                centerContentOnYAxis={true}
               />
             }
           />
@@ -398,12 +415,31 @@ function App() {
             path="/lobby"
             element={
               connection ? (
-                <Lobby
-                  localStream={localStream}
-                  connection={connection}
-                  connectionState={connectionState}
-                  onGetSession={onGetSession}
-                  onChat={onChat}
+                <PageTemplate
+                  title={"Lobby"}
+                  buttonListComponent={
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => toggleModal(Tabs.CHAT),
+                          icon: faComment
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                          icon: faClipboardCheck
+                        }
+                      ]}
+                    />
+                  }
+                  customComponent={
+                    <Lobby
+                      localStream={localStream}
+                      connection={connection}
+                      connectionState={connectionState}
+                      onGetSession={onGetSession}
+                      onChat={onChat}
+                    />
+                  }
                 />
               ) : (
                 "Loading..."
@@ -412,18 +448,82 @@ function App() {
           />
           <Route
             exact
+            path="/template"
+            element={
+              <PageTemplate
+                title={"Experimental Hub Template"}
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => toggleModal(Tabs.CHAT),
+                        icon: faComment
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                        icon: faClipboardCheck
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.PARTICIPANTS),
+                        icon: faUsers
+                      }
+                    ]}
+                  />
+                }
+                customComponent={
+                  <WatchingRoom
+                    connectedParticipants={connectedParticipants}
+                    onKickBanParticipant={onKickBanParticipant}
+                    onAddNote={onAddNote}
+                    onChat={onChat}
+                    onGetSession={onGetSession}
+                    onLeaveExperiment={onLeaveExperiment}
+                    onMuteParticipant={onMuteParticipant}
+                    onStartExperiment={onStartExperiment}
+                    onEndExperiment={onEndExperiment}
+                  />
+                }
+              />
+            }
+          />
+          <Route
+            exact
             path="/watchingRoom"
             element={
-              <WatchingRoom
-                connectedParticipants={connectedParticipants}
-                onKickBanParticipant={onKickBanParticipant}
-                onAddNote={onAddNote}
-                onChat={onChat}
-                onGetSession={onGetSession}
-                onLeaveExperiment={onLeaveExperiment}
-                onMuteParticipant={onMuteParticipant}
-                onStartExperiment={onStartExperiment}
-                onEndExperiment={onEndExperiment}
+              <PageTemplate
+                title={"Watching Room"}
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => toggleModal(Tabs.CHAT),
+                        icon: faComment
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                        icon: faClipboardCheck
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.PARTICIPANTS),
+                        icon: faUsers
+                      }
+                    ]}
+                  />
+                }
+                customComponent={
+                  <WatchingRoom
+                    connectedParticipants={connectedParticipants}
+                    onKickBanParticipant={onKickBanParticipant}
+                    onAddNote={onAddNote}
+                    onChat={onChat}
+                    onGetSession={onGetSession}
+                    onLeaveExperiment={onLeaveExperiment}
+                    onMuteParticipant={onMuteParticipant}
+                    onStartExperiment={onStartExperiment}
+                    onEndExperiment={onEndExperiment}
+                  />
+                }
+                centerContentOnYAxis={true}
               />
             }
           />

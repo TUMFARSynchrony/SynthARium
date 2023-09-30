@@ -63,10 +63,13 @@ export const ChatTab = (props: Props) => {
     setMessage("");
   };
   const onEnterPressed = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter") onSendMessage(messageTarget);
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onSendMessage(messageTarget);
+    }
   };
   return (
-    <div className="flex flex-col border-l-gray-200 border-l-2 h-[calc(100vh-4rem)] w-full items-center">
+    <div className="flex flex-col border-l-gray-200 border-l-2 h-[calc(100vh-84px)] w-full items-center">
       <div className="text-3xl w-full text-center border-b-2 border-b-gray-200 py-2">
         Chat
       </div>
@@ -128,9 +131,9 @@ export const ChatTab = (props: Props) => {
               ref={textAreaRef}
               rows={1}
               onChange={(event) => setMessage(event.target.value)}
-              onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) =>
-                onEnterPressed(event)
-              }
+              onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                onEnterPressed(event);
+              }}
             />
             <Button
               className="h-8 rounded-sm"
