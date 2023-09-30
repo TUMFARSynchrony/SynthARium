@@ -8,7 +8,6 @@ import Typography from "@mui/material/Typography";
 import styled from "@mui/material/styles/styled";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
 import { ActionIconButton } from "../../components/atoms/Button";
 import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import ConnectionState from "../../networking/ConnectionState";
@@ -49,7 +48,6 @@ function Lobby({ localStream, connection, connectionState, onGetSession }) {
 
   return (
     <>
-      <AppToolbar />
       <ConsentModal />
       {/* Grid takes up screen space left from the AppToolbar */}
       <Box sx={{ height: "92vh", display: "flex" }}>

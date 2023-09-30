@@ -28,9 +28,6 @@ function WatchingRoom({
     <div className="watchingRoomContainer">
       {sessionData ? (
         <>
-          <div className="watchingRoomHeader">
-            <Heading heading={"State: " + state} />
-          </div>
           <div className="watchingRoom">
             <div className="participantLivestream">
               <div className="videoCanvas">
