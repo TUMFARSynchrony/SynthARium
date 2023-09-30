@@ -57,6 +57,7 @@ ERROR_TYPES = Literal[
     "ALREADY_JOINED_EXPERIMENT",
     "FILE_NOT_FOUND",
     "FILE_ALREADY_EXISTS",
+    "STILL_PROCESSING",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

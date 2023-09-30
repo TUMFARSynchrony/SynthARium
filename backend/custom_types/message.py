@@ -73,7 +73,8 @@ MESSAGE_TYPES = Literal[
     "PING",
     "PONG",
     "POST_PROCESSING_VIDEO",
-    "GET_RECORDING_LIST"
+    "GET_RECORDING_LIST",
+    "CHECK_POST_PROCESSING"
 ]
 """Possible message types for custom_types.message.MessageDict.
 

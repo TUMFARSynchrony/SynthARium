@@ -26,7 +26,7 @@ from custom_types.post_processing import is_valid_postprocessingrequest
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
 from post_processing.post_processing_data import PostProcessingData
-from post_processing.video.producer import PostVideoProducer
+from post_processing.video.post_processing import VideoPostProcessing
 from users.user import User
 import experiment.experiment as _exp
 import hub.hub as _h
@@ -794,7 +794,15 @@ class Experimenter(User):
                 description=f'File already exists: "{out_dir}". Current session videos has been processed.'
             )
 
-        post_video_producer = PostVideoProducer()
+        video_post_processing = VideoPostProcessing()
+
+        if video_post_processing.check_existing_process():
+            raise ErrorDictException(
+                code=102,
+                type="STILL_PROCESSING",
+                description=f'There is a running FeatureExtraction subprocess. Please wait until it is complete.'
+            )
+
         video_list = []
         recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
         try:
@@ -814,8 +822,8 @@ class Experimenter(User):
             else:
                 continue
 
-        post_video_producer.recording_list = video_list
-        post_video_producer.execute()
+        video_post_processing.recording_list = video_list
+        video_post_processing.execute()
 
         # Respond with success message
         success = SuccessDict(
@@ -913,11 +921,14 @@ class Experimenter(User):
         custom_types.message.MessageDict
             MessageDict with type: `CHECK_POST_PROCESSING`.
         """
-        
+        video_post_processing = VideoPostProcessing()
+        description = "There is no running FeatureExtraction subprocess."
+        if video_post_processing.check_existing_process():
+            description = "There is a running FeatureExtraction subprocess."
 
         # Respond with success message
         success = SuccessDict(
             type="CHECK_POST_PROCESSING",
-            description=f"Successfully start video post-processing. Result directory: {out_dir}"
+            description=f"{description}"
         )
         return MessageDict(type="SUCCESS", data=success)

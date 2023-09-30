@@ -2,14 +2,13 @@ from __future__ import annotations
 import json
 import jsonpickle
 import logging
-import os
-import subprocess
 import time
 import zmq
 
-from ..post_processing_interface import PostProcessingInterface
+from ..post_processing_data import PostProcessingData
 
-class PostVideoProducer(PostProcessingInterface):
+
+class PostVideoProducer():
     """Handles producer for post-processing experiments' video."""
 
     _logger: logging.Logger
@@ -19,7 +18,6 @@ class PostVideoProducer(PostProcessingInterface):
         """Initialize new PostVideoProducer."""
         super().__init__()
         self._logger = logging.getLogger(f"PostVideoProducer")
-        self.run_consumer()
         context = zmq.Context()
         self._sock = context.socket(zmq.PUB)
         try:
@@ -28,9 +26,9 @@ class PostVideoProducer(PostProcessingInterface):
         except zmq.ZMQError as e:
             self._logger.error(f"ZMQError: {e}")
 
-    def execute(self):
+    def publish(self, recording_list: list[PostProcessingData]):
         """Publish the recorded data to consumer."""
-        for video in self._recording_list:
+        for video in recording_list:
             try:
                 videoJSON = jsonpickle.encode(video)
                 message = json.dumps(videoJSON, indent=4)
@@ -42,18 +40,3 @@ class PostVideoProducer(PostProcessingInterface):
                                 f"Exception: {error}")
         # Exit message for consumer
         self._sock.send_string("0")
-
-    def run_consumer(self):
-        """Run consumer subprocess."""
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        consumer = subprocess.Popen(
-                [
-                    "python",
-                    os.path.join(
-                        current_dir,
-                        "consumer.py"
-                    )
-                ]
-            )
-        self._logger.info(f"[PID {consumer.pid}]. Run: consumer.py")
-        return consumer

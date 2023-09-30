@@ -19,7 +19,7 @@ class PostProcessingInterface(metaclass=ABCMeta):
     _recording_list: list[PostProcessingData]
 
     @abstractmethod
-    async def execute(self) -> None:
+    def execute(self) -> None:
         """Execute the post-processing of the recorded data.
 
         The implementation would depend on the recorded data type, whether it is

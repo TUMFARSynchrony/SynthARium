@@ -10,7 +10,7 @@ import time
 import zmq
 
 class PostVideoConsumer():
-    """Consume and process the recorded video of experiments."""
+    """Consume and post-process the experiments' video."""
 
     _logger: logging.Logger
     _root_dir: str

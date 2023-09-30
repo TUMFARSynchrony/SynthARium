@@ -432,18 +432,6 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
             onChange={(e) => setSessionId(e.target.value)}
             value={sessionId}
           />
-          {/* <input
-            type="text"
-            placeholder="Participant ID"
-            onChange={(e) => setParticipantId(e.target.value)}
-            value={participantId}
-          />
-          <input
-            type="text"
-            placeholder="Video Filename"
-            onChange={(e) => setVideoFilename(e.target.value)}
-            value={videoFilename}
-          /> */}
           <button
             onClick={() =>
               props.connection.sendMessage("POST_PROCESSING_VIDEO", {
@@ -453,6 +441,14 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
             disabled={props.connection.state !== ConnectionState.CONNECTED}
           >
             POST_PROCESSING_VIDEO
+          </button>
+          <button
+            onClick={() =>
+              props.connection.sendMessage("CHECK_POST_PROCESSING", {})
+            }
+            disabled={props.connection.state !== ConnectionState.CONNECTED}
+          >
+            CHECK_POST_PROCESSING
           </button>
         </div>
       </div>
