@@ -1,9 +1,3 @@
-/*.watchingRoomContainer {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}*/
-
 .watchingRoomHeader {
   background-color: hsl(212, 86%, 64%);
 }
@@ -16,13 +10,6 @@
   text-align: left;
   margin-left: 1rem;
 }
-
-/*
-.watchingRoom {
-  display: flex;
-  flex-direction: row;
-}
-*/
 
 .videoCanvas {
   box-shadow: 1px 3px 6px 1px rgba(0, 0, 0, 0.2);
