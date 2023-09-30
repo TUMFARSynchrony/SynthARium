@@ -70,9 +70,30 @@ export const ChatTab = (props: Props) => {
   };
   return (
     <div className="flex flex-col border-l-gray-200 border-l-2 h-[calc(100vh-84px)] w-full items-center">
-      <div className="text-3xl w-full text-center border-b-2 border-b-gray-200 py-2">
-        Chat
+      <div className="flex flex-row justify-center items-center gap-x-2 border-b-2 border-b-gray-200 w-full  py-2">
+        <div className="text-3xl text-center">Chat</div>
+        {currentUser === "experimenter" && (
+          <div className="flex flex-row justify-center items-center gap-x-2 text-sm pt-2">
+            <label className="text-base" htmlFor="participant-names">
+              with
+            </label>
+            <select
+              className="bg-zinc-500 text-white px-2 py-1 rounded focus:outline-none"
+              name="participant-names"
+              id="participant-names"
+              onChange={(event) => handleChange(event.target.value)}
+            >
+              <option value={"participants"}>All participants</option>
+              {currentSession.participants.map((participant, index) => (
+                <option key={index} value={participant.id}>
+                  {participant.participant_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
+
       <div className="w-full flex flex-col justify-between overflow-y-auto h-full">
         <div className="p-4 overflow-y-auto">
           {currentUser === "experimenter" &&
@@ -148,24 +169,6 @@ export const ChatTab = (props: Props) => {
               />{" "}
             </Button>
           </div>
-          {currentUser === "experimenter" && (
-            <div className="flex flex-row justify-center items-center gap-x-2 text-sm pt-2">
-              <label htmlFor="participant-names">Send to </label>
-              <select
-                className="bg-zinc-500 text-white px-2 py-1 rounded focus:outline-none"
-                name="participant-names"
-                id="participant-names"
-                onChange={(event) => handleChange(event.target.value)}
-              >
-                <option value={"participants"}>All participants</option>
-                {currentSession.participants.map((participant, index) => (
-                  <option key={index} value={participant.id}>
-                    {participant.participant_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
       </div>
     </div>
