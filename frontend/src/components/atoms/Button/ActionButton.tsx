@@ -1,5 +1,4 @@
 import Button, { ButtonProps } from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
 
 interface ActionButtonProps extends ButtonProps {
   text: string;
@@ -12,23 +11,15 @@ function ActionButton({
   variant,
   color,
   size,
-  path,
   onClick,
   disabled = false
 }: ActionButtonProps) {
-  const navigate = useNavigate();
-  const handleNavigation = () => {
-    if (path) navigate(path);
-  };
   return (
     <Button
       variant={variant}
       color={color}
       size={size}
-      onClick={() => {
-        handleNavigation();
-        onClick();
-      }}
+      onClick={onClick}
       disabled={disabled}
     >
       {text}
