@@ -8,7 +8,7 @@ class OpenFace:
 
     def __init__(self, port: int):
         try:
-            self._logger = logging.getLogger(f"OpenFace")
+            self._logger = logging.getLogger("OpenFace")
             self._openface_process = subprocess.Popen(
                 [
                     os.path.join(

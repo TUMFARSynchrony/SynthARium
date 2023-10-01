@@ -23,7 +23,7 @@ class PostVideoConsumer():
             level=logging.DEBUG,
             format="%(asctime)s:%(levelname)s:%(name)s: %(message)s"
         )
-        self._logger = logging.getLogger(f"PostVideoConsumer")
+        self._logger = logging.getLogger("PostVideoConsumer")
         
         self._root_dir = os.path.dirname(
                             os.path.dirname(
@@ -45,10 +45,10 @@ class PostVideoConsumer():
     def consume(self):
         """Activate consumer to receive messages."""
         while True:
-            self._logger.info(f"Waiting for a message")
+            self._logger.info("Waiting for a message")
             message= self._sock.recv_string()
             if message == "0":
-                self._logger.info(f"Stopped post-processing consumer")
+                self._logger.info("Stopped post-processing consumer")
                 break
             self._logger.info(f"Receive: {message}")
             try:

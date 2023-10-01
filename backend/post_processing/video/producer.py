@@ -17,7 +17,7 @@ class PostVideoProducer():
     def __init__(self) -> None:
         """Initialize new PostVideoProducer."""
         super().__init__()
-        self._logger = logging.getLogger(f"PostVideoProducer")
+        self._logger = logging.getLogger("PostVideoProducer")
         context = zmq.Context()
         self._sock = context.socket(zmq.PUB)
         try:

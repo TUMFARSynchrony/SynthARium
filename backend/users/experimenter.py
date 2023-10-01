@@ -791,7 +791,7 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=409,
                 type="FILE_ALREADY_EXISTS",
-                description=f'File already exists: "{out_dir}". Current session videos has been processed.'
+                description=f'File already exists: {out_dir}. Current session videos has been processed.'
             )
 
         video_post_processing = VideoPostProcessing()
@@ -800,7 +800,7 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=102,
                 type="STILL_PROCESSING",
-                description=f'There is a running FeatureExtraction subprocess. Please wait until it is complete.'
+                description="There is a running FeatureExtraction subprocess. Please wait until it is complete."
             )
 
         video_list = []
@@ -811,7 +811,7 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=404,
                 type="FILE_NOT_FOUND",
-                description=f'File not found: "{os.path.join(recording_path, session_id)}".'
+                description=f'File not found: {os.path.join(recording_path, session_id)}.'
             )
         for i in range(len(recorded_list)):
             filename = recorded_list[i]

@@ -4,7 +4,6 @@ import os
 import subprocess
 
 from ..post_processing_interface import PostProcessingInterface
-from .consumer import PostVideoConsumer
 from .producer import PostVideoProducer
 
 class VideoPostProcessing(PostProcessingInterface):
@@ -16,7 +15,7 @@ class VideoPostProcessing(PostProcessingInterface):
     def __init__(self) -> None:
         """Initialize new VideoPostProcessing."""
         super().__init__()
-        self._logger = logging.getLogger(f"VideoPostProcessing")
+        self._logger = logging.getLogger("VideoPostProcessing")
 
     def execute(self) -> None:
         """Execute video post-processing."""
