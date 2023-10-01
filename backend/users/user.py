@@ -519,7 +519,17 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     return
                 await self._connection.set_audio_filters(filters)
 
-    async def get_filters_data(self, data: Any) -> dict:
+    async def get_filters_data_for_all_participants(self, data: Any) -> dict:
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
+        res = {}
+
+        for p in experiment.participants.values():
+            if p.connection is not None:
+                res[p.id] = await p.get_filters_data_for_one_participant(data)
+
+        return res
+
+    async def get_filters_data_for_one_participant(self, data: Any) -> dict:
         filter_id = data["filter_id"]
         filter_name = data["filter_name"]
         filter_channel = data["filter_channel"]

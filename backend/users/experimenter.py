@@ -79,6 +79,10 @@ class Experimenter(User):
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
         self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
+        self.on_message(
+            "GET_FILTERS_TEST_STATUS",
+            self._handle_get_filters_test_status,
+        )
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -745,10 +749,31 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
-        experiment = self.get_experiment_or_raise("Failed to set filters.")
-        res = {}
-
-        for p in experiment.participants.values():
-            if p.connection is not None:
-                res[p.id] = await p.get_filters_data(data)
+        res = await self.get_filters_data_for_all_participants(data)
         return MessageDict(type="FILTERS_DATA", data=res)
+
+    async def _handle_get_filters_test_status(self, data: Any) -> MessageDict:
+        participant_id = data.pop("participant_id")
+
+        if participant_id == "all":
+            res = await self.get_filters_data_for_all_participants(data)
+            # send message to all participants
+            participant_id = "participants"
+        else:
+            experiment = self.get_experiment_or_raise("Failed to set filters.")
+            participant = experiment.participants.get(participant_id)
+            res = {}
+
+            if participant != None:
+                res[
+                    participant_id
+                ] = await participant.get_filters_data_for_one_participant(data)
+            else:
+                raise ErrorDictException(
+                    code=404,
+                    type="UNKNOWN_PARTICIPANT",
+                    description=f'No participant for participant id: "{participant_id}" exists.',
+                )
+
+        answer = MessageDict(type="FILTERS_TEST_STATUS", data=res)
+        await self._experiment.send(participant_id, answer)
