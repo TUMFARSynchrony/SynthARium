@@ -85,6 +85,9 @@ function ParticipantDataModal({
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
+  const [requiredFilters, setRequiredFilters] = useState(
+    new Map<string, string>()
+  );
   // Setting these snackbar response values to display the notification in Session Form Page.
   // These notifications cannot be displayed in this file, since on closing the Participant Modal,
   // this component and the immediate parent are deleted -> hence sending the snackbar responses
@@ -195,6 +198,7 @@ function ParticipantDataModal({
     const newFilter = structuredClone(filter);
     newFilter.id = uuid();
 
+    // if a filter requires another filter, then it is added to the correct filter array
     for (const key in filter["config"]) {
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
         if (
@@ -210,6 +214,7 @@ function ParticipantDataModal({
           const id = uuid();
           otherFilter.id = id;
           newFilter["config"][key]["value"] = id;
+          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
           if (
             otherFilter.channel === "video" ||
             otherFilter.channel === "both"
@@ -241,25 +246,96 @@ function ParticipantDataModal({
       newParticipantData.audio_filters.push(newFilter);
     }
     setParticipantCopy(newParticipantData);
-    console.log(newParticipantData);
   };
 
-  const handleDeleteVideoFilter = (filterCopyIndex: number) => {
-    setParticipantCopy((oldParticipant) => ({
-      ...oldParticipant,
-      video_filters: oldParticipant.video_filters.filter(
-        (filter, index) => index !== filterCopyIndex
-      )
-    }));
+  const handleDeleteVideoFilter = (
+    videoFilter: Filter,
+    filterCopyIndex: number
+  ) => {
+    const newParticipantData = structuredClone(participantCopy);
+    newParticipantData.video_filters.splice(filterCopyIndex, 1);
+
+    // if filter is required for another filter, removes current filter and other filter
+    if (requiredFilters.has(videoFilter.id)) {
+      const otherFilterId = requiredFilters.get(videoFilter.id);
+      requiredFilters.delete(videoFilter.id);
+      newParticipantData.video_filters =
+        newParticipantData.video_filters.filter(
+          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+        );
+      newParticipantData.audio_filters =
+        newParticipantData.audio_filters.filter(
+          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+        );
+    }
+
+    // if filter requires another filter, removes current filter and other filter
+    for (const key in videoFilter["config"]) {
+      if (Array.isArray(videoFilter["config"][key]["defaultValue"])) {
+        if (
+          (videoFilter["config"][key] as FilterConfigArray)[
+            "requiresOtherFilter"
+          ]
+        ) {
+          const otherFilterId = videoFilter["config"][key]["value"];
+          newParticipantData.video_filters =
+            newParticipantData.video_filters.filter(
+              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+            );
+          newParticipantData.audio_filters =
+            newParticipantData.audio_filters.filter(
+              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+            );
+        }
+      }
+    }
+
+    setParticipantCopy(newParticipantData);
   };
 
-  const handleDeleteAudioFilter = (filterCopyIndex: number) => {
-    setParticipantCopy((oldParticipant) => ({
-      ...oldParticipant,
-      audio_filters: oldParticipant.audio_filters.filter(
-        (filter, index) => index !== filterCopyIndex
-      )
-    }));
+  const handleDeleteAudioFilter = (
+    audioFilter: Filter,
+    filterCopyIndex: number
+  ) => {
+    const newParticipantData = structuredClone(participantCopy);
+    newParticipantData.audio_filters.splice(filterCopyIndex, 1);
+
+    // if filter is required for another filter, removes current filter and other filter
+    if (requiredFilters.has(audioFilter.id)) {
+      const otherFilterId = requiredFilters.get(audioFilter.id);
+      requiredFilters.delete(audioFilter.id);
+      newParticipantData.video_filters =
+        newParticipantData.video_filters.filter(
+          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+        );
+      newParticipantData.audio_filters =
+        newParticipantData.audio_filters.filter(
+          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+        );
+    }
+
+    // if filter requires another filter, removes current filter and other filter
+    for (const key in audioFilter["config"]) {
+      if (Array.isArray(audioFilter["config"][key]["defaultValue"])) {
+        if (
+          (audioFilter["config"][key] as FilterConfigArray)[
+            "requiresOtherFilter"
+          ]
+        ) {
+          const otherFilterId = audioFilter["config"][key]["value"];
+          newParticipantData.video_filters =
+            newParticipantData.video_filters.filter(
+              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+            );
+          newParticipantData.audio_filters =
+            newParticipantData.audio_filters.filter(
+              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
+            );
+        }
+      }
+    }
+
+    setParticipantCopy(newParticipantData);
   };
 
   return (
@@ -439,7 +515,10 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteAudioFilter(audioFilterIndex);
+                            handleDeleteAudioFilter(
+                              audioFilter,
+                              audioFilterIndex
+                            );
                           }}
                         />
                       </Box>
@@ -587,7 +666,10 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteVideoFilter(videoFilterIndex);
+                            handleDeleteVideoFilter(
+                              videoFilter,
+                              videoFilterIndex
+                            );
                           }}
                         />
                       </Box>
