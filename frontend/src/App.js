@@ -96,6 +96,8 @@ function App() {
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
     connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
+    connection.api.on("GET_FILTERS_TEST_STATUS", handleGetFiltersTestStatus);
+    connection.api.on("FILTERS_TEST_STATUS", handleFiltersTestStatus);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -113,6 +115,8 @@ function App() {
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
       connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
+      connection.api.off("GET_FILTERS_TEST_STATUS", handleGetFiltersTestStatus);
+      connection.api.off("FILTERS_TEST_STATUS", handleFiltersTestStatus);
     };
   }, [connection]);
 
@@ -316,6 +320,14 @@ function App() {
 
   const handleGetFiltersData = (data) => {
     connection.sendMessage("GET_FILTERS_DATA", data);
+  };
+
+  const handleGetFiltersTestStatus = (data) => {
+    connection.sendMessage("GET_FILTERS_TEST_STATUS", data);
+  };
+
+  const handleFiltersTestStatus = (data) => {
+    console.log(data);
   };
 
   const onDeleteSession = (sessionId) => {
