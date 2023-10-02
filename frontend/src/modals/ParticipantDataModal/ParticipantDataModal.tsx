@@ -248,6 +248,64 @@ function ParticipantDataModal({
     setParticipantCopy(newParticipantData);
   };
 
+  const deleteRequiredFiltersInEachFilterArray = (
+    filterId: string,
+    otherFilterId: string,
+    newParticipantData: Participant
+  ) => {
+    newParticipantData.video_filters = newParticipantData.video_filters.filter(
+      (filteredFilter: Filter) =>
+        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
+    );
+    newParticipantData.audio_filters = newParticipantData.audio_filters.filter(
+      (filteredFilter: Filter) =>
+        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
+    );
+
+    return newParticipantData;
+  };
+
+  const deleteAllRequiredFilters = (
+    filter: Filter,
+    newParticipantData: Participant
+  ) => {
+    // if filter is required for another filter, removes current filter and other filter
+    if (requiredFilters.has(filter.id)) {
+      const otherFilterId = requiredFilters.get(filter.id);
+      requiredFilters.delete(filter.id);
+      deleteRequiredFiltersInEachFilterArray(
+        filter.id,
+        otherFilterId,
+        newParticipantData
+      );
+    }
+
+    // if filter requires another filter, removes current filter and other filter
+    for (const key in filter["config"]) {
+      if (Array.isArray(filter["config"][key]["defaultValue"])) {
+        if (
+          (filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]
+        ) {
+          const otherFilterId = (filter["config"][key] as FilterConfigArray)[
+            "value"
+          ];
+
+          if (requiredFilters.has(otherFilterId)) {
+            requiredFilters.delete(otherFilterId);
+          }
+
+          deleteRequiredFiltersInEachFilterArray(
+            filter.id,
+            otherFilterId,
+            newParticipantData
+          );
+        }
+      }
+    }
+
+    return newParticipantData;
+  };
+
   const handleDeleteVideoFilter = (
     videoFilter: Filter,
     filterCopyIndex: number
@@ -255,42 +313,9 @@ function ParticipantDataModal({
     const newParticipantData = structuredClone(participantCopy);
     newParticipantData.video_filters.splice(filterCopyIndex, 1);
 
-    // if filter is required for another filter, removes current filter and other filter
-    if (requiredFilters.has(videoFilter.id)) {
-      const otherFilterId = requiredFilters.get(videoFilter.id);
-      requiredFilters.delete(videoFilter.id);
-      newParticipantData.video_filters =
-        newParticipantData.video_filters.filter(
-          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-        );
-      newParticipantData.audio_filters =
-        newParticipantData.audio_filters.filter(
-          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-        );
-    }
-
-    // if filter requires another filter, removes current filter and other filter
-    for (const key in videoFilter["config"]) {
-      if (Array.isArray(videoFilter["config"][key]["defaultValue"])) {
-        if (
-          (videoFilter["config"][key] as FilterConfigArray)[
-            "requiresOtherFilter"
-          ]
-        ) {
-          const otherFilterId = videoFilter["config"][key]["value"];
-          newParticipantData.video_filters =
-            newParticipantData.video_filters.filter(
-              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-            );
-          newParticipantData.audio_filters =
-            newParticipantData.audio_filters.filter(
-              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-            );
-        }
-      }
-    }
-
-    setParticipantCopy(newParticipantData);
+    setParticipantCopy(
+      deleteAllRequiredFilters(videoFilter, newParticipantData)
+    );
   };
 
   const handleDeleteAudioFilter = (
@@ -300,42 +325,9 @@ function ParticipantDataModal({
     const newParticipantData = structuredClone(participantCopy);
     newParticipantData.audio_filters.splice(filterCopyIndex, 1);
 
-    // if filter is required for another filter, removes current filter and other filter
-    if (requiredFilters.has(audioFilter.id)) {
-      const otherFilterId = requiredFilters.get(audioFilter.id);
-      requiredFilters.delete(audioFilter.id);
-      newParticipantData.video_filters =
-        newParticipantData.video_filters.filter(
-          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-        );
-      newParticipantData.audio_filters =
-        newParticipantData.audio_filters.filter(
-          (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-        );
-    }
-
-    // if filter requires another filter, removes current filter and other filter
-    for (const key in audioFilter["config"]) {
-      if (Array.isArray(audioFilter["config"][key]["defaultValue"])) {
-        if (
-          (audioFilter["config"][key] as FilterConfigArray)[
-            "requiresOtherFilter"
-          ]
-        ) {
-          const otherFilterId = audioFilter["config"][key]["value"];
-          newParticipantData.video_filters =
-            newParticipantData.video_filters.filter(
-              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-            );
-          newParticipantData.audio_filters =
-            newParticipantData.audio_filters.filter(
-              (filteredFilter: Filter) => filteredFilter.id !== otherFilterId
-            );
-        }
-      }
-    }
-
-    setParticipantCopy(newParticipantData);
+    setParticipantCopy(
+      deleteAllRequiredFilters(audioFilter, newParticipantData)
+    );
   };
 
   return (
