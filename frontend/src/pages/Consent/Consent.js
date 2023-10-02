@@ -18,7 +18,7 @@ function Consent() {
   const sessionId = searchParams.get("sessionId");
   const participantId = searchParams.get("participantId");
   const session = useAppSelector(selectCurrentSession);
-    //TODO: dynamic page (experiment name) - find a way to get the information without actually streaming in the session
+  //TODO: dynamic page (experiment name) - find a way to get the information without actually streaming in the session
 
   return (
     <div className="h-screen flex flex-col mx-8 py-4 items-start text-left gap-y-4 xl:items-center">
@@ -29,13 +29,26 @@ function Consent() {
       <div className="flex flex-col h-full overflow-y-auto justify-center gap-y-4 xl:w-1/2">
         <div className="font-bold text-lg">Consent Form</div>
         <p className="text-justify">
-          Study description... Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-          ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-          fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-          sunt in culpa qui officia deserunt ollit anim id est laborum.
+          DESCRIPTION: You were previously invited to join this study by the
+          person conducting the research. The researcher may already informed
+          you about the consent, their study description, the risks and
+          benefits, their contact information, and as well as any payments you
+          will get for taking part in this study.
+          <br />
+          DATA COLLECTION: During the study, the hub will record the video
+          conversation which can be used for post-processing work and will only
+          be accessed by the researcher and their team.
+          <br />
+          PARTICIPANT&apos;S RIGHTS: If you have read this form and have decided
+          to participate in this project, please understand that although your
+          participation is voluntary, we would like your involvement as much as
+          you can afford. That being said, you have the right to withdraw your
+          consent or discontinue participation at any time without penalty or
+          loss of benefits to which you are otherwise entitled. You have the
+          right to refuse to answer particular questions. The results of this
+          research study may be presented at scientific or professional meetings
+          or published in scientific journals. Your identity is not disclosed
+          unless we directly inform and ask for your permission.
         </p>
         <div className="flex flex-col">
           <FormControlLabel
