@@ -362,7 +362,7 @@ class Hub:
             elif filter_type == "TEST" or filter_type == "SESSION":
                 filter_json = filter.get_filter_json(filter)
 
-                if not filter.validate_filter_json(filter_json):
+                if not filter.validate_filter_json(filter, filter_json):
                     raise ValueError(
                         f"{filter} has incorrect values in get_filter_json."
                     )
