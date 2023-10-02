@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
 import { ActionIconButton } from "../../components/atoms/Button";
-import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";

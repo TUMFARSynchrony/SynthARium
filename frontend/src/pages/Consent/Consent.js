@@ -3,6 +3,8 @@ import Checkbox from "@mui/material/Checkbox";
 import { ActionButton } from "../../components/atoms/Button";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useAppSelector } from "../../redux/hooks";
+import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 
 // This is used to take the consent of the participant before getting access to their microphone and camera.
 function Consent() {
@@ -15,8 +17,8 @@ function Consent() {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionId = searchParams.get("sessionId");
   const participantId = searchParams.get("participantId");
-
-  //TODO: dynamic page (experiment name) - find a way to get the information without actually streaming in the session
+  const session = useAppSelector(selectCurrentSession);
+    //TODO: dynamic page (experiment name) - find a way to get the information without actually streaming in the session
 
   return (
     <div className="h-screen flex flex-col mx-8 py-4 items-start text-left gap-y-4 xl:items-center">
