@@ -1,7 +1,6 @@
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
