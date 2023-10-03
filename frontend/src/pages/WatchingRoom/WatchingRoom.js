@@ -37,6 +37,8 @@ function WatchingRoom({
                 <VideoCanvas
                   connectedParticipants={connectedParticipants}
                   sessionData={sessionData}
+                  localStream={null}
+                  ownParticipantId={null}
                 />
               </div>
               <hr className="separatorLine"></hr>

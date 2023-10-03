@@ -16,13 +16,14 @@ type Props = {
 const getVideoTitle = (
   peer: ConnectedPeer,
   index: number,
-  ownParticipantId: string
+  ownParticipantId: string,
+  sessionData: Session
 ) => {
   if (peer.summary) {
     if (peer.summary instanceof Object) {
       return `${peer.summary.participant_name}`;
     }
-    return `UserID: ${peer.summary}`;
+    return ` ${getParticipantById(peer.summary, sessionData).participant_name}`;
   }
   return ownParticipantId ? "You" : `Peer stream ${index + 1}`;
 };
@@ -60,7 +61,7 @@ function VideoCanvas({
               key={i}
               src={peer.stream}
               participantData={participantData}
-              title={getVideoTitle(peer, i, ownParticipantId)}
+              title={getVideoTitle(peer, i, ownParticipantId, sessionData)}
             />
           );
         })}
