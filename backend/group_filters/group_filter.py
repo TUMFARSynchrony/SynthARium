@@ -12,7 +12,6 @@ from av import VideoFrame, AudioFrame
 from custom_types import util
 from filters.filter_dict import FilterDict
 import logging
-from scipy import interpolate
 from typing import Any
 
 

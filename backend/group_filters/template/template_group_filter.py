@@ -2,7 +2,7 @@ import numpy as np
 from av import VideoFrame, AudioFrame
 from filters.filter_dict import FilterDict
 from group_filters import GroupFilter
-from typing import Any, Callable
+from typing import Any
 from scipy.interpolate import interp1d
 
 

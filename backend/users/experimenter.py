@@ -808,7 +808,7 @@ class Experimenter(User):
             type="SET_GROUP_FILTERS", description="Successfully changed group filters."
         )
         return MessageDict(type="SUCCESS", data=success)
-      
+
     async def _handle_get_session(self, data: Any) -> MessageDict:
         """Handle requests with type `GET_SESSION`.
 
