@@ -20,7 +20,7 @@ class TemplateGroupFilter(GroupFilter):
     Can be used as a template to copy when creating a new group filter.
     """
 
-    data_len_per_participant = 1  # data required for aggreagtion
+    data_len_per_participant = 1  # data required for aggregation
     num_participants_in_aggregation = 2  # number of participants joining in aggregation
 
     def __init__(self, config: FilterDict, participant_id: str):
