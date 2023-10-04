@@ -10,9 +10,13 @@ class TemplateGroupFilter(GroupFilter):
     """
     A simple template group filter which applies the followings:
     - takes the mean of each frame on a video track of a participant at the individual
-    frame processing step.
-    - takes the standard deviation of aligned frames of 2 participants at the
-    aggregation step.
+    frame processing step. This part runs in the track handler of the corresponding
+    participant.
+    - aligns the data collected at the aggregator for 2 participants before the
+    aggregation step. This part runs in the corresponding aggregator.
+    - takes the standard deviation of aligned data of 2 participants at the
+    aggregation step. This part runs in the corresponding aggregator.
+
     Can be used as a template to copy when creating a new group filter.
     """
 
