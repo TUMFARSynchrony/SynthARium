@@ -1,5 +1,6 @@
 """Provide GroupFilterHandler for handling group filters."""
 
+import asyncio
 from typing import Literal
 import logging
 from group_filters import GroupFilter
@@ -14,6 +15,8 @@ class GroupFilterAggregator(object):
     """Handles audio and video group filters aggregation step."""
 
     _logger: logging.Logger
+    _task: asyncio.Task
+    _context: zmq.Context
     _socket: zmq.Socket
     is_socket_connected: bool
     _kind: Literal["video", "audio"]
@@ -27,7 +30,8 @@ class GroupFilterAggregator(object):
         self._logger = logging.getLogger(
             f"{group_filter.name()}-GroupFilterAggregator-Port-{port}"
         )
-        self._socket = zmq.asyncio.Context().socket(zmq.PULL)
+        self._context = zmq.asyncio.Context.instance()
+        self._socket = self._context.socket(zmq.PULL)
         self._kind = kind
         self._group_filter = group_filter
         self._data = {}
@@ -42,11 +46,14 @@ class GroupFilterAggregator(object):
     def __repr__(self) -> str:
         return f"Group filter aggregator for {self._group_filter.name()}"
 
+    def set_task(self, task: asyncio.Task) -> None:
+        self._task = task
+
     async def cleanup(self) -> None:
-        self._socket.close()
         self.is_socket_connected = False
         self.delete_data()
-        del self
+        self._context.destroy()
+        self._task.cancel()
 
     def delete_data(self) -> None:
         self._data = {}
@@ -65,51 +72,56 @@ class GroupFilterAggregator(object):
     async def run(self) -> None:
         while True:
             if self.is_socket_connected:
-                message = await self._socket.recv_json()
+                try:
+                    message = await self._socket.recv_json()
 
-                self.add_data(
-                    message["participant_id"], message["time"], message["data"]
-                )
-                self._logger.debug(
-                    f"Data added for {message['participant_id']}: {message},"
-                    + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
-                )
-
-                num_participants_in_aggregation = None
-                if self._group_filter.num_participants_in_aggregation == "all":
-                    num_participants_in_aggregation = len(self._data)
-                else:
-                    num_participants_in_aggregation = (
-                        self._group_filter.num_participants_in_aggregation
+                    self.add_data(
+                        message["participant_id"], message["time"], message["data"]
+                    )
+                    self._logger.debug(
+                        f"Data added for {message['participant_id']}: {message},"
+                        + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
                     )
 
-                if len(self._data) >= num_participants_in_aggregation:
-                    for c in combinations(
-                        self._data.keys(), num_participants_in_aggregation
-                    ):
-                        # Check if all participants have enough data to align
-                        participants_have_enough_data = True
-                        if self._group_filter.data_len_per_participant != 0:
-                            for pid in c:
-                                if (
-                                    self._data[pid].qsize()
-                                    != self._group_filter.data_len_per_participant
-                                ):
-                                    participants_have_enough_data = False
-                                    break
+                    num_participants_in_aggregation = None
+                    if self._group_filter.num_participants_in_aggregation == "all":
+                        num_participants_in_aggregation = len(self._data)
+                    else:
+                        num_participants_in_aggregation = (
+                            self._group_filter.num_participants_in_aggregation
+                        )
 
-                        if participants_have_enough_data:
-                            # Align data
-                            data = self.align_data(c)
+                    if len(self._data) >= num_participants_in_aggregation:
+                        for c in combinations(
+                            self._data.keys(), num_participants_in_aggregation
+                        ):
+                            # Check if all participants have enough data to align
+                            participants_have_enough_data = True
+                            if self._group_filter.data_len_per_participant != 0:
+                                for pid in c:
+                                    if (
+                                        self._data[pid].qsize()
+                                        != self._group_filter.data_len_per_participant
+                                    ):
+                                        participants_have_enough_data = False
+                                        break
 
-                            # Aggregate data
-                            aggregated_data = self._group_filter.aggregate(data)
-                            self._logger.debug(
-                                "Data aggregation is triggered by participant"
-                                + f" {message['participant_id']}: {message}"
-                                + f" with data: {data},"
-                                + f" aggregation result: {aggregated_data}"
-                            )
+                            if participants_have_enough_data:
+                                # Align data
+                                data = self.align_data(c)
+
+                                # Aggregate data
+                                aggregated_data = self._group_filter.aggregate(data)
+                                self._logger.debug(
+                                    "Data aggregation is triggered by participant"
+                                    + f" {message['participant_id']}: {message}"
+                                    + f" with data: {data},"
+                                    + f" aggregation result: {aggregated_data}"
+                                )
+                except Exception as e:
+                    self._logger.debug(
+                        f"Exception: {e} | Data aggregation cannot be performed."
+                    )
 
     def align_data(self, participant_ids: tuple) -> list[list[Any]]:
         data = {}
@@ -124,11 +136,8 @@ class GroupFilterAggregator(object):
         for pid in participant_ids[1:]:
             x, y = zip(*data[pid])
 
-            # Interpolate the data
-            interpolator = self._group_filter.align_fn(
-                x, y, **self._group_filter.align_fn_kwargs
-            )
-            y_aligned = list(interpolator(p0_x))
+            # Align the data
+            y_aligned = self._group_filter.align_data(x, y, p0_x)
 
             # Store the aligned data
             aligned_data.append(y_aligned)

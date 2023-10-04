@@ -27,12 +27,11 @@ class GroupFilter(ABC):
     _config: FilterDict
     _logger: logging.Logger
     is_socket_connected: bool
+    _context: zmq.Context | None
     _socket: zmq.Socket | None
 
     data_len_per_participant: int = 0
     num_participants_in_aggregation: int = 2
-    align_fn: interpolate = interpolate.interp1d
-    align_fn_kwargs: dict = {}
 
     def __init__(self, config: FilterDict, participant_id: str) -> None:
         """Initialize new Group Filter.
@@ -56,6 +55,7 @@ class GroupFilter(ABC):
         self._config = config
         self.participant_id = participant_id
         self.is_socket_connected = False
+        self._context = None
         self._socket = None
 
     @property
@@ -74,7 +74,8 @@ class GroupFilter(ABC):
         self._config = config
 
     def connect_aggregator(self, port: int) -> None:
-        self._socket = zmq.asyncio.Context().socket(zmq.PUSH)
+        self._context = zmq.asyncio.Context.instance()
+        self._socket = self._context.socket(zmq.PUSH)
         try:
             self._socket.connect(f"tcp://127.0.0.1:{port}")
             self.is_socket_connected = True
@@ -99,9 +100,8 @@ class GroupFilter(ABC):
         asyncio.Task tasks they should be stopped & awaited in a custom implementation
         overriding this function.
         """
-        self._socket.close()
         self.is_socket_connected = False
-        del self
+        self._context.destroy()
 
     @staticmethod
     def validate_dict(data) -> TypeGuard[FilterDict]:
@@ -114,15 +114,24 @@ class GroupFilter(ABC):
     async def process_individual_frame_and_send_data_to_aggregator(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray, ts: int
     ) -> None:
-        data = await self.process_individual_frame(original, ndarray)
-        if self.is_socket_connected and data is not None:
-            message = dict()
-            message["participant_id"] = self.participant_id
-            message["time"] = ts
-            message["data"] = data
-            self._socket.send_json(message, flags=zmq.NOBLOCK)
+        if self.is_socket_connected:
+            data = await self.process_individual_frame(original, ndarray)
+            if data is not None:
+                message = dict()
+                message["participant_id"] = self.participant_id
+                message["time"] = ts
+                message["data"] = data
 
-            self._logger.debug(f"Data sent for {self.participant_id}: {message}")
+                try:
+                    self._socket.send_json(message, flags=zmq.NOBLOCK)
+
+                    self._logger.debug(
+                        f"Data sent for {self.participant_id}: {message}"
+                    )
+                except Exception as e:
+                    self._logger.debug(
+                        f"Exception: {e} | Data cannot be sent for {self.participant_id}: {message}"
+                    )
 
     @staticmethod
     @abstractmethod
@@ -145,6 +154,14 @@ class GroupFilter(ABC):
         raise NotImplementedError(
             f"{self} is missing it's implementation of the abstract"
             " `process_individual_frame` method."
+        )
+
+    @staticmethod
+    @abstractmethod
+    def align_data(x: list, y: list, base_timeline: list) -> list:
+        raise NotImplementedError(
+            f"{__name__} is missing it's implementation of the static"
+            " abstract `align_data` method."
         )
 
     @staticmethod

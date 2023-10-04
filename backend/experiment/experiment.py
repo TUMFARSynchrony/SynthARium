@@ -475,7 +475,9 @@ class Experiment(AsyncIOEventEmitter):
         for (
             new_group_filter_aggregator
         ) in self._video_group_filter_aggregators.values():
-            coroutines.append(new_group_filter_aggregator.run())
+            task = asyncio.create_task(new_group_filter_aggregator.run())
+            new_group_filter_aggregator.set_task(task)
+            coroutines.append(task)
 
         await asyncio.gather(*coroutines)
 
