@@ -10,7 +10,6 @@ from .rotate import RotationFilter
 from .mute import MuteAudioFilter, MuteVideoFilter
 from .delay import DelayFilter
 from .open_face_au import OpenFaceAUFilter
-from .sync_score import BoWFilter
 from .glasses_detection import SimpleGlassesDetection
 from .speaking_time import DisplaySpeakingTimeFilter, AudioSpeakingTimeFilter
 
