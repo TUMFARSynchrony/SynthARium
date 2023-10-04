@@ -109,8 +109,8 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
-      setXAxis(0);
-      setYAxis(Math.ceil(participantCount / 20) * 25);
+      setXAxis(xAxis + 300);
+      setYAxis(0);
     } else {
       setXAxis(xAxis + 25);
       setYAxis(yAxis + 25);

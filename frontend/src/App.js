@@ -401,7 +401,6 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
-                centerContentOnYAxis={true}
               />
             }
           />
