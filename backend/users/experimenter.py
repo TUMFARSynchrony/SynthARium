@@ -63,7 +63,6 @@ class Experimenter(User):
         self._logger = logging.getLogger(f"Experimenter-{experimenter_id}")
         self._hub = hub
         self._experiment = None
-        self.participants = dict()
 
         # Add API endpoints
         self.on_message("GET_SESSION_LIST", self._handle_get_session_list)
