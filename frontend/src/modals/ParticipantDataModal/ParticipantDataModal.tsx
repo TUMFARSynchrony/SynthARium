@@ -204,13 +204,15 @@ function ParticipantDataModal({
         if (
           (filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]
         ) {
-          const otherFilter = testData
-            .filter(
-              (filteredFilter) =>
-                filteredFilter.name ===
-                (filter.config[key]["defaultValue"] as string[])[0]
-            )
-            .pop();
+          const otherFilter = structuredClone(
+            testData
+              .filter(
+                (filteredFilter) =>
+                  filteredFilter.name ===
+                  (filter.config[key]["defaultValue"] as string[])[0]
+              )
+              .pop()
+          );
           const id = uuid();
           otherFilter.id = id;
           newFilter["config"][key]["value"] = id;
