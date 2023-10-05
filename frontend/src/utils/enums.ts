@@ -16,3 +16,9 @@ export enum ChangeSessionAttribute {
   RECORD = "record",
   DATE = "date"
 }
+
+export enum Tabs {
+  CHAT = "chat",
+  INSTRUCTIONS = "instructions",
+  PARTICIPANTS = "participants"
+}

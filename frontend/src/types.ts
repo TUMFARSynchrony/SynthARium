@@ -1,3 +1,6 @@
+import { AlertColor } from "@mui/material/Alert";
+import { SnackbarOrigin } from "@mui/material/Snackbar";
+
 export type Session = {
   id: string;
   title: string;
@@ -27,7 +30,7 @@ export type Participant = {
   muted_video: boolean;
   muted_audio: boolean;
   position: { x: number; y: number; z: number };
-  chat: Chat[];
+  chat: ChatMessage[];
   audio_filters: Filter[];
   video_filters: Filter[];
 };
@@ -53,7 +56,7 @@ export type Group = {
   height: number;
 };
 
-export type Chat = {
+export type ChatMessage = {
   message: string;
   time: number;
   author: string;
@@ -84,4 +87,12 @@ export type FilterConfigArray = {
   value: string;
   defaultValue: string[];
   requiresOtherFilter: boolean;
+};
+
+export type Snackbar = {
+  open: boolean;
+  text: string;
+  severity: AlertColor;
+  autoHideDuration?: number;
+  anchorOrigin?: SnackbarOrigin;
 };
