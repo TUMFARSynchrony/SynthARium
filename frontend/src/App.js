@@ -33,8 +33,11 @@ import {
   updateSession
 } from "./redux/slices/sessionsListSlice";
 import { initialSnackbar } from "./utils/constants";
-import { ExperimentTimes } from "./utils/enums";
+import { ExperimentTimes, Tabs } from "./utils/enums";
 import { getLocalStream, getSessionById } from "./utils/utils";
+import { toggleSingleTab } from "./redux/slices/tabsSlice";
+import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
+import { faClipboardCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -205,9 +208,19 @@ function App() {
       addMessageToCurrentSession({
         message: data,
         sessionId: data.session,
+        author: data.author,
         target: data.target
       })
     );
+    if (data.author === "experimenter" && data.target === "participants") {
+      setSnackbar({
+        open: true,
+        text: data.message,
+        severity: "info",
+        autoHideDuration: 10000,
+        anchorOrigin: { vertical: "top", horizontal: "center" }
+      });
+    }
   };
 
   const handleDeletedSession = (data) => {
@@ -343,8 +356,11 @@ function App() {
     dispatch(addNote({ note: note, id: sessionId }));
   };
 
-  const onChat = (message) => {
-    connection.sendMessage("CHAT", message);
+  const onChat = (messageObj) => {
+    // do not send a message if it's empty
+    if (messageObj.message && messageObj.message !== "") {
+      connection.sendMessage("CHAT", messageObj);
+    }
   };
 
   const onLeaveExperiment = () => {
@@ -362,6 +378,10 @@ function App() {
 
   const onEndExperiment = () => {
     connection.sendMessage("STOP_EXPERIMENT", {});
+  };
+
+  const toggleModal = (modal) => {
+    dispatch(toggleSingleTab(modal));
   };
 
   return (
@@ -398,7 +418,18 @@ function App() {
                 <PageTemplate
                   title={"Lobby"}
                   buttonListComponent={
-                    <HeaderActionArea type="participantButtonList" />
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => toggleModal(Tabs.CHAT),
+                          icon: faComment
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                          icon: faClipboardCheck
+                        }
+                      ]}
+                    />
                   }
                   customComponent={
                     <Lobby
@@ -406,6 +437,7 @@ function App() {
                       connection={connection}
                       connectionState={connectionState}
                       onGetSession={onGetSession}
+                      onChat={onChat}
                     />
                   }
                 />
@@ -421,7 +453,22 @@ function App() {
               <PageTemplate
                 title={"Experimental Hub Template"}
                 buttonListComponent={
-                  <HeaderActionArea type="experimenterButtonList" />
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => toggleModal(Tabs.CHAT),
+                        icon: faComment
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                        icon: faClipboardCheck
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.PARTICIPANTS),
+                        icon: faUsers
+                      }
+                    ]}
+                  />
                 }
                 customComponent={
                   <WatchingRoom
@@ -446,7 +493,22 @@ function App() {
               <PageTemplate
                 title={"Watching Room"}
                 buttonListComponent={
-                  <HeaderActionArea type="experimenterButtonList" />
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => toggleModal(Tabs.CHAT),
+                        icon: faComment
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                        icon: faClipboardCheck
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.PARTICIPANTS),
+                        icon: faUsers
+                      }
+                    ]}
+                  />
                 }
                 customComponent={
                   <WatchingRoom
@@ -512,6 +574,8 @@ function App() {
         text={snackbar.text}
         severity={snackbar.severity}
         handleClose={() => setSnackbar(initialSnackbar)}
+        autoHideDuration={snackbar.autoHideDuration}
+        anchorOrigin={snackbar.anchorOrigin}
       />
     </div>
   );
