@@ -205,7 +205,9 @@ class ConnectionSubprocess(ConnectionInterface):
         return answer
 
     async def get_audio_filters_data(self, id, name) -> list:
-        answer = await self._send_command_wait_for_response("GET_AUDIO_FILTERS", None)
+        answer = await self._send_command_wait_for_response(
+            "GET_AUDIO_FILTERS", {"id": id, "name": name}
+        )
         return answer
 
     def _set_state(self, state: ConnectionState) -> None:
