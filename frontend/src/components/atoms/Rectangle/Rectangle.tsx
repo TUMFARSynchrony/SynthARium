@@ -115,10 +115,10 @@ const Rectangle = ({
           text={participant_name}
           x={shapeProps.x + 5}
           y={shapeProps.y + 5}
-          fontSize={15}
+          fontSize={20}
           fill="white"
-          stroke="white"
-          strokeWidth={0.75}
+          stroke="#F5F5F5"
+          strokeWidth={0.25}
         />
       </Group>
       {isSelected && (
