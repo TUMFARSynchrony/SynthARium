@@ -1,4 +1,8 @@
-import { LinkButton } from "../../components/atoms/Button";
+import {
+  ActionButton,
+  LinkActionButton,
+  LinkButton
+} from "../../components/atoms/Button";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
@@ -13,6 +17,9 @@ import {
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
+import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
+import { useState } from "react";
+import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 
 function WatchingRoom({
   connectedParticipants,
@@ -20,8 +27,12 @@ function WatchingRoom({
   onChat,
   onGetSession,
   onLeaveExperiment,
-  onMuteParticipant
+  onMuteParticipant,
+  onStartExperiment,
+  onEndExperiment
 }) {
+  const [startVerificationModal, setStartVerificationModal] = useState(false);
+  const [endVerificationModal, setEndVerificationModal] = useState(false);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
@@ -33,7 +44,7 @@ function WatchingRoom({
     <div>
       {sessionData ? (
         <div className="watchingRoom flex justify-between">
-          <div className="participantLivestream w-full flex justify-center items-center">
+          <div className="participantLivestream w-3/4 flex flex-col justify-center px-6">
             <div className="videoCanvas">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
@@ -43,6 +54,51 @@ function WatchingRoom({
               <div className="appliedFilters">
                 Filters applied on all participants
               </div>
+            </div>
+            <div className="flex flex-row justify-center gap-x-4 pt-5">
+              <LinkActionButton
+                text="LEAVE EXPERIMENT"
+                variant="outlined"
+                path="/"
+                size="large"
+                color="primary"
+                onClick={() => onLeaveExperiment()}
+              />
+              {sessionData.start_time === 0 ? (
+                <ActionButton
+                  text="START EXPERIMENT"
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  onClick={() => {
+                    setStartVerificationModal(true);
+                  }}
+                />
+              ) : (
+                <ActionButton
+                  text="END EXPERIMENT"
+                  variant="contained"
+                  color="error"
+                  size="large"
+                  onClick={() => {
+                    setEndVerificationModal(true);
+                  }}
+                />
+              )}
+
+              {startVerificationModal && (
+                <StartVerificationModal
+                  setShowModal={setStartVerificationModal}
+                  onStartExperiment={onStartExperiment}
+                />
+              )}
+
+              {endVerificationModal && (
+                <EndVerificationModal
+                  setShowModal={setEndVerificationModal}
+                  onEndExperiment={onEndExperiment}
+                />
+              )}
             </div>
           </div>
           {isChatModalActive && (
