@@ -79,7 +79,7 @@ function SessionOverview({
           A video conferencing tool for researchers. Create a new experimental
           template to start designing and hosting your next experiment. See the{" "}
           <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
-            Wiki
+            <u> Wiki </u>
           </a>{" "}
           for more info.
         </WelcomeText>
