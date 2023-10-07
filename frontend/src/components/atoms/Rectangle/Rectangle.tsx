@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import Konva from "konva";
 import { Group, Rect, Text, Transformer } from "react-konva";
-import { CANVAS_SIZE } from "../../../utils/constants";
 import { getTotalBox } from "../../../utils/utils";
 import { Shape, Group as GroupProps } from "../../../types";
+import { RectReadOnly } from "react-use-measure";
 
 type RectangleProps = {
+  bounds: RectReadOnly;
   shapeProps: Shape;
   groupProps: GroupProps;
   isSelected: boolean;
@@ -14,6 +15,7 @@ type RectangleProps = {
 };
 
 const Rectangle = ({
+  bounds,
   shapeProps,
   groupProps,
   isSelected,
@@ -22,7 +24,6 @@ const Rectangle = ({
 }: RectangleProps) => {
   const shapeRef = useRef<Konva.Group>();
   const trRef = useRef<Konva.Transformer>();
-
   useEffect(() => {
     if (!trRef.current) {
       return;
@@ -75,11 +76,11 @@ const Rectangle = ({
       if (box.y < 0) {
         newAbsPos.y = -offsetY;
       }
-      if (box.x + box.width > CANVAS_SIZE.width) {
-        newAbsPos.x = CANVAS_SIZE.width - box.width - offsetX;
+      if (box.x + box.width > bounds.width) {
+        newAbsPos.x = bounds.width - box.width - offsetX;
       }
-      if (box.y + box.height > CANVAS_SIZE.height) {
-        newAbsPos.y = CANVAS_SIZE.height - box.height - offsetY;
+      if (box.y + box.height > bounds.height) {
+        newAbsPos.y = bounds.height - box.height - offsetY;
       }
     });
     shapeRef.current.x(newAbsPos.x);
@@ -112,10 +113,12 @@ const Rectangle = ({
         />
         <Text
           text={participant_name}
-          x={shapeProps.x}
-          y={shapeProps.y}
+          x={shapeProps.x + 5}
+          y={shapeProps.y + 5}
           fontSize={15}
           fill="white"
+          stroke="white"
+          strokeWidth={0.75}
         />
       </Group>
       {isSelected && (
@@ -130,8 +133,8 @@ const Rectangle = ({
             const isOut =
               newBox.x < 0 ||
               newBox.y < 0 ||
-              newBox.x + newBox.width > CANVAS_SIZE.width ||
-              newBox.y + newBox.height > CANVAS_SIZE.height;
+              newBox.x + newBox.width > bounds.width ||
+              newBox.y + newBox.height > bounds.height;
 
             if (isOut) {
               return oldBox;
