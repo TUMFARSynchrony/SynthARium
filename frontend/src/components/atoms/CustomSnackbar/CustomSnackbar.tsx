@@ -1,5 +1,5 @@
 import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
+import Snackbar, { SnackbarOrigin } from "@mui/material/Snackbar";
 import { forwardRef } from "react";
 
 type CustomSnackbarProps = {
@@ -7,6 +7,8 @@ type CustomSnackbarProps = {
   text: string;
   severity: AlertColor;
   handleClose: () => void;
+  autoHideDuration?: number;
+  anchorOrigin?: SnackbarOrigin;
 };
 
 // Using MUI Snackbar and Alert to display notifications in :
@@ -16,7 +18,9 @@ function CustomSnackbar({
   open,
   text,
   severity,
-  handleClose
+  autoHideDuration,
+  handleClose,
+  anchorOrigin
 }: CustomSnackbarProps) {
   const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
@@ -24,13 +28,12 @@ function CustomSnackbar({
   ): JSX.Element {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
-
   return (
     <Snackbar
       open={open}
-      autoHideDuration={2000}
+      autoHideDuration={autoHideDuration ?? 2000}
       onClose={handleClose}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      anchorOrigin={anchorOrigin ?? { vertical: "top", horizontal: "right" }}
     >
       <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
         {text}
