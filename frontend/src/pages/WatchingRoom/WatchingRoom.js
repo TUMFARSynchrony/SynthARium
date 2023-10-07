@@ -30,11 +30,11 @@ function WatchingRoom({
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
 
   return (
-    <div>
+    <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
-        <div className="watchingRoom flex justify-between">
-          <div className="participantLivestream w-full flex justify-center items-center">
-            <div className="videoCanvas">
+        <div className="flex justify-between w-full h-full">
+          <div className="participantLivestream w-3/4 h-full flex justify-center items-center py-6 px-4">
+            <div className="videoCanvas h-full w-full">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}

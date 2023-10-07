@@ -1,8 +1,8 @@
 import { Layer, Stage } from "react-konva";
 import { Session } from "../../../types";
-import { CANVAS_SIZE } from "../../../utils/constants";
 import { getParticipantById } from "../../../utils/utils";
 import Video from "../../atoms/Video/Video";
+import useMeasure from "react-use-measure";
 
 type Props = {
   connectedParticipants: any;
@@ -10,18 +10,21 @@ type Props = {
 };
 
 function VideoCanvas({ connectedParticipants, sessionData }: Props) {
+  const [ref, bounds] = useMeasure();
   return (
-    <Stage width={CANVAS_SIZE.width} height={CANVAS_SIZE.height}>
-      <Layer>
-        {connectedParticipants?.map((peer: any, i: number) => (
-          <Video
-            key={i}
-            src={peer.stream}
-            participantData={getParticipantById(peer.summary, sessionData)}
-          />
-        ))}
-      </Layer>
-    </Stage>
+    <div className="h-full w-full" ref={ref}>
+      <Stage width={bounds.width} height={bounds.height}>
+        <Layer>
+          {connectedParticipants?.map((peer: any, i: number) => (
+            <Video
+              key={i}
+              src={peer.stream}
+              participantData={getParticipantById(peer.summary, sessionData)}
+            />
+          ))}
+        </Layer>
+      </Stage>
+    </div>
   );
 }
 

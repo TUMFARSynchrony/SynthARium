@@ -1,4 +1,3 @@
-import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
@@ -49,7 +48,7 @@ function Lobby({
     <>
       <ConsentModal />
       {/* Grid takes up screen space left from the AppToolbar */}
-      <Box sx={{ height: "92vh", display: "flex" }}>
+      <div className="flex h-[calc(100vh-84px]]">
         <Paper
           elevation={2}
           sx={{ backgroundColor: "whitesmoke", height: "100%", width: "75%" }}
@@ -87,7 +86,7 @@ function Lobby({
           {connectionState === ConnectionState.CONNECTED &&
             isInstructionsModalActive && <InstructionsTab />}
         </div>
-      </Box>
+      </div>
     </>
   );
 }

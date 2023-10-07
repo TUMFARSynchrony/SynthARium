@@ -3,26 +3,13 @@ import { Layer, Stage, Text } from "react-konva";
 import { useAppDispatch } from "../../../redux/hooks";
 import { changeParticipantDimensions } from "../../../redux/slices/openSessionSlice";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
+import useMeasure from "react-use-measure";
 
 function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
   const [selectedShape, setSelectShape] = useState(null);
-  const divRef = useRef(null);
-  const [dimensions, setDimensions] = useState({
-    width: 0,
-    height: 0
-  });
-  const dispatch = useAppDispatch();
 
-  // We cant set the h & w on Stage to 100% it only takes px values so we have to
-  // find the parent container's w and h and then manually set those !
-  useEffect(() => {
-    if (divRef.current?.offsetHeight && divRef.current?.offsetWidth) {
-      setDimensions({
-        width: divRef.current.offsetWidth,
-        height: divRef.current.offsetHeight
-      });
-    }
-  }, []);
+  const dispatch = useAppDispatch();
+  const [ref, bounds] = useMeasure();
 
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -30,13 +17,12 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
       setSelectShape(null);
     }
   };
-
   return (
-    <div className="w-full h-full" ref={divRef}>
+    <div className="w-full h-full" ref={ref}>
       <Stage
         className="flex items-center justify-center"
-        width={dimensions.width}
-        height={dimensions.height}
+        width={bounds.width}
+        height={bounds.height}
         onMouseDown={checkDeselect}
       >
         <Layer>
@@ -45,6 +31,7 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
               return (
                 <Rectangle
                   key={index}
+                  bounds={bounds}
                   shapeProps={rect.shapes}
                   groupProps={rect.groups}
                   isSelected={index === selectedShape}
@@ -81,8 +68,8 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
                 fontSize={20}
                 align={"center"}
                 verticalAlign={"middle"}
-                width={dimensions.width}
-                height={dimensions.height}
+                width={bounds.width}
+                height={bounds.height}
               />
             </div>
           )}

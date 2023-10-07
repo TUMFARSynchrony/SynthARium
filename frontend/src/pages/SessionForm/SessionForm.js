@@ -18,7 +18,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActionButton,
   ActionIconButton,
@@ -36,6 +36,7 @@ import {
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
+import useMeasure from "react-use-measure";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useAppDispatch();
@@ -55,8 +56,6 @@ function SessionForm({ onSendSessionToBackend }) {
     )
   );
 
-  console.log(numberOfParticipants);
-
   // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
   // It is displayed here instead of in the Participant Modal itself, since upon closing the modal it is no longer
   // available to display the warnings.
@@ -66,6 +65,7 @@ function SessionForm({ onSendSessionToBackend }) {
     participantOriginalEmpty: false,
     newInputEqualsOld: false
   });
+  const [ref, bounds] = useMeasure();
 
   useEffect(() => {
     setSessionData(openSession);
@@ -109,7 +109,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
-      setXAxis(xAxis + 300);
+      setXAxis((participantCount / 20) * Math.min(bounds.width / 4, 250));
       setYAxis(0);
     } else {
       setXAxis(xAxis + 25);
@@ -138,7 +138,13 @@ function SessionForm({ onSendSessionToBackend }) {
           fill: getRandomColor(),
           z: 0
         },
-        groups: { x: 0, y: 0, z: 0, width: 300, height: 300 }
+        groups: {
+          x: 0,
+          y: 0,
+          z: 0,
+          width: Math.floor(Math.min(bounds.width / 4, 250)),
+          height: Math.floor(Math.min(bounds.width / 4, 250))
+        }
       }
     ];
     setParticipantDimensions(newParticipantDimensions);
@@ -221,7 +227,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   return (
     <>
-      <div className="flex flex-row h-full px-4 py-8 items-center">
+      <div className="flex w-screen h-screen flex-row px-4 py-8 items-center">
         {showSessionDataForm && (
           <div className="shadow-lg rounded-md h-full">
             <div className="px-4 flex flex-col h-full">
@@ -360,7 +366,10 @@ function SessionForm({ onSendSessionToBackend }) {
             icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
           />
         </div>
-        <div className="w-full h-full bg-slate-200 rounded-md shadow-lg">
+        <div
+          className="w-full h-full bg-slate-200 rounded-md shadow-lg"
+          ref={ref}
+        >
           <DragAndDrop
             participantDimensions={participantDimensions}
             setParticipantDimensions={setParticipantDimensions}
