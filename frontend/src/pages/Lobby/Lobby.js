@@ -58,7 +58,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   }, [localStream, userConsent]);
 
   useEffect(() => {
-    if (participantStream && userConsent) {
+    if (participantStream && userConsent && videoElement.current) {
       videoElement.current.srcObject = localStream;
     }
   }, [localStream, participantStream, userConsent]);
@@ -83,14 +83,12 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           {userConsent ? (
             participantStream ? (
               sessionData && connectedParticipants ? (
-                <div className="shadow-md rounded-md bg-whitesmoke inline-block">
-                  <VideoCanvas
-                    connectedParticipants={connectedParticipants}
-                    sessionData={sessionData}
-                    localStream={localStream}
-                    ownParticipantId={participantIdParam}
-                  />
-                </div>
+                <VideoCanvas
+                  connectedParticipants={connectedParticipants}
+                  sessionData={sessionData}
+                  localStream={localStream}
+                  ownParticipantId={participantIdParam}
+                />
               ) : (
                 <video
                   ref={videoElement}

@@ -414,11 +414,31 @@ function App() {
             path="/lobby"
             element={
               connection ? (
-                <Lobby
-                  connectedParticipants={connectedParticipants}
-                  localStream={localStream}
-                  connection={connection}
-                  onGetSession={onGetSession}
+                <PageTemplate
+                  title={"Lobby"}
+                  buttonListComponent={
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => toggleModal(Tabs.CHAT),
+                          icon: faComment
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                          icon: faClipboardCheck
+                        }
+                      ]}
+                    />
+                  }
+                  customComponent={
+                    <Lobby
+                      connectedParticipants={connectedParticipants}
+                      localStream={localStream}
+                      connection={connection}
+                      onGetSession={onGetSession}
+                      onChat={onChat}
+                    />
+                  }
                 />
               ) : (
                 "Loading..."
