@@ -227,7 +227,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   return (
     <>
-      <div className="flex w-screen h-screen flex-row px-4 py-8 items-center">
+      <div className="flex w-screen h-[calc(100vh-84px)] flex-row px-4 py-8 items-center">
         {showSessionDataForm && (
           <div className="shadow-lg rounded-md h-full">
             <div className="px-4 flex flex-col h-full">
@@ -325,7 +325,7 @@ function SessionForm({ onSendSessionToBackend }) {
                     icon={<AddIcon />}
                   />
                 </div>
-                <div className="overflow-y-scroll h-[300px] shadow-lg bg-slate-50 pl-4 py-2">
+                <div className="overflow-y-auto h-[300px] shadow-lg bg-slate-50 pl-4 py-2">
                   {openSession.participants.map((participant, index) => {
                     return (
                       <ParticipantData

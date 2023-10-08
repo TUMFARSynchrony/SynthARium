@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useState } from "react";
 import { Layer, Stage, Text } from "react-konva";
 import { useAppDispatch } from "../../../redux/hooks";
 import { changeParticipantDimensions } from "../../../redux/slices/openSessionSlice";
