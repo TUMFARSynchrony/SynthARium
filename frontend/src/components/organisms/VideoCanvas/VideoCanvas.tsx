@@ -35,7 +35,11 @@ function VideoCanvas({
   localStream
 }: Props) {
   return (
-    <Stage width={CANVAS_SIZE.width} height={CANVAS_SIZE.height}>
+    <Stage
+      width={CANVAS_SIZE.width}
+      height={CANVAS_SIZE.height}
+      className="p-4"
+    >
       <Layer>
         {/* Render the video for the participant themselves */}
         {ownParticipantId ? (

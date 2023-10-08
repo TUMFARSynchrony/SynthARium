@@ -1,5 +1,3 @@
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -14,6 +12,7 @@ import {
   selectInstructionsTab
 } from "../../redux/slices/tabsSlice";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import "./Lobby.css";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -75,20 +74,19 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     <>
       <ConsentModal onConsentGiven={setUserConsent} />
       {/* Grid takes up screen space left from the AppToolbar */}
-      <Box sx={{ height: "92vh", display: "flex" }}>
-        <Paper
-          elevation={2}
-          sx={{ backgroundColor: "whitesmoke", height: "100%", width: "75%" }}
-        >
+      <div className="flex h-[calc(100vh-84px)]">
+        <div className="px-6 py-4 w-3/4 flex flex-col justify-center">
           {userConsent ? (
             participantStream ? (
               sessionData && connectedParticipants ? (
-                <VideoCanvas
-                  connectedParticipants={connectedParticipants}
-                  sessionData={sessionData}
-                  localStream={localStream}
-                  ownParticipantId={participantIdParam}
-                />
+                <div className="lobby-canvas h-3/4">
+                  <VideoCanvas
+                    connectedParticipants={connectedParticipants}
+                    sessionData={sessionData}
+                    localStream={localStream}
+                    ownParticipantId={participantIdParam}
+                  />
+                </div>
               ) : (
                 <video
                   ref={videoElement}
@@ -107,7 +105,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           ) : (
             <Typography>Please check if you gave your consent!</Typography>
           )}
-        </Paper>
+        </div>
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && (
             <div>Trying to connect...</div>
@@ -125,7 +123,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           {connectionState === ConnectionState.CONNECTED &&
             isInstructionsModalActive && <InstructionsTab />}
         </div>
-      </Box>
+      </div>
     </>
   );
 }
