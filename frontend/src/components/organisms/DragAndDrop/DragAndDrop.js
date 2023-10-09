@@ -3,13 +3,12 @@ import { Layer, Stage, Text } from "react-konva";
 import { useAppDispatch } from "../../../redux/hooks";
 import { changeParticipantDimensions } from "../../../redux/slices/openSessionSlice";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
-import useMeasure from "react-use-measure";
+import { CANVAS_SIZE } from "../../../utils/constants";
 
 function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
   const [selectedShape, setSelectShape] = useState(null);
 
   const dispatch = useAppDispatch();
-  const [ref, bounds] = useMeasure();
 
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -18,11 +17,11 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
     }
   };
   return (
-    <div className="w-full h-full" ref={ref}>
+    <div className="w-full h-full pr-8">
       <Stage
-        className="flex items-center justify-center"
-        width={bounds.width}
-        height={bounds.height}
+        className="flex items-center justify-center bg-slate-200 rounded-md shadow-lg"
+        width={CANVAS_SIZE.width}
+        height={CANVAS_SIZE.height}
         onMouseDown={checkDeselect}
       >
         <Layer>
@@ -31,7 +30,6 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
               return (
                 <Rectangle
                   key={index}
-                  bounds={bounds}
                   shapeProps={rect.shapes}
                   groupProps={rect.groups}
                   isSelected={index === selectedShape}
@@ -68,8 +66,8 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
                 fontSize={20}
                 align={"center"}
                 verticalAlign={"middle"}
-                width={bounds.width}
-                height={bounds.height}
+                width={CANVAS_SIZE.width}
+                height={CANVAS_SIZE.height}
               />
             </div>
           )}

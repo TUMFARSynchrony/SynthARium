@@ -36,7 +36,6 @@ import {
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
-import useMeasure from "react-use-measure";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useAppDispatch();
@@ -65,7 +64,6 @@ function SessionForm({ onSendSessionToBackend }) {
     participantOriginalEmpty: false,
     newInputEqualsOld: false
   });
-  const [ref, bounds] = useMeasure();
 
   useEffect(() => {
     setSessionData(openSession);
@@ -109,7 +107,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
-      setXAxis((participantCount / 20) * Math.min(bounds.width / 4, 250));
+      setXAxis((participantCount / 20) * 250);
       setYAxis(0);
     } else {
       setXAxis(xAxis + 25);
@@ -142,8 +140,8 @@ function SessionForm({ onSendSessionToBackend }) {
           x: 0,
           y: 0,
           z: 0,
-          width: Math.floor(Math.min(bounds.width / 4, 250)),
-          height: Math.floor(Math.min(bounds.width / 4, 250))
+          width: 250,
+          height: 250
         }
       }
     ];
@@ -207,8 +205,8 @@ function SessionForm({ onSendSessionToBackend }) {
             z: 0
           },
           size: {
-            width: 300,
-            height: 300
+            width: 250,
+            height: 250
           }
         }
       ],
@@ -227,7 +225,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
   return (
     <>
-      <div className="flex w-screen h-[calc(100vh-84px)] flex-row px-4 py-8 items-center">
+      <div className="flex h-[calc(100vh-84px)] flex-row px-4 py-8 items-start">
         {showSessionDataForm && (
           <div className="shadow-lg rounded-md h-full">
             <div className="px-4 flex flex-col h-full">
@@ -366,10 +364,7 @@ function SessionForm({ onSendSessionToBackend }) {
             icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
           />
         </div>
-        <div
-          className="w-full h-full bg-slate-200 rounded-md shadow-lg"
-          ref={ref}
-        >
+        <div>
           <DragAndDrop
             participantDimensions={participantDimensions}
             setParticipantDimensions={setParticipantDimensions}

@@ -41,8 +41,8 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
     z: 0
   },
   size: {
-    width: 300,
-    height: 300
+    width: 250,
+    height: 250
   }
 };
 

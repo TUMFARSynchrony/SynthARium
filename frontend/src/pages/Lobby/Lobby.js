@@ -75,18 +75,16 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
       <ConsentModal onConsentGiven={setUserConsent} />
       {/* Grid takes up screen space left from the AppToolbar */}
       <div className="flex h-[calc(100vh-84px)]">
-        <div className="px-6 py-4 w-3/4 flex flex-col justify-center">
+        <div className="px-6 py-4 w-3/4 flex flex-col">
           {userConsent ? (
             participantStream ? (
               sessionData && connectedParticipants ? (
-                <div className="lobby-canvas h-3/4">
-                  <VideoCanvas
-                    connectedParticipants={connectedParticipants}
-                    sessionData={sessionData}
-                    localStream={localStream}
-                    ownParticipantId={participantIdParam}
-                  />
-                </div>
+                <VideoCanvas
+                  connectedParticipants={connectedParticipants}
+                  sessionData={sessionData}
+                  localStream={localStream}
+                  ownParticipantId={participantIdParam}
+                />
               ) : (
                 <video
                   ref={videoElement}

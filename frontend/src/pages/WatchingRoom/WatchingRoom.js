@@ -43,8 +43,8 @@ function WatchingRoom({
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
         <div className="flex justify-between w-full h-full">
-          <div className="participantLivestream w-3/4 h-full flex flex-col justify-center items-center py-6 px-4">
-            <div className="videoCanvas h-full w-full">
+          <div className="w-3/4 h-full flex flex-col justify-center items-center py-6 px-4">
+            <div className="h-full w-full">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
@@ -101,30 +101,24 @@ function WatchingRoom({
               )}
             </div>
           </div>
-          {isChatModalActive && (
-            <div className="w-1/4">
+          <div className="w-1/4">
+            {isChatModalActive && (
               <ChatTab
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
                 currentUser={"experimenter"}
               />
-            </div>
-          )}
-          {isParticipantsModalActive && (
-            <div className="w-1/4">
+            )}
+            {isParticipantsModalActive && (
               <ParticipantsTab
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
                 onMuteParticipant={onMuteParticipant}
               />
-            </div>
-          )}
-          {isInstructionsModalActive && (
-            <div className="w-1/4">
-              <InstructionsTab />{" "}
-            </div>
-          )}
+            )}
+            {isInstructionsModalActive && <InstructionsTab />}
+          </div>
         </div>
       ) : (
         <div className="noExperimentOngoing">
