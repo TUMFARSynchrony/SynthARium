@@ -39,21 +39,21 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
-
   return (
     <div>
       {sessionData ? (
-        <div className="watchingRoom flex justify-between">
-          <div className="participantLivestream w-3/4 flex flex-col justify-center px-6">
-            <div className="videoCanvas">
+        <div className="watchingRoom flex h-[calc(100vh-84px)]">
+          <div className="participantLivestream w-3/4 flex flex-col justify-center px-6 pt-4">
+            <div className="videoCanvas flex flex-col h-3/4">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
+                localStream={null}
+                ownParticipantId={null}
               />
-              <hr className="separatorLine"></hr>
-              <div className="appliedFilters">
-                Filters applied on all participants
-              </div>
+            </div>
+            <div className="py-2 border-gray-300 border-1 rounded-md px-4">
+              Filters applied on all participants
             </div>
             <div className="flex flex-row justify-center gap-x-4 pt-5">
               <LinkActionButton
