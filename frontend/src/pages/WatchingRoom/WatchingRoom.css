@@ -19,11 +19,6 @@
   flex-direction: column;
 }
 
-.appliedFilters {
-  margin-top: 1rem;
-  border: 1px solid black;
-}
-
 .noExperimentOngoing {
   display: flex;
   flex-direction: column;

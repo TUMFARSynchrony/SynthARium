@@ -126,7 +126,7 @@ function SessionForm({ onSendSessionToBackend }) {
     dispatch(
       addParticipant({
         ...INITIAL_PARTICIPANT_DATA,
-        position: { x: xAxis, y: yAxis }
+        position: { x: xAxis, y: yAxis, z: 0 }
       })
     );
     const newParticipantDimensions = [

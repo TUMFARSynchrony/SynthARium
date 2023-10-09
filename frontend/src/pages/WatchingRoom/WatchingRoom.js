@@ -39,7 +39,6 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
-
   return (
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
@@ -49,11 +48,12 @@ function WatchingRoom({
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
+                localStream={null}
+                ownParticipantId={null}
               />
-              <hr className="separatorLine"></hr>
-              <div className="appliedFilters">
-                Filters applied on all participants
-              </div>
+            </div>
+            <div className="py-2 border-gray-300 border-1 rounded-md px-4">
+              Filters applied on all participants
             </div>
             <div className="flex flex-row justify-center gap-x-4 pt-5">
               <LinkActionButton
