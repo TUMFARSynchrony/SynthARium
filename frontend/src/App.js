@@ -49,6 +49,21 @@ function App() {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [clickList, setClickList] = useState([]);
+
+  useEffect(() => {
+    document.body.addEventListener("click", addClick, true);
+
+    return function cleanup() {
+      window.removeEventListener("click", addClick, true);
+    };
+  }, []);
+  let addClick = () => {
+    setClickList((oldClickList) => [
+      ...oldClickList,
+      { url: window.location.href, timestamp: new Date() }
+    ]);
+  };
 
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
@@ -375,6 +390,7 @@ function App() {
                 onDeleteSession={onDeleteSession}
                 onCreateExperiment={onCreateExperiment}
                 onJoinExperiment={onJoinExperiment}
+                clickList={clickList}
               />
             }
           />
