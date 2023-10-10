@@ -58,10 +58,17 @@ function App() {
       window.removeEventListener("click", addClick, true);
     };
   }, []);
-  let addClick = () => {
+  let addClick = (e) => {
     setClickList((oldClickList) => [
       ...oldClickList,
-      { url: window.location.href, timestamp: new Date() }
+      {
+        url: window.location.href,
+        timestamp: new Date(),
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        x: e.clientX,
+        y: e.clientY
+      }
     ]);
   };
 
