@@ -191,7 +191,7 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
-    handleCanvasPlacement();
+    handleCanvasPlacement(numberOfParticipants);
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };

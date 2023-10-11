@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Image } from "react-konva";
+import React, { useEffect, useRef } from "react";
+import { Image, Group, Text } from "react-konva";
 import { useUserStream } from "./Streams";
 import { Participant } from "../../../types";
 import Konva from "konva";
@@ -7,9 +7,10 @@ import Konva from "konva";
 type VideoProps = {
   src: MediaProvider;
   participantData: Participant;
+  title?: string; // Add a title prop
 };
 
-const Video = ({ src, participantData }: VideoProps) => {
+const Video = ({ src, participantData, title }: VideoProps) => {
   const useVideo = (stream: MediaStream | null) => {
     const videoRef = useRef(document.createElement("video"));
 
@@ -42,14 +43,26 @@ const Video = ({ src, participantData }: VideoProps) => {
   }, [video]);
 
   return (
-    <Image
-      ref={shapeRef}
-      image={video}
-      width={participantData.size.width}
-      height={participantData.size.height}
-      x={participantData.position.x}
-      y={participantData.position.y}
-    />
+    <Group>
+      <Image
+        ref={shapeRef}
+        image={video}
+        width={participantData.size.width}
+        height={participantData.size.height}
+        x={participantData.position.x}
+        y={participantData.position.y}
+      />
+      <Text
+        text={title}
+        fontSize={16}
+        fontFamily="Arial"
+        fill="black"
+        align="center"
+        x={participantData.position.x} // Adjust X-coordinate to position the title
+        y={participantData.position.y + participantData.size.height} // Adjust Y-coordinate to position below the video
+        width={participantData.size.width}
+      />
+    </Group>
   );
 };
 
