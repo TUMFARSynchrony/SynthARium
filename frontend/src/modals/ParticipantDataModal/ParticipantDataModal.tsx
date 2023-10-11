@@ -18,6 +18,8 @@ import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
+import { useAppSelector } from "../../redux/hooks";
+import { selectNumberOfParticipants } from "../../redux/slices/openSessionSlice";
 import {
   Filter,
   FilterConfigArray,
@@ -88,6 +90,8 @@ function ParticipantDataModal({
   const [requiredFilters, setRequiredFilters] = useState(
     new Map<string, string>()
   );
+  const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
+
   // Setting these snackbar response values to display the notification in Session Form Page.
   // These notifications cannot be displayed in this file, since on closing the Participant Modal,
   // this component and the immediate parent are deleted -> hence sending the snackbar responses
