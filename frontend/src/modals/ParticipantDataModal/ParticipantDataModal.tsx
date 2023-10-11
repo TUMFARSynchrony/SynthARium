@@ -60,7 +60,7 @@ type Props = {
   setShowParticipantInput: React.Dispatch<React.SetStateAction<boolean>>;
   onDeleteParticipant: (index: number) => void;
   handleParticipantChange: (index: number, participant: Participant) => void;
-  handleCanvasPlacement: () => void;
+  handleCanvasPlacement: (participantCount: number) => void;
   setSnackbarResponse: React.Dispatch<
     React.SetStateAction<{
       newParticipantInputEmpty: boolean;
