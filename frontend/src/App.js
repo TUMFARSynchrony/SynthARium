@@ -400,7 +400,6 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
-                centerContentOnYAxis={true}
               />
             }
           />
@@ -530,7 +529,15 @@ function App() {
             exact
             path="/sessionForm"
             element={
-              <SessionForm onSendSessionToBackend={onSendSessionToBackend} />
+              <PageTemplate
+                title={"Session Form"}
+                customComponent={
+                  <SessionForm
+                    onSendSessionToBackend={onSendSessionToBackend}
+                  />
+                }
+                centerContentOnYAxis={true}
+              />
             }
           />
           <Route

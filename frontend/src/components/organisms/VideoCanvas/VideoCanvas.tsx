@@ -1,9 +1,10 @@
 import { Layer, Stage } from "react-konva";
 import { Session } from "../../../types";
-import { CANVAS_SIZE } from "../../../utils/constants";
 import { getParticipantById } from "../../../utils/utils";
 import type { ConnectedPeer } from "../../../networking/typing";
 import Video from "../../atoms/Video/Video";
+import { CANVAS_SIZE } from "../../../utils/constants";
+import "./VideoCanvas.css";
 
 type Props = {
   connectedParticipants: any;
@@ -38,7 +39,7 @@ function VideoCanvas({
     <Stage
       width={CANVAS_SIZE.width}
       height={CANVAS_SIZE.height}
-      className="p-4"
+      className="videoCanvas"
     >
       <Layer>
         {/* Render the video for the participant themselves */}

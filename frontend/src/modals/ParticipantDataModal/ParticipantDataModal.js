@@ -24,6 +24,8 @@ import { getParticipantInviteLink } from "../../utils/utils";
 
 // This is the current filters that is working integrated with the backend.
 import filtersData from "../../filters.json";
+import { useAppSelector } from "../../redux/hooks";
+import { selectNumberOfParticipants } from "../../redux/slices/openSessionSlice";
 
 // Loading filters data before the component renders, because the Select component needs value.
 const testData = filtersData.filters;
@@ -62,6 +64,8 @@ function ParticipantDataModal({
   // These notifications cannot be displayed in this file, since on closing the Participant Modal,
   // this component and the immediate parent are deleted -> hence sending the snackbar responses
   // up to the grandparent.
+  const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
+
   const snackbarResponse = {
     newParticipantInputEmpty: false,
     requiredInformationMissing: false,
@@ -140,7 +144,7 @@ function ParticipantDataModal({
       text: `Saved participant: ${participantCopy.participant_name}`,
       severity: "success"
     });
-    handleCanvasPlacement();
+    handleCanvasPlacement(numberOfParticipants);
     setShowParticipantInput(!showParticipantInput);
     handleParticipantChange(index, participantCopy);
   };
