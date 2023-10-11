@@ -182,14 +182,18 @@ class Filter(ABC):
     def get_filter_json(self) -> object:
         """Provide config of the filters.
 
-        It requires at least type and id
-        id should be unique
+        It requires at name, id, channel, groupFilter and config
+        name and id are collected from the name() method
+        channel is either "audio" or "video"
+        groupFilter is a boolean
+        config is a dictionary of dictionaries which can be also empty
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract name() method."
+            f"{self} is missing it's implementation of the static abstract get_filter_json() method."
         )
 
     def validate_filter_json(self, filter_json) -> bool:
+        """Validate the get_filter_json."""
         for config in filter_json["config"]:
             if isinstance(filter_json["config"][config]["defaultValue"], list):
                 for defaultValue in filter_json["config"][config]["defaultValue"]:
@@ -213,7 +217,7 @@ class Filter(ABC):
                     )
                 if filter_json["config"][config]["requiresOtherFilter"]:
                     self.name_of_other_filter_exists(
-                        self, filter_json["config"][config]["defaultValue"][0], config
+                        self, filter_json["config"][config]["defaultValue"][0]
                     )
 
             elif isinstance(filter_json["config"][config]["defaultValue"], int):
@@ -237,7 +241,7 @@ class Filter(ABC):
             and isinstance(filter_json["config"], dict)
         )
 
-    def name_of_other_filter_exists(self, name, config):
+    def name_of_other_filter_exists(self, name):
         for filter in Filter.__subclasses__():
             if filter.name(filter) == name:
                 return True
