@@ -68,13 +68,25 @@ def init_mute_filter(
     """
     if kind == "audio":
         return MuteAudioFilter(
-            {"id": "0", "name": "MUTE_AUDIO"},
+            {
+                "name": "MUTE_AUDIO",
+                "id": "0",
+                "channel": "audio",
+                "groupFilter": False,
+                "config": {},
+            },
             audio_track_handler,
             video_track_handler,
         )
     else:
         return MuteVideoFilter(
-            {"id": "0", "name": "MUTE_VIDEO"},
+            {
+                "name": "MUTE_VIDEO",
+                "id": "0",
+                "channel": "video",
+                "groupFilter": False,
+                "config": {},
+            },
             audio_track_handler,
             video_track_handler,
         )
