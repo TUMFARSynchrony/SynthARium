@@ -25,12 +25,15 @@ function PostProcessing({
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onCheckPostProcessing();
-      if (status) {
-        setIsProcessing(status.is_processing);
-      }
       onGetRecordingList();
     }
-  }, [connection, connectionState, status]);
+  }, [connection, connectionState]);
+
+  useEffect(() => {
+    if (status) {
+      setIsProcessing(status.is_processing);
+    }
+  }, [status]);
 
   const handleSelectSession = (session_id) => {
     setSelectedSession(session_id);
