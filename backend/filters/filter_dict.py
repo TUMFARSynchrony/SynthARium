@@ -2,7 +2,7 @@ from typing import TypedDict
 
 
 class FilterDict(TypedDict):
-    """TypedDict for basic filters with only basic attributes.
+    """TypedDict for filters.
 
     Attributes
     ----------
