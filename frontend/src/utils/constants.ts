@@ -1,4 +1,4 @@
-import { Chat, Note, Participant, Session } from "../types";
+import { ChatMessage, Note, Participant, Session, Snackbar } from "../types";
 import { AlertColor } from "@mui/material/Alert";
 
 export const INITIAL_SESSION_DATA: Session = {
@@ -41,8 +41,8 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
     z: 0
   },
   size: {
-    width: 300,
-    height: 300
+    width: 250,
+    height: 250
   }
 };
 
@@ -52,7 +52,7 @@ export const INITIAL_NOTE_DATA: Note = {
   content: ""
 };
 
-export const INITIAL_CHAT_DATA: Chat = {
+export const INITIAL_CHAT_DATA: ChatMessage = {
   time: 0,
   message: "",
   author: "",
@@ -105,7 +105,7 @@ export const instructionsList = [
 ];
 
 // Initialising the notification snackbar used in many components.
-export const initialSnackbar = {
+export const initialSnackbar: Snackbar = {
   open: false,
   text: "",
   severity: "success" as AlertColor

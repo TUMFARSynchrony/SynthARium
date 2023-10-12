@@ -218,13 +218,12 @@ class Experiment(AsyncIOEventEmitter):
         # Save message in log of the correct participant(s)
         target = chat_message["target"]
         author = chat_message["author"]
-
         if target in "participants":
             for p in self.session.participants.values():
                 p.chat.append(chat_message)
         else:
             # In this case target or author is assumed to be a single participant
-            if target == "experimenters":
+            if target == "experimenter":
                 participant = self.session.participants.get(author)
             else:
                 participant = self.session.participants.get(target)

@@ -1,152 +1,127 @@
-import SendIcon from "@mui/icons-material/Send";
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Paper from "@mui/material/Paper";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import styled from "@mui/material/styles/styled";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import AppToolbar from "../../components/atoms/AppToolbar/AppToolbar";
-import { ActionIconButton } from "../../components/atoms/Button";
 import ConsentModal from "../../modals/ConsentModal/ConsentModal";
+import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
-import { instructionsList } from "../../utils/constants";
-import Note from "../../components/atoms/Note/Note";
+import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import {
+  selectChatTab,
+  selectInstructionsTab
+} from "../../redux/slices/tabsSlice";
+import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import "./Lobby.css";
 
-function Lobby({ localStream, connection, connectionState, onGetSession }) {
+function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
-  const [message, setMessage] = useState("");
-  const [participantStream, setParticipantStream] = useState(localStream);
-  const currentSession = useAppSelector(selectCurrentSession);
+  const [userConsent, setUserConsent] = useState(false);
+  const [connectionState, setConnectionState] = useState(null);
+  const [connectedParticipants, setConnectedParticipants] = useState([]);
+  const sessionData = useAppSelector(selectCurrentSession);
+  const [participantStream, setParticipantStream] = useState(null);
+  const isChatModalActive = useAppSelector(selectChatTab);
+  const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  console.log(sessionIdParam);
-
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
     }
-  }, [connection, connectionState, sessionIdParam]);
+  }, [connection, connectionState, onGetSession, sessionIdParam]);
+  const connectedPeersChangeHandler = async (peers) => {
+    console.groupCollapsed(
+      "%cConnection peer streams change Handler",
+      "color:blue"
+    );
+    console.groupEnd();
+    setConnectedParticipants(peers);
+  };
+  useEffect(() => {
+    connection.on("remoteStreamChange", streamChangeHandler);
+    connection.on("connectionStateChange", stateChangeHandler);
+    connection.on("connectedPeersChange", connectedPeersChangeHandler);
+    return () => {
+      // Remove event handlers when component is deconstructed
+      connection.off("remoteStreamChange", streamChangeHandler);
+      connection.off("connectionStateChange", stateChangeHandler);
+      connection.off("connectedPeersChange", connectedPeersChangeHandler);
+    };
+  }, [connection]);
+  useEffect(() => {
+    if (userConsent) {
+      setParticipantStream(localStream);
+    }
+  }, [localStream, userConsent]);
 
   useEffect(() => {
-    setParticipantStream(localStream);
-  }, [localStream]);
-
-  useEffect(() => {
-    if (participantStream) {
+    if (participantStream && userConsent && videoElement.current) {
       videoElement.current.srcObject = localStream;
     }
-  }, [participantStream]);
+  }, [localStream, participantStream, userConsent]);
 
-  const TabText = styled(Typography)(({ theme }) => ({
-    color: theme.palette.primary.main
-  }));
+  const streamChangeHandler = async () => {
+    console.log("%cRemote Stream Change Handler", "color:blue");
+  };
+  /** Handle `connectionStateChange` event of {@link Connection} */
+  const stateChangeHandler = async (state) => {
+    setConnectionState(state);
+  };
 
   return (
     <>
-      <AppToolbar />
-      <ConsentModal />
+      <ConsentModal onConsentGiven={setUserConsent} />
       {/* Grid takes up screen space left from the AppToolbar */}
-      <Box sx={{ height: "92vh", display: "flex" }}>
-        <Paper
-          elevation={2}
-          sx={{ backgroundColor: "whitesmoke", height: "100%", width: "75%" }}
-        >
-          {participantStream ? (
-            // Displaying local stream of participant
-            <video
-              ref={videoElement}
-              autoPlay
-              playsInline
-              width="100%"
-              height="100%"
-            ></video>
+      <div className="flex h-[calc(100vh-84px)]">
+        <div className="px-6 py-4 w-3/4 flex flex-col">
+          {userConsent ? (
+            participantStream ? (
+              sessionData && connectedParticipants ? (
+                <VideoCanvas
+                  connectedParticipants={connectedParticipants}
+                  sessionData={sessionData}
+                  localStream={localStream}
+                  ownParticipantId={participantIdParam}
+                />
+              ) : (
+                <video
+                  ref={videoElement}
+                  autoPlay
+                  playsInline
+                  width="100%"
+                  height="100%"
+                ></video>
+              )
+            ) : (
+              <Typography>
+                Unable to access your video. Please check that you have allowed
+                access to your camera and microphone.
+              </Typography>
+            )
           ) : (
-            <Typography>
-              Unable to access your video. Please check that you have allowed
-              access to your camera and microphone.
-            </Typography>
+            <Typography>Please check if you gave your consent!</Typography>
           )}
-        </Paper>
-        <Paper
-          elevation={2}
-          sx={{
-            backgroundColor: "whitesmoke",
-            height: "100%",
-            width: "25%",
-            overflow: "auto"
-          }}
-        >
-          <Box sx={{ py: 2 }}>
-            {/* Displays instructions from constants.js */}
-            <TabText variant="button">Instructions</TabText>
-            <List sx={{ listStyleType: "disc", lineHeight: 1.3, pl: 4 }}>
-              {instructionsList.map((instruction, index) => {
-                return (
-                  <ListItem key={index} sx={{ display: "list-item" }}>
-                    {instruction}
-                  </ListItem>
-                );
-              })}
-            </List>
-          </Box>
-          <Box
-            sx={{
-              py: 1,
-              height: "90%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between"
-            }}
-          >
-            <Box>
-              <TabText variant="button">Chat</TabText>
-              {/* Placeholder for the chat feature (only with experimenter) */}
-              {currentSession &&
-                currentSession.participants
-                  .find((participant) => participant.id === participantIdParam)
-                  .chat.map((message, index) => (
-                    <Note
-                      key={index}
-                      content={message.message}
-                      date={message.time}
-                    />
-                  ))}
-            </Box>
+        </div>
+        <div className="w-1/4">
+          {connectionState !== ConnectionState.CONNECTED && (
+            <div>Trying to connect...</div>
+          )}
+          {connectionState === ConnectionState.CONNECTED &&
+            isChatModalActive && (
+              <ChatTab
+                onChat={onChat}
+                onGetSession={onGetSession}
+                currentUser="participant"
+                participantId={participantIdParam}
+              />
+            )}
 
-            <Box
-              sx={{
-                px: 1,
-                py: 2,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-around"
-              }}
-            >
-              <TextField
-                label="Type your message"
-                value={message}
-                size="small"
-                onChange={(event) => {
-                  setMessage(event.target.value);
-                }}
-              />
-              <ActionIconButton
-                text="Send"
-                variant="contained"
-                color="primary"
-                size="small"
-                icon={<SendIcon />}
-              />
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
+          {connectionState === ConnectionState.CONNECTED &&
+            isInstructionsModalActive && <InstructionsTab />}
+        </div>
+      </div>
     </>
   );
 }

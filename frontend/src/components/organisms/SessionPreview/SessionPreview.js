@@ -36,6 +36,7 @@ import {
 } from "../../../utils/utils";
 import { ActionIconButton } from "../../atoms/Button";
 import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
+import { setCurrentSession } from "../../../redux/slices/sessionsListSlice";
 
 function SessionPreview({
   selectedSession,
@@ -297,7 +298,10 @@ function SessionPreview({
                   color="primary"
                   size="medium"
                   path="/watchingRoom"
-                  onClick={() => onCreateExperiment(selectedSession.id)}
+                  onClick={() => {
+                    onCreateExperiment(selectedSession.id);
+                    dispatch(setCurrentSession(selectedSession));
+                  }}
                   icon={<PlayArrowOutlined />}
                 />
               </>

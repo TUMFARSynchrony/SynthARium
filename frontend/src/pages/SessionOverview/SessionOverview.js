@@ -7,8 +7,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import styled from "@mui/material/styles/styled";
 import { ActionIconButton, ActionButton } from "../../components/atoms/Button";
-import HeroText from "../../components/atoms/HeroText/HeroText";
-import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -63,25 +61,27 @@ function SessionOverview({
 
   return (
     <>
-      <NavigationBar />
-      <HeroText text={"Synchrony Experimental Hub"} />
-      <ActionButton
-        text="CREATE NEW EXPERIMENT"
-        path="/sessionForm"
-        variant="contained"
-        color="primary"
-        size="large"
-        onClick={() => onCreateNewSession()}
-      />
-      <WelcomeText>
-        A video conferencing tool for researchers. Create a new experimental
-        template to start designing and hosting your next experiment. See the{" "}
-        <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
-          Wiki
-        </a>{" "}
-        for more info.
-      </WelcomeText>
-      <Grid container>
+      <div className="flex flex-col justify-center items-center py-10">
+        <div>
+          <ActionButton
+            text="CREATE NEW EXPERIMENT"
+            path="/sessionForm"
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={() => onCreateNewSession()}
+          />
+        </div>
+        <WelcomeText>
+          A video conferencing tool for researchers. Create a new experimental
+          template to start designing and hosting your next experiment. See the{" "}
+          <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
+            <u> Wiki </u>
+          </a>{" "}
+          for more info.
+        </WelcomeText>
+      </div>
+      <Grid container className="flex flex-col justify-center">
         <Grid item sm={7} sx={{ m: 3 }}>
           {selectedSession ? (
             <SessionPreview

@@ -1,6 +1,6 @@
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
-import { CANVAS_SIZE, INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
+import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
 import {
   checkValidSession,
   filterListByIndex,
@@ -13,15 +13,12 @@ import AddIcon from "@mui/icons-material/Add";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -104,9 +101,14 @@ function SessionForm({ onSendSessionToBackend }) {
     }
   }, [snackbarResponse]);
 
-  const handleCanvasPlacement = () => {
-    setXAxis(xAxis + 25);
-    setYAxis(yAxis + 25);
+  const handleCanvasPlacement = (participantCount) => {
+    if (participantCount !== 0 && participantCount % 20 === 0) {
+      setXAxis((participantCount / 20) * 250);
+      setYAxis(0);
+    } else {
+      setXAxis(xAxis + 25);
+      setYAxis(yAxis + 25);
+    }
   };
 
   const onDeleteParticipant = (index) => {
@@ -115,7 +117,12 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onAddParticipant = () => {
-    dispatch(addParticipant(INITIAL_PARTICIPANT_DATA));
+    dispatch(
+      addParticipant({
+        ...INITIAL_PARTICIPANT_DATA,
+        position: { x: xAxis, y: yAxis, z: 0 }
+      })
+    );
     const newParticipantDimensions = [
       ...participantDimensions,
       {
@@ -125,7 +132,13 @@ function SessionForm({ onSendSessionToBackend }) {
           fill: getRandomColor(),
           z: 0
         },
-        groups: { x: 0, y: 0, z: 0, width: 300, height: 300 }
+        groups: {
+          x: 0,
+          y: 0,
+          z: 0,
+          width: 250,
+          height: 250
+        }
       }
     ];
     setParticipantDimensions(newParticipantDimensions);
@@ -188,8 +201,8 @@ function SessionForm({ onSendSessionToBackend }) {
             z: 0
           },
           size: {
-            width: 300,
-            height: 300
+            width: 250,
+            height: 250
           }
         }
       ],
@@ -206,117 +219,107 @@ function SessionForm({ onSendSessionToBackend }) {
     setParticipantDimensions(dimensions);
   };
 
-  // TO DO: auto create x no. of participants.
-  // const handleCreateParticipants = () => {
-  //   for (let i = 0; i < numOfParticipants; i++) {
-  //     onAddParticipant();
-  //     console.log(sessionData);
-  //   }
-  // };
   return (
     <>
-      <Grid container sx={{ mx: 4, my: 2 }}>
+      <div className="flex h-[calc(100vh-84px)] flex-row px-4 py-8 items-start">
         {showSessionDataForm && (
-          <Grid item sm={5}>
-            <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+          <div className="shadow-lg rounded-md h-full">
+            <div className="px-4 flex flex-col h-full">
+              <div className="flex justify-start items-center">
                 <ChevronLeft sx={{ color: "gray" }} />
-              </Box>
-              <ActionButton
-                text="Back to Session Overview"
-                variant="text"
-                size="small"
-                path="/"
-              />
-            </Box>
-            <Card elevation={3}>
-              <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold" }}>
-                Session Details
-              </Typography>
-              <Box sx={{ height: "74vh", overflowY: "auto" }}>
-                <CardContent>
-                  {/* Override text fields' margin and width using MUI classnames */}
-                  <Box
-                    component="form"
-                    sx={{ "& .MuiTextField-root": { m: 1 } }}
-                    noValidate
-                    autoComplete="off"
-                  >
-                    <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
-                      <TextField
-                        label="Title"
-                        value={sessionData.title}
-                        size="small"
-                        required
-                        onChange={(event) =>
-                          handleSessionDataChange("title", event.target.value)
-                        }
-                      />
-                      <TextField
-                        label="Description"
-                        value={sessionData.description}
-                        size="small"
-                        required
-                        onChange={(event) =>
-                          handleSessionDataChange(
-                            "description",
-                            event.target.value
-                          )
-                        }
-                      />
-                    </Box>
-                    <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
-                      <TextField
-                        value={
-                          sessionData.date ? formatDate(sessionData.date) : ""
-                        }
-                        type="datetime-local"
-                        size="small"
-                        required
-                        onChange={(event) =>
-                          handleSessionDataChange(
-                            "date",
-                            event.target.value
-                              ? new Date(event.target.value).getTime()
-                              : 0
-                          )
-                        }
-                      />
-                      <TextField
-                        label="Number of Participants"
-                        value={numberOfParticipants}
-                        type="number"
-                        size="small"
-                        disabled
-                      />
-                    </Box>
-                    <Box sx={{ mt: 1, mb: 3 }}>
-                      <FormControlLabel
-                        control={<Checkbox />}
-                        label="Record Session"
-                        checked={sessionData.record}
-                        onChange={() =>
-                          handleSessionDataChange("record", !sessionData.record)
-                        }
-                      />
-                      {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
-                    </Box>
-                  </Box>
-
-                  <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
-                      Participants
-                    </Typography>
-                    <ActionIconButton
-                      text="ADD"
-                      variant="outlined"
-                      color="primary"
+                <ActionButton
+                  text="Back to Session Overview"
+                  variant="text"
+                  size="small"
+                  path="/"
+                />
+              </div>
+              <CardContent>
+                {/* Override text fields' margin and width using MUI classnames */}
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Session Details
+                </Typography>
+                <Box
+                  component="form"
+                  sx={{ "& .MuiTextField-root": { m: 1 } }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
+                    <TextField
+                      label="Title"
+                      value={sessionData.title}
                       size="small"
-                      onClick={() => onAddParticipant()}
-                      icon={<AddIcon />}
+                      required
+                      onChange={(event) =>
+                        handleSessionDataChange("title", event.target.value)
+                      }
+                    />
+                    <TextField
+                      label="Description"
+                      value={sessionData.description}
+                      size="small"
+                      required
+                      onChange={(event) =>
+                        handleSessionDataChange(
+                          "description",
+                          event.target.value
+                        )
+                      }
                     />
                   </Box>
+                  <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
+                    <TextField
+                      value={
+                        sessionData.date ? formatDate(sessionData.date) : ""
+                      }
+                      type="datetime-local"
+                      size="small"
+                      required
+                      onChange={(event) =>
+                        handleSessionDataChange(
+                          "date",
+                          event.target.value
+                            ? new Date(event.target.value).getTime()
+                            : 0
+                        )
+                      }
+                    />
+                    <TextField
+                      label="Number of Participants"
+                      value={numberOfParticipants}
+                      type="number"
+                      size="small"
+                      disabled
+                    />
+                  </Box>
+                  <Box sx={{ mt: 1, mb: 3 }}>
+                    <FormControlLabel
+                      control={<Checkbox />}
+                      label="Record Session"
+                      checked={sessionData.record}
+                      onChange={() =>
+                        handleSessionDataChange("record", !sessionData.record)
+                      }
+                    />
+                    {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
+                  </Box>
+                </Box>
 
+                <div className="flex">
+                  <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
+                    Participant List
+                  </Typography>
+                  <ActionIconButton
+                    text="ADD"
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    onClick={() => onAddParticipant()}
+                    icon={<AddIcon />}
+                  />
+                </div>
+                <div className="overflow-y-auto h-[300px] shadow-lg bg-slate-50 pl-4 py-2">
                   {openSession.participants.map((participant, index) => {
                     return (
                       <ParticipantData
@@ -331,22 +334,23 @@ function SessionForm({ onSendSessionToBackend }) {
                       />
                     );
                   })}
-                </CardContent>
-              </Box>
-              <Box sx={{ my: 1 }}>
-                {/* <ActionButton text="RANDOM SESSION DATA" variant="contained" color="primary" size="medium" onClick={() => addRandomSessionData()} /> */}
-                <ActionButton
-                  text="SAVE SESSION"
-                  variant="contained"
-                  color="success"
-                  size="medium"
-                  onClick={() => onSaveSession()}
-                />
-              </Box>
-            </Card>
-          </Grid>
+                </div>
+              </CardContent>
+              <div className="flex justify-center h-full pb-2">
+                <div className="self-end">
+                  <ActionButton
+                    text="SAVE SESSION"
+                    variant="contained"
+                    color="success"
+                    size="medium"
+                    onClick={() => onSaveSession()}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
-        <Grid item>
+        <div>
           <ActionIconButton
             text=""
             variant="text"
@@ -355,28 +359,14 @@ function SessionForm({ onSendSessionToBackend }) {
             onClick={() => onShowSessionFormModal()}
             icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
           />
-        </Grid>
-        <Grid item sm={5}>
-          <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-            {/* <Link variant="body2" sx={{ color: "gray", textDecorationColor: "gray", fontWeight: "bold" }}>
-              Expand Video Canvas
-            </Link> */}
-          </Box>
-          <Paper
-            elevation={2}
-            sx={{
-              backgroundColor: "whitesmoke",
-              width: CANVAS_SIZE.width,
-              height: CANVAS_SIZE.height
-            }}
-          >
-            <DragAndDrop
-              participantDimensions={participantDimensions}
-              setParticipantDimensions={setParticipantDimensions}
-            />
-          </Paper>
-        </Grid>
-      </Grid>
+        </div>
+        <div>
+          <DragAndDrop
+            participantDimensions={participantDimensions}
+            setParticipantDimensions={setParticipantDimensions}
+          />
+        </div>
+      </div>
       <CustomSnackbar
         open={snackbar.open}
         text={snackbar.text}
