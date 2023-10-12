@@ -149,8 +149,7 @@ export function getJoinedParticipants() {
           target: "participants"
         },
         {
-          message:
-            "Hello Erika. Please enable your video camera to start the experiment.",
+          message: "Hello Erika. Please enable your video camera to start the experiment.",
           time: 1650380764175,
           author: "experimenter",
           target: "25a882669d"

@@ -22,10 +22,7 @@ function CustomSnackbar({
   handleClose,
   anchorOrigin
 }: CustomSnackbarProps) {
-  const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
-    props,
-    ref
-  ): JSX.Element {
+  const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref): JSX.Element {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
   return (
