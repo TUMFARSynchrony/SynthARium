@@ -39,21 +39,21 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
-
   return (
-    <div>
+    <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
-        <div className="watchingRoom flex justify-between">
-          <div className="participantLivestream w-3/4 flex flex-col justify-center px-6">
-            <div className="videoCanvas">
+        <div className="flex justify-between w-full h-full">
+          <div className="w-3/4 h-full flex flex-col justify-center items-center py-6 px-4">
+            <div className="h-full w-full">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
+                localStream={null}
+                ownParticipantId={null}
               />
-              <hr className="separatorLine"></hr>
-              <div className="appliedFilters">
-                Filters applied on all participants
-              </div>
+            </div>
+            <div className="py-2 border-gray-300 border-1 rounded-md px-4">
+              Filters applied on all participants
             </div>
             <div className="flex flex-row justify-center gap-x-4 pt-5">
               <LinkActionButton
@@ -101,30 +101,24 @@ function WatchingRoom({
               )}
             </div>
           </div>
-          {isChatModalActive && (
-            <div className="w-1/4">
+          <div className="w-1/4">
+            {isChatModalActive && (
               <ChatTab
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
                 currentUser={"experimenter"}
               />
-            </div>
-          )}
-          {isParticipantsModalActive && (
-            <div className="w-1/4">
+            )}
+            {isParticipantsModalActive && (
               <ParticipantsTab
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
                 onMuteParticipant={onMuteParticipant}
               />
-            </div>
-          )}
-          {isInstructionsModalActive && (
-            <div className="w-1/4">
-              <InstructionsTab />{" "}
-            </div>
-          )}
+            )}
+            {isInstructionsModalActive && <InstructionsTab />}
+          </div>
         </div>
       ) : (
         <div className="noExperimentOngoing">

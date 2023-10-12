@@ -1,11 +1,8 @@
 """Provide `DelayFilter` filter."""
-from typing import TypeGuard
-
 import numpy
 from queue import Queue
 from av import VideoFrame, AudioFrame
 
-from custom_types import util
 from filters.filter import Filter
 from filters.filter import FilterDict
 

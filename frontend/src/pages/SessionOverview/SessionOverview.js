@@ -64,14 +64,26 @@ function SessionOverview({
 
   return (
     <>
-      <WelcomeText>
-        A video conferencing tool for researchers. Create a new experimental
-        template to start designing and hosting your next experiment. See the{" "}
-        <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
-          Wiki
-        </a>{" "}
-        for more info.
-      </WelcomeText>
+      <div className="flex flex-col justify-center items-center py-10">
+        <div>
+          <LinkActionButton
+            text="CREATE NEW EXPERIMENT"
+            path="/sessionForm"
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={() => onCreateNewSession()}
+          />
+        </div>
+        <WelcomeText>
+          A video conferencing tool for researchers. Create a new experimental
+          template to start designing and hosting your next experiment. See the{" "}
+          <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
+            <u> Wiki </u>
+          </a>{" "}
+          for more info.
+        </WelcomeText>
+      </div>
       <Grid container className="flex flex-col justify-center">
         <Grid item sm={7} sx={{ m: 3 }}>
           {selectedSession ? (
@@ -138,14 +150,6 @@ function SessionOverview({
               );
             })}
         </Grid>
-        <LinkActionButton
-          text="CREATE NEW EXPERIMENT"
-          path="/sessionForm"
-          variant="contained"
-          color="primary"
-          size="large"
-          onClick={() => onCreateNewSession()}
-        />
       </Grid>
     </>
   );

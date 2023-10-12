@@ -16,7 +16,7 @@ function ParticipantsTab({
   return (
     <div className="flex flex-col p-4 border-l-gray-100 border-l-2 w-full items-center h-[calc(100vh-84px)] gap-y-5">
       <div className="text-3xl">Participants</div>
-      <div className="w-full flex flex-col justify-between h-full">
+      <div className="w-full flex flex-col overflow-y-auto h-full">
         {connectedParticipants.length > 0
           ? connectedParticipants.map((participant, index) => {
               return (

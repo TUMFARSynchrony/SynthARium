@@ -1,11 +1,8 @@
-from typing import TypeGuard
-
 import cv2
 import numpy
 from .audio_speaking_time_filter import AudioSpeakingTimeFilter
 from av import VideoFrame
 
-from custom_types import util
 from filters.filter import Filter
 
 class DisplaySpeakingTimeFilter(Filter):
@@ -37,8 +34,9 @@ class DisplaySpeakingTimeFilter(Filter):
             "groupFilter": False,
             "config": {
                 "filterId": {
-                    "defaultValue": ["audio-speaking-time"],
-                    "value": "audio-speaking-time",
+                    "defaultValue": ["AUDIO_SPEAKING_TIME"],
+                    "value": "",
+                    "requiresOtherFilter": True,
                 },
             },
         }

@@ -206,21 +206,44 @@ class Filter(ABC):
     def get_filter_json(self) -> dict[str, Any]:
         """Provide config of the filters.
 
-        It requires at least type and id
-        id should be unique
+        It requires name, id, channel, groupFilter and config
+        name and id are collected from the name() method
+        channel is either "audio" or "video"
+        groupFilter is a boolean
+        config is a dictionary of dictionaries which can be also empty
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract name() method."
+            f"{self} is missing it's implementation of the static abstract get_filter_json() method."
         )
 
-    def validate_filter_json(filter_json) -> bool:
+    def validate_filter_json(self, filter_json) -> bool:
+        """Validate the get_filter_json."""
         for config in filter_json["config"]:
             if isinstance(filter_json["config"][config]["defaultValue"], list):
                 for defaultValue in filter_json["config"][config]["defaultValue"]:
                     if not isinstance(defaultValue, str):
-                        return False
+                        raise ValueError(
+                            f"{self} has an incorrect type in config > {config}"
+                            + " > defaultValue > {defaultValue}. It has to be type "
+                            + "of string."
+                        )
                 if not isinstance(filter_json["config"][config]["value"], str):
-                    return False
+                    raise ValueError(
+                        f"{self} has an incorrect type in config > {config} > value. "
+                        + "It has to be type of string."
+                    )
+                if not isinstance(
+                    filter_json["config"][config]["requiresOtherFilter"], bool
+                ):
+                    raise ValueError(
+                        f"{self} has an incorrect type in config > {config} > "
+                        + "requiresOtherFilter. It has to be type of boolean."
+                    )
+                if filter_json["config"][config]["requiresOtherFilter"]:
+                    self.name_of_other_filter_exists(
+                        self, filter_json["config"][config]["defaultValue"][0]
+                    )
+
             elif isinstance(filter_json["config"][config]["defaultValue"], int):
                 if not (
                     isinstance(filter_json["config"][config]["min"], int)
@@ -228,7 +251,10 @@ class Filter(ABC):
                     and isinstance(filter_json["config"][config]["step"], (float, int))
                     and isinstance(filter_json["config"][config]["value"], int)
                 ):
-                    return False
+                    raise ValueError(
+                        f"{self} has an incorrect type in config > {config}. "
+                        + "All fields need to be of type int."
+                    )
             else:
                 return False
         return (
@@ -237,6 +263,17 @@ class Filter(ABC):
             and isinstance(filter_json["channel"], str)
             and isinstance(filter_json["groupFilter"], bool)
             and isinstance(filter_json["config"], dict)
+        )
+
+    def name_of_other_filter_exists(self, name):
+        for filter in Filter.__subclasses__():
+            if filter.name(filter) == name:
+                return True
+
+        raise ValueError(
+            f"{self}'s get_filter_json is incorrect. "
+            + "In config > {config} > defaultValue > {name} the name does not exist."
+            + "Check for misspellings."
         )
 
     def __repr__(self) -> str:

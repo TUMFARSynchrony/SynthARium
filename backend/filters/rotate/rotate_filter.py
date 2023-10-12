@@ -46,6 +46,7 @@ class RotationFilter(Filter):
                 "direction": {
                     "defaultValue": ["clockwise", "anti-clockwise"],
                     "value": "clockwise",
+                    "requiresOtherFilter": False,
                 },
                 "angle": {
                     "min": 1,

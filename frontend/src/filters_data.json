@@ -1,13 +1,6 @@
 {
   "TEST": [
     {
-      "name": "GLASSES_DETECTION",
-      "id": "glasses-detection",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {}
-    },
-    {
       "name": "SIMPLE_GLASSES_DETECTION",
       "id": "simple-glasses-detection",
       "channel": "video",
@@ -38,7 +31,8 @@
       "config": {
         "direction": {
           "defaultValue": ["clockwise", "anti-clockwise"],
-          "value": "clockwise"
+          "value": "clockwise",
+          "requiresOtherFilter": false
         },
         "angle": {
           "min": 1,
@@ -74,7 +68,7 @@
     {
       "name": "AUDIO_SPEAKING_TIME",
       "id": "audio-speaking-time",
-      "channel": "video",
+      "channel": "audio",
       "groupFilter": false,
       "config": {}
     },
@@ -85,8 +79,9 @@
       "groupFilter": false,
       "config": {
         "filterId": {
-          "defaultValue": ["audio-speaking-time"],
-          "value": "audio-speaking-time"
+          "defaultValue": ["AUDIO_SPEAKING_TIME"],
+          "value": "",
+          "requiresOtherFilter": true
         }
       }
     }

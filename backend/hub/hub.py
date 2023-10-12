@@ -73,7 +73,7 @@ class Hub:
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
         self.get_filters_json()
-        self._logger.debug(f"Successfully created filters_data.json")
+        self._logger.debug("Successfully created filters_data.json in frontend folder")
 
         self.experimenters = []
         self.experiments = {}
@@ -362,7 +362,7 @@ class Hub:
             elif filter_type == "TEST" or filter_type == "SESSION":
                 filter_json = filter.get_filter_json(filter)
 
-                if not filter.validate_filter_json(filter_json):
+                if not filter.validate_filter_json(filter, filter_json):
                     raise ValueError(
                         f"{filter} has incorrect values in get_filter_json."
                     )

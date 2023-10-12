@@ -27,7 +27,6 @@ class SimpleGlassesDetection(Filter):
         self, config: FilterDict, audio_track_handler, video_track_handler
     ) -> None:
         """Initialize new Simple Glasses Detection Filter.
-
         Parameters
         ----------
         See base class: filters.filter.Filter.
