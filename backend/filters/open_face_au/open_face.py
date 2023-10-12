@@ -17,9 +17,10 @@ class OpenFace:
                                 )
                             )
                         ),
+                        "experimental-hub-openface",
                         "build",
                         "bin",
-                        "OwnExtractor",
+                        "AUExtractor",
                     ),
                     f"{port}",
                 ],
