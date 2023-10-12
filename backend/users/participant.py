@@ -12,7 +12,7 @@ import logging
 import os
 from typing import Any, Coroutine
 
-
+from filters import filter_utils
 from session.data.participant import ParticipantSummaryDict
 from session.data.participant import ParticipantDict
 from custom_types.chat_message import is_valid_chatmessage
@@ -344,6 +344,13 @@ class Participant(User):
         )
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        if not filter_utils.is_valid_get_filters_data_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GetFiltersData.",
+            )
+
         res = await self.get_filters_data_for_one_participant(data)
 
         return MessageDict(type="FILTERS_DATA", data=res)

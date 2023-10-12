@@ -749,10 +749,24 @@ class Experimenter(User):
         return MessageDict(type="SUCCESS", data=success)
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        if not filter_utils.is_valid_get_filters_data_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GetFiltersData.",
+            )
+
         res = await self.get_filters_data_for_all_participants(data)
         return MessageDict(type="FILTERS_DATA", data=res)
 
     async def _handle_get_filters_test_status(self, data: Any) -> MessageDict:
+        if not filter_utils.is_valid_get_filters_test_status_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GET_FILTERS_TEST_STATUS.",
+            )
+
         participant_id = data.pop("participant_id")
 
         if participant_id == "all":
@@ -760,20 +774,12 @@ class Experimenter(User):
             # send message to all participants
             participant_id = "participants"
         else:
-            experiment = self.get_experiment_or_raise("Failed to set filters.")
-            participant = experiment.participants.get(participant_id)
+            participant = self.get_participant_or_raise(participant_id)
             res = {}
 
-            if participant != None:
-                res[
-                    participant_id
-                ] = await participant.get_filters_data_for_one_participant(data)
-            else:
-                raise ErrorDictException(
-                    code=404,
-                    type="UNKNOWN_PARTICIPANT",
-                    description=f'No participant for participant id: "{participant_id}" exists.',
-                )
+            res[
+                participant_id
+            ] = await participant.get_filters_data_for_one_participant(data)
 
         answer = MessageDict(type="FILTERS_TEST_STATUS", data=res)
         await self._experiment.send(participant_id, answer)

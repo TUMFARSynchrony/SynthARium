@@ -450,6 +450,32 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             code=409, type="NOT_CONNECTED_TO_EXPERIMENT", description=desc
         )
 
+    def get_participant_or_raise(self, participant_id: str) -> _exp.Participant:
+        """Get Participant with ID `participant_id` or raise ErrorDictException.
+
+        Use to check if a Participant with `participant_id` exists.
+
+        Parameters
+        ----------
+        participant_id : str
+            ID of the participant to get.
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None or if `participant_id` is not in
+            `self._experiment.participants`.
+        """
+        experiment = self.get_experiment_or_raise("Failed to get filters data.")
+        if participant_id not in experiment.participants:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=f'Participant with id "{participant_id}" not found.',
+            )
+        return experiment.participants[participant_id]
+
+
     async def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.
 
