@@ -2,6 +2,16 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), npx create-react-app my-app
 
+## Prerequisites
+
+- node and npm - [NodeJS](https://nodejs.org/)
+
+## Setup
+
+- go to frontend folder
+- `npm install` - installs all dependencies
+- `npm run build` - builds the frontend
+
 ## Using HTTPS
 
 To use HTTPS instead of just http, set `HTTPS=true` in `frontend/.env` and restart the frontend dev server if already running.

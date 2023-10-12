@@ -15,6 +15,23 @@ class FilterAPITestFilter(Filter):
     def name(self) -> str:
         return "FILTER_API_TEST"
 
+    @staticmethod
+    def filter_type(self) -> str:
+        return "SESSION"
+
+    @staticmethod
+    def get_filter_json(self) -> object:
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "name": name,
+            "id": id,
+            "channel": "both",
+            "groupFilter": False,
+            "config": {},
+        }
+
     counter = 0
 
     async def process(self, _: VideoFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
