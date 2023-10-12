@@ -12,14 +12,16 @@ import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
 import {
   selectChatTab,
   selectInstructionsTab,
-  selectParticipantsTab
+  selectParticipantsTab,
+  selectFilterInformationTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
+import { FilterInformationTab } from "../../components/molecules/FilterInformationTab/FilterInformationTab";
 
 function WatchingRoom({
   connectedParticipants,
@@ -29,7 +31,9 @@ function WatchingRoom({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
-  onEndExperiment
+  onEndExperiment,
+  onGetFiltersData,
+  filtersData
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
@@ -39,6 +43,24 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
+  const isFilterInformationModalActive = useAppSelector(
+    selectFilterInformationTab
+  );
+  const [showInformationTab, setShowInformationTab] = useState(false);
+
+  useEffect(() => {
+    const participants = sessionData["participants"];
+    for (let participant in participants) {
+      const audio_filters = participants[participant]["audio_filters"];
+      for (let audio_filter in audio_filters) {
+        if (audio_filters[audio_filter]["name"] === "AUDIO_SPEAKING_TIME") {
+          setShowInformationTab(true);
+          return;
+        }
+      }
+    }
+  }, []);
+
   return (
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
@@ -118,6 +140,12 @@ function WatchingRoom({
               />
             )}
             {isInstructionsModalActive && <InstructionsTab />}
+            {isFilterInformationModalActive && showInformationTab && (
+              <FilterInformationTab
+                onGetFiltersData={onGetFiltersData}
+                filtersData={filtersData}
+              />
+            )}
           </div>
         </div>
       ) : (

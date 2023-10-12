@@ -5,7 +5,8 @@ import { RootState } from "../../store";
 const initialState = {
   chatTabActive: true,
   instructionsTabActive: false,
-  participantsTabActive: false
+  participantsTabActive: false,
+  filterInformationTabActive: false
 };
 
 export const tabsSlice = createSlice({
@@ -16,6 +17,7 @@ export const tabsSlice = createSlice({
       state.chatTabActive = false;
       state.instructionsTabActive = false;
       state.participantsTabActive = false;
+      state.filterInformationTabActive = false;
     },
     toggleSingleTab: (state, { payload }) => {
       const tab: Tabs = payload;
@@ -24,16 +26,25 @@ export const tabsSlice = createSlice({
           state.chatTabActive = !state.chatTabActive;
           state.instructionsTabActive = false;
           state.participantsTabActive = false;
+          state.filterInformationTabActive = false;
           break;
         case Tabs.INSTRUCTIONS:
           state.chatTabActive = false;
           state.instructionsTabActive = !state.instructionsTabActive;
           state.participantsTabActive = false;
+          state.filterInformationTabActive = false;
           break;
         case Tabs.PARTICIPANTS:
           state.chatTabActive = false;
           state.instructionsTabActive = false;
           state.participantsTabActive = !state.participantsTabActive;
+          state.filterInformationTabActive = false;
+          break;
+        case Tabs.FILTER_INFORMATION:
+          state.chatTabActive = false;
+          state.instructionsTabActive = false;
+          state.participantsTabActive = false;
+          state.filterInformationTabActive = !state.filterInformationTabActive;
           break;
       }
     }
@@ -50,3 +61,6 @@ export const selectInstructionsTab = (state: RootState) =>
 
 export const selectParticipantsTab = (state: RootState) =>
   state.tabs.participantsTabActive;
+
+export const selectFilterInformationTab = (state: RootState) =>
+  state.tabs.filterInformationTabActive;

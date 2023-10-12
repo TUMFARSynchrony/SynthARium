@@ -1,6 +1,7 @@
 import numpy
 from av import AudioFrame
 from filters.filter_dict import FilterDict
+from filters.filter_data_dict import FilterDataDict
 
 from filters.filter import Filter
 
@@ -38,6 +39,13 @@ class AudioSpeakingTimeFilter(Filter):
             "groupFilter": False,
             "config": {},
         }
+
+    async def get_filter_data(self) -> None | FilterDataDict:
+        dict: FilterDataDict = {
+            "id": self.id,
+            "data": {"time": self.seconds},
+        }
+        return dict
 
     async def process(
         self, audioFrame: AudioFrame, ndarray: numpy.ndarray
