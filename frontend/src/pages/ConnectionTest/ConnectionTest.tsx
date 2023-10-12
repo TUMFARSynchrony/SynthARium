@@ -457,7 +457,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "FILTER_API_TEST", id: "test" }]
+              video_filters: [
+                {
+                  name: "FILTER_API_TEST",
+                  id: "test",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -469,7 +477,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }]
+              video_filters: [
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -481,7 +497,27 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "ROTATION", id: "rotation" }]
+              video_filters: [
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -494,8 +530,32 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "EDGE_OUTLINE", id: "edge" },
-                { type: "ROTATION", id: "rotation" }
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                },
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                }
               ]
             })
           }
@@ -509,8 +569,32 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "ROTATION", id: "rotation" },
-                { type: "EDGE_OUTLINE", id: "edge" }
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                },
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
               ]
             })
           }
@@ -523,7 +607,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "OPENFACE_AU", id: "zmq" }]
+              video_filters: [
+                {
+                  name: "OPENFACE_AU",
+                  id: "zmq",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -535,7 +627,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+              video_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-v",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -546,7 +654,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
-              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+              audio_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-a",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ],
               video_filters: []
             })
           }
@@ -558,8 +682,40 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
-              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
-              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+              audio_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-a",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ],
+              video_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-v",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -573,8 +729,11 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               video_filters: [],
               audio_filters: [
                 {
-                  type: "AUDIO_SPEAKING_TIME",
-                  id: "audio-speaking-time"
+                  name: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
                 }
               ]
             })
@@ -589,15 +748,25 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [
                 {
-                  type: "AUDIO_SPEAKING_TIME",
-                  id: "audio-speaking-time"
+                  name: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
                 }
               ],
               video_filters: [
                 {
-                  type: "DISPLAY_SPEAKING_TIME",
+                  name: "DISPLAY_SPEAKING_TIME",
                   id: "display-speaking-time",
-                  audio_speaking_time_filter_id: "audio-speaking-time"
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    filterId: {
+                      defaultValue: ["audio-speaking-time"],
+                      value: "audio-speaking-time"
+                    }
+                  }
                 }
               ]
             })
@@ -613,8 +782,11 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               audio_filters: [],
               video_filters: [
                 {
-                  type: "SIMPLE_GLASSES_DETECTION",
-                  id: "simple-glasses-detection"
+                  name: "SIMPLE_GLASSES_DETECTION",
+                  id: "simple-glasses-detection",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {}
                 }
               ]
             })

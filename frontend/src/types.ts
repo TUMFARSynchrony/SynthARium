@@ -31,8 +31,8 @@ export type Participant = {
   muted_audio: boolean;
   position: { x: number; y: number; z: number };
   chat: ChatMessage[];
-  audio_filters: AudioFilter[];
-  video_filters: VideoFilter[];
+  audio_filters: Filter[];
+  video_filters: Filter[];
 };
 
 export type Box = {
@@ -56,17 +56,6 @@ export type Group = {
   height: number;
 };
 
-type VideoFilter = {
-  id: string;
-  type: string;
-};
-
-type AudioFilter = {
-  id: string;
-  type: string;
-  size?: number;
-};
-
 export type ChatMessage = {
   message: string;
   time: number;
@@ -75,9 +64,29 @@ export type ChatMessage = {
 };
 
 export type Filter = {
-  type: string;
   id: string;
-  size?: number;
+  name: string;
+  channel: string;
+  groupFilter: boolean;
+  config: FilterConfig;
+};
+
+export type FilterConfig = {
+  [key: string]: FilterConfigArray | FilterConfigNumber;
+};
+
+export type FilterConfigNumber = {
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  defaultValue: number;
+};
+
+export type FilterConfigArray = {
+  value: string;
+  defaultValue: string[];
+  requiresOtherFilter: boolean;
 };
 
 export type Snackbar = {
