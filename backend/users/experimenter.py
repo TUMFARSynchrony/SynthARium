@@ -83,6 +83,7 @@ class Experimenter(User):
             "GET_FILTERS_TEST_STATUS",
             self._handle_get_filters_test_status,
         )
+        self.on_message("GET_SESSION", self._handle_get_session)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -783,3 +784,27 @@ class Experimenter(User):
 
         answer = MessageDict(type="FILTERS_TEST_STATUS", data=res)
         await self._experiment.send(participant_id, answer)
+    async def _handle_get_session(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_SESSION`.
+
+        Loads session with given id from session manager.  Responds with type:
+        `GET_SESSION`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict with type: `SESSION` and data: custom_types.session.SessionDict.
+        """
+        session = self._hub.session_manager.get_session(data["session_id"])
+        if session is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_SESSION",
+                description="No session with the given ID found to update.",
+            )
+        session_dict = session.asdict()
+        return MessageDict(type="SESSION", data=session_dict)

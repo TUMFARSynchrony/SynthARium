@@ -8,9 +8,9 @@ type NoteProps = {
 
 function Note({ content, date }: NoteProps) {
   return (
-    <div className="noteContainer">
-      <div className="noteDate">{integerToDateTime(date)}</div>
-      <div className="noteContent">{content}</div>
+    <div className="noteContainer flex flex-row">
+      <div className="noteDate self-end">{integerToDateTime(date)}</div>
+      <div className="noteContent self-end">{content}</div>
     </div>
   );
 }

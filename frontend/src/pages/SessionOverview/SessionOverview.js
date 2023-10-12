@@ -10,8 +10,6 @@ import {
   ActionIconButton,
   LinkActionButton
 } from "../../components/atoms/Button";
-import HeroText from "../../components/atoms/HeroText/HeroText";
-import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -66,16 +64,6 @@ function SessionOverview({
 
   return (
     <>
-      <NavigationBar />
-      <HeroText text={"Synchrony Experimental Hub"} />
-      <LinkActionButton
-        text="CREATE NEW EXPERIMENT"
-        path="/sessionForm"
-        variant="contained"
-        color="primary"
-        size="large"
-        onClick={() => onCreateNewSession()}
-      />
       <WelcomeText>
         A video conferencing tool for researchers. Create a new experimental
         template to start designing and hosting your next experiment. See the{" "}
@@ -84,7 +72,7 @@ function SessionOverview({
         </a>{" "}
         for more info.
       </WelcomeText>
-      <Grid container>
+      <Grid container className="flex flex-col justify-center">
         <Grid item sm={7} sx={{ m: 3 }}>
           {selectedSession ? (
             <SessionPreview
@@ -150,6 +138,14 @@ function SessionOverview({
               );
             })}
         </Grid>
+        <LinkActionButton
+          text="CREATE NEW EXPERIMENT"
+          path="/sessionForm"
+          variant="contained"
+          color="primary"
+          size="large"
+          onClick={() => onCreateNewSession()}
+        />
       </Grid>
     </>
   );

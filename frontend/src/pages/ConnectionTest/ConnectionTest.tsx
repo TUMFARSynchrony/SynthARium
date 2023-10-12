@@ -831,20 +831,12 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
                   groupFilter: false,
                   config: {}
                 }
-                /* ,
-                {
-                  name: "GLASSES_DETECTION",
-                  id: "glasses-detection",
-                  channel: "video",
-                  groupFilter: false,
-                  config: {}
-                } */
               ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          Glasses Detection
+          Simple Glasses Detection
         </button>
       </div>
     </>

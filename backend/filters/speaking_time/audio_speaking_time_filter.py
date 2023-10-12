@@ -1,31 +1,21 @@
-from typing import TypeGuard
-
 import numpy
-from queue import Queue
 from av import AudioFrame
 from filters.filter_dict import FilterDict
 
-from custom_types import util
 from filters.filter import Filter
 
 
 class AudioSpeakingTimeFilter(Filter):
     """Filter calculating how much time the participant has spoken"""
 
-    speaking_time: int
-    seconds: int
-    sample_rate: int
-    has_spoken: bool
+    seconds: float
     _config: FilterDict
 
     def __init__(
         self, config: FilterDict, audio_track_handler, video_track_handler
     ) -> None:
         super().__init__(config, audio_track_handler, video_track_handler)
-        self.seconds = 0
-        self.speaking_time = 0
-        self.has_spoken = False
-        self.sample_rate = 0
+        self.seconds = float(0)
 
     @staticmethod
     def name(self) -> str:

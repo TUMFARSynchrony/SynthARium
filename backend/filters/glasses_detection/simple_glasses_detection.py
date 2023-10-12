@@ -1,4 +1,4 @@
-from typing import Any, Coroutine
+from typing import Any
 import cv2
 import numpy
 import dlib
