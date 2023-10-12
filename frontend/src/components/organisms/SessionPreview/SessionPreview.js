@@ -34,7 +34,7 @@ import {
   integerToDateTime,
   isFutureSession
 } from "../../../utils/utils";
-import { ActionIconButton, LinkActionIconButton } from "../../atoms/Button";
+import { ActionIconButton } from "../../atoms/Button";
 import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
 
 function SessionPreview({
@@ -269,7 +269,7 @@ function SessionPreview({
           />
         )}
         <Box>
-          <LinkActionIconButton
+          <ActionIconButton
             text="DUPLICATE"
             variant="outlined"
             color="primary"
@@ -282,7 +282,7 @@ function SessionPreview({
             selectedSession.end_time === 0 &&
             isFutureSession(selectedSession) && (
               <>
-                <LinkActionIconButton
+                <ActionIconButton
                   text="EDIT"
                   variant="outlined"
                   color="primary"
@@ -291,7 +291,7 @@ function SessionPreview({
                   onClick={() => dispatch(initializeSession(selectedSession))}
                   icon={<EditOutlined />}
                 />
-                <LinkActionIconButton
+                <ActionIconButton
                   text="JOIN"
                   variant="contained"
                   color="primary"
@@ -304,7 +304,7 @@ function SessionPreview({
             )}
           {selectedSession.creation_time > 0 &&
             selectedSession.end_time === 0 && (
-              <LinkActionIconButton
+              <ActionIconButton
                 text="JOIN"
                 variant="contained"
                 size="medium"

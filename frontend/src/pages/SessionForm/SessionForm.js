@@ -22,11 +22,7 @@ import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
-import {
-  ActionButton,
-  ActionIconButton,
-  LinkButton
-} from "../../components/atoms/Button";
+import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
@@ -226,7 +222,7 @@ function SessionForm({ onSendSessionToBackend }) {
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <ChevronLeft sx={{ color: "gray" }} />
               </Box>
-              <LinkButton
+              <ActionButton
                 text="Back to Session Overview"
                 variant="text"
                 size="small"

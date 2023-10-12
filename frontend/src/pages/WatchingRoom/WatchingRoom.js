@@ -1,4 +1,4 @@
-import { LinkButton } from "../../components/atoms/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import Heading from "../../components/atoms/Heading/Heading";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import WatchingRoomTabs from "../../components/organisms/WatchingRoomTabs/WatchingRoomTabs";
@@ -62,7 +62,7 @@ function WatchingRoom({
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton
+          <ActionButton
             text="Go to Session Overview"
             path="/"
             variant="contained"

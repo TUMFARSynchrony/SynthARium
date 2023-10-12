@@ -6,10 +6,7 @@ import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import styled from "@mui/material/styles/styled";
-import {
-  ActionIconButton,
-  LinkActionButton
-} from "../../components/atoms/Button";
+import { ActionIconButton, ActionButton } from "../../components/atoms/Button";
 import HeroText from "../../components/atoms/HeroText/HeroText";
 import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
@@ -68,7 +65,7 @@ function SessionOverview({
     <>
       <NavigationBar />
       <HeroText text={"Synchrony Experimental Hub"} />
-      <LinkActionButton
+      <ActionButton
         text="CREATE NEW EXPERIMENT"
         path="/sessionForm"
         variant="contained"

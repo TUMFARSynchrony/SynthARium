@@ -8,11 +8,7 @@ import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperiment
 import { selectSessions } from "../../../redux/slices/sessionsListSlice";
 import { INITIAL_CHAT_DATA, instructionsList } from "../../../utils/constants";
 import { getSessionById, integerToDateTime } from "../../../utils/utils";
-import {
-  ActionButton,
-  ActionIconButton,
-  LinkActionButton
-} from "../../atoms/Button";
+import { ActionButton, ActionIconButton } from "../../atoms/Button";
 import Heading from "../../atoms/Heading/Heading";
 import Label from "../../atoms/Label/Label";
 import TextAreaField from "../TextAreaField/TextAreaField";
@@ -126,7 +122,7 @@ function OverviewTab({
       </div>
       <hr className="separatorLine"></hr>
 
-      <LinkActionButton
+      <ActionButton
         text="LEAVE EXPERIMENT"
         variant="outlined"
         path="/"
