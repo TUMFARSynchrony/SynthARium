@@ -1,63 +1,40 @@
-import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
-import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
-import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
-import {
-  checkValidSession,
-  filterListByIndex,
-  formatDate,
-  getParticipantDimensions,
-  getRandomColor
-} from "../../utils/utils";
-
-import AddIcon from "@mui/icons-material/Add";
+import React, { useState, useEffect } from "react";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
-import Box from "@mui/material/Box";
 import CardContent from "@mui/material/CardContent";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import { useEffect, useRef, useState } from "react";
-import {
-  ActionButton,
-  ActionIconButton,
-  LinkButton
-} from "../../components/atoms/Button";
-import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   addParticipant,
   changeParticipant,
   changeValue,
   deleteParticipant,
-  initializeSession,
   selectNumberOfParticipants,
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
-import { initialSnackbar } from "../../utils/constants";
+import { INITIAL_PARTICIPANT_DATA, initialSnackbar } from "../../utils/constants";
+import { checkValidSession, filterListByIndex, getParticipantDimensions, getRandomColor } from "../../utils/utils";
+import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
+import ParticipantList from "./ParticipantList";
+import SessionDetails from "./SessionDetails";
+import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
+import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useAppDispatch();
-  const openSession = useAppSelector(selectOpenSession);
+  const { openSession, numberOfParticipants } = useAppSelector((state) => ({
+    openSession: selectOpenSession(state),
+    numberOfParticipants: selectNumberOfParticipants(state)
+  }));
+
   const [sessionData, setSessionData] = useState(openSession);
-  const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
-  const [xAxis, setXAxis] = useState(0);
-  const [yAxis, setYAxis] = useState(0);
-  // TO DO: remove the field time_limit from session.json
-  const [timeLimit, setTimeLimit] = useState(sessionData.time_limit / 60000);
-  // const [numOfParticipants, setNumOfParticipants] = useState();
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [participantDimensions, setParticipantDimensions] = useState(
-    getParticipantDimensions(
-      sessionData.participants ? sessionData.participants : []
-    )
+    getParticipantDimensions(sessionData.participants || [])
   );
 
-  // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
-  // It is displayed here instead of in the Participant Modal itself, since upon closing the modal it is no longer
-  // available to display the warnings.
   const [snackbarResponse, setSnackbarResponse] = useState({
     newParticipantInputEmpty: false,
     requiredInformationMissing: false,
@@ -68,71 +45,59 @@ function SessionForm({ onSendSessionToBackend }) {
   useEffect(() => {
     setSessionData(openSession);
     if (openSession.participants.length === 0) {
-      setXAxis(0);
-      setYAxis(0);
+      setPosition({ x: 0, y: 0 });
     }
   }, [openSession]);
 
   useEffect(() => {
-    if (snackbarResponse.newParticipantInputEmpty) {
-      setSnackbar({
-        open: true,
-        text: "You did not enter any information. Participant will be deleted now.",
-        severity: "warning"
-      });
-      return;
-    }
+    const snackbarMessages = {
+      newParticipantInputEmpty: "You did not enter any information. Participant will be deleted now.",
+      requiredInformationMissing:
+        "Required information (Participant Name) is missing. Participant will be deleted now.",
+      participantOriginalEmpty: "You need to save the information first!"
+    };
 
-    if (snackbarResponse.requiredInformationMissing) {
-      setSnackbar({
-        open: true,
-        text: "Required information (Participant Name) is missing. Participant will be deleted now.",
-        severity: "warning"
-      });
-      return;
-    }
-
-    if (
-      snackbarResponse.participantOriginalEmpty &&
-      !snackbarResponse.newInputEqualsOld
-    ) {
-      setSnackbar({
-        open: true,
-        text: "You need to save the information first!",
-        severity: "warning"
-      });
-      return;
+    for (const condition in snackbarResponse) {
+      if (
+        snackbarResponse[condition] ||
+        (condition === "participantOriginalEmpty" && !snackbarResponse.newInputEqualsOld)
+      ) {
+        setSnackbar({
+          open: true,
+          text: snackbarMessages[condition],
+          severity: "warning"
+        });
+        return;
+      }
     }
   }, [snackbarResponse]);
 
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
-      setXAxis((participantCount / 20) * 250);
-      setYAxis(0);
+      setPosition({ x: (participantCount / 20) * 250, y: 0 });
     } else {
-      setXAxis(xAxis + 25);
-      setYAxis(yAxis + 25);
+      setPosition((prevPosition) => ({ x: prevPosition.x + 25, y: prevPosition.y + 25 }));
     }
   };
 
   const onDeleteParticipant = (index) => {
     dispatch(deleteParticipant(index));
-    setParticipantDimensions(filterListByIndex(participantDimensions, index));
+    setParticipantDimensions((prevDimensions) => filterListByIndex(prevDimensions, index));
   };
 
   const onAddParticipant = () => {
     dispatch(
       addParticipant({
         ...INITIAL_PARTICIPANT_DATA,
-        position: { x: xAxis, y: yAxis, z: 0 }
+        position: { ...position, z: 0 }
       })
     );
     const newParticipantDimensions = [
       ...participantDimensions,
       {
         shapes: {
-          x: xAxis,
-          y: yAxis,
+          x: position.x,
+          y: position.y,
           fill: getRandomColor(),
           z: 0
         },
@@ -150,13 +115,14 @@ function SessionForm({ onSendSessionToBackend }) {
 
   const handleParticipantChange = (index, participant) => {
     dispatch(changeParticipant({ participant: participant, index: index }));
-
-    let newParticipantDimensions = [...participantDimensions];
-    newParticipantDimensions[index].shapes = {
-      ...newParticipantDimensions[index].shapes,
-      participant_name: participant.participant_name
-    };
-    setParticipantDimensions(newParticipantDimensions);
+    setParticipantDimensions((prevDimensions) => {
+      const newDimensions = [...prevDimensions];
+      newDimensions[index].shapes = {
+        ...newDimensions[index].shapes,
+        participant_name: participant.participant_name
+      };
+      return newDimensions;
+    });
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
@@ -174,53 +140,9 @@ function SessionForm({ onSendSessionToBackend }) {
         text: "Failed to save session since required fields are missing!",
         severity: "error"
       });
-      return;
+    } else {
+      onSendSessionToBackend(sessionData);
     }
-    onSendSessionToBackend(sessionData);
-  };
-
-  const addRandomSessionData = () => {
-    const futureDate = new Date().setDate(new Date().getDate() + 7);
-
-    let newSessionData = {
-      id: "",
-      title: "Hello World",
-      description: "Randomly created session",
-      date: new Date(futureDate).getTime(),
-      time_limit: 3600000,
-      record: true,
-      participants: [
-        {
-          id: "",
-          participant_name: "Max Mustermann",
-          muted_audio: true,
-          muted_video: true,
-          banned: false,
-          audio_filters: [],
-          video_filters: [],
-          chat: [],
-          position: {
-            x: 10,
-            y: 10,
-            z: 0
-          },
-          size: {
-            width: 250,
-            height: 250
-          }
-        }
-      ],
-      start_time: 0,
-      end_time: 0,
-      creation_time: 0,
-      notes: [],
-      log: ""
-    };
-
-    setTimeLimit(newSessionData.time_limit / 60000);
-    dispatch(initializeSession(newSessionData));
-    let dimensions = getParticipantDimensions(newSessionData.participants);
-    setParticipantDimensions(dimensions);
   };
 
   return (
@@ -231,114 +153,23 @@ function SessionForm({ onSendSessionToBackend }) {
             <div className="px-4 flex flex-col h-full">
               <div className="flex justify-start items-center">
                 <ChevronLeft sx={{ color: "gray" }} />
-                <LinkButton
-                  text="Back to Session Overview"
-                  variant="text"
-                  size="small"
-                  path="/"
-                />
+                <LinkButton text="Back to Session Overview" variant="text" size="small" path="/" />
               </div>
               <CardContent>
-                {/* Override text fields' margin and width using MUI classnames */}
-                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Session Details
-                </Typography>
-                <Box
-                  component="form"
-                  sx={{ "& .MuiTextField-root": { m: 1 } }}
-                  noValidate
-                  autoComplete="off"
-                >
-                  <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
-                    <TextField
-                      label="Title"
-                      value={sessionData.title}
-                      size="small"
-                      required
-                      onChange={(event) =>
-                        handleSessionDataChange("title", event.target.value)
-                      }
-                    />
-                    <TextField
-                      label="Description"
-                      value={sessionData.description}
-                      size="small"
-                      required
-                      onChange={(event) =>
-                        handleSessionDataChange(
-                          "description",
-                          event.target.value
-                        )
-                      }
-                    />
-                  </Box>
-                  <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
-                    <TextField
-                      value={
-                        sessionData.date ? formatDate(sessionData.date) : ""
-                      }
-                      type="datetime-local"
-                      size="small"
-                      required
-                      onChange={(event) =>
-                        handleSessionDataChange(
-                          "date",
-                          event.target.value
-                            ? new Date(event.target.value).getTime()
-                            : 0
-                        )
-                      }
-                    />
-                    <TextField
-                      label="Number of Participants"
-                      value={numberOfParticipants}
-                      type="number"
-                      size="small"
-                      disabled
-                    />
-                  </Box>
-                  <Box sx={{ mt: 1, mb: 3 }}>
-                    <FormControlLabel
-                      control={<Checkbox />}
-                      label="Record Session"
-                      checked={sessionData.record}
-                      onChange={() =>
-                        handleSessionDataChange("record", !sessionData.record)
-                      }
-                    />
-                    {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
-                  </Box>
-                </Box>
-
-                <div className="flex">
-                  <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
-                    Participant List
-                  </Typography>
-                  <ActionIconButton
-                    text="ADD"
-                    variant="outlined"
-                    color="primary"
-                    size="small"
-                    onClick={() => onAddParticipant()}
-                    icon={<AddIcon />}
-                  />
-                </div>
-                <div className="overflow-y-auto h-[300px] shadow-lg bg-slate-50 pl-4 py-2">
-                  {openSession.participants.map((participant, index) => {
-                    return (
-                      <ParticipantData
-                        onDeleteParticipant={() => onDeleteParticipant(index)}
-                        key={index}
-                        index={index}
-                        participantData={participant}
-                        sessionId={sessionData.id}
-                        handleParticipantChange={handleParticipantChange}
-                        setSnackbarResponse={setSnackbarResponse}
-                        handleCanvasPlacement={handleCanvasPlacement}
-                      />
-                    );
-                  })}
-                </div>
+                <SessionDetails
+                  sessionData={sessionData}
+                  handleSessionDataChange={handleSessionDataChange}
+                  numberOfParticipants={numberOfParticipants}
+                />
+                <ParticipantList
+                  openSession={openSession}
+                  onAddParticipant={onAddParticipant}
+                  onDeleteParticipant={onDeleteParticipant}
+                  handleParticipantChange={handleParticipantChange}
+                  setSnackbarResponse={setSnackbarResponse}
+                  handleCanvasPlacement={handleCanvasPlacement}
+                  sessionData={sessionData}
+                />
               </CardContent>
               <div className="flex justify-center h-full pb-2">
                 <div className="self-end">
@@ -347,7 +178,7 @@ function SessionForm({ onSendSessionToBackend }) {
                     variant="contained"
                     color="success"
                     size="medium"
-                    onClick={() => onSaveSession()}
+                    onClick={onSaveSession}
                   />
                 </div>
               </div>
@@ -360,7 +191,7 @@ function SessionForm({ onSendSessionToBackend }) {
             variant="text"
             color="primary"
             size="large"
-            onClick={() => onShowSessionFormModal()}
+            onClick={onShowSessionFormModal}
             icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
           />
         </div>
