@@ -17,20 +17,22 @@ function StartVerificationModal({ setShowModal, onStartExperiment }: Props) {
     <div className="verificationContainer">
       <div className="verificationModal">
         <Heading heading={`Are you sure you want to start the experiment?`} />
-        <ActionButton
-          text="No"
-          variant="contained"
-          color="error"
-          size="small"
-          onClick={() => setShowModal(false)}
-        />
-        <ActionButton
-          text="Yes"
-          variant="contained"
-          color="success"
-          size="small"
-          onClick={() => startExperiment()}
-        />
+        <div>
+          <ActionButton
+            text="No"
+            variant="contained"
+            color="error"
+            size="small"
+            onClick={() => setShowModal(false)}
+          />
+          <ActionButton
+            text="Yes"
+            variant="contained"
+            color="success"
+            size="small"
+            onClick={() => startExperiment()}
+          />
+        </div>
       </div>
     </div>
   );

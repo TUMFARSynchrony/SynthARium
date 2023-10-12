@@ -61,7 +61,6 @@ function App() {
       "%cConnection peer streams change Handler",
       "color:blue"
     );
-    console.log(peers);
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -429,7 +428,6 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
-                centerContentOnYAxis={true}
               />
             }
           />
@@ -477,9 +475,9 @@ function App() {
                   }
                   customComponent={
                     <Lobby
+                      connectedParticipants={connectedParticipants}
                       localStream={localStream}
                       connection={connection}
-                      connectionState={connectionState}
                       onGetSession={onGetSession}
                       onChat={onChat}
                     />
@@ -575,7 +573,15 @@ function App() {
             exact
             path="/sessionForm"
             element={
-              <SessionForm onSendSessionToBackend={onSendSessionToBackend} />
+              <PageTemplate
+                title={"Session Form"}
+                customComponent={
+                  <SessionForm
+                    onSendSessionToBackend={onSendSessionToBackend}
+                  />
+                }
+                centerContentOnYAxis={true}
+              />
             }
           />
           <Route

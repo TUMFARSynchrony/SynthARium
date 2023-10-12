@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import Konva from "konva";
 import { Group, Rect, Text, Transformer } from "react-konva";
-import { CANVAS_SIZE } from "../../../utils/constants";
 import { getTotalBox } from "../../../utils/utils";
 import { Shape, Group as GroupProps } from "../../../types";
+import { CANVAS_SIZE } from "../../../utils/constants";
 
 type RectangleProps = {
   shapeProps: Shape;
@@ -22,7 +22,6 @@ const Rectangle = ({
 }: RectangleProps) => {
   const shapeRef = useRef<Konva.Group>();
   const trRef = useRef<Konva.Transformer>();
-
   useEffect(() => {
     if (!trRef.current) {
       return;
@@ -112,10 +111,12 @@ const Rectangle = ({
         />
         <Text
           text={participant_name}
-          x={shapeProps.x}
-          y={shapeProps.y}
-          fontSize={15}
+          x={shapeProps.x + 5}
+          y={shapeProps.y + 5}
+          fontSize={20}
           fill="white"
+          stroke="#F5F5F5"
+          strokeWidth={0.25}
         />
       </Group>
       {isSelected && (

@@ -1,13 +1,7 @@
-# from typing import TypeGuard
-
 import numpy
 
-# from custom_types import util
 from filters import Filter
 from filters.simple_line_writer import SimpleLineWriter
-
-
-# from filters.template.template_filter_dict import TemplateFilterDict
 
 
 class TemplateFilter(Filter):
@@ -25,23 +19,47 @@ class TemplateFilter(Filter):
         # change this name
         return "TEMPLATE"
 
+    @staticmethod
+    def filter_type(self) -> str:
+        # change this according to your filter type (SESSION or TEST)
+        return "SESSION"
+
+    @staticmethod
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "name": name,
+            "id": id,
+            "channel": "video",
+            "groupFilter": False,
+            "config": {
+                # example of how a filter config can look like
+                # add or delete this
+                # This would show that there is a string variable (direction) which can have different values
+                # and another int variable (size)
+                # in the frontend, we would then have either a dropdown (direction) or input number (size)
+                # The values can be changed and sent back to the backend
+                """
+                "direction": {
+                    "defaultValue": ["clockwise", "anti-clockwise"],
+                    "value": "clockwise",
+                },
+                "size": {
+                    "min": 1,
+                    "max": 60,
+                    "step": 1,
+                    "value": 45,
+                    "defaultValue": 45,
+                }, """
+            },
+        }
+
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # change this to implement filter
         self.line_writer.write_line(ndarray, "Hello World")
 
         # Return modified frame
         return ndarray
-
-    # add or delete this, depending on filters needs
-    # When adding this, you also need to uncomment the imports above, otherwise delete
-    """"
-    @staticmethod
-    def validate_dict(data) -> TypeGuard[TemplateFilterDict]:
-        # implement correct validation method
-        return (
-            util.check_valid_typeddict_keys(data, TemplateFilterDict)
-            and "size" in data
-            and isinstance(data["size"], int)
-            and data["size"] > 0
-        )
-    """

@@ -69,8 +69,8 @@ export const ChatTab = (props: Props) => {
     }
   };
   return (
-    <div className="flex flex-col border-l-gray-200 border-l-2 h-[calc(100vh-84px)] w-full items-center">
-      <div className="flex flex-row justify-center items-center gap-x-2 border-b-2 border-b-gray-200 w-full  py-2">
+    <div className="flex flex-col border-l-gray-200 border-l-2 h-full w-full items-center">
+      <div className="flex flex-row justify-center items-center gap-x-2 border-b-2 border-b-gray-200 w-full py-2">
         <div className="text-3xl text-center">Chat</div>
         {currentUser === "experimenter" && (
           <div className="flex flex-row justify-center items-center gap-x-2 text-sm pt-2">
@@ -143,7 +143,7 @@ export const ChatTab = (props: Props) => {
                 />
               ))}
         </div>
-        <div className="flex flex-col p-4">
+        <div className="flex flex-col p-4 py-8">
           <div className="flex flex-row justify-between gap-x-2 items-center">
             <textarea
               className="resize-none border-2 border-stone-300 p-2 py-2 h-full w-full rounded outline-none text-sm"

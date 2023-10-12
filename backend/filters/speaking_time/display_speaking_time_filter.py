@@ -1,27 +1,46 @@
-from typing import TypeGuard
-
 import cv2
 import numpy
 from .audio_speaking_time_filter import AudioSpeakingTimeFilter
 from av import VideoFrame
 
-from custom_types import util
 from filters.filter import Filter
-from .display_speaking_time_filter_dict import DisplaySpeakingTimeFilterDict
 
 
 class DisplaySpeakingTimeFilter(Filter):
-    _config: DisplaySpeakingTimeFilterDict
     _speaking_time_filter: AudioSpeakingTimeFilter
 
     async def complete_setup(self) -> None:
-        speaking_time_filter_id = self._config["audio_speaking_time_filter_id"]
+        speaking_time_filter_id = self._config["config"]["filterId"]["value"]
         speaking_time_filter = self.audio_track_handler.filters[speaking_time_filter_id]
         self._speaking_time_filter = speaking_time_filter  # type: ignore
 
     @staticmethod
     def name(self) -> str:
         return "DISPLAY_SPEAKING_TIME"
+
+    @staticmethod
+    def filter_type(self) -> str:
+        return "SESSION"
+
+    @staticmethod
+    def get_filter_json(self) -> object:
+        # For docstring see filters.filter.Filter or hover over function declaration
+        name = self.name(self)
+        id = name.lower()
+        id = id.replace("_", "-")
+        return {
+            "name": name,
+            "id": id,
+            "channel": "video",
+            "groupFilter": False,
+            "config": {
+                "filterId": {
+                    "defaultValue": ["AUDIO_SPEAKING_TIME"],
+                    "value": "",
+                    "requiresOtherFilter": True,
+                },
+            },
+        }
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray
@@ -44,11 +63,3 @@ class DisplaySpeakingTimeFilter(Filter):
 
         # Return modified frame
         return ndarray
-
-    @staticmethod
-    def validate_dict(data) -> TypeGuard[DisplaySpeakingTimeFilterDict]:
-        return (
-            util.check_valid_typeddict_keys(data, DisplaySpeakingTimeFilterDict)
-            and "audio_speaking_time_filter_id" in data
-            and isinstance(data["audio_speaking_time_filter_id"], str)
-        )

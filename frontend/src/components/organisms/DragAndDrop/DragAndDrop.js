@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Layer, Stage, Text } from "react-konva";
 import { useAppDispatch } from "../../../redux/hooks";
 import { changeParticipantDimensions } from "../../../redux/slices/openSessionSlice";
-import { CANVAS_SIZE } from "../../../utils/constants";
 import Rectangle from "../../atoms/Rectangle/Rectangle";
+import { CANVAS_SIZE } from "../../../utils/constants";
 
 function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
   const [selectedShape, setSelectShape] = useState(null);
+
   const dispatch = useAppDispatch();
 
   const checkDeselect = (e) => {
@@ -15,10 +16,10 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
       setSelectShape(null);
     }
   };
-
   return (
-    <>
+    <div className="w-full h-full pr-8">
       <Stage
+        className="flex items-center justify-center bg-slate-200 rounded-md shadow-lg"
         width={CANVAS_SIZE.width}
         height={CANVAS_SIZE.height}
         onMouseDown={checkDeselect}
@@ -59,16 +60,20 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
               );
             })
           ) : (
-            <Text
-              text="There are no participants in this session yet."
-              x={CANVAS_SIZE.height / 2}
-              y={CANVAS_SIZE.height / 2}
-              fontSize={20}
-            />
+            <div className="w-full h-full">
+              <Text
+                text="There are no participants in this session yet."
+                fontSize={20}
+                align={"center"}
+                verticalAlign={"middle"}
+                width={CANVAS_SIZE.width}
+                height={CANVAS_SIZE.height}
+              />
+            </div>
           )}
         </Layer>
       </Stage>
-    </>
+    </div>
   );
 }
 
