@@ -1,8 +1,12 @@
+import React from "react";
 import Button, { ButtonProps } from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
 
 interface ActionIconButtonProps extends ButtonProps {
   text: string;
   icon: JSX.Element;
+  path?: string;
+  onClick?: () => void;
 }
 
 function ActionIconButton({
@@ -11,14 +15,26 @@ function ActionIconButton({
   color,
   size,
   onClick,
-  icon
+  icon,
+  path
 }: ActionIconButtonProps) {
+  const navigate = useNavigate();
+
+  const handleButtonClick = () => {
+    if (path) {
+      navigate(path);
+    }
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Button
       variant={variant}
       color={color}
       size={size}
-      onClick={onClick}
+      onClick={handleButtonClick}
       startIcon={icon}
     >
       {text}

@@ -4,4 +4,3 @@
 
 export { default as ActionButton } from "./ActionButton";
 export { default as ActionIconButton } from "./ActionIconButton";
-export { default as LinkActionIconButton } from "./LinkActionIconButton";
