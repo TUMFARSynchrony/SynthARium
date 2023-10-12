@@ -65,12 +65,10 @@ class SimpleGlassesDetection(Filter):
             "config": {},
         }
 
-    async def get_filter_data(self) -> None | FilterDataDict:
-        dict: FilterDataDict = {
-            "id": self.id,
-            "data": {"Glasses Detected": self._glasses_detected},
-        }
-        return dict
+    async def get_filter_data(self) -> FilterDataDict:
+        return FilterDataDict(
+            id=self.id, data={"Glasses Detected": self._glasses_detected}
+        )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape

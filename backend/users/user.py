@@ -19,6 +19,7 @@ from connection.messages import ConnectionOfferDict, is_valid_connection_offer_d
 from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filters_data_dict import FiltersDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -450,32 +451,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             code=409, type="NOT_CONNECTED_TO_EXPERIMENT", description=desc
         )
 
-    def get_participant_or_raise(self, participant_id: str) -> _exp.Participant:
-        """Get Participant with ID `participant_id` or raise ErrorDictException.
-
-        Use to check if a Participant with `participant_id` exists.
-
-        Parameters
-        ----------
-        participant_id : str
-            ID of the participant to get.
-
-        Raises
-        ------
-        ErrorDictException
-            If `self._experiment` is None or if `participant_id` is not in
-            `self._experiment.participants`.
-        """
-        experiment = self.get_experiment_or_raise("Failed to get filters data.")
-        if participant_id not in experiment.participants:
-            raise ErrorDictException(
-                code=404,
-                type="UNKNOWN_PARTICIPANT",
-                description=f'Participant with id "{participant_id}" not found.',
-            )
-        return experiment.participants[participant_id]
-
-
     async def set_muted(self, video: bool, audio: bool) -> None:
         """Set the muted state for this user.
 
@@ -545,9 +520,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     return
                 await self._connection.set_audio_filters(filters)
 
-    async def get_filters_data_for_all_participants(self, data: Any) -> dict:
+    async def get_filters_data_for_all_participants(
+        self, data: Any
+    ) -> dict[str, FiltersDataDict]:
         experiment = self.get_experiment_or_raise("Failed to set filters.")
-        res = {}
+        res: dict[str, FiltersDataDict] = {}
 
         for p in experiment.participants.values():
             if p.connection is not None:
@@ -555,7 +532,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         return res
 
-    async def get_filters_data_for_one_participant(self, data: Any) -> dict:
+    async def get_filters_data_for_one_participant(self, data: Any) -> FiltersDataDict:
         filter_id = data["filter_id"]
         filter_name = data["filter_name"]
         filter_channel = data["filter_channel"]
@@ -576,7 +553,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 description=f'Unknown filter channel: "{filter_channel}".',
             )
 
-        return {"video": video_filters, "audio": audio_filters}
+        return FiltersDataDict(video=video_filters, audio=audio_filters)
 
     async def start_recording(self) -> None:
         """Start recording for this user."""

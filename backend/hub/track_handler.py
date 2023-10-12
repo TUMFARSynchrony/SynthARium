@@ -15,7 +15,14 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
+from filters import (
+    filter_factory,
+    FilterDict,
+    Filter,
+    MuteAudioFilter,
+    MuteVideoFilter,
+    FilterDataDict,
+)
 
 if TYPE_CHECKING:
     from connection.connection import Connection
@@ -251,13 +258,14 @@ class TrackHandler(MediaStreamTrack):
             not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
 
-    async def get_filters_data(self, id, name) -> list:
+    async def get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get data for filters."""
         async with self.__lock:
             return await self._get_filters_data(id, name)
 
-    async def _get_filters_data(self, id, name) -> list:
-        # For docstring see ConnectionInterface or hover over function declaration
-        filters_data = []
+    async def _get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Internal version of `get_filters_data`, without lock."""
+        filters_data: list[FilterDataDict] = []
         for filter in self._filters.values():
             if filter.name(filter) == name:
                 if id == "all":

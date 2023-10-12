@@ -1,4 +1,4 @@
-from typing import Any, TypeGuard, TypedDict, get_args
+from typing import Any, TypeGuard, TypedDict
 
 import custom_types.util as util
 
@@ -16,7 +16,7 @@ class FilterDataDict(TypedDict):
     See Also
     --------
     Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filterdata
     """
 
     id: str

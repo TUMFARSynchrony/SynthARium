@@ -25,7 +25,7 @@ from experiment import ExperimentState
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
 from session.data.participant import ParticipantData
-from users.user import User
+from users.experimenter import User
 import hub.hub as _h
 
 
@@ -344,6 +344,28 @@ class Participant(User):
         )
 
     async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA`.
+
+        Check if data is a valid GetFiltersDataRequestDict and return filter data for
+        specific participant.
+
+        Parameters
+        ----------
+        data : any or filters.GetFiltersDataRequestDict
+            Message data.  Checks if data is a valid GetFiltersDataRequestDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `FILTERS_DATA`, data: dict[str, FiltersDataDict]
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.GetFiltersDataRequestDict.
+            Or if values of data are incorrect.
+        """
         if not filter_utils.is_valid_get_filters_data_dict(data):
             raise ErrorDictException(
                 code=400,

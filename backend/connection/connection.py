@@ -13,7 +13,6 @@ import shortuuid
 import asyncio
 import logging
 import json
-from filters.filter import Filter
 
 from connection.messages import (
     ConnectionAnswerDict,
@@ -29,6 +28,7 @@ from hub.record_handler import RecordHandler
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
@@ -288,11 +288,11 @@ class Connection(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         await self._incoming_audio.set_filters(filters)
 
-    async def get_video_filters_data(self, id, name) -> list:
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
         # For docstring see ConnectionInterface or hover over function declaration
         return await self._incoming_video.get_filters_data(id, name)
 
-    async def get_audio_filters_data(self, id, name) -> list:
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
         return await self._incoming_audio.get_filters_data(id, name)
 
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
