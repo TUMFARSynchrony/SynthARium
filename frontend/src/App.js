@@ -44,6 +44,8 @@ function App() {
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
+  const [recordings, setRecordings] = useState([]);
+  const [status, setPostProcessingStatus] = useState(null);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
@@ -99,6 +101,8 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("RECORDING_LIST", handleRecordingList);
+    connection.api.on("CHECK_POST_PROCESSING", handleCheckPostProcessing);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -115,6 +119,8 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("RECORDING_LIST", handleRecordingList);
+      connection.api.off("CHECK_POST_PROCESSING", handleCheckPostProcessing);
     };
   }, [connection]);
 
@@ -255,11 +261,13 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    setSnackbar({
-      open: true,
-      text: `SUCCESS: ${data.description}`,
-      severity: "success"
-    });
+    if (data.type !== "CHECK_POST_PROCESSING") {
+      setSnackbar({
+        open: true,
+        text: `SUCCESS: ${data.description}`,
+        severity: "success"
+      });
+    }
   };
 
   const handleError = (data) => {
@@ -310,6 +318,14 @@ function App() {
         sessionId: ongoingExperimentRef.current.sessionId
       })
     );
+  };
+
+  const handleRecordingList = (data) => {
+    setRecordings(data);
+  };
+
+  const handleCheckPostProcessing = (data) => {
+    setPostProcessingStatus(data);
   };
 
   /**
@@ -380,6 +396,18 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
+  const onGetRecordingList = () => {
+    connection.sendMessage("GET_RECORDING_LIST", {});
+  };
+
+  const onPostProcessingVideo = (sessionId) => {
+    connection.sendMessage("POST_PROCESSING_VIDEO", { session_id: sessionId });
+  };
+
+  const onCheckPostProcessing = () => {
+    connection.sendMessage("CHECK_POST_PROCESSING", {});
+  };
+
   const toggleModal = (modal) => {
     dispatch(toggleSingleTab(modal));
   };
@@ -408,7 +436,23 @@ function App() {
           <Route
             exact
             path="/postProcessingRoom"
-            element={<PostProcessing />}
+            element={
+              <PageTemplate
+                title={"Post-Processing Room"}
+                customComponent={
+                  <PostProcessing
+                    status={status}
+                    recordings={recordings}
+                    connection={connection}
+                    connectionState={connectionState}
+                    onPostProcessingVideo={onPostProcessingVideo}
+                    onCheckPostProcessing={onCheckPostProcessing}
+                    onGetRecordingList={onGetRecordingList}
+                  />
+                }
+                centerContentOnYAxis={true}
+              />
+            }
           />
           <Route
             exact

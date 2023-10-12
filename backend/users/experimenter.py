@@ -776,11 +776,21 @@ class Experimenter(User):
             result directory of post-processing already exists or if current session folder is
             not found.
         """
+
         if not is_valid_postprocessingrequest(data):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_DATATYPE",
                 description="Message data is not a valid PostProcessingDict.",
+            )
+        
+        video_post_processing = VideoPostProcessing()
+
+        if video_post_processing.check_existing_process():
+            raise ErrorDictException(
+                code=102,
+                type="STILL_PROCESSING",
+                description="There is a running FeatureExtraction subprocess. Please wait until it is complete."
             )
         
         session_id = data["session_id"]
@@ -792,16 +802,7 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=409,
                 type="FILE_ALREADY_EXISTS",
-                description=f'File already exists: {out_dir}. Current session videos has been processed.'
-            )
-
-        video_post_processing = VideoPostProcessing()
-
-        if video_post_processing.check_existing_process():
-            raise ErrorDictException(
-                code=102,
-                type="STILL_PROCESSING",
-                description="There is a running FeatureExtraction subprocess. Please wait until it is complete."
+                description=f'File already exists: {out_dir}. The post-processing of this session is done.'
             )
 
         video_list = []
@@ -826,7 +827,6 @@ class Experimenter(User):
         video_post_processing.recording_list = video_list
         video_post_processing.execute()
 
-        # Respond with success message
         success = SuccessDict(
             type="POST_PROCESSING_VIDEO",
             description=f"Successfully start video post-processing. Result directory: {out_dir}"
@@ -855,6 +855,8 @@ class Experimenter(User):
                       if os.path.isdir(os.path.join(recording_path, item)) ]
         result = []
         for session_id in recordings:
+            session_response = await self._handle_get_session({"session_id": session_id})
+            session_data = session_response.get("data")
             past_experiment_path = os.path.join(recording_path, session_id)
             recorded_list = os.listdir(past_experiment_path)
             participants = []
@@ -901,6 +903,8 @@ class Experimenter(User):
 
             result.append({
                 "session_id": session_id,
+                "session_title": session_data.get("title"),
+                "session_description": session_data.get("description"),
                 "participants": participants
             })
                     
@@ -924,15 +928,17 @@ class Experimenter(User):
         """
         video_post_processing = VideoPostProcessing()
         description = "There is no running FeatureExtraction subprocess."
+        is_processing = False
         if video_post_processing.check_existing_process():
             description = "There is a running FeatureExtraction subprocess."
+            is_processing = True
 
-        # Respond with success message
-        success = SuccessDict(
-            type="CHECK_POST_PROCESSING",
-            description=f"{description}"
-        )
-        return MessageDict(type="SUCCESS", data=success)
+        result = {
+            "description": description,
+            "is_processing": is_processing
+        }
+        
+        return MessageDict(type="CHECK_POST_PROCESSING", data=result)
 
     async def _handle_get_session(self, data: Any) -> MessageDict:
         """Handle requests with type `GET_SESSION`.
@@ -954,7 +960,7 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=404,
                 type="UNKNOWN_SESSION",
-                description="No session with the given ID found to update.",
+                description=f"No session with the given ID found: {data['session_id']}.",
             )
         session_dict = session.asdict()
         return MessageDict(type="SESSION", data=session_dict)
