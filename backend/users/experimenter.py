@@ -855,7 +855,11 @@ class Experimenter(User):
                       if os.path.isdir(os.path.join(recording_path, item)) ]
         result = []
         for session_id in recordings:
-            session_response = await self._handle_get_session({"session_id": session_id})
+            try:
+                session_response = await self._handle_get_session({"session_id": session_id})
+            except ErrorDictException:
+                # Skip unknown folder
+                continue
             session_data = session_response.get("data")
             past_experiment_path = os.path.join(recording_path, session_id)
             recorded_list = os.listdir(past_experiment_path)
