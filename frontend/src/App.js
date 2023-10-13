@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import "./App.css";
+import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
+import { faClipboardCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
 import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import Connection from "./networking/Connection";
 import ConnectionState from "./networking/ConnectionState";
@@ -36,15 +38,13 @@ import { initialSnackbar } from "./utils/constants";
 import { ExperimentTimes, Tabs } from "./utils/enums";
 import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
-import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
-import { faClipboardCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsListRef = useRef();
@@ -120,8 +120,8 @@ function App() {
     const participantIdParam = searchParams.get("participantId");
     const experimenterPasswordParam = searchParams.get("experimenterPassword");
 
-    const sessionId = sessionIdParam ? sessionIdParam : "";
-    const participantId = participantIdParam ? participantIdParam : "";
+    const sessionId = sessionIdParam || "";
+    const participantId = participantIdParam || "";
     let experimenterPassword = experimenterPasswordParam ?? "";
     const userType = sessionId && participantId ? "participant" : "experimenter";
 
@@ -132,7 +132,7 @@ function App() {
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
     if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
-      //experimenterPassword = prompt("Please insert experimenter password");
+      // experimenterPassword = prompt("Please insert experimenter password");
       experimenterPassword = "no-password-given";
     }
 
@@ -341,7 +341,7 @@ function App() {
 
   const onAddNote = (note, sessionId) => {
     connection.sendMessage("ADD_NOTE", note);
-    dispatch(addNote({ note: note, id: sessionId }));
+    dispatch(addNote({ note, id: sessionId }));
   };
 
   const onChat = (messageObj) => {
@@ -381,7 +381,7 @@ function App() {
             path="/"
             element={
               <PageTemplate
-                title={"Synchrony Experimental Hub"}
+                title="Synchrony Experimental Hub"
                 customComponent={
                   <SessionOverview
                     onDeleteSession={onDeleteSession}
@@ -399,7 +399,7 @@ function App() {
             element={
               connection ? (
                 <PageTemplate
-                  title={"Lobby"}
+                  title="Lobby"
                   buttonListComponent={
                     <HeaderActionArea
                       buttons={[
@@ -434,7 +434,7 @@ function App() {
             path="/template"
             element={
               <PageTemplate
-                title={"Experimental Hub Template"}
+                title="Experimental Hub Template"
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
@@ -474,7 +474,7 @@ function App() {
             path="/watchingRoom"
             element={
               <PageTemplate
-                title={"Watching Room"}
+                title="Watching Room"
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
@@ -506,7 +506,7 @@ function App() {
                     onEndExperiment={onEndExperiment}
                   />
                 }
-                centerContentOnYAxis={true}
+                centerContentOnYAxis
               />
             }
           />
@@ -515,9 +515,9 @@ function App() {
             path="/sessionForm"
             element={
               <PageTemplate
-                title={"Session Form"}
+                title="Session Form"
                 customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
-                centerContentOnYAxis={true}
+                centerContentOnYAxis
               />
             }
           />

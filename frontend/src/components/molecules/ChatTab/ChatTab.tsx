@@ -1,14 +1,14 @@
-import { useAppSelector } from "../../../redux/hooks";
-import { selectCurrentSession } from "../../../redux/slices/sessionsListSlice";
 import { useEffect, useRef, useState } from "react";
-import { INITIAL_CHAT_DATA } from "../../../utils/constants";
-import { SpeechBubble } from "../../atoms/ChatMessage/SpeechBubble";
-import { useBackListener } from "../../../hooks/useBackListener";
-import useAutosizeTextArea from "../../../hooks/useAutosizeTextArea";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { useAppSelector } from "../../../redux/hooks";
+import { selectCurrentSession } from "../../../redux/slices/sessionsListSlice";
+import { INITIAL_CHAT_DATA } from "../../../utils/constants";
+import SpeechBubble from "../../atoms/ChatMessage/SpeechBubble";
+import useBackListener from "../../../hooks/useBackListener";
+import useAutosizeTextArea from "../../../hooks/useAutosizeTextArea";
 import { ChatMessage } from "../../../types";
 
 type Props = {
@@ -19,7 +19,7 @@ type Props = {
   onLeaveExperiment?: () => void;
 };
 
-export const ChatTab = (props: Props) => {
+function ChatTab(props: Props) {
   const { onChat, onGetSession, currentUser, participantId, onLeaveExperiment } = props;
   const [message, setMessage] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,10 +44,10 @@ export const ChatTab = (props: Props) => {
 
   const onSendMessage = (messageTarget: string) => {
     const newMessage = { ...INITIAL_CHAT_DATA };
-    newMessage["message"] = message;
-    newMessage["time"] = Date.now();
-    newMessage["author"] = participantId ? participantId : "experimenter";
-    newMessage["target"] = participantId ? "experimenter" : messageTarget;
+    newMessage.message = message;
+    newMessage.time = Date.now();
+    newMessage.author = participantId || "experimenter";
+    newMessage.target = participantId ? "experimenter" : messageTarget;
 
     onChat(newMessage);
     onGetSession(sessionId);
@@ -77,7 +77,7 @@ export const ChatTab = (props: Props) => {
               id="participant-names"
               onChange={(event) => handleChange(event.target.value)}
             >
-              <option value={"participants"}>All participants</option>
+              <option value="participants">All participants</option>
               {currentSession.participants.map((participant, index) => (
                 <option key={index} value={participant.id}>
                   {participant.participant_name}
@@ -95,14 +95,14 @@ export const ChatTab = (props: Props) => {
             messageTarget !== "participants" &&
             currentSession.participants
               .find((participant) => participant.id === messageTarget)
-              .chat.map((message, index) => (
+              .chat.map((chatMessage, index) => (
                 <SpeechBubble
                   key={index}
                   currentUser={currentUser}
-                  message={message.message}
-                  author={message.author}
-                  target={message.target}
-                  date={message.time}
+                  message={chatMessage.message}
+                  author={chatMessage.author}
+                  target={chatMessage.target}
+                  date={chatMessage.time}
                 />
               ))}
           {currentUser === "participant" &&
@@ -110,14 +110,14 @@ export const ChatTab = (props: Props) => {
             messageTarget !== "experimenter" &&
             currentSession.participants
               .find((participant) => participant.id === participantId)
-              .chat.map((message, index) => (
+              .chat.map((chatMessage, index) => (
                 <SpeechBubble
                   key={index}
                   currentUser={currentUser}
-                  message={message.message}
-                  author={message.author}
-                  target={message.target}
-                  date={message.time}
+                  message={chatMessage.message}
+                  author={chatMessage.author}
+                  target={chatMessage.target}
+                  date={chatMessage.time}
                 />
               ))}
           {currentSession &&
@@ -133,7 +133,7 @@ export const ChatTab = (props: Props) => {
                   author={message.author}
                   target={message.target}
                   date={message.time}
-                  color={"bg-green-600"}
+                  color="bg-green-600"
                 />
               ))}
         </div>
@@ -154,7 +154,7 @@ export const ChatTab = (props: Props) => {
               className="h-8 rounded-sm"
               color="primary"
               size="md"
-              isIconOnly={true}
+              isIconOnly
               onClick={() => onSendMessage(messageTarget)}
             >
               <FontAwesomeIcon icon={faPaperPlane} style={{ color: "#ffffff" }} />{" "}
@@ -164,4 +164,5 @@ export const ChatTab = (props: Props) => {
       </div>
     </div>
   );
-};
+}
+export default ChatTab;

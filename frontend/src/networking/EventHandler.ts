@@ -23,7 +23,9 @@ export type EventHandlerFunction<T> = (data: T) => Promise<void>;
  */
 export class EventHandler<T> {
   private eventHandlers: Map<string, EventHandlerFunction<T>[]>;
+
   private handlerName: string;
+
   private warnNoHandler: boolean;
 
   /**

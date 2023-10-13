@@ -37,7 +37,7 @@ export const getSessionById = (id: string, list: Session[]) => {
 };
 
 export const getParticipantById = (id: string, sessionData: Session) => {
-  const participants = sessionData.participants;
+  const { participants } = sessionData;
   const participant = participants.filter((participant) => {
     return participant.id === id;
   });

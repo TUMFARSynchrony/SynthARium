@@ -38,7 +38,7 @@ function JoinedParticipantModal({
         participantId: participantData.id,
         action: BanMuteUnmuteActions.MUTED_AUDIO,
         value: muteAudio,
-        sessionId: sessionId
+        sessionId
       })
     );
 
@@ -47,7 +47,7 @@ function JoinedParticipantModal({
         participantId: participantData.id,
         action: BanMuteUnmuteActions.MUTED_VIDEO,
         value: muteVideo,
-        sessionId: sessionId
+        sessionId
       })
     );
   };
@@ -57,7 +57,7 @@ function JoinedParticipantModal({
     <div className="joinedParticipantModalContainer">
       <div className="joinedParticipantModalData">
         <Label title={participantData.participant_name} />
-        <hr className="separatorLine"></hr>
+        <hr className="separatorLine" />
         <ActionButton
           text={participantData.muted_audio ? "Unmute Audio" : "Mute Audio"}
           variant="outlined"
@@ -72,32 +72,32 @@ function JoinedParticipantModal({
           size="medium"
           onClick={() => muteParticipant(participantData.muted_audio, !participantData.muted_video)}
         />
-        <hr className="separatorLine"></hr>
+        <hr className="separatorLine" />
         <div className="joinedParticipantModalInfo">
           <InputTextField
             title="Link"
-            readonly={true}
+            readonly
             value={`${PARTICIPANT_HOST}?participantId=${participantData.id}&sessionId=${sessionId}`}
           />
           <div className="participantPosition">
-            <Label title={"x: "} /> {participantData.position.x}
+            <Label title="x: " /> {participantData.position.x}
           </div>
           <div className="participantPosition">
-            <Label title={"y: "} /> {participantData.position.y}
+            <Label title="y: " /> {participantData.position.y}
           </div>
           <div className="participantPosition">
-            <Label title={"Width: "} /> {participantData.size.width}
+            <Label title="Width: " /> {participantData.size.width}
           </div>
           <div className="participantPosition">
-            <Label title={"Height: "} /> {participantData.size.height}
+            <Label title="Height: " /> {participantData.size.height}
           </div>
         </div>
-        <hr className="separatorLine"></hr>
+        <hr className="separatorLine" />
         <div className="joinedParticipantActions">
           <div className="joinedParticipantFilters">Filter List</div>
           <div className="joinedParticipantChat">Chat</div>
         </div>
-        <hr className="separatorLine"></hr>
+        <hr className="separatorLine" />
         <div className="joinedParticipantButtons">
           <ActionButton
             text="Cancel"

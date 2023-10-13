@@ -1,18 +1,18 @@
 import "./NotesTab.css";
-import Heading from "../../atoms/Heading/Heading";
 import { useState } from "react";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
+import Heading from "../../atoms/Heading/Heading";
 import Note from "../../atoms/Note/Note";
 import TextAreaField from "../TextAreaField/TextAreaField";
 import { INITIAL_NOTE_DATA } from "../../../utils/constants";
 import { getSessionById } from "../../../utils/utils";
 import { ActionIconButton } from "../../atoms/Button";
-import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import { useAppSelector } from "../../../redux/hooks";
 import { selectSessions } from "../../../redux/slices/sessionsListSlice";
 import { selectOngoingExperiment } from "../../../redux/slices/ongoingExperimentSlice";
 
 function NotesTab({ onAddNote }) {
-  const sessionId = useAppSelector(selectOngoingExperiment).sessionId;
+  const { sessionId } = useAppSelector(selectOngoingExperiment);
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(sessionId, sessionsList);
 
@@ -28,11 +28,11 @@ function NotesTab({ onAddNote }) {
       return;
     }
 
-    let newNote = { ...INITIAL_NOTE_DATA };
-    newNote["content"] = noteContent;
-    newNote["time"] = Date.now();
+    const newNote = { ...INITIAL_NOTE_DATA };
+    newNote.content = noteContent;
+    newNote.time = Date.now();
 
-    let newNoteArray = [...notes, newNote];
+    const newNoteArray = [...notes, newNote];
 
     setNotes(newNoteArray);
     setNoteContent("");
@@ -42,7 +42,7 @@ function NotesTab({ onAddNote }) {
 
   return (
     <div className="notesTabContainer">
-      <Heading heading={"Notes"} />
+      <Heading heading="Notes" />
       <div className="notes">
         {notes.length > 0
           ? notes.map((note, index) => {
@@ -50,28 +50,26 @@ function NotesTab({ onAddNote }) {
             })
           : "Your notes will show up here"}
       </div>
-      <>
-        <div className="notesEnteringContainer">
-          <hr className="separatorLine"></hr>
-          <div className="notesEntering">
-            <div className="notesInputField">
-              <TextAreaField
-                placeholder={"Enter your notes here"}
-                value={noteContent}
-                onChange={(newContent) => onContentChange(newContent)}
-              />
-            </div>
-            <ActionIconButton
-              text="Send"
-              variant="contained"
-              color="primary"
-              size="medium"
-              onClick={() => onSendNotes()}
-              icon={<PlayArrowOutlined />}
+      <div className="notesEnteringContainer">
+        <hr className="separatorLine" />
+        <div className="notesEntering">
+          <div className="notesInputField">
+            <TextAreaField
+              placeholder="Enter your notes here"
+              value={noteContent}
+              onChange={(newContent) => onContentChange(newContent)}
             />
           </div>
+          <ActionIconButton
+            text="Send"
+            variant="contained"
+            color="primary"
+            size="medium"
+            onClick={() => onSendNotes()}
+            icon={<PlayArrowOutlined />}
+          />
         </div>
-      </>
+      </div>
     </div>
   );
 }

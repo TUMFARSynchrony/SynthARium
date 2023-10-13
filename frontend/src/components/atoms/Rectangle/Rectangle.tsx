@@ -13,7 +13,7 @@ type RectangleProps = {
   onChange: (newAttr: GroupProps) => void;
 };
 
-const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: RectangleProps) => {
+function Rectangle({ shapeProps, groupProps, isSelected, onSelect, onChange }: RectangleProps) {
   const shapeRef = useRef<Konva.Group>();
   const trRef = useRef<Konva.Transformer>();
   useEffect(() => {
@@ -48,7 +48,7 @@ const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: R
 
   const onDragMove = () => {
     onSelect();
-    let newAbsPos: { x: number; y: number } | undefined = undefined;
+    let newAbsPos: { x: number; y: number } | undefined;
 
     if (!trRef.current) {
       return;
@@ -84,7 +84,7 @@ const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: R
     });
   };
 
-  const participant_name = shapeProps.participant_name ? shapeProps.participant_name : "";
+  const participantName = shapeProps.participant_name ? shapeProps.participant_name : "";
 
   return (
     <>
@@ -98,7 +98,7 @@ const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: R
       >
         <Rect {...shapeProps} width={groupProps.width} height={groupProps.height} />
         <Text
-          text={participant_name}
+          text={participantName}
           x={shapeProps.x + 5}
           y={shapeProps.y + 5}
           fontSize={20}
@@ -131,6 +131,6 @@ const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: R
       )}
     </>
   );
-};
+}
 
 export default Rectangle;

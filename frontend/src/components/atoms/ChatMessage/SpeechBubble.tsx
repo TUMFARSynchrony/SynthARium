@@ -8,14 +8,16 @@ type Props = {
   currentUser: string;
   color?: string;
 };
-export const SpeechBubble = (props: Props) => {
+function SpeechBubble(props: Props) {
   const { author, target, message, date, currentUser, color } = props;
   const shouldApplySelfEnd = (): boolean => {
     if (author === "experimenter" && currentUser === "experimenter") {
       return false;
-    } else if (author === "experimenter" && currentUser !== "experimenter") {
+    }
+    if (author === "experimenter" && currentUser !== "experimenter") {
       return true;
-    } else return author !== "experimenter" && currentUser === "experimenter";
+    }
+    return author !== "experimenter" && currentUser === "experimenter";
   };
   return (
     <div className="flex flex-col">
@@ -28,11 +30,12 @@ export const SpeechBubble = (props: Props) => {
         className={`${
           shouldApplySelfEnd()
             ? "self-end bg-stone-200"
-            : `self-start ${color ? color : "bg-blue-600"} text-white`
+            : `self-start ${color || "bg-blue-600"} text-white`
         } px-2 py-1 rounded break-words max-w-full text-start`}
       >
         {message}
       </div>
     </div>
   );
-};
+}
+export default SpeechBubble;

@@ -6,7 +6,7 @@ import JoinedParticipantCard from "../../organisms/JoinedParticipantCard/JoinedP
 
 function ParticipantsTab({ connectedParticipants, onKickBanParticipant, onMuteParticipant }) {
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
-  const sessionId = ongoingExperiment.sessionId;
+  const { sessionId } = ongoingExperiment;
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(sessionId, sessionsList);
   return (

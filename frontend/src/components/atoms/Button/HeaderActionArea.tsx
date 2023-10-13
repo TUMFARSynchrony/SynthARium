@@ -1,13 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUndo,
-  faRedo,
-  faCommentAlt,
-  faClipboardCheck,
-  faUsers,
-  IconDefinition
-} from "@fortawesome/free-solid-svg-icons";
+import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
 
 /*
 const buttonConfigs = {
@@ -24,7 +17,7 @@ type HeaderActionAreaProps = {
 
 type ButtonConfig = { onClick?: () => void; icon?: IconDefinition };
 
-const HeaderActionArea = (props: HeaderActionAreaProps) => {
+function HeaderActionArea(props: HeaderActionAreaProps) {
   const { buttons } = props;
   return (
     <div className="button-list flex gap-2">
@@ -39,6 +32,6 @@ const HeaderActionArea = (props: HeaderActionAreaProps) => {
       ))}
     </div>
   );
-};
+}
 
 export default HeaderActionArea;

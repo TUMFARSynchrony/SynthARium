@@ -21,7 +21,7 @@ const initialState: SessionsListState = {
 
 export const sessionsListSlice = createSlice({
   name: "sessionsList",
-  initialState: initialState,
+  initialState,
   reducers: {
     deleteSession: (state, { payload }) => {
       const newSessionsList = filterListById(state.sessions, payload);
@@ -51,8 +51,8 @@ export const sessionsListSlice = createSlice({
     },
     addMessageToCurrentSession: (state, { payload }) => {
       const session = state.currentSession;
-      const target = payload.target;
-      const author = payload.author;
+      const { target } = payload;
+      const { author } = payload;
       if (target === "participants") {
         session.participants.map((participant) => {
           participant.chat.push(payload.message);

@@ -2,10 +2,11 @@ import * as React from "react";
 import { useRef, useEffect, useState } from "react";
 
 import "./ConnectionLatencyTest.css";
-import Connection from "../../networking/Connection";
-import ConnectionState from "../../networking/ConnectionState";
 import jsQR from "jsqr";
 import Chart from "chart.js/auto";
+import * as QRCode from "qrcode";
+import Connection from "../../networking/Connection";
+import ConnectionState from "../../networking/ConnectionState";
 import {
   avg,
   calculateEvaluation,
@@ -22,15 +23,14 @@ import {
   PingData,
   TestConfigObj
 } from "./def";
-import * as QRCode from "qrcode";
 /**
  * Test page for testing the {@link Connection} & api.
  */
-const ConnectionLatencyTest = (props: {
+function ConnectionLatencyTest(props: {
   localStream?: MediaStream;
   setLocalStream: (localStream: MediaStream) => void;
   connection: Connection;
-}) => {
+}) {
   const [connection, setConnection] = useState(props.connection);
   const defaultConfig = {
     participantId: connection.participantId ?? "",
@@ -105,13 +105,13 @@ const ConnectionLatencyTest = (props: {
   useEffect(() => {
     const handlePong = async (msg: any) => {
       const timeNow = performance.now();
-      const sent = msg.ping_data.sent;
+      const { sent } = msg.ping_data;
       const serverTime = msg.server_time - performance.timing.navigationStart;
 
       const entry: PingData = {
-        sent: sent,
+        sent,
         received: timeNow,
-        serverTime: serverTime
+        serverTime
       };
       pingData.push(entry);
     };
@@ -182,7 +182,7 @@ const ConnectionLatencyTest = (props: {
       const pingData = pingLookup[e.qrCodeTimestamp];
       return {
         ...e,
-        qrCodeGenerationTime: qrCodeGenerationTime,
+        qrCodeGenerationTime,
         trueLatency: e.latency - qrCodeGenerationTime || undefined,
         ping: pingData
           ? {
@@ -223,7 +223,9 @@ const ConnectionLatencyTest = (props: {
 
   /** Log a data point in `data`. */
   const makeLogEntry = async () => {
-    let latency: number, timestamp: number, qrCodeTimestamp: number;
+    let latency: number;
+    let timestamp: number;
+    let qrCodeTimestamp: number;
     const startTime = window.performance.now();
     try {
       [latency, timestamp, qrCodeTimestamp] = getLatency();
@@ -236,12 +238,12 @@ const ConnectionLatencyTest = (props: {
 
     const remoteStreamSettings = connection.remoteStream.getVideoTracks()[0].getSettings();
     const entry: RemoteStreamData = {
-      latency: latency,
+      latency,
       fps: remoteStreamSettings.frameRate,
-      timestamp: timestamp,
-      qrCodeTimestamp: qrCodeTimestamp,
+      timestamp,
+      qrCodeTimestamp,
       frame: remoteStreamData.length,
-      latencyMethodRuntime: latencyMethodRuntime,
+      latencyMethodRuntime,
       dimensions: {
         width: remoteStreamSettings.width,
         height: remoteStreamSettings.height
@@ -459,7 +461,7 @@ const ConnectionLatencyTest = (props: {
           {ConnectionState[connectionState]}
         </span>
         &nbsp;
-        <span ref={runtimeInfoRef}></span>
+        <span ref={runtimeInfoRef} />
       </p>
       <TestConfig
         start={start}
@@ -501,7 +503,7 @@ const ConnectionLatencyTest = (props: {
       )}
     </div>
   );
-};
+}
 
 export default ConnectionLatencyTest;
 
@@ -540,7 +542,7 @@ function TestConfig(props: {
   start: () => void;
 }) {
   const disabled = props.disabled ?? false;
-  const config = props.config;
+  const { config } = props;
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -764,15 +766,14 @@ function Evaluation(props: { mergedData: MergedData[] }) {
           text: "Time"
         },
         ticks: {
-          callback: function (label: any) {
+          callback(label: any) {
             const frame = this.getLabelForValue(label);
             const runtime = props.mergedData[frame].timestamp - props.mergedData[0].timestamp;
             const [min, sec] = getDetailedTime(runtime);
             if (min > 0) {
               return `${min}m ${sec}s`;
-            } else {
-              return `${sec}s`;
             }
+            return `${sec}s`;
           }
         },
         beginAtZero: true
@@ -792,7 +793,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
       };
 
       const primaryData = {
-        labels: labels,
+        labels,
         datasets: [
           {
             label: "Latency",
@@ -860,7 +861,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
       };
 
       const fpsData = {
-        labels: labels,
+        labels,
         datasets: [
           {
             label: "Frames Per Second",
@@ -890,7 +891,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
       };
 
       const dimensionsData = {
-        labels: labels,
+        labels,
         datasets: [
           {
             label: "Width",
@@ -1067,15 +1068,15 @@ function Evaluation(props: { mergedData: MergedData[] }) {
       <p>Click the labels above the graphs to enable or disable the corresponding dataset.</p>
       <h2>Latency</h2>
       <div style={{ height: "90vh", position: "relative" }}>
-        <canvas ref={primaryChartCanvasRef}></canvas>
+        <canvas ref={primaryChartCanvasRef} />
       </div>
       <h2>Frames Per Second (FPS)</h2>
       <div style={{ height: "min(250px, 30vh)", position: "relative" }}>
-        <canvas ref={fpsChartCanvasRef}></canvas>
+        <canvas ref={fpsChartCanvasRef} />
       </div>
       <h2>Video Dimensions</h2>
       <div style={{ height: "min(250px, 30vh)", position: "relative" }}>
-        <canvas ref={dimensionsChartCanvasRef}></canvas>
+        <canvas ref={dimensionsChartCanvasRef} />
       </div>
     </div>
   );

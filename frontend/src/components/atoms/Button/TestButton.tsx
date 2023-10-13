@@ -26,13 +26,13 @@ interface ButtonProps {
 /**
  * Primary UI component for user interaction
  */
-export const TestButton = ({
+function TestButton({
   primary = false,
   size = "medium",
   backgroundColor,
   label,
   ...props
-}: ButtonProps) => {
+}: ButtonProps) {
   const mode = primary ? "storybook-button--primary" : "storybook-button--secondary";
   return (
     <button
@@ -41,7 +41,8 @@ export const TestButton = ({
       style={{ backgroundColor }}
       {...props}
     >
-      {"YEYYY"}
+      YEYYY
     </button>
   );
-};
+}
+export default TestButton;

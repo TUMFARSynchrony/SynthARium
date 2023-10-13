@@ -6,9 +6,9 @@ import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import ChatTab from "../../components/molecules/ChatTab/ChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./Lobby.css";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
@@ -80,7 +80,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
                   ownParticipantId={participantIdParam}
                 />
               ) : (
-                <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
+                <video ref={videoElement} autoPlay playsInline width="100%" height="100%" />
               )
             ) : (
               <Typography>

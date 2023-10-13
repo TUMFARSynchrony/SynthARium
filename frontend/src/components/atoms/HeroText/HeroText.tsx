@@ -12,11 +12,7 @@ function HeroText({ text }: HeroTextProps) {
     margin: theme.spacing(4)
   }));
 
-  return (
-    <>
-      <Text variant="h5">{text}</Text>
-    </>
-  );
+  return <Text variant="h5">{text}</Text>;
 }
 
 export default HeroText;

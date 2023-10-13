@@ -11,7 +11,7 @@ function TextAreaField({ title, value, onChange, placeholder, required }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-      ></textarea>
+      />
     </div>
   );
 }

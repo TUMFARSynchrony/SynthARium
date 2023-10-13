@@ -1,5 +1,5 @@
-import { ChatMessage, Note, Participant, Session, Snackbar } from "../types";
 import { AlertColor } from "@mui/material/Alert";
+import { ChatMessage, Note, Participant, Session, Snackbar } from "../types";
 
 export const INITIAL_SESSION_DATA: Session = {
   id: "",
@@ -22,7 +22,7 @@ export const CANVAS_SIZE = {
   // for properly alinged display of the konva elements
   // old width: 1138.333, // 1366
   width: 1040,
-  height: 640, //768
+  height: 640, // 768
   scale: 1.2
 };
 

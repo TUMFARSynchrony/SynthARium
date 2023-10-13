@@ -1,14 +1,3 @@
-import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
-import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
-import { INITIAL_PARTICIPANT_DATA } from "../../utils/constants";
-import {
-  checkValidSession,
-  filterListByIndex,
-  formatDate,
-  getParticipantDimensions,
-  getRandomColor
-} from "../../utils/utils";
-
 import AddIcon from "@mui/icons-material/Add";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
@@ -19,6 +8,16 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
+import {
+  checkValidSession,
+  filterListByIndex,
+  formatDate,
+  getParticipantDimensions,
+  getRandomColor
+} from "../../utils/utils";
+import { INITIAL_PARTICIPANT_DATA, initialSnackbar } from "../../utils/constants";
+import ParticipantData from "../../components/organisms/ParticipantData/ParticipantData";
+import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -31,7 +30,6 @@ import {
   selectNumberOfParticipants,
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
-import { initialSnackbar } from "../../utils/constants";
 
 function SessionForm({ onSendSessionToBackend }) {
   const dispatch = useAppDispatch();
@@ -92,7 +90,6 @@ function SessionForm({ onSendSessionToBackend }) {
         text: "You need to save the information first!",
         severity: "warning"
       });
-      return;
     }
   }, [snackbarResponse]);
 
@@ -140,9 +137,9 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const handleParticipantChange = (index, participant) => {
-    dispatch(changeParticipant({ participant: participant, index: index }));
+    dispatch(changeParticipant({ participant, index }));
 
-    let newParticipantDimensions = [...participantDimensions];
+    const newParticipantDimensions = [...participantDimensions];
     newParticipantDimensions[index].shapes = {
       ...newParticipantDimensions[index].shapes,
       participant_name: participant.participant_name
@@ -151,7 +148,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
-    dispatch(changeValue({ objKey: objKey, objValue: newObj }));
+    dispatch(changeValue({ objKey, objValue: newObj }));
   };
 
   const onShowSessionFormModal = () => {
@@ -173,7 +170,7 @@ function SessionForm({ onSendSessionToBackend }) {
   const addRandomSessionData = () => {
     const futureDate = new Date().setDate(new Date().getDate() + 7);
 
-    let newSessionData = {
+    const newSessionData = {
       id: "",
       title: "Hello World",
       description: "Randomly created session",
@@ -210,7 +207,7 @@ function SessionForm({ onSendSessionToBackend }) {
 
     setTimeLimit(newSessionData.time_limit / 60000);
     dispatch(initializeSession(newSessionData));
-    let dimensions = getParticipantDimensions(newSessionData.participants);
+    const dimensions = getParticipantDimensions(newSessionData.participants);
     setParticipantDimensions(dimensions);
   };
 

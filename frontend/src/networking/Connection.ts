@@ -44,14 +44,21 @@ export default class Connection extends ConnectionBase<
    * @see EventHandler
    */
   readonly api: EventHandler<any>;
+
   readonly sessionId?: string;
+
   readonly participantId?: string;
+
   readonly experimenterPassword?: string;
+
   readonly userType: "participant" | "experimenter";
 
   private _state: ConnectionState;
+
   private localStream: MediaStream;
+
   private dc: RTCDataChannel;
+
   private subConnections: Map<string, SubConnection>;
 
   /**
@@ -234,7 +241,7 @@ export default class Connection extends ConnectionBase<
 
     const message: Message = {
       type: endpoint,
-      data: data
+      data
     };
     const stringified = JSON.stringify(message);
     this.dc.send(stringified);
@@ -327,7 +334,7 @@ export default class Connection extends ConnectionBase<
 
     let response;
     try {
-      response = await fetch(BACKEND + "/offer", {
+      response = await fetch(`${BACKEND}/offer`, {
         body: JSON.stringify({ request }),
         headers: {
           "Content-Type": "application/json"

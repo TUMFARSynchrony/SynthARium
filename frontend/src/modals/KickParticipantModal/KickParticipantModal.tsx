@@ -51,7 +51,7 @@ function KickParticipantModal({
     onKickBanParticipant(
       {
         participant_id: participantId,
-        reason: reason
+        reason
       },
       action
     );
@@ -60,10 +60,10 @@ function KickParticipantModal({
     if (action === "Ban") {
       dispatch(
         banMuteUnmuteParticipant({
-          participantId: participantId,
+          participantId,
           action: BanMuteUnmuteActions.BANNED,
           value: true,
-          sessionId: sessionId
+          sessionId
         })
       );
     }
@@ -73,11 +73,11 @@ function KickParticipantModal({
     <div className="kickParticipantModalContainer">
       <div className="kickParticipantModal">
         <TextAreaField
-          title={`Enter your reason for kicking/banning here:`}
+          title="Enter your reason for kicking/banning here:"
           value={reason}
           placeholder=""
           onChange={(newReason: string) => onChange(newReason)}
-          required={true}
+          required
         />
         <ActionButton
           variant="contained"

@@ -1,20 +1,20 @@
+import { useState } from "react";
 import { ActionButton, LinkActionButton, LinkButton } from "../../components/atoms/Button";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
 import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../utils/utils";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import ChatTab from "../../components/molecules/ChatTab/ChatTab";
 import {
   selectChatTab,
   selectInstructionsTab,
   selectParticipantsTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 
 function WatchingRoom({
@@ -103,7 +103,7 @@ function WatchingRoom({
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
-                currentUser={"experimenter"}
+                currentUser="experimenter"
               />
             )}
             {isParticipantsModalActive && (

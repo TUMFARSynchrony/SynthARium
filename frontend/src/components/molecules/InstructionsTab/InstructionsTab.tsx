@@ -1,6 +1,6 @@
 import { instructionsList } from "../../../utils/constants";
 
-export const InstructionsTab = () => {
+function InstructionsTab() {
   return (
     <div className="flex flex-col p-4 border-l-gray-100 border-l-2 h-[calc(100vh-4rem)] w-full items-center gap-y-5">
       <div className="text-3xl">Instructions</div>
@@ -14,4 +14,5 @@ export const InstructionsTab = () => {
       </div>
     </div>
   );
-};
+}
+export default InstructionsTab;

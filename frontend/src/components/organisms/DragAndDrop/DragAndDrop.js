@@ -43,7 +43,7 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
 
                     dispatch(
                       changeParticipantDimensions({
-                        index: index,
+                        index,
                         position: {
                           x: newAttrs.x,
                           y: newAttrs.y,
@@ -64,8 +64,8 @@ function DragAndDrop({ participantDimensions, setParticipantDimensions }) {
               <Text
                 text="There are no participants in this session yet."
                 fontSize={20}
-                align={"center"}
-                verticalAlign={"middle"}
+                align="center"
+                verticalAlign="middle"
                 width={CANVAS_SIZE.width}
                 height={CANVAS_SIZE.height}
               />

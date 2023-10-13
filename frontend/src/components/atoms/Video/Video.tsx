@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { Image, Group, Text } from "react-konva";
-import { useUserStream } from "./Streams";
-import { Participant } from "../../../types";
 import Konva from "konva";
+import useUserStream from "./Streams";
+import { Participant } from "../../../types";
 
 type VideoProps = {
   src: MediaProvider;
@@ -10,7 +10,7 @@ type VideoProps = {
   title?: string; // Add a title prop
 };
 
-const Video = ({ src, participantData, title }: VideoProps) => {
+function Video({ src, participantData, title }: VideoProps) {
   const useVideo = (stream: MediaStream | null) => {
     const videoRef = useRef(document.createElement("video"));
 
@@ -64,6 +64,6 @@ const Video = ({ src, participantData, title }: VideoProps) => {
       />
     </Group>
   );
-};
+}
 
 export default Video;

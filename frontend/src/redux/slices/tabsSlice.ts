@@ -10,7 +10,7 @@ const initialState = {
 
 export const tabsSlice = createSlice({
   name: "tabs",
-  initialState: initialState,
+  initialState,
   reducers: {
     closeAllTabs: (state) => {
       state.chatTabActive = false;
@@ -35,6 +35,8 @@ export const tabsSlice = createSlice({
           state.instructionsTabActive = false;
           state.participantsTabActive = !state.participantsTabActive;
           break;
+        default:
+        // do nothing all cases covered
       }
     }
   }

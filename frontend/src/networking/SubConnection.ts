@@ -14,6 +14,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
   readonly id: string;
 
   private connection: Connection;
+
   private stopped: boolean;
 
   /**
@@ -44,7 +45,7 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
     const offer = await this.createOffer();
     const connectionOffer: ConnectionOffer = {
       id: this.id,
-      offer: offer
+      offer
     };
     this.connection.sendMessage("CONNECTION_OFFER", connectionOffer);
   }

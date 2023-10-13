@@ -9,8 +9,11 @@ import { ParticipantSummary } from "./typing";
  */
 export default abstract class ConnectionBase<T> extends EventHandler<T> {
   readonly logging: boolean;
+
   protected _participantSummary: ParticipantSummary | string | null;
+
   protected pc: RTCPeerConnection;
+
   protected _remoteStream: MediaStream;
 
   private name: string;
@@ -62,7 +65,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getStats getStats method
    */
   public async getStats(): Promise<RTCStatsReport> {
-    return await this.pc.getStats();
+    return this.pc.getStats();
   }
 
   /**

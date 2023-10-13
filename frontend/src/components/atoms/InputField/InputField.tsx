@@ -24,7 +24,7 @@ function InputField({
   return (
     <input
       type={inputType}
-      className={"inputField " + inputType}
+      className={`inputField ${inputType}`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
@@ -32,7 +32,7 @@ function InputField({
       checked={checked}
       min={min}
       required={required}
-    ></input>
+    />
   );
 }
 

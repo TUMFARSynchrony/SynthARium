@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { TestButton } from "./TestButton";
+import TestButton from "./TestButton";
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 const meta: Meta<typeof TestButton> = {
   title: "Example/TestButton",

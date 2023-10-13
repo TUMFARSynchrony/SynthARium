@@ -13,21 +13,19 @@ const GreyToolbar = styled(Toolbar)(() => ({
 // and watching room to prevent multiple navigation possibilities.
 function NavigationBar() {
   return (
-    <>
-      <AppBar position="static">
-        <GreyToolbar>
-          <Stack direction="row">
-            <LinkButton text={"Session Overview"} path={"/"} variant="string" size="large" />
-            <LinkButton
-              text={"Post-Processing Room"}
-              path={"/postProcessingRoom"}
-              variant="string"
-              size="large"
-            />
-          </Stack>
-        </GreyToolbar>
-      </AppBar>
-    </>
+    <AppBar position="static">
+      <GreyToolbar>
+        <Stack direction="row">
+          <LinkButton text="Session Overview" path="/" variant="string" size="large" />
+          <LinkButton
+            text="Post-Processing Room"
+            path="/postProcessingRoom"
+            variant="string"
+            size="large"
+          />
+        </Stack>
+      </GreyToolbar>
+    </AppBar>
   );
 }
 

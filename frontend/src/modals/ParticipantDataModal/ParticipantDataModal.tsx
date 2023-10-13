@@ -14,6 +14,7 @@ import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import React, { useState } from "react";
+import { v4 as uuid } from "uuid";
 import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
@@ -21,7 +22,6 @@ import { getParticipantInviteLink } from "../../utils/utils";
 import { useAppSelector } from "../../redux/hooks";
 import { selectNumberOfParticipants } from "../../redux/slices/openSessionSlice";
 import { Filter, FilterConfigArray, FilterConfigNumber, Participant } from "../../types";
-import { v4 as uuid } from "uuid";
 
 import filtersData from "../../filters_data.json";
 
@@ -109,7 +109,7 @@ function ParticipantDataModal({
     keyParticipantData: T
   ) => {
     const filtersCopy: any = structuredClone(participantCopy[keyParticipantData]);
-    filtersCopy[index]["config"][key]["value"] = value;
+    filtersCopy[index].config[key].value = value;
     handleChange(keyParticipantData, filtersCopy);
   };
 
@@ -122,7 +122,7 @@ function ParticipantDataModal({
     if (newParticipantInputEmpty) {
       setSnackbarResponse({
         ...snackbarResponse,
-        newParticipantInputEmpty: newParticipantInputEmpty
+        newParticipantInputEmpty
       });
       onDeleteParticipant(index);
       return;
@@ -132,7 +132,7 @@ function ParticipantDataModal({
     if (requiredInformationMissing) {
       setSnackbarResponse({
         ...snackbarResponse,
-        requiredInformationMissing: requiredInformationMissing
+        requiredInformationMissing
       });
       onDeleteParticipant(index);
       return;
@@ -145,8 +145,8 @@ function ParticipantDataModal({
     if (participantOriginalEmpty && !newInputEqualsOld) {
       setSnackbarResponse({
         ...snackbarResponse,
-        participantOriginalEmpty: participantOriginalEmpty,
-        newInputEqualsOld: newInputEqualsOld
+        participantOriginalEmpty,
+        newInputEqualsOld
       });
       onDeleteParticipant(index);
       return;
@@ -159,7 +159,6 @@ function ParticipantDataModal({
         severity: "warning"
       });
       setParticipantCopy(originalParticipant);
-      return;
     }
   };
 
@@ -190,20 +189,20 @@ function ParticipantDataModal({
     newFilter.id = uuid();
 
     // if a filter requires another filter, then it is added to the correct filter array
-    for (const key in filter["config"]) {
-      if (Array.isArray(filter["config"][key]["defaultValue"])) {
-        if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
+    for (const key in filter.config) {
+      if (Array.isArray(filter.config[key].defaultValue)) {
+        if ((filter.config[key] as FilterConfigArray).requiresOtherFilter) {
           const otherFilter = structuredClone(
             testData
               .filter(
                 (filteredFilter) =>
-                  filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
+                  filteredFilter.name === (filter.config[key].defaultValue as string[])[0]
               )
               .pop()
           );
           const id = uuid();
           otherFilter.id = id;
-          newFilter["config"][key]["value"] = id;
+          newFilter.config[key].value = id;
           setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
             newParticipantData.video_filters.push(otherFilter);
@@ -258,10 +257,10 @@ function ParticipantDataModal({
     }
 
     // if filter requires another filter, removes current filter and other filter
-    for (const key in filter["config"]) {
-      if (Array.isArray(filter["config"][key]["defaultValue"])) {
-        if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
-          const otherFilterId = (filter["config"][key] as FilterConfigArray)["value"];
+    for (const key in filter.config) {
+      if (Array.isArray(filter.config[key].defaultValue)) {
+        if ((filter.config[key] as FilterConfigArray).requiresOtherFilter) {
+          const otherFilterId = (filter.config[key] as FilterConfigArray).value;
 
           if (requiredFilters.has(otherFilterId)) {
             requiredFilters.delete(otherFilterId);
@@ -386,7 +385,7 @@ function ParticipantDataModal({
                     value={selectedFilter.name}
                     id="filters-select"
                     label="Filters"
-                    displayEmpty={true}
+                    displayEmpty
                     renderValue={(selected) => {
                       if (selected === "Placeholder") {
                         return <em>Select a Filter</em>;
@@ -465,7 +464,7 @@ function ParticipantDataModal({
                         }}
                       >
                         {Object.keys(audioFilter.config).map((configType, configIndex) => {
-                          if (Array.isArray(audioFilter["config"][configType]["defaultValue"])) {
+                          if (Array.isArray(audioFilter.config[configType].defaultValue)) {
                             return (
                               <FormControl
                                 key={configIndex}
@@ -478,15 +477,10 @@ function ParticipantDataModal({
                                 <Select
                                   key={configIndex}
                                   value={
-                                    (audioFilter["config"][configType] as FilterConfigArray)[
-                                      "requiresOtherFilter"
-                                    ]
-                                      ? (
-                                          audioFilter["config"][configType][
-                                            "defaultValue"
-                                          ] as string[]
-                                        )[0]
-                                      : audioFilter["config"][configType]["value"]
+                                    (audioFilter.config[configType] as FilterConfigArray)
+                                      .requiresOtherFilter
+                                      ? (audioFilter.config[configType].defaultValue as string[])[0]
+                                      : audioFilter.config[configType].value
                                   }
                                   id="grouped-select"
                                   onChange={(e) => {
@@ -498,37 +492,31 @@ function ParticipantDataModal({
                                     );
                                   }}
                                 >
-                                  {(
-                                    audioFilter["config"][configType]["defaultValue"] as string[]
-                                  ).map((value: string) => {
-                                    return (
-                                      <MenuItem key={value} value={value}>
-                                        {value}
-                                      </MenuItem>
-                                    );
-                                  })}
+                                  {(audioFilter.config[configType].defaultValue as string[]).map(
+                                    (value: string) => {
+                                      return (
+                                        <MenuItem key={value} value={value}>
+                                          {value}
+                                        </MenuItem>
+                                      );
+                                    }
+                                  )}
                                 </Select>
                               </FormControl>
                             );
-                          } else if (
-                            typeof audioFilter["config"][configType]["defaultValue"] == "number"
-                          ) {
+                          }
+                          if (typeof audioFilter.config[configType].defaultValue === "number") {
                             return (
                               <TextField
                                 key={configIndex}
                                 label={configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                defaultValue={audioFilter["config"][configType]["value"]}
+                                defaultValue={audioFilter.config[configType].value}
                                 InputProps={{
                                   inputProps: {
-                                    min: (audioFilter["config"][configType] as FilterConfigNumber)[
-                                      "min"
-                                    ],
-                                    max: (audioFilter["config"][configType] as FilterConfigNumber)[
-                                      "max"
-                                    ],
-                                    step: (audioFilter["config"][configType] as FilterConfigNumber)[
-                                      "step"
-                                    ]
+                                    min: (audioFilter.config[configType] as FilterConfigNumber).min,
+                                    max: (audioFilter.config[configType] as FilterConfigNumber).max,
+                                    step: (audioFilter.config[configType] as FilterConfigNumber)
+                                      .step
                                   }
                                 }}
                                 type="number"
@@ -585,7 +573,7 @@ function ParticipantDataModal({
                         }}
                       >
                         {Object.keys(videoFilter.config).map((configType, configIndex) => {
-                          if (Array.isArray(videoFilter["config"][configType]["defaultValue"])) {
+                          if (Array.isArray(videoFilter.config[configType].defaultValue)) {
                             return (
                               <FormControl
                                 key={configIndex}
@@ -598,15 +586,10 @@ function ParticipantDataModal({
                                 <Select
                                   key={configIndex}
                                   value={
-                                    (videoFilter["config"][configType] as FilterConfigArray)[
-                                      "requiresOtherFilter"
-                                    ]
-                                      ? (
-                                          videoFilter["config"][configType][
-                                            "defaultValue"
-                                          ] as string[]
-                                        )[0]
-                                      : videoFilter["config"][configType]["value"]
+                                    (videoFilter.config[configType] as FilterConfigArray)
+                                      .requiresOtherFilter
+                                      ? (videoFilter.config[configType].defaultValue as string[])[0]
+                                      : videoFilter.config[configType].value
                                   }
                                   id="grouped-select"
                                   onChange={(e) => {
@@ -618,37 +601,31 @@ function ParticipantDataModal({
                                     );
                                   }}
                                 >
-                                  {(
-                                    videoFilter["config"][configType]["defaultValue"] as string[]
-                                  ).map((value: string) => {
-                                    return (
-                                      <MenuItem key={value} value={value}>
-                                        {value}
-                                      </MenuItem>
-                                    );
-                                  })}
+                                  {(videoFilter.config[configType].defaultValue as string[]).map(
+                                    (value: string) => {
+                                      return (
+                                        <MenuItem key={value} value={value}>
+                                          {value}
+                                        </MenuItem>
+                                      );
+                                    }
+                                  )}
                                 </Select>
                               </FormControl>
                             );
-                          } else if (
-                            typeof videoFilter["config"][configType]["defaultValue"] == "number"
-                          ) {
+                          }
+                          if (typeof videoFilter.config[configType].defaultValue === "number") {
                             return (
                               <TextField
                                 key={configIndex}
                                 label={configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                defaultValue={videoFilter["config"][configType]["value"]}
+                                defaultValue={videoFilter.config[configType].value}
                                 InputProps={{
                                   inputProps: {
-                                    min: (videoFilter["config"][configType] as FilterConfigNumber)[
-                                      "min"
-                                    ],
-                                    max: (videoFilter["config"][configType] as FilterConfigNumber)[
-                                      "max"
-                                    ],
-                                    step: (videoFilter["config"][configType] as FilterConfigNumber)[
-                                      "step"
-                                    ]
+                                    min: (videoFilter.config[configType] as FilterConfigNumber).min,
+                                    max: (videoFilter.config[configType] as FilterConfigNumber).max,
+                                    step: (videoFilter.config[configType] as FilterConfigNumber)
+                                      .step
                                   }
                                 }}
                                 type="number"

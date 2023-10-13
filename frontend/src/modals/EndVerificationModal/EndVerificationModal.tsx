@@ -16,7 +16,7 @@ function EndVerificationModal({ setShowModal, onEndExperiment }: Props) {
   return (
     <div className="verificationContainer">
       <div className="verificationModal">
-        <Heading heading={`Are you sure you want to end the experiment?`} />
+        <Heading heading="Are you sure you want to end the experiment?" />
         <ActionButton
           text="No"
           variant="contained"

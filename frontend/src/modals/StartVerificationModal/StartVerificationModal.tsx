@@ -16,7 +16,7 @@ function StartVerificationModal({ setShowModal, onStartExperiment }: Props) {
   return (
     <div className="verificationContainer">
       <div className="verificationModal">
-        <Heading heading={`Are you sure you want to start the experiment?`} />
+        <Heading heading="Are you sure you want to start the experiment?" />
         <div>
           <ActionButton
             text="No"

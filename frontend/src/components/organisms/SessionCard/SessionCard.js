@@ -23,7 +23,7 @@ function SessionCard({ title, date, description, onClick }) {
             <GreySessionTitle>{title}</GreySessionTitle>
             <Typography>{integerToDateTime(date)}</Typography>
             {/* Nowrap displays only one line of experiment description, rest is ... */}
-            <Typography noWrap={true}>{description}</Typography>
+            <Typography noWrap>{description}</Typography>
           </Stack>
         </CardContent>
       </CardActionArea>

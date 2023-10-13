@@ -5,8 +5,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Typography from "@mui/material/Typography";
-import { ActionButton } from "../../components/atoms/Button";
 import { useState } from "react";
+import { ActionButton } from "../../components/atoms/Button";
 
 // This is used to take the consent of the participant before getting access to their microphone and camera.
 // TO DO: establish the participant connection with backend only after getting consent.

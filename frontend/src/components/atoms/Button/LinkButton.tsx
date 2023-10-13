@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 interface LinkButtonProps extends ButtonProps {
   text: string;
   path: string;
-  onClick: () => void;
 }
 
 function LinkButton({ text, variant, size, path }: LinkButtonProps) {
