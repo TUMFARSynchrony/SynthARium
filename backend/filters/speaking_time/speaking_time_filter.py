@@ -6,7 +6,7 @@ from filters.filter_data_dict import FilterDataDict
 from filters.filter import Filter
 
 
-class AudioSpeakingTimeFilter(Filter):
+class SpeakingTimeFilter(Filter):
     """Filter calculating how much time the participant has spoken"""
 
     seconds: float
@@ -20,7 +20,7 @@ class AudioSpeakingTimeFilter(Filter):
 
     @staticmethod
     def name(self) -> str:
-        return "AUDIO_SPEAKING_TIME"
+        return "SPEAKING_TIME"
 
     @staticmethod
     def filter_type(self) -> str:
