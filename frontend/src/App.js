@@ -400,6 +400,16 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/postProcessingRoom"),
+                        label: "Post-Processing Room"
+                      }
+                    ]}
+                  />
+                }
               />
             }
           />
