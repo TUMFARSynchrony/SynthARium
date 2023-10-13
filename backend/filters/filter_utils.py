@@ -165,7 +165,13 @@ def is_valid_get_filters_test_status_dict(
     ) or not isinstance(data["participant_id"], str):
         return False
 
-    return is_valid_get_filters_data_dict(data.pop("participant_id"))
+    check_rest = {
+        "filter_name": data["filter_name"],
+        "filter_channel": data["filter_channel"],
+        "filter_id": data["filter_id"],
+    }
+
+    return is_valid_get_filters_data_dict(check_rest)
 
 
 def get_filter_list() -> list[str]:

@@ -12,6 +12,7 @@ from connection.messages import (
 )
 
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -192,7 +193,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_video_filters_data(self, id, name) -> list:
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
         """Get Data from a specific video filter
 
         Parameters
@@ -206,7 +207,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_audio_filters_data(self, id, name) -> list:
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
         """Get Data from a specific audio filter
 
         Parameters

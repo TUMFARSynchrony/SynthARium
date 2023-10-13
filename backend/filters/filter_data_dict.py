@@ -1,29 +1,22 @@
-from typing import Any, TypeGuard, TypedDict, get_args
+from typing import Any, TypeGuard, TypedDict
 
 import custom_types.util as util
 
 
 class FilterDataDict(TypedDict):
-    """TypedDict for basic filters with only basic attributes.
+    """TypedDict for filter data which is sent to the user.
 
     Attributes
     ----------
-    name : str
-        filter name (unique identifier / name)
     id : str
-        Filter id.  Empty string if adding a new filter.  Read only for client.
-    channel: str
-        Either "video", "audio" or "both"
-    groupFilter: bool
-        If true, the filter is a groupFilter
-    config: dict
-        Filter configuration. Contains all variables for the filter
-
+        filter id.
+    data : any
+        Filter data. Contains the data to be sent
 
     See Also
     --------
     Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filterdata
     """
 
     id: str

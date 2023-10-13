@@ -1,3 +1,7 @@
+.ConnectionTestPageWrapper {
+  text-align: center;
+}
+
 .ConnectionTestPageWrapper button {
   background-color: hsl(212, 86%, 64%);
   border: 3px solid hsl(212, 86%, 64%);

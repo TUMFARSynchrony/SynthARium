@@ -25,6 +25,7 @@ from filter_api import FilterAPI, FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -198,13 +199,13 @@ class ConnectionSubprocess(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("STOP_RECORDING", None)
 
-    async def get_video_filters_data(self, id, name) -> list:
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
         answer = await self._send_command_wait_for_response(
             "GET_VIDEO_FILTERS", {"id": id, "name": name}
         )
         return answer
 
-    async def get_audio_filters_data(self, id, name) -> list:
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
         answer = await self._send_command_wait_for_response(
             "GET_AUDIO_FILTERS", {"id": id, "name": name}
         )
