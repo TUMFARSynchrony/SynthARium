@@ -144,6 +144,7 @@ function WatchingRoom({
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
                 filtersData={filtersData}
+                participants={sessionData["participants"]}
               />
             )}
           </div>

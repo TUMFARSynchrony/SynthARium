@@ -491,6 +491,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
                         icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
                       }
                     ]}
                   />
@@ -552,6 +556,8 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    onGetFiltersData={onGetFiltersData}
+                    filtersData={filtersData}
                   />
                 }
                 centerContentOnYAxis={true}
