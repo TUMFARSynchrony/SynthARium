@@ -54,6 +54,22 @@ function App() {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [clickList, setClickList] = useState([]);
+
+  let addClick = (e) => {
+    setClickList((oldClickList) => [
+      ...oldClickList,
+      {
+        url: window.location.href,
+        timestamp: new Date(),
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        x: e.clientX,
+        y: e.clientY
+      }
+    ]);
+  };
+
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed(
       "%cConnection peer streams change Handler",
@@ -384,7 +400,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App" onClick={addClick}>
       {sessionsList ? (
         <Routes>
           <Route
@@ -398,6 +414,7 @@ function App() {
                     onDeleteSession={onDeleteSession}
                     onCreateExperiment={onCreateExperiment}
                     onJoinExperiment={onJoinExperiment}
+                    clickList={clickList}
                   />
                 }
               />
