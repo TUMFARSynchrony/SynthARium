@@ -105,11 +105,11 @@ class SimpleGlassesDetection(Filter):
                 nose_bridge_x.append(landmarks[i][0])
                 nose_bridge_y.append(landmarks[i][1])
 
-            ### x_min and x_max
+            # x_min and x_max
             x_min = min(nose_bridge_x)
             x_max = max(nose_bridge_x)
 
-            ### ymin (from top eyebrow coordinate),  ymax
+            # ymin (from top eyebrow coordinate),  ymax
             y_min = landmarks[20][1]
             y_max = landmarks[30][1]
 
