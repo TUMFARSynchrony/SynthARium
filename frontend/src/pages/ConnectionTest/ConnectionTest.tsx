@@ -638,6 +638,19 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
         >
           TEMPLATE GF
         </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_GROUP_FILTERS", {
+              audio_group_filters: [],
+              video_group_filters: [
+                { type: "SYNC_SCORE_GF", id: "sync_score_gf" }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          SYNC SCORE GF
+        </button>
       </div>
     </>
   );

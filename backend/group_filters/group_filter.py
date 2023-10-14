@@ -149,7 +149,7 @@ class GroupFilter(ABC):
     @abstractmethod
     async def process_individual_frame(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
-    ) -> dict:
+    ) -> Any:
         raise NotImplementedError(
             f"{self} is missing it's implementation of the abstract"
             " `process_individual_frame` method."
