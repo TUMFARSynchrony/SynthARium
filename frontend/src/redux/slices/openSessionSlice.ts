@@ -72,6 +72,7 @@ export const openSessionSlice = createSlice({
       state.session = {
         ...payload,
         id: "",
+        creation_time: 0,
         participants: payload.participants.map((p) => ({
           ...p,
           id: ""
