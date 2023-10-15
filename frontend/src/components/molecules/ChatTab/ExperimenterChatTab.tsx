@@ -1,5 +1,5 @@
-import { useAppSelector } from "../../../redux/hooks";
-import { selectCurrentSession } from "../../../redux/slices/sessionsListSlice";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+import { updateLastMessageReadTime } from "../../../redux/slices/sessionsListSlice";
 import { useEffect, useRef, useState } from "react";
 import { INITIAL_CHAT_DATA } from "../../../utils/constants";
 import { SpeechBubble } from "../../atoms/ChatMessage/SpeechBubble";
@@ -9,7 +9,10 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { ChatMessage } from "../../../types";
+import { ChatMessage, Session } from "../../../types";
+import Select from "react-select";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { UniformSpeechBubble } from "../../atoms/ChatMessage/UniformSpeechBubble";
 
 type Props = {
   onChat: (newMessage: ChatMessage) => void;
@@ -17,49 +20,63 @@ type Props = {
   currentUser: string;
   participantId?: string;
   onLeaveExperiment?: () => void;
+  onSendSessionToBackend?: (session: Session) => void;
+  onUpdateMessageReadTime?: (
+    participantId: string,
+    lastReadTime: number
+  ) => void;
 };
 
-export const ChatTab = (props: Props) => {
+export const ExperimenterChatTab = (props: Props) => {
   const {
     onChat,
     onGetSession,
     currentUser,
     participantId,
-    onLeaveExperiment
+    onLeaveExperiment,
+    onUpdateMessageReadTime
   } = props;
   const [message, setMessage] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentSession = useAppSelector(selectCurrentSession);
+  const currentSession = useAppSelector(
+    (state) => state.sessionsList.currentSession
+  );
+  const participants = useAppSelector(
+    (state) => state.sessionsList.currentSession.participants
+  );
   const sessionId = currentSession?.id ?? searchParams.get("sessionId");
   const [messageTarget, setMessageTarget] = useState("participants");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-
+  const dispatch = useAppDispatch();
   useAutosizeTextArea(textAreaRef.current, message);
-  console.log(currentSession);
   useBackListener(() => onLeaveExperiment());
 
   useEffect(() => {
     if (sessionId) {
       onGetSession(sessionId);
     }
-  }, [onGetSession, sessionId]);
+  }, [onGetSession, sessionId, messageTarget]);
 
-  const handleChange = (message: string) => {
-    setMessageTarget(message);
+  const handleChange = (messageTarget: string) => {
+    const now = Date.now();
+    setMessageTarget(messageTarget);
+    dispatch(updateLastMessageReadTime({ id: messageTarget, time: now }));
+    if (messageTarget !== "participants") {
+      onUpdateMessageReadTime(messageTarget, now);
+    }
   };
-
   const onSendMessage = (messageTarget: string) => {
+    if (message.length === 0) {
+      return;
+    }
     const newMessage = { ...INITIAL_CHAT_DATA };
     newMessage["message"] = message;
     newMessage["time"] = Date.now();
     newMessage["author"] = participantId ? participantId : "experimenter";
     newMessage["target"] = participantId ? "experimenter" : messageTarget;
-
     onChat(newMessage);
     onGetSession(sessionId);
-    if (message.length === 0) {
-      return;
-    }
+
     setMessage("");
   };
   const onEnterPressed = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -68,30 +85,51 @@ export const ChatTab = (props: Props) => {
       onSendMessage(messageTarget);
     }
   };
+
+  const toAllParticipantOption = {
+    value: "participants",
+    label: "To all participants",
+    shouldShowNotification:
+      currentSession &&
+      currentSession.participants.some(
+        (p) => p.lastMessageSentTime > p.lastMessageReadTime
+      )
+  };
+  const participantOptions =
+    currentSession &&
+    participants.map((p, index) => ({
+      value: p.id,
+      label: p.participant_name,
+      shouldShowNotification: p.lastMessageSentTime > p.lastMessageReadTime
+    }));
+  participantOptions.unshift(toAllParticipantOption);
   return (
     <div className="flex flex-col border-l-gray-200 border-l-2 h-full w-full items-center">
-      <div className="flex flex-row justify-center items-center gap-x-2 border-b-2 border-b-gray-200 w-full py-2">
-        <div className="text-3xl text-center">Chat</div>
-        {currentUser === "experimenter" && (
-          <div className="flex flex-row justify-center items-center gap-x-2 text-sm pt-2">
-            <label className="text-base" htmlFor="participant-names">
-              with
-            </label>
-            <select
-              className="bg-zinc-500 text-white px-2 py-1 rounded focus:outline-none"
-              name="participant-names"
-              id="participant-names"
-              onChange={(event) => handleChange(event.target.value)}
-            >
-              <option value={"participants"}>All participants</option>
-              {currentSession.participants.map((participant, index) => (
-                <option key={index} value={participant.id}>
-                  {participant.participant_name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-between gap-x-2 border-b-2 border-b-gray-200 w-full py-2 px-6 gap-y-2">
+        <h3 className="text-3xl">Chat</h3>
+
+        <div className="flex flex-row justify-center items-center text-sm w-2/3">
+          <Select
+            className="w-full"
+            options={participantOptions}
+            defaultValue={toAllParticipantOption}
+            onChange={(event) => handleChange(event.value)}
+            getOptionLabel={(props: any) => {
+              const { value, label, shouldShowNotification } = props;
+              return (
+                <div className="flex items-center justify-between gap-y-5 w-full">
+                  <span>{label}</span>
+                  {shouldShowNotification && (
+                    <FontAwesomeIcon
+                      icon={faCircle}
+                      style={{ color: "#fb6641" }}
+                    />
+                  )}
+                </div>
+              ) as unknown as string;
+            }}
+          />
+        </div>
       </div>
 
       <div className="w-full flex flex-col justify-between overflow-y-auto h-full">
@@ -99,23 +137,8 @@ export const ChatTab = (props: Props) => {
           {currentUser === "experimenter" &&
             currentSession &&
             messageTarget !== "participants" &&
-            currentSession.participants
+            participants
               .find((participant) => participant.id === messageTarget)
-              .chat.map((message, index) => (
-                <SpeechBubble
-                  key={index}
-                  currentUser={currentUser}
-                  message={message.message}
-                  author={message.author}
-                  target={message.target}
-                  date={message.time}
-                />
-              ))}
-          {currentUser === "participant" &&
-            currentSession &&
-            messageTarget !== "experimenter" &&
-            currentSession.participants
-              .find((participant) => participant.id === participantId)
               .chat.map((message, index) => (
                 <SpeechBubble
                   key={index}
@@ -129,19 +152,17 @@ export const ChatTab = (props: Props) => {
           {currentSession &&
             messageTarget === "participants" &&
             currentUser === "experimenter" &&
-            currentSession.participants[0].chat
-              .filter((message) => message.target === "participants")
-              .map((message, index) => (
-                <SpeechBubble
-                  key={index}
-                  currentUser={currentUser}
-                  message={message.message}
-                  author={message.author}
-                  target={message.target}
-                  date={message.time}
-                  color={"bg-green-600"}
-                />
-              ))}
+            participants[0].chat.map((message, index) => (
+              <UniformSpeechBubble
+                key={index}
+                currentUser={currentUser}
+                message={message.message}
+                author={message.author}
+                target={message.target}
+                date={message.time}
+                participant_name={participants[0].participant_name}
+              />
+            ))}
         </div>
         <div className="flex flex-col p-4 py-8">
           <div className="flex flex-row justify-between gap-x-2 items-center">
