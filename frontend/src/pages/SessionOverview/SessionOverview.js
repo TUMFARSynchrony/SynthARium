@@ -6,10 +6,7 @@ import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import styled from "@mui/material/styles/styled";
-import {
-  ActionIconButton,
-  LinkActionButton
-} from "../../components/atoms/Button";
+import { ActionIconButton, LinkActionButton } from "../../components/atoms/Button";
 import SessionCard from "../../components/organisms/SessionCard/SessionCard";
 import SessionPreview from "../../components/organisms/SessionPreview/SessionPreview";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -18,24 +15,17 @@ import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { INITIAL_SESSION_DATA } from "../../utils/constants";
 import { getPastAndFutureSessions } from "../../utils/utils";
 
-function SessionOverview({
-  onDeleteSession,
-  onJoinExperiment,
-  onCreateExperiment
-}) {
+function SessionOverview({ onDeleteSession, onJoinExperiment, onCreateExperiment }) {
   const dispatch = useAppDispatch();
   const sessionsList = useAppSelector(selectSessions);
   const [past, setPast] = useState([]);
   const [future, setFuture] = useState([]);
-  const [selectedSession, setSelectedSession] = useState(
-    future.length !== 0 ? future[0] : null
-  );
+  const [selectedSession, setSelectedSession] = useState(future.length !== 0 ? future[0] : null);
   const [showPastSessions, setShowPastSessions] = useState(false);
 
   // const { past, future } = getPastAndFutureSessions(sessionsList);
   useEffect(() => {
-    const { pastSession, futureSession } =
-      getPastAndFutureSessions(sessionsList);
+    const { pastSession, futureSession } = getPastAndFutureSessions(sessionsList);
     setPast(pastSession);
     setFuture(futureSession);
     setSelectedSession(futureSession.length !== 0 ? futureSession[0] : null);
@@ -64,14 +54,26 @@ function SessionOverview({
 
   return (
     <>
-      <WelcomeText>
-        A video conferencing tool for researchers. Create a new experimental
-        template to start designing and hosting your next experiment. See the{" "}
-        <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
-          Wiki
-        </a>{" "}
-        for more info.
-      </WelcomeText>
+      <div className="flex flex-col justify-center items-center py-10">
+        <div>
+          <LinkActionButton
+            text="CREATE NEW EXPERIMENT"
+            path="/sessionForm"
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={() => onCreateNewSession()}
+          />
+        </div>
+        <WelcomeText>
+          A video conferencing tool for researchers. Create a new experimental template to start
+          designing and hosting your next experiment. See the{" "}
+          <a href="https://github.com/TUMFARSynchrony/experimental-hub/wiki">
+            <u> Wiki </u>
+          </a>{" "}
+          for more info.
+        </WelcomeText>
+      </div>
       <Grid container className="flex flex-col justify-center">
         <Grid item sm={7} sx={{ m: 3 }}>
           {selectedSession ? (
@@ -114,9 +116,7 @@ function SessionOverview({
             </Typography>
           )}
           <ActionIconButton
-            text={
-              showPastSessions ? "Hide past sessions" : "Show past sessions"
-            }
+            text={showPastSessions ? "Hide past sessions" : "Show past sessions"}
             variant="outlined"
             color="primary"
             size="medium"
@@ -138,14 +138,6 @@ function SessionOverview({
               );
             })}
         </Grid>
-        <LinkActionButton
-          text="CREATE NEW EXPERIMENT"
-          path="/sessionForm"
-          variant="contained"
-          color="primary"
-          size="large"
-          onClick={() => onCreateNewSession()}
-        />
       </Grid>
     </>
   );

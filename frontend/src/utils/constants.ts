@@ -34,6 +34,8 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   banned: false,
   video_filters: [],
   audio_filters: [],
+  audio_group_filters: [],
+  video_group_filters: [],
   chat: [],
   position: {
     x: 10,
@@ -41,8 +43,8 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
     z: 0
   },
   size: {
-    width: 300,
-    height: 300
+    width: 250,
+    height: 250
   }
 };
 
@@ -69,9 +71,7 @@ export const ENVIRONMENT = process.env.NODE_ENV; // "development", "test" or "pr
  * Backend address.
  */
 export const BACKEND =
-  ENVIRONMENT === "production"
-    ? window.location.origin
-    : process.env.REACT_APP_BACKEND;
+  ENVIRONMENT === "production" ? window.location.origin : process.env.REACT_APP_BACKEND;
 
 /**
  * Optional ICE servers.

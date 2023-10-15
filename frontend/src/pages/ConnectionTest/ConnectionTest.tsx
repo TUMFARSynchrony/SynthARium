@@ -33,19 +33,13 @@ function ConnectionTest(props: {
 
   /** Handle `connectionStateChange` event of {@link Connection}. */
   const stateChangeHandler = async (state: ConnectionState) => {
-    console.log(
-      `%cConnection state change Handler: ${ConnectionState[state]}`,
-      "color:blue"
-    );
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
     setConnectionState(state);
   };
 
   /** Handle `connectedPeersChange` event of {@link Connection}. */
   const connectedPeersChangeHandler = async (peers: ConnectedPeer[]) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.log(peers);
     console.groupEnd();
     setConnectedPeers(peers);
@@ -155,20 +149,12 @@ function ConnectionTest(props: {
           srcObject={props.localStream ?? new MediaStream()}
           ignoreAudio
         />
-        <Video
-          title={getRemoteStreamTitle()}
-          srcObject={connection.remoteStream}
-          ignoreAudio
-        />
+        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} ignoreAudio />
       </div>
       {props.localStream ? (
         <>
-          <button onClick={muteAudio}>
-            {audioIsMuted ? "Unmute" : "Mute"} localStream Audio
-          </button>
-          <button onClick={muteVideo}>
-            {videoIsMuted ? "Unmute" : "Mute"} localStream Video
-          </button>
+          <button onClick={muteAudio}>{audioIsMuted ? "Unmute" : "Mute"} localStream Audio</button>
+          <button onClick={muteVideo}>{videoIsMuted ? "Unmute" : "Mute"} localStream Video</button>
         </>
       ) : (
         ""
@@ -179,11 +165,7 @@ function ConnectionTest(props: {
       </p>
       <div className="peerStreams">
         {connectedPeers.map((peer, i) => (
-          <Video
-            title={getVideoTitle(peer, i)}
-            srcObject={peer.stream}
-            key={i}
-          />
+          <Video title={getVideoTitle(peer, i)} srcObject={peer.stream} key={i} />
         ))}
       </div>
       <ApiTests connection={connection} />
@@ -197,14 +179,10 @@ export default ConnectionTest;
  * Component to send test requests to the backend API and display responses.
  */
 function ApiTests(props: { connection: Connection }): JSX.Element {
-  const [responses, setResponses] = useState<
-    { endpoint: string; data: string }[]
-  >([]);
+  const [responses, setResponses] = useState<{ endpoint: string; data: string }[]>([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
-  const [participantId, setParticipantId] = useState(
-    props.connection.participantId ?? ""
-  );
+  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
   const [mutedVideo, setMutedVideo] = useState(false);
   const [mutedAudio, setMutedAudio] = useState(false);
 
@@ -214,31 +192,23 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
      * @param endpoint endpoint to which `messageData` was send. Used as a title for this response.
      * @param messageData data that should be displayed.
      */
-    const saveGenericApiResponse = async (
-      endpoint: string,
-      messageData: any
-    ) => {
+    const saveGenericApiResponse = async (endpoint: string, messageData: any) => {
       setResponses([{ endpoint, data: messageData }, ...responses]);
       setHighlightedResponse(0);
     };
 
     // Message listeners to messages from the backend.
     const handleTest = (data: any) => saveGenericApiResponse("TEST", data);
-    const handleSessionChange = (data: any) =>
-      saveGenericApiResponse("SESSION_CHANGE", data);
-    const handleSessionList = (data: any) =>
-      saveGenericApiResponse("SESSION_LIST", data);
-    const handleSuccess = (data: any) =>
-      saveGenericApiResponse("SUCCESS", data);
+    const handleSessionChange = (data: any) => saveGenericApiResponse("SESSION_CHANGE", data);
+    const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
+    const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
     const handleExperimentCreated = (data: any) =>
       saveGenericApiResponse("EXPERIMENT_CREATED", data);
-    const handleExperimentEnded = (data: any) =>
-      saveGenericApiResponse("EXPERIMENT_ENDED", data);
+    const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) =>
       saveGenericApiResponse("EXPERIMENT_STARTED", data);
-    const handleKickNotification = (data: any) =>
-      saveGenericApiResponse("KICK_NOTIFICATION", data);
+    const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
     const handlePong = async (data: any) => {
       saveGenericApiResponse("PONG", data);
       if ("time" in data.ping_data) {
@@ -403,9 +373,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           </button>
         </div>
         <button
-          onClick={() =>
-            props.connection.sendMessage("PING", { time: new Date().getTime() })
-          }
+          onClick={() => props.connection.sendMessage("PING", { time: new Date().getTime() })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           PING
@@ -426,11 +394,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           );
         })}
       </div>
-      {responses.length > 0 ? (
-        <PrettyJson json={responses[highlightedResponse].data} />
-      ) : (
-        ""
-      )}
+      {responses.length > 0 ? <PrettyJson json={responses[highlightedResponse].data} /> : ""}
     </>
   );
 }
@@ -461,7 +425,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "FILTER_API_TEST", id: "test" }]
+              video_filters: [
+                {
+                  name: "FILTER_API_TEST",
+                  id: "test",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -473,7 +445,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "EDGE_OUTLINE", id: "edge" }]
+              video_filters: [
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -485,7 +465,27 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "ROTATION", id: "rotation" }]
+              video_filters: [
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -498,8 +498,32 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "EDGE_OUTLINE", id: "edge" },
-                { type: "ROTATION", id: "rotation" }
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                },
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                }
               ]
             })
           }
@@ -513,8 +537,32 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [],
               video_filters: [
-                { type: "ROTATION", id: "rotation" },
-                { type: "EDGE_OUTLINE", id: "edge" }
+                {
+                  name: "ROTATION",
+                  id: "rotation",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    direction: {
+                      defaultValue: ["clockwise", "anti-clockwise"],
+                      value: "clockwise"
+                    },
+                    angle: {
+                      min: 1,
+                      max: 180,
+                      step: 1,
+                      value: 45,
+                      defaultValue: 45
+                    }
+                  }
+                },
+                {
+                  name: "EDGE_OUTLINE",
+                  id: "edge",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
               ]
             })
           }
@@ -527,7 +575,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "OPENFACE_AU", id: "zmq" }]
+              video_filters: [
+                {
+                  name: "OPENFACE_AU",
+                  id: "zmq",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -539,7 +595,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
-              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+              video_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-v",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -550,7 +622,23 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
-              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
+              audio_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-a",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ],
               video_filters: []
             })
           }
@@ -562,8 +650,40 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
-              audio_filters: [{ type: "DELAY", id: "delay-a", size: 60 }],
-              video_filters: [{ type: "DELAY", id: "delay-v", size: 60 }]
+              audio_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-a",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ],
+              video_filters: [
+                {
+                  name: "DELAY",
+                  id: "delay-v",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {
+                    size: {
+                      min: 0,
+                      max: 120,
+                      step: 1,
+                      value: 60,
+                      defaultValue: 60
+                    }
+                  }
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -577,8 +697,11 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               video_filters: [],
               audio_filters: [
                 {
-                  type: "AUDIO_SPEAKING_TIME",
-                  id: "audio-speaking-time"
+                  name: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
                 }
               ]
             })
@@ -593,15 +716,25 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               participant_id: "all",
               audio_filters: [
                 {
-                  type: "AUDIO_SPEAKING_TIME",
-                  id: "audio-speaking-time"
+                  name: "AUDIO_SPEAKING_TIME",
+                  id: "audio-speaking-time",
+                  channel: "both",
+                  groupFilter: false,
+                  config: {}
                 }
               ],
               video_filters: [
                 {
-                  type: "DISPLAY_SPEAKING_TIME",
+                  name: "DISPLAY_SPEAKING_TIME",
                   id: "display-speaking-time",
-                  audio_speaking_time_filter_id: "audio-speaking-time"
+                  channel: "video",
+                  groupFilter: false,
+                  config: {
+                    filterId: {
+                      defaultValue: ["audio-speaking-time"],
+                      value: "audio-speaking-time"
+                    }
+                  }
                 }
               ]
             })
@@ -617,8 +750,11 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               audio_filters: [],
               video_filters: [
                 {
-                  type: "SIMPLE_GLASSES_DETECTION",
-                  id: "simple-glasses-detection"
+                  name: "SIMPLE_GLASSES_DETECTION",
+                  id: "simple-glasses-detection",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {}
                 }
               ]
             })
@@ -631,7 +767,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_GROUP_FILTERS", {
               audio_group_filters: [],
-              video_group_filters: [{ type: "TEMPLATE_GF", id: "template_gf" }]
+              video_group_filters: [
+                {
+                  name: "TEMPLATE_GF",
+                  id: "template_gf",
+                  channel: "video",
+                  groupFilter: true,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -683,9 +827,7 @@ function ReplaceConnection(props: {
     props.connection.userType
   );
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
-  const [participantId, setParticipantId] = useState(
-    props.connection.participantId ?? ""
-  );
+  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
   const [experimenterPassword, setExperimenterPassword] = useState(
     props.connection.experimenterPassword ?? ""
   );
@@ -724,23 +866,13 @@ function ReplaceConnection(props: {
     e.preventDefault();
     const newUserType = e.target.value as "participant" | "experimenter";
     setUserType(newUserType);
-    updateConnection(
-      newUserType,
-      sessionId,
-      participantId,
-      experimenterPassword
-    );
+    updateConnection(newUserType, sessionId, participantId, experimenterPassword);
   };
 
   const handleSessionId = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setSessionId(e.target.value);
-    updateConnection(
-      userType,
-      e.target.value,
-      participantId,
-      experimenterPassword
-    );
+    updateConnection(userType, e.target.value, participantId, experimenterPassword);
   };
 
   const handleParticipantId = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -749,9 +881,7 @@ function ReplaceConnection(props: {
     updateConnection(userType, sessionId, e.target.value, experimenterPassword);
   };
 
-  const handleExperimenterPassword = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleExperimenterPassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setExperimenterPassword(e.target.value);
     updateConnection(userType, sessionId, participantId, e.target.value);
@@ -766,10 +896,7 @@ function ReplaceConnection(props: {
       <form className="replaceConnectionForm">
         <label>
           Type:&nbsp;&nbsp;
-          <select
-            defaultValue={props.connection.userType}
-            onChange={handleUserType}
-          >
+          <select defaultValue={props.connection.userType} onChange={handleUserType}>
             <option value="participant">Participant</option>
             <option value="experimenter">Experimenter</option>
           </select>
@@ -778,19 +905,11 @@ function ReplaceConnection(props: {
           <>
             <label>
               Session ID:&nbsp;&nbsp;
-              <input
-                type="text"
-                onChange={handleSessionId}
-                defaultValue={sessionId}
-              />
+              <input type="text" onChange={handleSessionId} defaultValue={sessionId} />
             </label>
             <label>
               ParticipantID:&nbsp;&nbsp;
-              <input
-                type="text"
-                onChange={handleParticipantId}
-                defaultValue={participantId}
-              />
+              <input type="text" onChange={handleParticipantId} defaultValue={participantId} />
             </label>
           </>
         ) : (
@@ -814,7 +933,7 @@ function ReplaceConnection(props: {
  * @param props.srcObject video and audio source
  * @param props.ignoreAudio if true, audio tracks in `srcObject` will be ignored.
  */
-function Video(props: {
+export function Video(props: {
   title: string;
   srcObject: MediaStream;
   ignoreAudio?: boolean;

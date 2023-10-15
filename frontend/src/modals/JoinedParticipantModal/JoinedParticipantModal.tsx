@@ -63,24 +63,14 @@ function JoinedParticipantModal({
           variant="outlined"
           color="primary"
           size="medium"
-          onClick={() =>
-            muteParticipant(
-              !participantData.muted_audio,
-              participantData.muted_video
-            )
-          }
+          onClick={() => muteParticipant(!participantData.muted_audio, participantData.muted_video)}
         />
         <ActionButton
           text={participantData.muted_video ? "Unmute Video" : "Mute Video"}
           variant="outlined"
           color="primary"
           size="medium"
-          onClick={() =>
-            muteParticipant(
-              participantData.muted_audio,
-              !participantData.muted_video
-            )
-          }
+          onClick={() => muteParticipant(participantData.muted_audio, !participantData.muted_video)}
         />
         <hr className="separatorLine"></hr>
         <div className="joinedParticipantModalInfo">

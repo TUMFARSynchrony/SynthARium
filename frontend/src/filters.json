@@ -21,6 +21,18 @@
       "type": "DELAY",
       "id": "delay-v",
       "size": 60
+    },
+    {
+      "type": "DISPLAY_SPEAKING_TIME",
+      "id": "display-speaking-time",
+      "name": "Test",
+      "speaking_time_filter_id": "audio-speaking-time"
+    },
+    {
+      "type": "AUDIO_SPEAKING_TIME",
+      "id": "audio-speaking-time",
+      "frames": 60,
+      "seconds": 1
     }
   ]
 }

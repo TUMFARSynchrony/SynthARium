@@ -10,7 +10,11 @@ import { useState } from "react";
 
 // This is used to take the consent of the participant before getting access to their microphone and camera.
 // TO DO: establish the participant connection with backend only after getting consent.
-function ConsentModal() {
+interface ConsentModalProps {
+  onConsentGiven: (consent: boolean) => void;
+}
+
+function ConsentModal({ onConsentGiven }: ConsentModalProps) {
   const [openConsentDialog, setOpenConsentDialog] = useState(true);
   const [checkParticipation, setCheckParticipation] = useState(false);
   const [checkRecording, setCheckRecording] = useState(false);
@@ -26,13 +30,12 @@ function ConsentModal() {
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1" align="justify" sx={{ mb: 3 }}>
-          Study description... Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-          ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-          fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-          sunt in culpa qui officia deserunt mollit anim id est laborum.
+          Study description... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+          nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
         </Typography>
         <FormControlLabel
           control={<Checkbox />}
@@ -60,6 +63,8 @@ function ConsentModal() {
           color="success"
           size="medium"
           onClick={() => {
+            const userConsent = checkParticipation && checkRecording;
+            onConsentGiven(userConsent);
             setOpenConsentDialog(!openConsentDialog);
           }}
           disabled={!checkParticipation || !checkRecording}

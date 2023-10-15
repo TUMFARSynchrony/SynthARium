@@ -17,12 +17,7 @@ function NavigationBar() {
       <AppBar position="static">
         <GreyToolbar>
           <Stack direction="row">
-            <LinkButton
-              text={"Session Overview"}
-              path={"/"}
-              variant="string"
-              size="large"
-            />
+            <LinkButton text={"Session Overview"} path={"/"} variant="string" size="large" />
             <LinkButton
               text={"Post-Processing Room"}
               path={"/postProcessingRoom"}

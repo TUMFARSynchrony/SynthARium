@@ -13,13 +13,7 @@ function ActionButton({
   disabled = false
 }: ActionButtonProps) {
   return (
-    <Button
-      variant={variant}
-      color={color}
-      size={size}
-      onClick={onClick}
-      disabled={disabled}
-    >
+    <Button variant={variant} color={color} size={size} onClick={onClick} disabled={disabled}>
       {text}
     </Button>
   );

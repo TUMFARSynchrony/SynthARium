@@ -1,4 +1,4 @@
-import { LinkButton } from "../../components/atoms/Button";
+import { ActionButton, LinkActionButton, LinkButton } from "../../components/atoms/Button";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
@@ -13,6 +13,9 @@ import {
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
+import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
+import { useState } from "react";
+import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 
 function WatchingRoom({
   connectedParticipants,
@@ -20,65 +23,103 @@ function WatchingRoom({
   onChat,
   onGetSession,
   onLeaveExperiment,
-  onMuteParticipant
+  onMuteParticipant,
+  onStartExperiment,
+  onEndExperiment
 }) {
+  const [startVerificationModal, setStartVerificationModal] = useState(false);
+  const [endVerificationModal, setEndVerificationModal] = useState(false);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
-
   return (
-    <div>
+    <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
-        <div className="watchingRoom flex justify-between">
-          <div className="participantLivestream w-full flex justify-center items-center">
-            <div className="videoCanvas">
+        <div className="flex justify-between w-full h-full">
+          <div className="w-3/4 h-full flex flex-col justify-center items-center py-6 px-4">
+            <div className="h-full w-full">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
+                localStream={null}
+                ownParticipantId={null}
               />
-              <hr className="separatorLine"></hr>
-              <div className="appliedFilters">
-                Filters applied on all participants
-              </div>
+            </div>
+            <div className="py-2 border-gray-300 border-1 rounded-md px-4">
+              Filters applied on all participants
+            </div>
+            <div className="flex flex-row justify-center gap-x-4 pt-5">
+              <LinkActionButton
+                text="LEAVE EXPERIMENT"
+                variant="outlined"
+                path="/"
+                size="large"
+                color="primary"
+                onClick={() => onLeaveExperiment()}
+              />
+              {sessionData.start_time === 0 ? (
+                <ActionButton
+                  text="START EXPERIMENT"
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  onClick={() => {
+                    setStartVerificationModal(true);
+                  }}
+                />
+              ) : (
+                <ActionButton
+                  text="END EXPERIMENT"
+                  variant="contained"
+                  color="error"
+                  size="large"
+                  onClick={() => {
+                    setEndVerificationModal(true);
+                  }}
+                />
+              )}
+
+              {startVerificationModal && (
+                <StartVerificationModal
+                  setShowModal={setStartVerificationModal}
+                  onStartExperiment={onStartExperiment}
+                />
+              )}
+
+              {endVerificationModal && (
+                <EndVerificationModal
+                  setShowModal={setEndVerificationModal}
+                  onEndExperiment={onEndExperiment}
+                />
+              )}
             </div>
           </div>
-          {isChatModalActive && (
-            <div className="w-1/4">
+          <div className="w-1/4">
+            {isChatModalActive && (
               <ChatTab
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
                 currentUser={"experimenter"}
               />
-            </div>
-          )}
-          {isParticipantsModalActive && (
-            <div className="w-1/4">
+            )}
+            {isParticipantsModalActive && (
               <ParticipantsTab
                 connectedParticipants={connectedParticipants}
                 onKickBanParticipant={onKickBanParticipant}
                 onMuteParticipant={onMuteParticipant}
               />
-            </div>
-          )}
-          {isInstructionsModalActive && (
-            <div className="w-1/4">
-              <InstructionsTab />{" "}
-            </div>
-          )}
+            )}
+            {isInstructionsModalActive && <InstructionsTab />}
+          </div>
         </div>
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton
-            text="Go to Session Overview"
-            path="/"
-            variant="contained"
-            size="large"
-          />
+          <LinkButton text="Go to Session Overview" path="/" variant="contained" size="large" />
         </div>
       )}
     </div>

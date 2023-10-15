@@ -55,11 +55,7 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
-    console.log(peers);
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -70,10 +66,7 @@ function App() {
 
   /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
-    console.log(
-      `%cConnection state change Handler: ${ConnectionState[state]}`,
-      "color:blue"
-    );
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
 
     setConnectionState(state);
   };
@@ -130,8 +123,7 @@ function App() {
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
     let experimenterPassword = experimenterPasswordParam ?? "";
-    const userType =
-      sessionId && participantId ? "participant" : "experimenter";
+    const userType = sessionId && participantId ? "participant" : "experimenter";
 
     const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage =
@@ -139,11 +131,7 @@ function App() {
 
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
-    if (
-      !isConnectionTestPage &&
-      userType === "experimenter" &&
-      !experimenterPassword
-    ) {
+    if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
       //experimenterPassword = prompt("Please insert experimenter password");
       experimenterPassword = "no-password-given";
     }
@@ -401,15 +389,10 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
-                centerContentOnYAxis={true}
               />
             }
           />
-          <Route
-            exact
-            path="/postProcessingRoom"
-            element={<PostProcessing />}
-          />
+          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
             path="/lobby"
@@ -433,9 +416,9 @@ function App() {
                   }
                   customComponent={
                     <Lobby
+                      connectedParticipants={connectedParticipants}
                       localStream={localStream}
                       connection={connection}
-                      connectionState={connectionState}
                       onGetSession={onGetSession}
                       onChat={onChat}
                     />
@@ -531,7 +514,11 @@ function App() {
             exact
             path="/sessionForm"
             element={
-              <SessionForm onSendSessionToBackend={onSendSessionToBackend} />
+              <PageTemplate
+                title={"Session Form"}
+                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
+                centerContentOnYAxis={true}
+              />
             }
           />
           <Route

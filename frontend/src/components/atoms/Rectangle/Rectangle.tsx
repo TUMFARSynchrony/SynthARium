@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import Konva from "konva";
 import { Group, Rect, Text, Transformer } from "react-konva";
-import { CANVAS_SIZE } from "../../../utils/constants";
 import { getTotalBox } from "../../../utils/utils";
 import { Shape, Group as GroupProps } from "../../../types";
+import { CANVAS_SIZE } from "../../../utils/constants";
 
 type RectangleProps = {
   shapeProps: Shape;
@@ -13,16 +13,9 @@ type RectangleProps = {
   onChange: (newAttr: GroupProps) => void;
 };
 
-const Rectangle = ({
-  shapeProps,
-  groupProps,
-  isSelected,
-  onSelect,
-  onChange
-}: RectangleProps) => {
+const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: RectangleProps) => {
   const shapeRef = useRef<Konva.Group>();
   const trRef = useRef<Konva.Transformer>();
-
   useEffect(() => {
     if (!trRef.current) {
       return;
@@ -91,9 +84,7 @@ const Rectangle = ({
     });
   };
 
-  const participant_name = shapeProps.participant_name
-    ? shapeProps.participant_name
-    : "";
+  const participant_name = shapeProps.participant_name ? shapeProps.participant_name : "";
 
   return (
     <>
@@ -105,17 +96,15 @@ const Rectangle = ({
         onDragMove={() => onDragMove()}
         ref={shapeRef}
       >
-        <Rect
-          {...shapeProps}
-          width={groupProps.width}
-          height={groupProps.height}
-        />
+        <Rect {...shapeProps} width={groupProps.width} height={groupProps.height} />
         <Text
           text={participant_name}
-          x={shapeProps.x}
-          y={shapeProps.y}
-          fontSize={15}
+          x={shapeProps.x + 5}
+          y={shapeProps.y + 5}
+          fontSize={20}
           fill="white"
+          stroke="#F5F5F5"
+          strokeWidth={0.25}
         />
       </Group>
       {isSelected && (

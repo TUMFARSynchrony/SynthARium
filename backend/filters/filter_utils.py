@@ -26,23 +26,23 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
     bool
         True if `data` is a valid FilterDict.
     """
-    if "type" not in data:
-        logger.debug("Missing key: type")
+    if "name" not in data:
+        logger.debug("Missing key: name")
         return False
 
-    filter_type = data["type"]
+    filter_name = data["name"]
 
-    if not isinstance(filter_type, str):
-        logger.debug('Filter "type" must be of type str.')
+    if not isinstance(filter_name, str):
+        logger.debug('Filter "name" must be of type str.')
         return False
 
     filters = get_filter_dict()
 
-    if filter_type not in filters:
-        logging.debug(f'Invalid filter type: "{filter_type}".')
+    if filter_name not in filters:
+        logging.debug(f'Invalid filter type: "{filter_name}".')
         return False
 
-    return isinstance(data["id"], str) and filters[filter_type].validate_dict(data)
+    return isinstance(data["id"], str) and filters[filter_name].validate_dict(data)
 
 
 def is_valid_set_filters_request(

@@ -38,7 +38,7 @@ class GroupFilter(ABC):
         Parameters
         ----------
         config : custom_types.filter.FilterDict
-            Configuration for filter.  `config["type"]` must match the filter
+            Configuration for filter.  `config["name"]` must match the filter
             implementation.
 
         Notes
@@ -49,7 +49,7 @@ class GroupFilter(ABC):
         filters after __init__ (if they are designed to be).
         """
         self._logger = logging.getLogger(
-            f"{config['type']}-GroupFilter-P-{participant_id}"
+            f"{config['name']}-GroupFilter-P-{participant_id}"
         )
         self._config = config
         self.participant_id = participant_id

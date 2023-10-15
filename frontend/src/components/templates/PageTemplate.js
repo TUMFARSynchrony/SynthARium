@@ -10,9 +10,7 @@ function PageTemplate({
     <div className="h-full w-full flex flex-col">
       <div className="h-20 flex flex-row justify-between items-center w-full px-8">
         <div className="font-bold text-3xl">{title}</div>
-        {buttonListComponent && (
-          <div className={buttonClasses}>{buttonListComponent}</div>
-        )}{" "}
+        {buttonListComponent && <div className={buttonClasses}>{buttonListComponent}</div>}{" "}
       </div>
       <hr className="w-full border-2 border-gray-200" />
       {/*

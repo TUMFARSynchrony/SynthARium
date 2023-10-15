@@ -234,10 +234,10 @@ class TrackHandler(MediaStreamTrack):
         self._filters = {}
         for config in filter_configs:
             filter_id = config["id"]
-            # Reuse existing filter for matching id and type.
+            # Reuse existing filter for matching id and name.
             if (
                 filter_id in old_filters
-                and old_filters[filter_id].config["type"] == config["type"]
+                and old_filters[filter_id].config["name"] == config["name"]
             ):
                 self._filters[filter_id] = old_filters[filter_id]
                 self._filters[filter_id].set_config(config)
@@ -289,7 +289,7 @@ class TrackHandler(MediaStreamTrack):
             # Reuse existing filter for matching id and type.
             if (
                 filter_id in old_group_filters
-                and old_group_filters[filter_id].config["type"] == config["type"]
+                and old_group_filters[filter_id].config["name"] == config["name"]
             ):
                 self._group_filters[filter_id] = old_group_filters[filter_id]
                 self._group_filters[filter_id].set_config(config)

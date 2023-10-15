@@ -5,22 +5,9 @@ interface ActionIconButtonProps extends ButtonProps {
   icon: JSX.Element;
 }
 
-function ActionIconButton({
-  text,
-  variant,
-  color,
-  size,
-  onClick,
-  icon
-}: ActionIconButtonProps) {
+function ActionIconButton({ text, variant, color, size, onClick, icon }: ActionIconButtonProps) {
   return (
-    <Button
-      variant={variant}
-      color={color}
-      size={size}
-      onClick={onClick}
-      startIcon={icon}
-    >
+    <Button variant={variant} color={color} size={size} onClick={onClick} startIcon={icon}>
       {text}
     </Button>
   );
