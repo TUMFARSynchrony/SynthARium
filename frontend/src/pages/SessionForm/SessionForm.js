@@ -46,9 +46,7 @@ function SessionForm({ onSendSessionToBackend }) {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [participantDimensions, setParticipantDimensions] = useState(
-    getParticipantDimensions(
-      sessionData.participants ? sessionData.participants : []
-    )
+    getParticipantDimensions(sessionData.participants ? sessionData.participants : [])
   );
 
   // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
@@ -88,10 +86,7 @@ function SessionForm({ onSendSessionToBackend }) {
       return;
     }
 
-    if (
-      snackbarResponse.participantOriginalEmpty &&
-      !snackbarResponse.newInputEqualsOld
-    ) {
+    if (snackbarResponse.participantOriginalEmpty && !snackbarResponse.newInputEqualsOld) {
       setSnackbar({
         open: true,
         text: "You need to save the information first!",
@@ -251,9 +246,7 @@ function SessionForm({ onSendSessionToBackend }) {
                       value={sessionData.title}
                       size="small"
                       required
-                      onChange={(event) =>
-                        handleSessionDataChange("title", event.target.value)
-                      }
+                      onChange={(event) => handleSessionDataChange("title", event.target.value)}
                     />
                     <TextField
                       label="Description"
@@ -261,27 +254,20 @@ function SessionForm({ onSendSessionToBackend }) {
                       size="small"
                       required
                       onChange={(event) =>
-                        handleSessionDataChange(
-                          "description",
-                          event.target.value
-                        )
+                        handleSessionDataChange("description", event.target.value)
                       }
                     />
                   </Box>
                   <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
                     <TextField
-                      value={
-                        sessionData.date ? formatDate(sessionData.date) : ""
-                      }
+                      value={sessionData.date ? formatDate(sessionData.date) : ""}
                       type="datetime-local"
                       size="small"
                       required
                       onChange={(event) =>
                         handleSessionDataChange(
                           "date",
-                          event.target.value
-                            ? new Date(event.target.value).getTime()
-                            : 0
+                          event.target.value ? new Date(event.target.value).getTime() : 0
                         )
                       }
                     />
@@ -298,9 +284,7 @@ function SessionForm({ onSendSessionToBackend }) {
                       control={<Checkbox />}
                       label="Record Session"
                       checked={sessionData.record}
-                      onChange={() =>
-                        handleSessionDataChange("record", !sessionData.record)
-                      }
+                      onChange={() => handleSessionDataChange("record", !sessionData.record)}
                     />
                     {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
                   </Box>

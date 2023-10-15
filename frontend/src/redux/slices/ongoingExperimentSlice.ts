@@ -35,5 +35,4 @@ export const { createExperiment, changeExperimentState, joinExperiment } =
 
 export default ongoingExperimentSlice.reducer;
 
-export const selectOngoingExperiment = (state: RootState) =>
-  state.ongoingExperiment;
+export const selectOngoingExperiment = (state: RootState) => state.ongoingExperiment;

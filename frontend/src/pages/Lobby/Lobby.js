@@ -7,10 +7,7 @@ import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
-import {
-  selectChatTab,
-  selectInstructionsTab
-} from "../../redux/slices/tabsSlice";
+import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./Lobby.css";
 
@@ -32,10 +29,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     }
   }, [connection, connectionState, onGetSession, sessionIdParam]);
   const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -86,18 +80,12 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
                   ownParticipantId={participantIdParam}
                 />
               ) : (
-                <video
-                  ref={videoElement}
-                  autoPlay
-                  playsInline
-                  width="100%"
-                  height="100%"
-                ></video>
+                <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
               )
             ) : (
               <Typography>
-                Unable to access your video. Please check that you have allowed
-                access to your camera and microphone.
+                Unable to access your video. Please check that you have allowed access to your
+                camera and microphone.
               </Typography>
             )
           ) : (
@@ -105,21 +93,19 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           )}
         </div>
         <div className="w-1/4">
-          {connectionState !== ConnectionState.CONNECTED && (
-            <div>Trying to connect...</div>
+          {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
+          {connectionState === ConnectionState.CONNECTED && isChatModalActive && (
+            <ChatTab
+              onChat={onChat}
+              onGetSession={onGetSession}
+              currentUser="participant"
+              participantId={participantIdParam}
+            />
           )}
-          {connectionState === ConnectionState.CONNECTED &&
-            isChatModalActive && (
-              <ChatTab
-                onChat={onChat}
-                onGetSession={onGetSession}
-                currentUser="participant"
-                participantId={participantIdParam}
-              />
-            )}
 
-          {connectionState === ConnectionState.CONNECTED &&
-            isInstructionsModalActive && <InstructionsTab />}
+          {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
+            <InstructionsTab />
+          )}
         </div>
       </div>
     </>

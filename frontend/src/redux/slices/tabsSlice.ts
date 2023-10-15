@@ -45,8 +45,6 @@ export const { closeAllTabs, toggleSingleTab } = tabsSlice.actions;
 export default tabsSlice.reducer;
 
 export const selectChatTab = (state: RootState) => state.tabs.chatTabActive;
-export const selectInstructionsTab = (state: RootState) =>
-  state.tabs.instructionsTabActive;
+export const selectInstructionsTab = (state: RootState) => state.tabs.instructionsTabActive;
 
-export const selectParticipantsTab = (state: RootState) =>
-  state.tabs.participantsTabActive;
+export const selectParticipantsTab = (state: RootState) => state.tabs.participantsTabActive;
