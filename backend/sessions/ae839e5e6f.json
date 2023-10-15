@@ -40,7 +40,9 @@
         }
       ],
       "audio_filters": [],
-      "video_filters": []
+      "video_filters": [],
+      "lastMessageSentTime": 0,
+      "lastMessageReadTime": 0
     },
     {
       "id": "25a882669d",
@@ -78,7 +80,9 @@
         }
       ],
       "audio_filters": [],
-      "video_filters": []
+      "video_filters": [],
+      "lastMessageSentTime": 0,
+      "lastMessageReadTime": 0
     },
     {
       "id": "8e39086e83",
@@ -116,7 +120,9 @@
         }
       ],
       "audio_filters": [],
-      "video_filters": []
+      "video_filters": [],
+      "lastMessageSentTime": 0,
+      "lastMessageReadTime": 0
     }
   ],
   "log": []
