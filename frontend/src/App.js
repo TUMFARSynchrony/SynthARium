@@ -414,7 +414,6 @@ function App() {
                     onDeleteSession={onDeleteSession}
                     onCreateExperiment={onCreateExperiment}
                     onJoinExperiment={onJoinExperiment}
-                    clickList={clickList}
                   />
                 }
               />
@@ -600,6 +599,17 @@ function App() {
         autoHideDuration={snackbar.autoHideDuration}
         anchorOrigin={snackbar.anchorOrigin}
       />
+
+      <a
+        type="button"
+        href={`data:text/json;charset=utf-8,${encodeURIComponent(
+          JSON.stringify(clickList)
+        )}`}
+        download="click-list.json"
+        className="rounded py-3 px-[22px] m-10 bg-[#1876D2] text-white"
+      >
+        Download click list
+      </a>
     </div>
   );
 }

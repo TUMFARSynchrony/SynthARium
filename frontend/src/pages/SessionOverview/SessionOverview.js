@@ -21,8 +21,7 @@ import { getPastAndFutureSessions } from "../../utils/utils";
 function SessionOverview({
   onDeleteSession,
   onJoinExperiment,
-  onCreateExperiment,
-  clickList
+  onCreateExperiment
 }) {
   const dispatch = useAppDispatch();
   const sessionsList = useAppSelector(selectSessions);
@@ -152,16 +151,6 @@ function SessionOverview({
             })}
         </Grid>
       </Grid>
-      <a
-        type="button"
-        href={`data:text/json;charset=utf-8,${encodeURIComponent(
-          JSON.stringify(clickList)
-        )}`}
-        download="click-list.json"
-        className="rounded py-3 px-[22px] bg-[#1876D2] text-white"
-      >
-        Download click list
-      </a>
     </>
   );
 }
