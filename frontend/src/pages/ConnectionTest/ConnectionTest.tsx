@@ -767,7 +767,15 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           onClick={() =>
             props.connection.sendMessage("SET_GROUP_FILTERS", {
               audio_group_filters: [],
-              video_group_filters: [{ type: "TEMPLATE_GF", id: "template_gf" }]
+              video_group_filters: [
+                {
+                  name: "TEMPLATE_GF",
+                  id: "template_gf",
+                  channel: "video",
+                  groupFilter: true,
+                  config: {}
+                }
+              ]
             })
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
