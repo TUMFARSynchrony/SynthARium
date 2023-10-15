@@ -97,6 +97,12 @@ class ParticipantData(BaseData):
     video_filters: list[FilterDict] = field(repr=False)
     """Active video filters for participant."""
 
+    lastMessageSentTime: int = field(repr=False)
+    """Last message sent time"""
+
+    lastMessageReadTime: int = field(repr=False)
+    """Last message read time"""
+
     def __post_init__(self) -> None:
         """Add event listener to size and position."""
         super(ParticipantData, self).__post_init__()
@@ -122,6 +128,8 @@ class ParticipantData(BaseData):
             "chat": self.chat,
             "audio_filters": self.audio_filters,
             "video_filters": self.video_filters,
+            "lastMessageSentTime": self.lastMessageSentTime,
+            "lastMessageReadTime": self.lastMessageReadTime,
         }
 
     def as_summary_dict(self) -> ParticipantSummaryDict:
