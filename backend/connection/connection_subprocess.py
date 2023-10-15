@@ -47,6 +47,8 @@ class ConnectionSubprocess(ConnectionInterface):
     _message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]]
     _initial_audio_filters: list[FilterDict]
     _initial_video_filters: list[FilterDict]
+    _initial_audio_group_filters: list[FilterDict]
+    _initial_video_group_filters: list[FilterDict]
     _filter_receiver: FilterSubprocessReceiver
     _record_data: tuple
 
@@ -70,6 +72,8 @@ class ConnectionSubprocess(ConnectionInterface):
         config: Config,
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
+        audio_group_filters: list[FilterDict],
+        video_group_filters: list[FilterDict],
         filter_api: FilterAPI,
         record_data: tuple,
     ):
@@ -106,6 +110,8 @@ class ConnectionSubprocess(ConnectionInterface):
         self._message_handler = message_handler
         self._initial_audio_filters = audio_filters
         self._initial_video_filters = video_filters
+        self._initial_audio_group_filters = audio_group_filters
+        self._initial_video_group_filters = video_group_filters
         self._record_data = record_data
 
         self.__lock = asyncio.Lock()
@@ -190,6 +196,18 @@ class ConnectionSubprocess(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("SET_AUDIO_FILTERS", filters)
 
+    async def set_video_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("SET_VIDEO_GROUP_FILTERS", (group_filters, ports))
+
+    async def set_audio_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("SET_AUDIO_GROUP_FILTERS", (group_filters, ports))
+
     async def start_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("START_RECORDING", None)
@@ -226,6 +244,10 @@ class ConnectionSubprocess(ConnectionInterface):
             json.dumps(self._initial_audio_filters),
             "--video-filters",
             json.dumps(self._initial_video_filters),
+            "--audio-group-filters",
+            json.dumps(self._initial_audio_group_filters),
+            "--video-group-filters",
+            json.dumps(self._initial_video_group_filters),
             "--record-data",
             json.dumps(self._record_data),
         ]
@@ -513,6 +535,8 @@ async def connection_subprocess_factory(
     config: Config,
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
+    audio_group_filters: list[FilterDict],
+    video_group_filters: list[FilterDict],
     filter_api: FilterAPI,
     record_data: tuple,
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
@@ -531,6 +555,10 @@ async def connection_subprocess_factory(
         Default audio filters for this connection.
     video_filters : list of custom_types.filter.FilterDict
         Default video filters for this connection.
+    audio_group_filters : list of custom_types.filter.FilterDict
+        Default audio group filters for this connection.
+    video_group_filters : list of custom_types.filter.FilterDict
+        Default video group filters for this connection.
     record_data : tuple
         Boolean flag for recording the experiment and the path where the recordings will be saved.
 
@@ -548,6 +576,8 @@ async def connection_subprocess_factory(
         config,
         audio_filters,
         video_filters,
+        audio_group_filters,
+        video_group_filters,
         filter_api,
         record_data,
     )
