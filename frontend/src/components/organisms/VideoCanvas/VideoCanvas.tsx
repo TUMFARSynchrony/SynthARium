@@ -29,18 +29,9 @@ const getVideoTitle = (
   return ownParticipantId ? "You" : `Peer stream ${index + 1}`;
 };
 
-function VideoCanvas({
-  connectedParticipants,
-  sessionData,
-  ownParticipantId,
-  localStream
-}: Props) {
+function VideoCanvas({ connectedParticipants, sessionData, ownParticipantId, localStream }: Props) {
   return (
-    <Stage
-      width={CANVAS_SIZE.width}
-      height={CANVAS_SIZE.height}
-      className="videoCanvas"
-    >
+    <Stage width={CANVAS_SIZE.width} height={CANVAS_SIZE.height} className="videoCanvas">
       <Layer>
         {/* Render the video for the participant themselves */}
         {ownParticipantId ? (

@@ -89,9 +89,7 @@ export class EventHandler<T> {
     const handlers = this.eventHandlers.get(event);
 
     if (this.warnNoHandler && (!handlers || handlers.length === 0)) {
-      console.warn(
-        `[${this.handlerName}] Received event: ${event}, but no handler defined.`
-      );
+      console.warn(`[${this.handlerName}] Received event: ${event}, but no handler defined.`);
       return;
     }
 

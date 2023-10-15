@@ -82,9 +82,7 @@ export default class Connection extends ConnectionBase<
         "userType participant requires the participantId and sessionId to be defined."
       );
     } else if (userType === "experimenter" && !experimenterPassword) {
-      throw new Error(
-        "userType experimenter requires the experimenterPassword to be defined."
-      );
+      throw new Error("userType experimenter requires the experimenterPassword to be defined.");
     }
 
     this.sessionId = sessionId;
@@ -95,10 +93,7 @@ export default class Connection extends ConnectionBase<
     this._state = ConnectionState.NEW;
 
     this.api = new EventHandler();
-    this.api.on(
-      "CONNECTION_PROPOSAL",
-      this.handleConnectionProposal.bind(this)
-    );
+    this.api.on("CONNECTION_PROPOSAL", this.handleConnectionProposal.bind(this));
     this.api.on("CONNECTION_ANSWER", this.handleConnectionAnswer.bind(this));
 
     this.initDataChannel();
@@ -150,15 +145,11 @@ export default class Connection extends ConnectionBase<
    */
   public async start(localStream?: MediaStream) {
     if (!localStream && this.userType === "participant") {
-      throw new Error(
-        "Connection.start(): localStream is required for user type participant."
-      );
+      throw new Error("Connection.start(): localStream is required for user type participant.");
     }
     if (this._state !== ConnectionState.NEW) {
       throw new Error(
-        `Connection.start(): cannot start Connection, state is: ${
-          ConnectionState[this._state]
-        }`
+        `Connection.start(): cannot start Connection, state is: ${ConnectionState[this._state]}`
       );
     }
     this.localStream = localStream;
@@ -194,9 +185,7 @@ export default class Connection extends ConnectionBase<
    * @param closeSenders default true - If true, streams send by this connection (localstream) will be closed.
    */
   private internalStop(state?: ConnectionState, closeSenders = true) {
-    if (
-      [ConnectionState.CLOSED, ConnectionState.FAILED].includes(this._state)
-    ) {
+    if ([ConnectionState.CLOSED, ConnectionState.FAILED].includes(this._state)) {
       return;
     }
     this.setState(state ?? ConnectionState.CLOSED);
@@ -206,10 +195,7 @@ export default class Connection extends ConnectionBase<
 
     // close transceivers
     this.pc.getTransceivers().forEach(function (transceiver) {
-      if (
-        transceiver.currentDirection &&
-        transceiver.currentDirection !== "stopped"
-      ) {
+      if (transceiver.currentDirection && transceiver.currentDirection !== "stopped") {
         transceiver.stop();
       }
     });
@@ -301,9 +287,7 @@ export default class Connection extends ConnectionBase<
     try {
       message = JSON.parse(e.data);
     } catch (error) {
-      this.logError(
-        "Failed to parse datachannel message received from the server."
-      );
+      this.logError("Failed to parse datachannel message received from the server.");
       return;
     }
     if (!isValidMessage(message)) {
@@ -396,10 +380,7 @@ export default class Connection extends ConnectionBase<
       this.emit("connectedPeersChange", this.connectedPeers);
     });
     subConnection.on("connectionClosed", async (id) => {
-      this.log(
-        'SubConnection "connectionClosed" event received. Removing SubConnection:',
-        id
-      );
+      this.log('SubConnection "connectionClosed" event received. Removing SubConnection:', id);
       this.subConnections.delete(id as string);
       this.emit("connectedPeersChange", this.connectedPeers);
     });
@@ -420,14 +401,9 @@ export default class Connection extends ConnectionBase<
       this.logError("Received invalid CONNECTION_ANSWER.");
       return;
     }
-    const subConnection: SubConnection | undefined = this.subConnections.get(
-      data.id
-    );
+    const subConnection: SubConnection | undefined = this.subConnections.get(data.id);
     if (!subConnection) {
-      this.logError(
-        "Failed to handle answer, no subconnection found for id:",
-        data.id
-      );
+      this.logError("Failed to handle answer, no subconnection found for id:", data.id);
       return;
     }
     subConnection.handleAnswer(data);

@@ -31,9 +31,7 @@ function ParticipantData({
       <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
         <TextField
           label="Participant Name"
-          value={[participantData.participant_name]
-            .filter((str) => str.length > 0)
-            .join(" ")}
+          value={[participantData.participant_name].filter((str) => str.length > 0).join(" ")}
           inputProps={{ readOnly: true }}
           size="small"
           sx={{ mt: "5px" }}
