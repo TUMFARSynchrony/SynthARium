@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
-import { Session } from "../../types";
+import { Participant, Session } from "../../types";
 import {
   filterListById,
   getParticipantById,
@@ -61,12 +61,23 @@ export const sessionsListSlice = createSlice({
           participant.chat.push(payload.message);
         });
       } else if (target === "experimenter") {
-        session.participants
-          .find((participant) => participant.id === author)
-          .chat.push(payload.message);
+        const participant = session.participants.find(
+          (participant) => participant.id === author
+        );
+        participant.chat.push(payload.message);
       } else {
         const participant = getParticipantById(target, session);
         participant.chat.push(payload.message);
+      }
+    },
+    updateLastMessageReadTime: (state, { payload }) => {
+      const currentSession = state.currentSession;
+      const participantId = payload.id;
+      const participant: Participant = currentSession.participants.find(
+        (participant) => participant.id === participantId
+      );
+      if (participant) {
+        participant.lastMessageReadTime = payload.time;
       }
     },
     setCurrentSession: (state, { payload }) => {
@@ -115,6 +126,7 @@ export const {
   updateSession,
   addNote,
   addMessageToCurrentSession,
+  updateLastMessageReadTime,
   banMuteUnmuteParticipant,
   setCurrentSession,
   setExperimentTimes

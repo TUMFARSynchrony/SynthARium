@@ -8,7 +8,7 @@ import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
 import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../utils/utils";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import { ExperimenterChatTab } from "../../components/molecules/ChatTab/ExperimenterChatTab";
 import {
   selectChatTab,
   selectInstructionsTab,
@@ -29,7 +29,8 @@ function WatchingRoom({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
-  onEndExperiment
+  onEndExperiment,
+  onUpdateMessageReadTime
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
@@ -103,11 +104,12 @@ function WatchingRoom({
           </div>
           <div className="w-1/4">
             {isChatModalActive && (
-              <ChatTab
+              <ExperimenterChatTab
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
                 currentUser={"experimenter"}
+                onUpdateMessageReadTime={onUpdateMessageReadTime}
               />
             )}
             {isParticipantsModalActive && (
