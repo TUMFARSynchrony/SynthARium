@@ -18,10 +18,7 @@ export const filterListByIndex = <T>(list: T[], index: number): T[] => {
   return filteredList;
 };
 
-export const filterListById = <T extends { id: string }>(
-  list: T[],
-  id: string
-): T[] => {
+export const filterListById = <T extends { id: string }>(list: T[], id: string): T[] => {
   const filteredList = list.filter((obj) => {
     return obj.id !== id;
   });
@@ -169,9 +166,6 @@ export const getVideoTitle = (peer: any, index: number) => {
 };
 
 // Generating the dynamic participant invite link based on the host domain.
-export const getParticipantInviteLink = (
-  participantId: string,
-  sessionId: string
-) => {
+export const getParticipantInviteLink = (participantId: string, sessionId: string) => {
   return `${window.location.origin}/consent?participantId=${participantId}&sessionId=${sessionId}`;
 };

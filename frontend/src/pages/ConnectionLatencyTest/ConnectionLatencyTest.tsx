@@ -48,9 +48,7 @@ const ConnectionLatencyTest = (props: {
   };
   const [connectionState, setConnectionState] = useState(connection.state);
   const [startedRemoteStreamLoop, setStartedRemoteStreamLoop] = useState(false);
-  const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>(
-    []
-  );
+  const [remoteStreamData, setRemoteStreamData] = useState<RemoteStreamData[]>([]);
   const [localStreamData, setLocalStreamData] = useState<LocalStreamData[]>([]);
   const [pingData, setPingData] = useState<PingData[]>([]);
   const [mergedData, setMergedData] = useState<MergedData[] | undefined>();
@@ -65,15 +63,9 @@ const ConnectionLatencyTest = (props: {
   useEffect(() => {
     /** Handle `connectionStateChange` event of {@link Connection}. */
     const stateChangeHandler = async (state: ConnectionState) => {
-      console.log(
-        `%cConnection state change Handler: ${ConnectionState[state]}`,
-        "color:blue"
-      );
+      console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
       setConnectionState(state);
-      if (
-        state === ConnectionState.CLOSED ||
-        state === ConnectionState.FAILED
-      ) {
+      if (state === ConnectionState.CLOSED || state === ConnectionState.FAILED) {
         stopped.current = true;
         if (remoteStreamData.length > 0) {
           console.group("Remote Stream Data");
@@ -83,14 +75,8 @@ const ConnectionLatencyTest = (props: {
         if (localStreamData.length > 0) {
           console.group("Local Stream Data");
           console.log(localStreamData);
-          console.log(
-            "avg",
-            avg(localStreamData.map((d) => d.qrCodeGenerationTime))
-          );
-          console.log(
-            "median",
-            median(localStreamData.map((d) => d.qrCodeGenerationTime))
-          );
+          console.log("avg", avg(localStreamData.map((d) => d.qrCodeGenerationTime)));
+          console.log("median", median(localStreamData.map((d) => d.qrCodeGenerationTime)));
           console.groupEnd();
         }
       }
@@ -248,9 +234,7 @@ const ConnectionLatencyTest = (props: {
     }
     const latencyMethodRuntime = window.performance.now() - startTime;
 
-    const remoteStreamSettings = connection.remoteStream
-      .getVideoTracks()[0]
-      .getSettings();
+    const remoteStreamSettings = connection.remoteStream.getVideoTracks()[0].getSettings();
     const entry: RemoteStreamData = {
       latency: latency,
       fps: remoteStreamSettings.frameRate,
@@ -271,12 +255,8 @@ const ConnectionLatencyTest = (props: {
   /** Parse the QR code in `canvas`. */
   const parseQRCode = (canvas: HTMLCanvasElement) => {
     // Calculate position of QR code, in case transmitted image is scaled down.
-    const qrCodeWidth = Math.floor(
-      (canvas.width / config.width) * config.qrCodeSize
-    );
-    const qrCodeHeight = Math.floor(
-      (canvas.height / config.height) * config.qrCodeSize
-    );
+    const qrCodeWidth = Math.floor((canvas.width / config.width) * config.qrCodeSize);
+    const qrCodeHeight = Math.floor((canvas.height / config.height) * config.qrCodeSize);
     const context = canvas.getContext("2d");
 
     // Get image data for expected position of QR code. Getting only part of the image saves a lot of time in `jsQR` (optimization).
@@ -460,18 +440,13 @@ const ConnectionLatencyTest = (props: {
     case ConnectionState.CONNECTING:
     case ConnectionState.CONNECTED:
       mainActionBtn = (
-        <button
-          onClick={() => stop()}
-          disabled={connectionState !== ConnectionState.CONNECTED}
-        >
+        <button onClick={() => stop()} disabled={connectionState !== ConnectionState.CONNECTED}>
           Stop Experiment
         </button>
       );
       break;
     default:
-      mainActionBtn = (
-        <button onClick={() => window.location.reload()}>Reload Page</button>
-      );
+      mainActionBtn = <button onClick={() => window.location.reload()}>Reload Page</button>;
       break;
   }
 
@@ -506,9 +481,7 @@ const ConnectionLatencyTest = (props: {
       </div>
       {connectionState === ConnectionState.NEW ? (
         <div className="dataUpload">
-          <p className="note">
-            Upload data from a previous test instead of running a new test:
-          </p>
+          <p className="note">Upload data from a previous test instead of running a new test:</p>
           <Upload handleUpload={handleDataUpload} />
         </div>
       ) : (
@@ -533,10 +506,7 @@ const ConnectionLatencyTest = (props: {
 export default ConnectionLatencyTest;
 
 /** JSON Upload field. */
-function Upload(props: {
-  handleUpload: (file: object) => void;
-  className?: string;
-}) {
+function Upload(props: { handleUpload: (file: object) => void; className?: string }) {
   const fileRef = useRef(null);
 
   const parseFile = (e: ProgressEvent<FileReader>) => {
@@ -577,10 +547,7 @@ function TestConfig(props: {
     props.start();
   };
 
-  const handleChange = (
-    key: keyof TestConfigObj,
-    value: string | number | boolean
-  ) => {
+  const handleChange = (key: keyof TestConfigObj, value: string | number | boolean) => {
     const newConfig = { ...props.config };
     // @ts-ignore
     newConfig[key] = value;
@@ -799,8 +766,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
         ticks: {
           callback: function (label: any) {
             const frame = this.getLabelForValue(label);
-            const runtime =
-              props.mergedData[frame].timestamp - props.mergedData[0].timestamp;
+            const runtime = props.mergedData[frame].timestamp - props.mergedData[0].timestamp;
             const [min, sec] = getDetailedTime(runtime);
             if (min > 0) {
               return `${min}m ${sec}s`;
@@ -980,15 +946,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
     } else {
       initCharts();
     }
-  }, [
-    from,
-    to,
-    props.mergedData,
-    primaryChart,
-    fpsChart,
-    dimensionsChart,
-    showLines
-  ]);
+  }, [from, to, props.mergedData, primaryChart, fpsChart, dimensionsChart, showLines]);
 
   useEffect(() => {
     if (from >= to || from < 0 || to > props.mergedData.length) {
@@ -1006,14 +964,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
         <span>
           <b>Data Interval:</b>&nbsp;
         </span>
-        <Input
-          label="From"
-          type="number"
-          value={from}
-          setValue={setFrom}
-          min={0}
-          max={to}
-        />
+        <Input label="From" type="number" value={from} setValue={setFrom} min={0} max={to} />
         <Input
           label="To"
           type="number"
@@ -1022,12 +973,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
           min={from}
           max={props.mergedData.length}
         />
-        <Input
-          label="Draw Lines"
-          type="checkbox"
-          checked={showLines}
-          setValue={setShowLines}
-        />
+        <Input label="Draw Lines" type="checkbox" checked={showLines} setValue={setShowLines} />
       </form>
       <h2>Overview</h2>
       {evaluation ? (
@@ -1043,8 +989,7 @@ function Evaluation(props: { mergedData: MergedData[] }) {
             </span>
             <label>Invalid Latency Data Points*: </label>
             <span>
-              {evaluation.invalidLatencyDataPoints} (
-              {evaluation.invalidLatencyDataPointsPercent}%)
+              {evaluation.invalidLatencyDataPoints} ({evaluation.invalidLatencyDataPointsPercent}%)
             </span>
             <label>Average Latency: </label>
             <span>{evaluation.avgLatency}ms</span>
@@ -1101,30 +1046,25 @@ function Evaluation(props: { mergedData: MergedData[] }) {
             )}
           </div>
           <p className="note">
-            *:&nbsp;Invalid latency measurements, likely caused by the QR-Code
-            detection / parsing failing. The cause for a failing QR-Code
-            detection could be its size, especially when WebRTC reduces the
-            frame size.
+            *:&nbsp;Invalid latency measurements, likely caused by the QR-Code detection / parsing
+            failing. The cause for a failing QR-Code detection could be its size, especially when
+            WebRTC reduces the frame size.
           </p>
           <p className="note">
-            **:&nbsp;Runtime of QR Code generation before a frame is sent.
-            Affects latency. Missing data points mean error(s) during mapping.
+            **:&nbsp;Runtime of QR Code generation before a frame is sent. Affects latency. Missing
+            data points mean error(s) during mapping.
           </p>
           <p className="note">
-            ***:&nbsp;Runtime of latency calculation function, includes QR-Code
-            parsing. Does not directly impact the measured latency, but can be
-            an important factor for CPU utilization, which does impact the
-            measured latency.
+            ***:&nbsp;Runtime of latency calculation function, includes QR-Code parsing. Does not
+            directly impact the measured latency, but can be an important factor for CPU
+            utilization, which does impact the measured latency.
           </p>
         </>
       ) : (
         ""
       )}
 
-      <p>
-        Click the labels above the graphs to enable or disable the corresponding
-        dataset.
-      </p>
+      <p>Click the labels above the graphs to enable or disable the corresponding dataset.</p>
       <h2>Latency</h2>
       <div style={{ height: "90vh", position: "relative" }}>
         <canvas ref={primaryChartCanvasRef}></canvas>

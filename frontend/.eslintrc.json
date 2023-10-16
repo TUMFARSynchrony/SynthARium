@@ -33,6 +33,17 @@
       {
         "endOfLine": "auto"
       }
+    ],
+    "max-len": [
+      "error",
+      {
+        "code": 100,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true,
+        "ignoreComments": true
+      }
     ]
   },
   "settings": {

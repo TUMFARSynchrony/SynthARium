@@ -131,7 +131,11 @@ class Connection(ConnectionInterface):
         pc.add_listener("track", self._on_track)
 
     async def complete_setup(
-        self, audio_filters: list[FilterDict], video_filters: list[FilterDict]
+        self,
+        audio_filters: list[FilterDict],
+        video_filters: list[FilterDict],
+        audio_group_filters: list[FilterDict],
+        video_group_filters: list[FilterDict],
     ) -> None:
         """Complete Connection setup.
 
@@ -143,8 +147,8 @@ class Connection(ConnectionInterface):
             Default video filters for this connection.
         """
         await asyncio.gather(
-            self._incoming_audio.complete_setup(audio_filters),
-            self._incoming_video.complete_setup(video_filters),
+            self._incoming_audio.complete_setup(audio_filters, audio_group_filters),
+            self._incoming_video.complete_setup(video_filters, video_group_filters),
         )
 
     @property
@@ -203,7 +207,7 @@ class Connection(ConnectionInterface):
             await self._set_failed_state_and_close()
             return
         stringified = json.dumps(data)
-        self._logger.debug(f"Sending data: {stringified}")
+        # self._logger.debug(f"Sending data: {stringified}")
         self._dc.send(stringified)
 
     @property
@@ -286,6 +290,18 @@ class Connection(ConnectionInterface):
     async def set_audio_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._incoming_audio.set_filters(filters)
+
+    async def set_video_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._incoming_video.set_group_filters(group_filters, ports)
+
+    async def set_audio_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._incoming_audio.set_group_filters(group_filters, ports)
 
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
@@ -459,6 +475,8 @@ async def connection_factory(
     log_name_suffix: str,
     audio_filters: list[FilterDict],
     video_filters: list[FilterDict],
+    audio_group_filters: list[FilterDict],
+    video_group_filters: list[FilterDict],
     filter_api: FilterAPIInterface,
     record_data: list,
 ) -> Tuple[RTCSessionDescription, Connection]:
@@ -488,7 +506,9 @@ async def connection_factory(
     connection = Connection(
         pc, message_handler, log_name_suffix, filter_api, record_data
     )
-    await connection.complete_setup(audio_filters, video_filters)
+    await connection.complete_setup(
+        audio_filters, video_filters, audio_group_filters, video_group_filters
+    )
 
     # handle offer
     await pc.setRemoteDescription(offer)

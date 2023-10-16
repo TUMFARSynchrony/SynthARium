@@ -16,9 +16,7 @@ function NotesTab({ onAddNote }) {
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(sessionId, sessionsList);
 
-  const [notes, setNotes] = useState(
-    sessionData.notes ? sessionData.notes : []
-  );
+  const [notes, setNotes] = useState(sessionData.notes ? sessionData.notes : []);
   const [noteContent, setNoteContent] = useState("");
 
   const onContentChange = (newContent) => {
@@ -48,9 +46,7 @@ function NotesTab({ onAddNote }) {
       <div className="notes">
         {notes.length > 0
           ? notes.map((note, index) => {
-              return (
-                <Note content={note.content} date={note.time} key={index} />
-              );
+              return <Note content={note.content} date={note.time} key={index} />;
             })
           : "Your notes will show up here"}
       </div>
