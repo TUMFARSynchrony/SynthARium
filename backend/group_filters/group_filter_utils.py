@@ -13,24 +13,24 @@ logger = logging.getLogger("GroupFilters")
 
 
 def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
-    if "type" not in data:
-        logger.debug("Missing key: type")
+    if "name" not in data:
+        logger.debug("Missing key: name")
         return False
 
-    group_filter_type = data["type"]
+    group_filter_name = data["name"]
 
-    if not isinstance(group_filter_type, str):
-        logger.debug('GroupFilter "type" must be of type str.')
+    if not isinstance(group_filter_name, str):
+        logger.debug('GroupFilter "name" must be of type str.')
         return False
 
     group_filters = get_group_filter_dict()
 
-    if group_filter_type not in group_filters:
-        logging.debug(f"Invalid filter type: {group_filter_type}.")
+    if group_filter_name not in group_filters:
+        logging.debug(f"Invalid filter type: {group_filter_name}.")
         return False
 
     return isinstance(data["id"], str) and group_filters[
-        group_filter_type
+        group_filter_name
     ].validate_dict(data)
 
 

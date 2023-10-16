@@ -189,6 +189,8 @@ function SessionForm({ onSendSessionToBackend }) {
           banned: false,
           audio_filters: [],
           video_filters: [],
+          audio_group_filters: [],
+          video_group_filters: [],
           chat: [],
           position: {
             x: 10,

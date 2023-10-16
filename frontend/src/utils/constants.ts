@@ -34,6 +34,8 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   banned: false,
   video_filters: [],
   audio_filters: [],
+  audio_group_filters: [],
+  video_group_filters: [],
   chat: [],
   position: {
     x: 10,
