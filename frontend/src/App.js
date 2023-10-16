@@ -60,10 +60,7 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -74,10 +71,7 @@ function App() {
 
   /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
-    console.log(
-      `%cConnection state change Handler: ${ConnectionState[state]}`,
-      "color:blue"
-    );
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
 
     setConnectionState(state);
   };
@@ -411,11 +405,7 @@ function App() {
           />
           <Route exact path="/consent" element={<Consent />} />
           <Route exact path="/end" element={<End />} />
-          <Route
-            exact
-            path="/postProcessingRoom"
-            element={<PostProcessing />}
-          />
+          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
             path="/lobby"
@@ -539,11 +529,7 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={
-                  <SessionForm
-                    onSendSessionToBackend={onSendSessionToBackend}
-                  />
-                }
+                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
                 centerContentOnYAxis={true}
               />
             }
