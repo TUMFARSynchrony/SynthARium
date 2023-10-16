@@ -416,7 +416,22 @@ function App() {
           <Route
             exact
             path="/postProcessingRoom"
-            element={<PostProcessing />}
+            element={
+              <PageTemplate
+                title={"Post-Processing Room"}
+                customComponent={<PostProcessing />}
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/"),
+                        label: "Back to Session Overview"
+                      }
+                    ]}
+                  />
+                }
+              />
+            }
           />
           <Route
             exact
