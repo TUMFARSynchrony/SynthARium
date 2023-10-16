@@ -160,6 +160,21 @@ function SessionPreview({
                         <ListItemText
                           primary={`${participant.participant_name}`}
                         />
+
+                        <ActionIconButton
+                          text="INVITE"
+                          variant="outlined"
+                          color="primary"
+                          size="small"
+                          onClick={() =>
+                            handleCopyParticipantInviteLink(
+                              participant.id,
+                              participant.participant_name,
+                              selectedSession.id
+                            )
+                          }
+                          icon={<ContentCopyIcon />}
+                        />
                         {expandedParticipant === participantIndex ? (
                           <ExpandLess />
                         ) : (
@@ -241,27 +256,6 @@ function SessionPreview({
                                 }
                               )}
                             </Box>
-                          </ListItem>
-                          <ListItem
-                            sx={{
-                              display: "flex",
-                              justifyContent: "flex-end"
-                            }}
-                          >
-                            <ActionIconButton
-                              text="INVITE"
-                              variant="outlined"
-                              color="primary"
-                              size="small"
-                              onClick={() =>
-                                handleCopyParticipantInviteLink(
-                                  participant.id,
-                                  participant.participant_name,
-                                  selectedSession.id
-                                )
-                              }
-                              icon={<ContentCopyIcon />}
-                            />
                             {/* Displays success/error notification on copy invite link to clipboard */}
                             <CustomSnackbar
                               open={snackbar.open}

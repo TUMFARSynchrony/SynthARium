@@ -1,7 +1,6 @@
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import ConsentModal from "../../modals/ConsentModal/ConsentModal";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
@@ -72,7 +71,6 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
 
   return (
     <>
-      <ConsentModal onConsentGiven={setUserConsent} />
       {/* Grid takes up screen space left from the AppToolbar */}
       <div className="flex h-[calc(100vh-84px)]">
         <div className="px-6 py-4 w-3/4 flex flex-col">
