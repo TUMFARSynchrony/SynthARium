@@ -75,18 +75,12 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
                 ownParticipantId={participantIdParam}
               />
             ) : (
-              <video
-                ref={videoElement}
-                autoPlay
-                playsInline
-                width="100%"
-                height="100%"
-              ></video>
+              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
             )
           ) : (
             <Typography>
-              Unable to access your video. Please check that you have allowed
-              access to your camera and microphone.
+              Unable to access your video. Please check that you have allowed access to your camera
+              and microphone.
             </Typography>
           )}
         </div>
