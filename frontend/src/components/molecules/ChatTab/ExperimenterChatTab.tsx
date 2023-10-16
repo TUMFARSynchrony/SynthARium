@@ -152,17 +152,47 @@ export const ExperimenterChatTab = (props: Props) => {
           {currentSession &&
             messageTarget === "participants" &&
             currentUser === "experimenter" &&
-            participants[0].chat.map((message, index) => (
-              <UniformSpeechBubble
-                key={index}
-                currentUser={currentUser}
-                message={message.message}
-                author={message.author}
-                target={message.target}
-                date={message.time}
-                participant_name={participants[0].participant_name}
-              />
-            ))}
+            (() => {
+              // Flatten the chat messages into a single array
+              const allMessages = currentSession.participants.flatMap((p) =>
+                p.chat.map((message) => ({
+                  message: message.message,
+                  author: message.author,
+                  target: message.target,
+                  time: new Date(message.time).getTime(), // Convert time to a sortable format
+                  participant_name: p.participant_name
+                }))
+              );
+
+              // Create a set to track unique messages based on time, author, and message
+              const uniqueMessagesSet = new Set();
+
+              // Filter the messages to exclude duplicates
+              const filteredMessages = allMessages.filter((message) => {
+                const messageKey = `${message.time}-${message.author}-${message.message}`;
+                if (!uniqueMessagesSet.has(messageKey)) {
+                  uniqueMessagesSet.add(messageKey);
+                  return true;
+                }
+                return false;
+              });
+
+              // Sort the filtered messages by their time property
+              filteredMessages.sort((a, b) => a.time - b.time);
+
+              // Render the sorted filtered messages
+              return filteredMessages.map((message, index) => (
+                <UniformSpeechBubble
+                  key={index}
+                  currentUser={currentUser}
+                  message={message.message}
+                  author={message.author}
+                  target={message.target}
+                  date={message.time}
+                  participant_name={message.participant_name}
+                />
+              ));
+            })()}
         </div>
         <div className="flex flex-col p-4 py-8">
           <div className="flex flex-row justify-between gap-x-2 items-center">

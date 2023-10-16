@@ -13,17 +13,19 @@ export const UniformSpeechBubble = (props: Props) => {
     props;
 
   const setMessageTexts = (author: string) => {
-    if (author === "experimenter") {
+    if (author === "experimenter" && target === "participants") {
       return `Me to Participants (Announcement)`;
+    } else if (author === "experimenter" && target !== "participants") {
+      return `Me to ${participant_name} (Privately)`;
     } else {
-      return `${author} to Me (Privately)`;
+      return `${participant_name} to Me (Privately)`;
     }
   };
   return (
     <div className="flex flex-col">
       <div className="flex flex-row justify-between">
         <div className="self-start text-[0.75rem] pt-1.5">
-          {setMessageTexts(participant_name)}
+          {setMessageTexts(author)}
         </div>
         <div className="self-end text-[0.65rem] max-w-full">
           {moment(date).format("lll")}
