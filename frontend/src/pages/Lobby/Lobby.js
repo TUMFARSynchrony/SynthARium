@@ -7,12 +7,12 @@ import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
+import { ActionButton } from "../../components/atoms/Button";
 import "./Lobby.css";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
-  const [userConsent, setUserConsent] = useState(false);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
@@ -22,16 +22,20 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
+  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false); // State to track checkbox status
+
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
     }
   }, [connection, connectionState, onGetSession, sessionIdParam]);
+
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
+
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
@@ -43,51 +47,38 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
     };
   }, [connection]);
-  useEffect(() => {
-    if (userConsent) {
-      setParticipantStream(localStream);
-    }
-  }, [localStream, userConsent]);
 
   useEffect(() => {
-    if (participantStream && userConsent && videoElement.current) {
+    setParticipantStream(localStream);
+  }, [localStream]);
+
+  useEffect(() => {
+    if (participantStream && videoElement.current) {
       videoElement.current.srcObject = localStream;
     }
-  }, [localStream, participantStream, userConsent]);
+  }, [localStream, participantStream]);
 
   const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
-  /** Handle `connectionStateChange` event of {@link Connection} */
+
   const stateChangeHandler = async (state) => {
     setConnectionState(state);
   };
 
   return (
     <>
-      {/* Grid takes up screen space left from the AppToolbar */}
       <div className="flex h-[calc(100vh-84px)]">
         <div className="px-6 py-4 w-3/4 flex flex-col">
-          {userConsent ? (
-            participantStream ? (
-              sessionData && connectedParticipants ? (
-                <VideoCanvas
-                  connectedParticipants={connectedParticipants}
-                  sessionData={sessionData}
-                  localStream={localStream}
-                  ownParticipantId={participantIdParam}
-                />
-              ) : (
-                <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
-              )
-            ) : (
-              <Typography>
-                Unable to access your video. Please check that you have allowed access to your
-                camera and microphone.
-              </Typography>
-            )
+          {participantStream ? (
+            <div className="flex h-full justify-center gap-y-4 xl:w-1/2">
+              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
+            </div>
           ) : (
-            <Typography>Please check if you gave your consent!</Typography>
+            <Typography>
+              Unable to access your video. Please check that you have allowed access to your camera
+              and microphone.
+            </Typography>
           )}
         </div>
         <div className="w-1/4">
@@ -102,9 +93,17 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab />
+            <InstructionsTab onInstructionsCheckChange={setAreInstructionsChecked} />
           )}
         </div>
+      </div>
+      <div className="self-center h-fit">
+        <a
+          href={`${window.location.origin}/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`}
+          className={!areInstructionsChecked ? "pointer-events-none" : ""}
+        >
+          <ActionButton text="Continue" variant="contained" disabled={!areInstructionsChecked} />
+        </a>
       </div>
     </>
   );

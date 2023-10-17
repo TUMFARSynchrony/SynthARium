@@ -11,7 +11,7 @@ import {
   selectParticipantsTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
 import { useState } from "react";
@@ -113,7 +113,7 @@ function WatchingRoom({
                 onMuteParticipant={onMuteParticipant}
               />
             )}
-            {isInstructionsModalActive && <InstructionsTab />}
+            {isInstructionsModalActive && <InstructionsTab onInstructionsCheckChange={false} />}
           </div>
         </div>
       ) : (

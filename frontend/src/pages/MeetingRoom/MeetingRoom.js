@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import Typography from "@mui/material/Typography";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
@@ -10,9 +11,11 @@ import { InstructionsTab } from "../../components/molecules/InstructionsTab/Inst
 import "./Lobby.css";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
+  const videoElement = useRef(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
+  const [participantStream, setParticipantStream] = useState(localStream);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,6 +43,12 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
     };
   }, [connection]);
 
+  useEffect(() => {
+    if (participantStream && videoElement.current) {
+      videoElement.current.srcObject = localStream;
+    }
+  }, [localStream, participantStream]);
+
   const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
   };
@@ -50,14 +59,26 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
 
   return (
     <>
+      {/* Grid takes up screen space left from the AppToolbar */}
       <div className="flex h-[calc(100vh-84px)]">
         <div className="px-6 py-4 w-3/4 flex flex-col">
-          <VideoCanvas
-            connectedParticipants={connectedParticipants}
-            sessionData={sessionData}
-            localStream={localStream}
-            ownParticipantId={participantIdParam}
-          />
+          {participantStream ? (
+            sessionData && connectedParticipants ? (
+              <VideoCanvas
+                connectedParticipants={connectedParticipants}
+                sessionData={sessionData}
+                localStream={localStream}
+                ownParticipantId={participantIdParam}
+              />
+            ) : (
+              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
+            )
+          ) : (
+            <Typography>
+              Unable to access your video. Please check that you have allowed access to your camera
+              and microphone.
+            </Typography>
+          )}
         </div>
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
