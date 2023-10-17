@@ -440,11 +440,11 @@ class Experiment(AsyncIOEventEmitter):
         coroutines = []
         for config, port in zip(group_filter_configs, ports):
             filter_id = config["id"]
-            # Reuse existing filter for matching id and type.
+            # Reuse existing filter for matching id and name.
             if (
                 filter_id in old_group_filter_aggregators
-                and old_group_filter_aggregators[filter_id]._group_filter.config["type"]
-                == config["type"]
+                and old_group_filter_aggregators[filter_id]._group_filter.config["name"]
+                == config["name"]
             ):
                 self._video_group_filter_aggregators[
                     filter_id
@@ -489,11 +489,11 @@ class Experiment(AsyncIOEventEmitter):
         coroutines = []
         for config, port in zip(group_filter_configs, ports):
             filter_id = config["id"]
-            # Reuse existing filter for matching id and type.
+            # Reuse existing filter for matching id and name.
             if (
                 filter_id in old_group_filter_aggregators
-                and old_group_filter_aggregators[filter_id]._group_filter.config["type"]
-                == config["type"]
+                and old_group_filter_aggregators[filter_id]._group_filter.config["name"]
+                == config["name"]
             ):
                 self._audio_group_filter_aggregators[
                     filter_id
