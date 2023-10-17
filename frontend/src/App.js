@@ -7,6 +7,7 @@ import ConnectionState from "./networking/ConnectionState";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import Lobby from "./pages/Lobby/Lobby";
+import MeetingRoom from "./pages/MeetingRoom/MeetingRoom";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
@@ -429,7 +430,41 @@ function App() {
                   }
                   customComponent={
                     <Lobby
-                      connectedParticipants={connectedParticipants}
+                      localStream={localStream}
+                      connection={connection}
+                      onGetSession={onGetSession}
+                      onChat={onChat}
+                    />
+                  }
+                />
+              ) : (
+                "Loading..."
+              )
+            }
+          />
+          <Route
+            exact
+            path="/meetingRoom"
+            element={
+              connection ? (
+                <PageTemplate
+                  title={"Meeting Room"}
+                  buttonListComponent={
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => toggleModal(Tabs.CHAT),
+                          icon: faComment
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                          icon: faClipboardCheck
+                        }
+                      ]}
+                    />
+                  }
+                  customComponent={
+                    <MeetingRoom
                       localStream={localStream}
                       connection={connection}
                       onGetSession={onGetSession}
