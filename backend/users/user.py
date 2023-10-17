@@ -19,6 +19,7 @@ from connection.messages import ConnectionOfferDict, is_valid_connection_offer_d
 from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filters_data_dict import FiltersDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -519,39 +520,40 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     return
                 await self._connection.set_audio_filters(filters)
 
-    async def set_video_group_filters(
-        self, group_filters: list[FilterDict], ports: list[int]
-    ) -> None:
-        if self._connection is not None:
-            await self._connection.set_video_group_filters(group_filters, ports)
-        else:
+    async def get_filters_data_for_all_participants(
+        self, data: Any
+    ) -> dict[str, FiltersDataDict]:
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
+        res: dict[str, FiltersDataDict] = {}
 
-            @self.once("connection_set")
-            async def _set_video_group_filters_later(_):
-                if self._connection is None:
-                    self._logger.error(
-                        "_set_video_group_filters_later callback failed, _connection is "
-                        "None."
-                    )
-                    return
-                await self._connection.set_video_group_filters(group_filters, ports)
+        for p in experiment.participants.values():
+            if p.connection is not None:
+                res[p.id] = await p.get_filters_data_for_one_participant(data)
 
-    async def set_audio_group_filters(
-        self, group_filters: list[FilterDict], ports: list[int]
-    ) -> None:
-        if self._connection is not None:
-            await self._connection.set_audio_group_filters(group_filters, ports)
-        else:
+        return res
 
-            @self.once("connection_set")
-            async def _set_audio_group_filters_later(_):
-                if self._connection is None:
-                    self._logger.error(
-                        "_set_audio_group_filters_later callback failed, _connection is "
-                        "None."
-                    )
-                    return
-                await self._connection.set_audio_group_filters(group_filters, ports)
+    async def get_filters_data_for_one_participant(self, data: Any) -> FiltersDataDict:
+        filter_id = data["filter_id"]
+        filter_name = data["filter_name"]
+        filter_channel = data["filter_channel"]
+        audio_filters = []
+        video_filters = []
+        if filter_channel == "video" or filter_channel == "both":
+            video_filters = await self._connection.get_video_filters_data(
+                filter_id, filter_name
+            )
+        if filter_channel == "audio" or filter_channel == "both":
+            audio_filters = await self._connection.get_audio_filters_data(
+                filter_id, filter_name
+            )
+        if filter_channel not in ["video", "audio", "both"]:
+            raise ErrorDictException(
+                code=404,
+                type="INVALID_REQUEST",
+                description=f'Unknown filter channel: "{filter_channel}".',
+            )
+
+        return FiltersDataDict(video=video_filters, audio=audio_filters)
 
     async def start_recording(self) -> None:
         """Start recording for this user."""

@@ -1,14 +1,16 @@
 """Provide abstract `Filter`, `VideoFilter` and `AudioFilter` classes."""
 
 from __future__ import annotations
+import json
 
 import numpy
-from typing import TYPE_CHECKING, TypeGuard
+from typing import TYPE_CHECKING, Any, TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
 from custom_types import util
 from .filter_dict import FilterDict
+from .filter_data_dict import FilterDataDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error
@@ -51,6 +53,8 @@ class Filter(ABC):
 
     _config: FilterDict
 
+    _id: str
+
     def __init__(
         self,
         config: FilterDict,
@@ -80,6 +84,7 @@ class Filter(ABC):
         self._config = config
         self.audio_track_handler = audio_track_handler
         self.video_track_handler = video_track_handler
+        self._id = self._config["id"]
 
     @property
     def config(self) -> FilterDict:
@@ -96,11 +101,26 @@ class Filter(ABC):
         """
         self._config = config
 
+    @property
+    def id(self) -> str:
+        """Get Filter id."""
+        return self._id
+
+    def set_id(self, id: str) -> None:
+        """Update filter id.
+
+        Notes
+        -----
+        Provide a custom implementation for this function in a subclass in case the
+        filter should react to id changes.
+        """
+        self._id = id
+
     async def complete_setup(self) -> None:
         """Complete setup, allowing for asynchronous setup and accessing other filters.
 
         If the initiation / setup of a filter requires anything asynchronous or other
-        filters must be accessed, it should be donne in `complete_setup`.
+        filters must be accessed, it should be done in `complete_setup`.
         `complete_setup` is called when all filters have been set up, therefore other
         filters will be available (may not be the case in __init__, depending on the
         position in the filter pipeline).
@@ -114,6 +134,10 @@ class Filter(ABC):
         asyncio.Task tasks they should be stopped & awaited in a custom implementation
         overriding this function.
         """
+        return
+
+    async def get_filter_data(self) -> None | FilterDataDict:
+        """Get the data of a filter"""
         return
 
     @staticmethod
@@ -179,10 +203,10 @@ class Filter(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_filter_json(self) -> object:
+    def get_filter_json(self) -> dict[str, Any]:
         """Provide config of the filters.
 
-        It requires at name, id, channel, groupFilter and config
+        It requires name, id, channel, groupFilter and config
         name and id are collected from the name() method
         channel is either "audio" or "video"
         groupFilter is a boolean
@@ -258,3 +282,7 @@ class Filter(ABC):
             f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
             f" config={self.config})"
         )
+
+    def toJson(self) -> str:
+        # TODO: remove if unnecessary
+        return json.dumps(self, default=lambda o: o.__dict__)

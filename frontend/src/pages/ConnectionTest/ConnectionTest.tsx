@@ -216,6 +216,11 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         console.log("Ping RTT:", rtt, "ms");
       }
     };
+    const handleFiltersData = (data: any) => saveGenericApiResponse("FILTERS_DATA", data);
+    const handleGetFiltersTestStatus = (data: any) =>
+      saveGenericApiResponse("GET_FILTERS_TEST_STATUS", data);
+    const handleFiltersTestStatus = (data: any) =>
+      saveGenericApiResponse("FILTERS_TEST_STATUS", data);
 
     // Add listeners to connection
     props.connection.api.on("TEST", handleTest);
@@ -228,6 +233,9 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
+    props.connection.api.on("FILTERS_DATA", handleFiltersData);
+    props.connection.api.on("GET_FILTERS_TEST_STATUS", handleGetFiltersTestStatus);
+    props.connection.api.on("FILTERS_TEST_STATUS", handleFiltersTestStatus);
 
     return () => {
       // Remove listeners from connection
@@ -241,6 +249,9 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
       props.connection.api.off("PONG", handlePong);
+      props.connection.api.off("FILTERS_DATA", handleFiltersData);
+      props.connection.api.off("GET_FILTERS_TEST_STATUS", handleGetFiltersTestStatus);
+      props.connection.api.off("FILTERS_TEST_STATUS", handleFiltersTestStatus);
     };
   }, [props.connection.api, responses]);
 
@@ -259,6 +270,31 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           GET_SESSION_LIST
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("GET_FILTERS_DATA", {
+              filter_id: "simple-glasses-detection",
+              filter_channel: "video",
+              filter_name: "SIMPLE_GLASSES_DETECTION"
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_DATA
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("GET_FILTERS_TEST_STATUS", {
+              participant_id: "all",
+              filter_id: "simple-glasses-detection",
+              filter_channel: "video",
+              filter_name: "SIMPLE_GLASSES_DETECTION"
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_TEST_STATUS
         </button>
         <button
           onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
@@ -761,7 +797,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          Glasses Detection
+          Simple Glasses Detection
         </button>
         <button
           onClick={() =>
