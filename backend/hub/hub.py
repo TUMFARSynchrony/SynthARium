@@ -4,9 +4,6 @@ from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
 import logging
-import json
-from os.path import join
-from hub import FRONTEND_DIR
 
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
@@ -15,10 +12,6 @@ from experiment import Experiment
 from hub.util import generate_unique_id
 from hub.exceptions import ErrorDictException
 from hub.util import get_system_specs
-
-from filters.filter import Filter
-from filters.filter_config_dict import FilterConfigDict
-from filters.filter_utils import is_valid_filter_config
 
 import experiment.experiment as _experiment
 import session.session_manager as _sm
