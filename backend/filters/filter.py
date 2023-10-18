@@ -282,7 +282,3 @@ class Filter(ABC):
             f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
             f" config={self.config})"
         )
-
-    def toJson(self) -> str:
-        # TODO: remove if unnecessary
-        return json.dumps(self, default=lambda o: o.__dict__)
