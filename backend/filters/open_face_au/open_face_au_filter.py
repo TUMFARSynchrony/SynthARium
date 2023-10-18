@@ -2,6 +2,7 @@ import numpy
 from av import VideoFrame
 
 from filters.filter import Filter
+from filters import FilterDict
 from filters.simple_line_writer import SimpleLineWriter
 from filters.open_face_au.open_face_au_extractor import OpenFaceAUExtractor
 from .open_face_data_parser import OpenFaceDataParser
@@ -37,18 +38,18 @@ class OpenFaceAUFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
+    def init_config(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {},
-        }
+        return FilterDict(
+            name=name,
+            id=id,
+            channel="video",
+            groupFilter=False,
+            config={},
+        )
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray

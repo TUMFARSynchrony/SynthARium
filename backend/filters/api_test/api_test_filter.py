@@ -6,6 +6,7 @@ from datetime import datetime
 from custom_types.message import MessageDict
 
 from filters.filter import Filter
+from filters import FilterDict
 
 
 class FilterAPITestFilter(Filter):
@@ -20,17 +21,17 @@ class FilterAPITestFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
+    def init_config(self) -> object:
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "both",
-            "groupFilter": False,
-            "config": {},
-        }
+        return FilterDict(
+            name=name,
+            id=id,
+            channel="both",
+            groupFilter=False,
+            config={},
+        )
 
     counter = 0
 

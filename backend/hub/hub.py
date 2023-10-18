@@ -17,6 +17,7 @@ from hub.exceptions import ErrorDictException
 from hub.util import get_system_specs
 
 from filters.filter import Filter
+from filters.filter_config_dict import FilterConfigDict
 
 import experiment.experiment as _experiment
 import session.session_manager as _sm
@@ -71,9 +72,6 @@ class Hub:
         logging.getLogger("PIL").setLevel(dependencies_log_level)
 
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
-
-        self.get_filters_json()
-        self._logger.debug("Successfully created filters_data.json in frontend folder")
 
         self.experimenters = []
         self.experiments = {}
@@ -352,27 +350,23 @@ class Hub:
             if experimenter is not exclude:
                 await experimenter.send(data)
 
-    def get_filters_json(self):
+    def get_filters_config(self) -> FilterConfigDict:
         """Generate the filters_data.json file."""
-        filters_json = {"TEST": [], "SESSION": []}
+        filters_config = FilterConfigDict(TEST=[], SESSION=[])
         for filter in Filter.__subclasses__():
             filter_type = filter.filter_type(filter)
             if filter_type == "NONE":
                 continue
             elif filter_type == "TEST" or filter_type == "SESSION":
-                filter_json = filter.get_filter_json(filter)
+                filter_config = filter.init_config(filter)
 
-                if not filter.validate_filter_json(filter, filter_json):
-                    raise ValueError(
-                        f"{filter} has incorrect values in get_filter_json."
-                    )
+                if not filter.is_valid_filter_config(filter, filter_config):
+                    raise ValueError(f"{filter} has incorrect values in init_config.")
 
-                filters_json[filter_type].append(filter_json)
+                filters_config[filter_type].append(filter_config)
             else:
                 raise ValueError(
                     f"{filter} has incorrect filter_type. Allowed types are: 'NONE', 'TEST', 'SESSION'"
                 )
 
-        path = join(FRONTEND_DIR, "src/filters_data.json")
-        with open(path, "w") as outfile:
-            json.dump(filters_json, outfile)
+        return filters_config

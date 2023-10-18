@@ -39,17 +39,17 @@ class DelayFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
+    def init_config(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "both",
-            "groupFilter": False,
-            "config": {
+        return FilterDict(
+            name=name,
+            id=id,
+            channel="both",
+            groupFilter=False,
+            config={
                 "size": {
                     "min": 0,
                     "max": 120,
@@ -58,7 +58,7 @@ class DelayFilter(Filter):
                     "defaultValue": 60,
                 },
             },
-        }
+        )
 
     async def process(
         self, _: VideoFrame | AudioFrame, ndarray: numpy.ndarray

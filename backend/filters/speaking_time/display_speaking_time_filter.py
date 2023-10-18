@@ -4,6 +4,7 @@ from .audio_speaking_time_filter import AudioSpeakingTimeFilter
 from av import VideoFrame
 
 from filters.filter import Filter
+from filters import FilterDict
 
 
 class DisplaySpeakingTimeFilter(Filter):
@@ -23,24 +24,24 @@ class DisplaySpeakingTimeFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
+    def init_config(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {
+        return FilterDict(
+            name=name,
+            id=id,
+            channel="video",
+            groupFilter=False,
+            config={
                 "filterId": {
                     "defaultValue": ["AUDIO_SPEAKING_TIME"],
                     "value": "",
                     "requiresOtherFilter": True,
                 },
             },
-        }
+        )
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray

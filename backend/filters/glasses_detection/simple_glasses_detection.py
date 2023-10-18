@@ -7,9 +7,8 @@ from os.path import join
 from hub import BACKEND_DIR
 
 
-from filters import FilterDict
-
 from filters.filter import Filter
+from filters import FilterDict
 
 
 class SimpleGlassesDetection(Filter):
@@ -49,18 +48,18 @@ class SimpleGlassesDetection(Filter):
         return "TEST"
 
     @staticmethod
-    def get_filter_json(self) -> object:
+    def init_config(self) -> FilterDict:
         # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {},
-        }
+        return FilterDict(
+            name=name,
+            id=id,
+            channel="video",
+            groupFilter=False,
+            config={},
+        )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape

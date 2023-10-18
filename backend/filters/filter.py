@@ -179,7 +179,7 @@ class Filter(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_filter_json(self) -> object:
+    def init_config(self) -> FilterDict:
         """Provide config of the filters.
 
         It requires at name, id, channel, groupFilter and config
@@ -192,8 +192,8 @@ class Filter(ABC):
             f"{self} is missing it's implementation of the static abstract get_filter_json() method."
         )
 
-    def validate_filter_json(self, filter_json) -> bool:
-        """Validate the get_filter_json."""
+    def is_valid_filter_config(self, filter_json: FilterDict) -> TypeGuard[FilterDict]:
+        """Validate the init_config."""
         for config in filter_json["config"]:
             if isinstance(filter_json["config"][config]["defaultValue"], list):
                 for defaultValue in filter_json["config"][config]["defaultValue"]:
