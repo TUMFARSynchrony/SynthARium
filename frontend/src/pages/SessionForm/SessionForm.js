@@ -33,7 +33,7 @@ import {
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
 
-function SessionForm({ onSendSessionToBackend }) {
+function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
   const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
@@ -65,6 +65,8 @@ function SessionForm({ onSendSessionToBackend }) {
       setXAxis(0);
       setYAxis(0);
     }
+
+    onGetFiltersConfig();
   }, [openSession]);
 
   useEffect(() => {

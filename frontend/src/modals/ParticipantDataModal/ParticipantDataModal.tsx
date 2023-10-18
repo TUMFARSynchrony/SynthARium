@@ -19,33 +19,12 @@ import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar
 import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
 import { useAppSelector } from "../../redux/hooks";
-import { selectNumberOfParticipants } from "../../redux/slices/openSessionSlice";
+import {
+  selectFiltersDataSession,
+  selectNumberOfParticipants
+} from "../../redux/slices/openSessionSlice";
 import { Filter, FilterConfigArray, FilterConfigNumber, Participant } from "../../types";
 import { v4 as uuid } from "uuid";
-
-import filtersData from "../../filters_data.json";
-
-// Loading filters data before the component renders, because the Select component needs value.
-const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
-  return filter;
-});
-
-// We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-const defaultFilter = {
-  id: "",
-  name: "Placeholder",
-  channel: "",
-  groupFilter: false,
-  config: {}
-};
-
-const getIndividualFilters = () => {
-  return testData.filter((filter) => filter.groupFilter !== true);
-};
-
-const getGroupFilters = () => {
-  return testData.filter((filter) => filter.groupFilter === true);
-};
 
 type Props = {
   originalParticipant: Participant;
@@ -77,10 +56,21 @@ function ParticipantDataModal({
   setSnackbarResponse,
   handleCanvasPlacement
 }: Props) {
+  // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
+  const defaultFilter = {
+    id: "",
+    name: "Placeholder",
+    channel: "",
+    groupFilter: false,
+    config: {}
+  };
+
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
-  const individualFilters = getIndividualFilters();
-  const groupFilters = getGroupFilters();
+  const filtersData = useAppSelector(selectFiltersDataSession);
+  console.log(filtersData, typeof filtersData);
+  const individualFilters = filtersData.filter((filter) => filter.groupFilter !== true);
+  const groupFilters = filtersData.filter((filter) => filter.groupFilter === true);
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [requiredFilters, setRequiredFilters] = useState(new Map<string, string>());
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
@@ -194,7 +184,7 @@ function ParticipantDataModal({
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
         if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
           const otherFilter = structuredClone(
-            testData
+            filtersData
               .filter(
                 (filteredFilter) =>
                   filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
@@ -216,14 +206,14 @@ function ParticipantDataModal({
     }
 
     if (
-      testData
+      filtersData
         .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
       newParticipantData.video_filters.push(newFilter);
     }
     if (
-      testData
+      filtersData
         .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
