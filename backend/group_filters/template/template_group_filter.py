@@ -54,19 +54,20 @@ class TemplateGroupFilter(GroupFilter):
                 # and another int variable (size)
                 # in the frontend, we would then have either a dropdown (direction) or input number (size)
                 # The values can be changed and sent back to the backend
-                """
-                "direction": {
-                    "defaultValue": ["clockwise", "anti-clockwise"],
-                    "value": "clockwise",
-                    "requiresOtherFilter": False,
-                },
-                "size": {
-                    "min": 1,
-                    "max": 60,
-                    "step": 1,
-                    "value": 45,
-                    "defaultValue": 45,
-                }, """
+                #
+                #
+                # "direction": {
+                #     "defaultValue": ["clockwise", "anti-clockwise"],
+                #     "value": "clockwise",
+                #     "requiresOtherFilter": False,
+                # },
+                # "size": {
+                #     "min": 1,
+                #     "max": 60,
+                #     "step": 1,
+                #     "value": 45,
+                #     "defaultValue": 45,
+                # },
             },
         )
 
