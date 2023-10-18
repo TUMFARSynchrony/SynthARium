@@ -13,16 +13,16 @@ class FilterAPITestFilter(Filter):
     """Filter testing filter API."""
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "FILTER_API_TEST"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def filter_type() -> str:
         return "SESSION"
 
     @staticmethod
     def init_config(self) -> object:
-        name = self.name(self)
+        name = self.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(

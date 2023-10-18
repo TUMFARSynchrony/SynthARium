@@ -19,17 +19,17 @@ class AudioSpeakingTimeFilter(Filter):
         self.seconds = float(0)
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "AUDIO_SPEAKING_TIME"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def filter_type() -> str:
         return "SESSION"
 
     @staticmethod
     def init_config(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
+        name = self.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(

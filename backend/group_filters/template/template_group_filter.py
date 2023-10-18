@@ -31,6 +31,49 @@ class TemplateGroupFilter(GroupFilter):
         # TODO: Change this name to a unique name.
         return "TEMPLATE_GF"
 
+    @staticmethod
+    def filter_type() -> str:
+        # TODO: change this according to your filter type (SESSION, TEST or NONE)
+        return "SESSION"
+
+    @staticmethod
+    def init_config(self) -> object:
+        # TODO: change this according to your filter config
+        name = self.name()
+        id = name.lower()
+        id = id.replace("_", "-")
+        return FilterDict(
+            name=name,
+            id=id,
+            channel="video",
+            groupFilter=True,
+            config={
+                "direction": {
+                    "defaultValue": ["clockwise", "anti-clockwise"],
+                    "value": "clockwise",
+                    "requiresOtherFilter": False,
+                },
+            },
+        )
+        # example of how a filter config can look like
+        # add or delete this
+        # This would show that there is a string variable (direction) which can have different values
+        # and another int variable (size)
+        # in the frontend, we would then have either a dropdown (direction) or input number (size)
+        # The values can be changed and sent back to the backend
+        """
+        "direction": {
+            "defaultValue": ["clockwise", "anti-clockwise"],
+            "value": "clockwise",
+        },
+        "size": {
+            "min": 1,
+            "max": 60,
+            "step": 1,
+            "value": 45,
+            "defaultValue": 45,
+        }, """
+
     async def process_individual_frame(
         self, original: VideoFrame | AudioFrame, ndarray: np.ndarray
     ) -> Any:

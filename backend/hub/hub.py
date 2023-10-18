@@ -18,6 +18,7 @@ from hub.util import get_system_specs
 
 from filters.filter import Filter
 from filters.filter_config_dict import FilterConfigDict
+from filters.filter_utils import is_valid_filter_config
 
 import experiment.experiment as _experiment
 import session.session_manager as _sm
@@ -349,24 +350,3 @@ class Hub:
         for experimenter in self.experimenters:
             if experimenter is not exclude:
                 await experimenter.send(data)
-
-    def get_filters_config(self) -> FilterConfigDict:
-        """Generate the filters_data JSON object."""
-        filters_config = FilterConfigDict(TEST=[], SESSION=[])
-        for filter in Filter.__subclasses__():
-            filter_type = filter.filter_type(filter)
-            if filter_type == "NONE":
-                continue
-            elif filter_type == "TEST" or filter_type == "SESSION":
-                filter_config = filter.init_config(filter)
-
-                if not filter.is_valid_filter_config(filter, filter_config):
-                    raise ValueError(f"{filter} has incorrect values in init_config.")
-
-                filters_config[filter_type].append(filter_config)
-            else:
-                raise ValueError(
-                    f"{filter} has incorrect filter_type. Allowed types are: 'NONE', 'TEST', 'SESSION'"
-                )
-
-        return filters_config

@@ -44,17 +44,17 @@ class MuteVideoFilter(Filter):
         self._muted_ndarray = self._muted_frame.to_ndarray(format="bgr24")
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "MUTE_VIDEO"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def filter_type() -> str:
         return "NONE"
 
     @staticmethod
     def init_config(self) -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
+        name = self.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(

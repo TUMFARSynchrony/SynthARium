@@ -106,6 +106,21 @@ class GroupFilter(ABC):
     def validate_dict(data) -> TypeGuard[FilterDict]:
         return util.check_valid_typeddict_keys(data, FilterDict)
 
+    @staticmethod
+    @abstractmethod
+    def init_config(self) -> FilterDict:
+        """Provide config of the filters.
+
+        It requires name, id, channel, groupFilter and config
+        name and id are collected from the name() method
+        channel is either "audio", "video" or "both"
+        groupFilter is a boolean
+        config is a dictionary of dictionaries which can be also empty
+        """
+        raise NotImplementedError(
+            f"{self} is missing it's implementation of the static abstract get_filter_json() method."
+        )
+
     def __repr__(self) -> str:
         """Get string representation for this group filter."""
         return f"{self.__class__.__name__}(config={self.config})"
@@ -140,6 +155,20 @@ class GroupFilter(ABC):
         The given name must be unique among all filters.
         The given name is used as the unique ID for communicating the active filters
         between frontend and backend.
+        """
+        raise NotImplementedError(
+            f"{__name__} is missing it's implementation of the static abstract name()"
+            " method."
+        )
+
+    @staticmethod
+    @abstractmethod
+    def filter_type() -> str:
+        """Provide the type of the filter.
+
+        It can be either "TEST" or "SESSION"
+        "NONE" type is used for mute filters
+        This is used to build the filters_data JSON object
         """
         raise NotImplementedError(
             f"{__name__} is missing it's implementation of the static abstract name()"

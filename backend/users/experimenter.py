@@ -851,5 +851,5 @@ class Experimenter(User):
          custom_types.filter_config.FilterConfigDict.
         """
         return MessageDict(
-            type="FILTERS_CONFIG", data=self._hub.get_filters_config()
+            type="FILTERS_CONFIG", data=filter_utils.get_filters_config()
         )

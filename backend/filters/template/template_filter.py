@@ -16,19 +16,19 @@ class TemplateFilter(Filter):
         self.line_writer = SimpleLineWriter()
 
     @staticmethod
-    def name(self) -> str:
-        # change this name
+    def name() -> str:
+        # TODO: Change this name to a unique name.
         return "TEMPLATE"
 
     @staticmethod
-    def filter_type(self) -> str:
-        # change this according to your filter type (SESSION or TEST)
+    def filter_type() -> str:
+        # TODO: change this according to your filter type (SESSION, TEST or NONE)
         return "SESSION"
 
     @staticmethod
     def init_config(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
+        # TODO: change this according to your filter config
+        name = self.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(
@@ -47,6 +47,7 @@ class TemplateFilter(Filter):
                 "direction": {
                     "defaultValue": ["clockwise", "anti-clockwise"],
                     "value": "clockwise",
+                    "requiresOtherFilter": False,
                 },
                 "size": {
                     "min": 1,
@@ -59,7 +60,7 @@ class TemplateFilter(Filter):
         )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
-        # change this to implement filter
+        # TODO: change this to implement filter
         self.line_writer.write_line(ndarray, "Hello World")
 
         # Return modified frame
