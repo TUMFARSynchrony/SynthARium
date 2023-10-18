@@ -351,7 +351,7 @@ class Hub:
                 await experimenter.send(data)
 
     def get_filters_config(self) -> FilterConfigDict:
-        """Generate the filters_data.json file."""
+        """Generate the filters_data JSON object."""
         filters_config = FilterConfigDict(TEST=[], SESSION=[])
         for filter in Filter.__subclasses__():
             filter_type = filter.filter_type(filter)

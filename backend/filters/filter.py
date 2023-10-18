@@ -137,7 +137,7 @@ class Filter(ABC):
 
         It can be either "TEST" or "SESSION"
         "NONE" type is used for mute filters
-        This is used to build the filters_data.json file
+        This is used to build the filters_data JSON object
         """
         raise NotImplementedError(
             f"{self} is missing it's implementation of the static abstract name()"
