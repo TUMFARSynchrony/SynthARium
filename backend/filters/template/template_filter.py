@@ -23,7 +23,7 @@ class TemplateFilter(Filter):
     @staticmethod
     def filter_type() -> str:
         # TODO: change this according to your filter type (SESSION, TEST or NONE)
-        return "SESSION"
+        return "NONE"
 
     @staticmethod
     def init_config(self) -> object:
