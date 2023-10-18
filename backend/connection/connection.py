@@ -292,13 +292,25 @@ class Connection(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         await self._incoming_audio.set_filters(filters)
 
+    async def set_video_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._incoming_video.set_group_filters(group_filters, ports)
+
+    async def set_audio_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._incoming_audio.set_group_filters(group_filters, ports)
+
     async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
         # For docstring see ConnectionInterface or hover over function declaration
         return await self._incoming_video.get_filters_data(id, name)
 
     async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
         return await self._incoming_audio.get_filters_data(id, name)
-
+    
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
         self._logger.debug(f"Remove sub connection {subconnection_id}")

@@ -23,6 +23,8 @@ from filters import (
     MuteVideoFilter,
     FilterDataDict,
 )
+from group_filters import GroupFilter, group_filter_factory, group_filter_utils
+from time import time_ns
 
 if TYPE_CHECKING:
     from connection.connection import Connection
@@ -277,6 +279,51 @@ class TrackHandler(MediaStreamTrack):
         self._execute_filters = len(self._filters) > 0 and (
             not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
+
+    async def set_group_filters(
+        self, group_filter_configs: list[FilterDict], ports: list[int]
+    ) -> None:
+        async with self.__lock:
+            await self._set_group_filters(group_filter_configs, ports)
+
+    async def _set_group_filters(
+        self, group_filter_configs: list[FilterDict], ports: list[int]
+    ) -> None:
+        old_group_filters = self._group_filters
+
+        self._group_filters = {}
+        for config, port in zip(group_filter_configs, ports):
+            filter_id = config["id"]
+            # Reuse existing filter for matching id and type.
+            if (
+                filter_id in old_group_filters
+                and old_group_filters[filter_id].config["name"] == config["name"]
+            ):
+                self._group_filters[filter_id] = old_group_filters[filter_id]
+                self._group_filters[filter_id].set_config(config)
+                continue
+
+            # Create a new filter for configs with empty id.
+            self._group_filters[filter_id] = group_filter_factory.create_group_filter(
+                config, self.connection._log_name_suffix[2:]
+            )
+            self._group_filters[filter_id].connect_aggregator(port)
+
+        coroutines: list[Coroutine] = []
+        # Cleanup old filters
+        for filter_id, old_group_filter in old_group_filters.items():
+            if filter_id not in self._group_filters:
+                coroutines.append(old_group_filter.cleanup())
+
+        # Complete setup for new filters
+        for new_filter in self._group_filters.values():
+            coroutines.append(new_filter.complete_setup())
+
+        await asyncio.gather(*coroutines)
+        self.reset_execute_group_filters()
+
+    def reset_execute_group_filters(self):
+        self._execute_group_filters = len(self._group_filters) > 0
 
     async def get_filters_data(self, id, name) -> list[FilterDataDict]:
         """Get data for filters."""

@@ -171,6 +171,10 @@ class ConnectionRunner:
                 await self._connection.set_video_filters(data)
             case "SET_AUDIO_FILTERS":
                 await self._connection.set_audio_filters(data)
+            case "SET_VIDEO_GROUP_FILTERS":
+                await self._connection.set_video_group_filters(data[0], data[1])
+            case "SET_AUDIO_GROUP_FILTERS":
+                await self._connection.set_audio_group_filters(data[0], data[1])
             case "GET_VIDEO_FILTERS":
                 filters = await self._connection.get_video_filters_data(
                     data["id"], data["name"]

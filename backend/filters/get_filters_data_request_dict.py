@@ -13,6 +13,11 @@ class GetFiltersDataRequestDict(TypedDict):
         with name.
     filter_channel : str
         Filter channel of the requested filter. Can be either 'audio', 'video' or 'both'.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#getfiltersdatarequest
     """
 
     filter_id: str
