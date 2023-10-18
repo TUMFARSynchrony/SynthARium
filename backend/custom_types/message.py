@@ -71,6 +71,8 @@ MESSAGE_TYPES = Literal[
     "MUTE",
     "SET_FILTERS",
     "SET_GROUP_FILTERS",
+    "GET_FILTERS_CONFIG",
+    "FILTERS_CONFIG",
     "PING",
     "PONG",
 ]

@@ -81,6 +81,7 @@ class Experimenter(User):
         self.on_message("SET_FILTERS", self._handle_set_filters)
         self.on_message("SET_GROUP_FILTERS", self._handle_set_group_filters)
         self.on_message("GET_SESSION", self._handle_get_session)
+        self.on_message("GET_FILTERS_CONFIG", self._handle_get_filters_config)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -833,3 +834,22 @@ class Experimenter(User):
             )
         session_dict = session.asdict()
         return MessageDict(type="SESSION", data=session_dict)
+
+    async def _handle_get_filters_config(self, _) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_CONFIG`.
+
+        Responds with type: `FILTERS_CONFIG`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict with type: `FILTERS_CONFIG` and data:
+         custom_types.filter_config.FilterConfigDict.
+        """
+        return MessageDict(
+            type="FILTERS_CONFIG", data=self._hub.get_filters_config()
+        )
