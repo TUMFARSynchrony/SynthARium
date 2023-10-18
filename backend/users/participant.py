@@ -91,7 +91,10 @@ class Participant(User):
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
         self.on_message("GET_SESSION", self._handle_get_session)
-        self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
+        # INFO: This is a solution to get filters data for one participant.
+        # However, it is currently not working.
+        # Please have a look at issue: https://github.com/TUMFARSynchrony/experimental-hub/issues/154
+        # self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
 
     def __str__(self) -> str:
         """Get string representation of this participant.
