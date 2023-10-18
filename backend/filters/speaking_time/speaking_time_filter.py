@@ -28,7 +28,6 @@ class SpeakingTimeFilter(Filter):
 
     @staticmethod
     def get_filter_json(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
         name = self.name(self)
         id = name.lower()
         id = id.replace("_", "-")
@@ -41,11 +40,10 @@ class SpeakingTimeFilter(Filter):
         }
 
     async def get_filter_data(self) -> None | FilterDataDict:
-        dict: FilterDataDict = {
-            "id": self.id,
-            "data": {"time": self.seconds},
-        }
-        return dict
+        return FilterDataDict(
+            id=self.id,
+            data={"time": self.seconds},
+        )
 
     async def process(
         self, audioFrame: AudioFrame, ndarray: numpy.ndarray

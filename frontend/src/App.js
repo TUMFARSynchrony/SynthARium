@@ -30,6 +30,7 @@ import {
   selectSessions,
   setCurrentSession,
   setExperimentTimes,
+  updateFiltersData,
   updateSession
 } from "./redux/slices/sessionsListSlice";
 import { initialSnackbar } from "./utils/constants";
@@ -44,7 +45,6 @@ function App() {
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
-  const [filtersData, setFiltersData] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
@@ -93,9 +93,7 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
-    connection.api.on("GET_FILTERS_DATA", onGetFiltersData);
     connection.api.on("FILTERS_DATA", handleFiltersData);
-    connection.api.on("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", onGetFiltersDataSendToParticipant);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -112,9 +110,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
-      connection.api.off("GET_FILTERS_DATA", onGetFiltersData);
-      connection.api.off("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", onGetFiltersDataSendToParticipant);
-      connection.api.off("FILTERS_DATA", handleFiltersData);
+      connection.api.off("FILTERS_TEST_STATUS", onFiltersTestStatus);
     };
   }, [connection]);
 
@@ -307,7 +303,7 @@ function App() {
     );
   };
   const handleFiltersData = (data) => {
-    setFiltersData(data);
+    dispatch(updateFiltersData(data));
   };
   /**
    * Get a specific session information
@@ -490,7 +486,6 @@ function App() {
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
                     onGetFiltersData={onGetFiltersData}
-                    filtersData={filtersData}
                   />
                 }
               />
@@ -536,7 +531,6 @@ function App() {
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
                     onGetFiltersData={onGetFiltersData}
-                    filtersData={filtersData}
                   />
                 }
                 centerContentOnYAxis={true}

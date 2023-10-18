@@ -28,8 +28,7 @@ function WatchingRoom({
   onMuteParticipant,
   onStartExperiment,
   onEndExperiment,
-  onGetFiltersData,
-  filtersData
+  onGetFiltersData
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
@@ -137,7 +136,6 @@ function WatchingRoom({
             {isFilterInformationModalActive && showInformationTab && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
-                filtersData={filtersData}
                 participants={sessionData["participants"]}
               />
             )}
