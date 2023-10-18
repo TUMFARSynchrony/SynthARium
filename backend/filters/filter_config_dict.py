@@ -23,7 +23,7 @@ class FilterConfigDict(TypedDict):
     See Also
     --------
     Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
+        https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#filterconfig
     """
 
     TEST: list[FilterDict]
