@@ -1,7 +1,6 @@
 """Provide abstract `Filter`, `VideoFilter` and `AudioFilter` classes."""
 
 from __future__ import annotations
-import json
 
 import numpy
 from typing import TYPE_CHECKING, Any, TypeGuard
