@@ -4,11 +4,7 @@ import { selectSessions } from "../../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../../utils/utils";
 import JoinedParticipantCard from "../../organisms/JoinedParticipantCard/JoinedParticipantCard";
 
-function ParticipantsTab({
-  connectedParticipants,
-  onKickBanParticipant,
-  onMuteParticipant
-}) {
+function ParticipantsTab({ connectedParticipants, onKickBanParticipant, onMuteParticipant }) {
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionId = ongoingExperiment.sessionId;
   const sessionsList = useAppSelector(selectSessions);

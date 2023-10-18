@@ -32,6 +32,12 @@ def parse_args() -> (
     parser.add_argument(
         "--video-filters", dest="video_filters", required=False, default=[]
     )
+    parser.add_argument(
+        "--audio-group-filters", dest="audio_group_filters", required=False, default=[]
+    )
+    parser.add_argument(
+        "--video-group-filters", dest="video_group_filters", required=False, default=[]
+    )
     parser.add_argument("--record-data", dest="record_data", required=False, default=[])
     args = parser.parse_args()
 
@@ -40,6 +46,8 @@ def parse_args() -> (
         offer_obj = json.loads(args.offer)
         audio_filters = json.loads(args.audio_filters)
         video_filters = json.loads(args.video_filters)
+        audio_group_filters = json.loads(args.audio_group_filters)
+        video_group_filters = json.loads(args.video_group_filters)
         record_data = json.loads(args.record_data)
     except (json.JSONDecodeError, TypeError) as e:
         print(
@@ -57,14 +65,38 @@ def parse_args() -> (
 
     offer = RTCSessionDescription(offer_obj["sdp"], offer_obj["type"])
 
-    return (offer, args.log_name_suffix, audio_filters, video_filters, record_data)
+    return (
+        offer,
+        args.log_name_suffix,
+        audio_filters,
+        video_filters,
+        audio_group_filters,
+        video_group_filters,
+        record_data,
+    )
 
 
 async def main() -> None:
-    offer, log_name_suffix, audio_filters, video_filters, record_data = parse_args()
+    (
+        offer,
+        log_name_suffix,
+        audio_filters,
+        video_filters,
+        audio_group_filters,
+        video_group_filters,
+        record_data,
+    ) = parse_args()
 
     runner = ConnectionRunner()
-    await runner.run(offer, log_name_suffix, audio_filters, video_filters, record_data)
+    await runner.run(
+        offer,
+        log_name_suffix,
+        audio_filters,
+        video_filters,
+        audio_group_filters,
+        video_group_filters,
+        record_data,
+    )
 
 
 if __name__ == "__main__":

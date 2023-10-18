@@ -37,11 +37,7 @@ import { ExperimentTimes, Tabs } from "./utils/enums";
 import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
-import {
-  faClipboardCheck,
-  faUsers,
-  faClipboardList
-} from "@fortawesome/free-solid-svg-icons";
+import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -60,10 +56,7 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -74,10 +67,7 @@ function App() {
 
   /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
-    console.log(
-      `%cConnection state change Handler: ${ConnectionState[state]}`,
-      "color:blue"
-    );
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
 
     setConnectionState(state);
   };
@@ -105,8 +95,7 @@ function App() {
     connection.api.on("CHAT", handleChatMessages);
     connection.api.on("GET_FILTERS_DATA", onGetFiltersData);
     connection.api.on("FILTERS_DATA", handleFiltersData);
-    connection.api.on("GET_FILTERS_TEST_STATUS", onGetFiltersTestStatus);
-    connection.api.on("FILTERS_TEST_STATUS", onFiltersTestStatus);
+    connection.api.on("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", onGetFiltersDataSendToParticipant);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -124,9 +113,8 @@ function App() {
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
       connection.api.off("GET_FILTERS_DATA", onGetFiltersData);
+      connection.api.off("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", onGetFiltersDataSendToParticipant);
       connection.api.off("FILTERS_DATA", handleFiltersData);
-      connection.api.off("GET_FILTERS_TEST_STATUS", onGetFiltersTestStatus);
-      connection.api.off("FILTERS_TEST_STATUS", onFiltersTestStatus);
     };
   }, [connection]);
 
@@ -142,8 +130,7 @@ function App() {
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
     let experimenterPassword = experimenterPasswordParam ?? "";
-    const userType =
-      sessionId && participantId ? "participant" : "experimenter";
+    const userType = sessionId && participantId ? "participant" : "experimenter";
 
     const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage =
@@ -151,11 +138,7 @@ function App() {
 
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
-    if (
-      !isConnectionTestPage &&
-      userType === "experimenter" &&
-      !experimenterPassword
-    ) {
+    if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
       //experimenterPassword = prompt("Please insert experimenter password");
       experimenterPassword = "no-password-given";
     }
@@ -344,8 +327,8 @@ function App() {
     connection.sendMessage("GET_FILTERS_DATA", data);
   };
 
-  const onGetFiltersTestStatus = (data) => {
-    connection.sendMessage("GET_FILTERS_TEST_STATUS", data);
+  const onGetFiltersDataSendToParticipant = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
   };
 
   const onFiltersTestStatus = (data) => {
@@ -430,11 +413,7 @@ function App() {
               />
             }
           />
-          <Route
-            exact
-            path="/postProcessingRoom"
-            element={<PostProcessing />}
-          />
+          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
             path="/lobby"
@@ -570,11 +549,7 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={
-                  <SessionForm
-                    onSendSessionToBackend={onSendSessionToBackend}
-                  />
-                }
+                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
                 centerContentOnYAxis={true}
               />
             }

@@ -20,9 +20,7 @@ export const SpeechBubble = (props: Props) => {
   return (
     <div className="flex flex-col">
       <div
-        className={`${
-          shouldApplySelfEnd() ? "self-end" : "self-start"
-        } text-[0.65rem] max-w-full`}
+        className={`${shouldApplySelfEnd() ? "self-end" : "self-start"} text-[0.65rem] max-w-full`}
       >
         {moment(date).format("lll")}
       </div>

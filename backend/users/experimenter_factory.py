@@ -51,6 +51,8 @@ async def experimenter_factory(
             hub.config,
             [],
             [],
+            [],
+            [],
             filter_api,
             (False, ""),
         )
@@ -59,6 +61,8 @@ async def experimenter_factory(
             offer,
             experimenter.handle_message,
             log_name_suffix,
+            [],
+            [],
             [],
             [],
             filter_api,

@@ -489,7 +489,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             async def _set_video_filters_later(_):
                 if self._connection is None:
                     self._logger.error(
-                        "__set_video_filters_later callback failed, _connection is "
+                        "_set_video_filters_later callback failed, _connection is "
                         "None."
                     )
                     return
@@ -514,11 +514,45 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             async def _set_audio_filters_later(_):
                 if self._connection is None:
                     self._logger.error(
-                        "__set_audio_filters_later callback failed, _connection is "
+                        "_set_audio_filters_later callback failed, _connection is "
                         "None."
                     )
                     return
                 await self._connection.set_audio_filters(filters)
+
+    async def set_video_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        if self._connection is not None:
+            await self._connection.set_video_group_filters(group_filters, ports)
+        else:
+
+            @self.once("connection_set")
+            async def _set_video_group_filters_later(_):
+                if self._connection is None:
+                    self._logger.error(
+                        "_set_video_group_filters_later callback failed, _connection is "
+                        "None."
+                    )
+                    return
+                await self._connection.set_video_group_filters(group_filters, ports)
+
+    async def set_audio_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        if self._connection is not None:
+            await self._connection.set_audio_group_filters(group_filters, ports)
+        else:
+
+            @self.once("connection_set")
+            async def _set_audio_group_filters_later(_):
+                if self._connection is None:
+                    self._logger.error(
+                        "_set_audio_group_filters_later callback failed, _connection is "
+                        "None."
+                    )
+                    return
+                await self._connection.set_audio_group_filters(group_filters, ports)
 
     async def get_filters_data_for_all_participants(
         self, data: Any

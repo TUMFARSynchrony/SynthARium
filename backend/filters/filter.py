@@ -1,7 +1,6 @@
 """Provide abstract `Filter`, `VideoFilter` and `AudioFilter` classes."""
 
 from __future__ import annotations
-import json
 
 import numpy
 from typing import TYPE_CHECKING, Any, TypeGuard
@@ -40,7 +39,7 @@ class Filter(ABC):
     """Video hub.track_handler.TrackHandler for the stream this filter is part of.
 
     Use to communicate with video filters running on the same stream.  Depending on the
-    type of this filter, the filter is either managed by `video_track_handler` or
+    type of this filter, the filter is either managed by `audio_track_handler` or
     `video_track_handler`.
     """
 
@@ -282,7 +281,3 @@ class Filter(ABC):
             f"{self.__class__.__name__}(run_if_muted={self.run_if_muted},"
             f" config={self.config})"
         )
-
-    def toJson(self) -> str:
-        # TODO: remove if unnecessary
-        return json.dumps(self, default=lambda o: o.__dict__)
