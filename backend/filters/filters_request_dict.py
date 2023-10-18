@@ -13,6 +13,11 @@ class SetFiltersRequestDict(TypedDict):
         Active audio filters for participant with `participant_id`.
     video_filters : list of filters.FilterDict
         Active video filters for participant with `participant_id`.
+
+    See Also
+    --------
+    Data Types Wiki :
+        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filterrequestdict
     """
 
     participant_id: str
