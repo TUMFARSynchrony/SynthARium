@@ -108,7 +108,7 @@ class GroupFilter(ABC):
 
     @staticmethod
     @abstractmethod
-    def init_config(self) -> FilterDict:
+    def init_config() -> FilterDict:
         """Provide config of the filters.
 
         It requires name, id, channel, groupFilter and config
@@ -118,7 +118,7 @@ class GroupFilter(ABC):
         config is a dictionary of dictionaries which can be also empty
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract init_config() method."
+            f"{__name__} is missing it's implementation of the static abstract init_config() method."
         )
 
     def __repr__(self) -> str:

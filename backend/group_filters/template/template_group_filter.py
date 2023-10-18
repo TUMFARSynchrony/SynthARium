@@ -37,9 +37,9 @@ class TemplateGroupFilter(GroupFilter):
         return "NONE"
 
     @staticmethod
-    def init_config(self) -> object:
+    def init_config() -> object:
         # TODO: change this according to your filter config
-        name = self.name()
+        name = __class__.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(

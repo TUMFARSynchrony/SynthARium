@@ -48,9 +48,9 @@ class SimpleGlassesDetection(Filter):
         return "TEST"
 
     @staticmethod
-    def init_config(self) -> FilterDict:
+    def init_config() -> FilterDict:
         # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name()
+        name = __class__.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(

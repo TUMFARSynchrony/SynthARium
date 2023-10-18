@@ -144,7 +144,7 @@ def get_filters_config() -> FilterConfigDict:
         if filter_type == "NONE":
             continue
         elif filter_type == "TEST" or filter_type == "SESSION":
-            filter_config = filter.init_config(filter)
+            filter_config = filter.init_config()
 
             if not is_valid_filter_config(filter, filter_config):
                 raise ValueError(f"{filter} has incorrect values in init_config.")
@@ -160,7 +160,7 @@ def get_filters_config() -> FilterConfigDict:
         if filter_type == "NONE":
             continue
         elif filter_type == "TEST" or filter_type == "SESSION":
-            filter_config = group_filter.init_config(group_filter)
+            filter_config = group_filter.init_config()
 
             if not is_valid_filter_config(group_filter, filter_config):
                 raise ValueError(f"{filter} has incorrect values in init_config.")

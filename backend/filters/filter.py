@@ -179,7 +179,7 @@ class Filter(ABC):
 
     @staticmethod
     @abstractmethod
-    def init_config(self) -> FilterDict:
+    def init_config() -> FilterDict:
         """Provide config of the filters.
 
         It requires at name, id, channel, groupFilter and config
@@ -189,7 +189,7 @@ class Filter(ABC):
         config is a dictionary of dictionaries which can be also empty
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract get_filter_json() method."
+            f"{__name__} is missing it's implementation of the static abstract get_filter_json() method."
         )
 
     def __repr__(self) -> str:

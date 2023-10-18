@@ -21,8 +21,8 @@ class FilterAPITestFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config(self) -> object:
-        name = self.name()
+    def init_config() -> object:
+        name = __class__.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(

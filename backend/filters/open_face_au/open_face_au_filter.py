@@ -38,9 +38,9 @@ class OpenFaceAUFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config(self) -> object:
+    def init_config() -> object:
         # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name()
+        name = __class__.name()
         id = name.lower()
         id = id.replace("_", "-")
         return FilterDict(
