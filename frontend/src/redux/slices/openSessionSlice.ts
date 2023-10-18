@@ -72,6 +72,7 @@ export const openSessionSlice = createSlice({
       state.session = {
         ...payload,
         id: "",
+        creation_time: 0,
         participants: payload.participants.map((p) => ({
           ...p,
           id: ""
@@ -94,8 +95,7 @@ export const {
 
 export default openSessionSlice.reducer;
 
-export const selectOpenSession = (state: RootState): Session =>
-  state.openSession.session;
+export const selectOpenSession = (state: RootState): Session => state.openSession.session;
 
 export const selectNumberOfParticipants = (state: RootState): number =>
   state.openSession.session.participants.length;

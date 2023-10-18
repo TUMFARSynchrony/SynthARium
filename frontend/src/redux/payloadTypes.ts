@@ -15,8 +15,5 @@ export type ExperimentTypesPayload = {
 
 export type ChangeValuePayload = {
   objKey: keyof Pick<Session, "title" | "description" | "record" | "date">;
-  objValue: Session[keyof Pick<
-    Session,
-    "title" | "description" | "record" | "date"
-  >];
+  objValue: Session[keyof Pick<Session, "title" | "description" | "record" | "date">];
 };

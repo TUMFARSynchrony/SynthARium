@@ -26,9 +26,7 @@ export function isValidMessage(data: any): data is Message {
  * @param data data that should be checked for {@link RTCSessionDescriptionInit} type
  * @returns true if `data` is a valid {@link RTCSessionDescriptionInit}
  */
-function isValidConnectionRTCSessionDescriptionInit(
-  data: any
-): data is RTCSessionDescriptionInit {
+function isValidConnectionRTCSessionDescriptionInit(data: any): data is RTCSessionDescriptionInit {
   return "sdp" in data && "type" in data;
 }
 
@@ -48,9 +46,7 @@ export type ConnectionProposal = {
  * @param data data that should be checked for {@link ConnectionProposal} type
  * @returns true if `data` is a valid {@link ConnectionProposal}
  */
-export function isValidConnectionProposal(
-  data: any
-): data is ConnectionProposal {
+export function isValidConnectionProposal(data: any): data is ConnectionProposal {
   return "id" in data && "participant_summary" in data;
 }
 
@@ -81,9 +77,7 @@ export type ConnectionAnswer = {
  */
 export function isValidConnectionAnswer(data: any): data is ConnectionAnswer {
   return (
-    "id" in data &&
-    "answer" in data &&
-    isValidConnectionRTCSessionDescriptionInit(data.answer)
+    "id" in data && "answer" in data && isValidConnectionRTCSessionDescriptionInit(data.answer)
   );
 }
 

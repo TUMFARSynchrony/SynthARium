@@ -13,6 +13,11 @@ from experiment.experiment_state import ExperimentState
 from hub.exceptions import ErrorDictException
 from session.data.session import SessionData
 
+from group_filters.group_filter_aggregator import GroupFilterAggregator
+from filters.filter_dict import FilterDict
+from group_filters import group_filter_aggregator_factory
+import asyncio
+
 if TYPE_CHECKING:
     from users import Experimenter, Participant
 
@@ -30,6 +35,8 @@ class Experiment(AsyncIOEventEmitter):
     session: SessionData
     _experimenters: list[Experimenter]
     _participants: dict[str, Participant]
+    _audio_group_filter_aggregators: dict[str, GroupFilterAggregator]
+    _video_group_filter_aggregators: dict[str, GroupFilterAggregator]
 
     def __init__(self, session: SessionData):
         """Start a new Experiment.
@@ -48,6 +55,8 @@ class Experiment(AsyncIOEventEmitter):
         self._participants = {}
         self._logger.info(f"Experiment created: {self}")
         self.session.creation_time = timestamp()
+        self._audio_group_filter_aggregators = {}
+        self._video_group_filter_aggregators = {}
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -421,3 +430,101 @@ class Experiment(AsyncIOEventEmitter):
 
         self._state = state
         self.emit("state", self._state)
+
+    async def set_video_group_filter_aggregators(
+        self, group_filter_configs: list[FilterDict], ports: list[int]
+    ) -> None:
+        old_group_filter_aggregators = self._video_group_filter_aggregators
+
+        self._video_group_filter_aggregators = {}
+        coroutines = []
+        for config, port in zip(group_filter_configs, ports):
+            filter_id = config["id"]
+            # Reuse existing filter for matching id and name.
+            if (
+                filter_id in old_group_filter_aggregators
+                and old_group_filter_aggregators[filter_id]._group_filter.config["name"]
+                == config["name"]
+            ):
+                self._video_group_filter_aggregators[
+                    filter_id
+                ] = old_group_filter_aggregators[filter_id]
+
+                self._video_group_filter_aggregators[
+                    filter_id
+                ]._group_filter.set_config(config)
+                self._video_group_filter_aggregators[filter_id].delete_data()
+            else:
+                # Create a new filter for configs with empty id.
+                self._video_group_filter_aggregators[
+                    filter_id
+                ] = group_filter_aggregator_factory.create_group_filter_aggregator(
+                    "video", config, port
+                )
+
+        # Cleanup old group filter aggregators
+        for (
+            filter_id,
+            old_group_filter_aggregator,
+        ) in old_group_filter_aggregators.items():
+            if filter_id not in self._video_group_filter_aggregators:
+                coroutines.append(old_group_filter_aggregator.cleanup())
+
+        # Run new group filter aggregators
+        for (
+            new_group_filter_aggregator
+        ) in self._video_group_filter_aggregators.values():
+            task = asyncio.create_task(new_group_filter_aggregator.run())
+            new_group_filter_aggregator.set_task(task)
+            coroutines.append(task)
+
+        await asyncio.gather(*coroutines)
+
+    async def set_audio_group_filter_aggregators(
+        self, group_filter_configs: list[FilterDict], ports: list[int]
+    ) -> None:
+        old_group_filter_aggregators = self._audio_group_filter_aggregators
+
+        self._audio_group_filter_aggregators = {}
+        coroutines = []
+        for config, port in zip(group_filter_configs, ports):
+            filter_id = config["id"]
+            # Reuse existing filter for matching id and name.
+            if (
+                filter_id in old_group_filter_aggregators
+                and old_group_filter_aggregators[filter_id]._group_filter.config["name"]
+                == config["name"]
+            ):
+                self._audio_group_filter_aggregators[
+                    filter_id
+                ] = old_group_filter_aggregators[filter_id]
+
+                self._audio_group_filter_aggregators[
+                    filter_id
+                ]._group_filter.set_config(config)
+                self._audio_group_filter_aggregators[filter_id].delete_data()
+            else:
+                # Create a new filter for configs with empty id.
+                self._audio_group_filter_aggregators[
+                    filter_id
+                ] = group_filter_aggregator_factory.create_group_filter_aggregator(
+                    "audio", config, port
+                )
+
+        # Cleanup old group filter aggregators
+        for (
+            filter_id,
+            old_group_filter_aggregator,
+        ) in old_group_filter_aggregators.items():
+            if filter_id not in self._audio_group_filter_aggregators:
+                coroutines.append(old_group_filter_aggregator.cleanup())
+
+        # Run new group filter aggregators
+        for (
+            new_group_filter_aggregator
+        ) in self._audio_group_filter_aggregators.values():
+            task = asyncio.create_task(new_group_filter_aggregator.run())
+            new_group_filter_aggregator.set_task(task)
+            coroutines.append(task)
+
+        await asyncio.gather(*coroutines)

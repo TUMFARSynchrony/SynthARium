@@ -29,7 +29,7 @@ def is_valid_filter_dict(data) -> TypeGuard[FilterDict]:
         True if `data` is a valid FilterDict.
     """
     if "name" not in data:
-        logger.debug("Missing key: type")
+        logger.debug("Missing key: name")
         return False
 
     filter_name = data["name"]

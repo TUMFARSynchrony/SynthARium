@@ -33,19 +33,13 @@ function ConnectionTest(props: {
 
   /** Handle `connectionStateChange` event of {@link Connection}. */
   const stateChangeHandler = async (state: ConnectionState) => {
-    console.log(
-      `%cConnection state change Handler: ${ConnectionState[state]}`,
-      "color:blue"
-    );
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
     setConnectionState(state);
   };
 
   /** Handle `connectedPeersChange` event of {@link Connection}. */
   const connectedPeersChangeHandler = async (peers: ConnectedPeer[]) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.log(peers);
     console.groupEnd();
     setConnectedPeers(peers);
@@ -155,20 +149,12 @@ function ConnectionTest(props: {
           srcObject={props.localStream ?? new MediaStream()}
           ignoreAudio
         />
-        <Video
-          title={getRemoteStreamTitle()}
-          srcObject={connection.remoteStream}
-          ignoreAudio
-        />
+        <Video title={getRemoteStreamTitle()} srcObject={connection.remoteStream} ignoreAudio />
       </div>
       {props.localStream ? (
         <>
-          <button onClick={muteAudio}>
-            {audioIsMuted ? "Unmute" : "Mute"} localStream Audio
-          </button>
-          <button onClick={muteVideo}>
-            {videoIsMuted ? "Unmute" : "Mute"} localStream Video
-          </button>
+          <button onClick={muteAudio}>{audioIsMuted ? "Unmute" : "Mute"} localStream Audio</button>
+          <button onClick={muteVideo}>{videoIsMuted ? "Unmute" : "Mute"} localStream Video</button>
         </>
       ) : (
         ""
@@ -179,11 +165,7 @@ function ConnectionTest(props: {
       </p>
       <div className="peerStreams">
         {connectedPeers.map((peer, i) => (
-          <Video
-            title={getVideoTitle(peer, i)}
-            srcObject={peer.stream}
-            key={i}
-          />
+          <Video title={getVideoTitle(peer, i)} srcObject={peer.stream} key={i} />
         ))}
       </div>
       <ApiTests connection={connection} />
@@ -197,14 +179,10 @@ export default ConnectionTest;
  * Component to send test requests to the backend API and display responses.
  */
 function ApiTests(props: { connection: Connection }): JSX.Element {
-  const [responses, setResponses] = useState<
-    { endpoint: string; data: string }[]
-  >([]);
+  const [responses, setResponses] = useState<{ endpoint: string; data: string }[]>([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
-  const [participantId, setParticipantId] = useState(
-    props.connection.participantId ?? ""
-  );
+  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
   const [mutedVideo, setMutedVideo] = useState(false);
   const [mutedAudio, setMutedAudio] = useState(false);
 
@@ -214,31 +192,23 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
      * @param endpoint endpoint to which `messageData` was send. Used as a title for this response.
      * @param messageData data that should be displayed.
      */
-    const saveGenericApiResponse = async (
-      endpoint: string,
-      messageData: any
-    ) => {
+    const saveGenericApiResponse = async (endpoint: string, messageData: any) => {
       setResponses([{ endpoint, data: messageData }, ...responses]);
       setHighlightedResponse(0);
     };
 
     // Message listeners to messages from the backend.
     const handleTest = (data: any) => saveGenericApiResponse("TEST", data);
-    const handleSessionChange = (data: any) =>
-      saveGenericApiResponse("SESSION_CHANGE", data);
-    const handleSessionList = (data: any) =>
-      saveGenericApiResponse("SESSION_LIST", data);
-    const handleSuccess = (data: any) =>
-      saveGenericApiResponse("SUCCESS", data);
+    const handleSessionChange = (data: any) => saveGenericApiResponse("SESSION_CHANGE", data);
+    const handleSessionList = (data: any) => saveGenericApiResponse("SESSION_LIST", data);
+    const handleSuccess = (data: any) => saveGenericApiResponse("SUCCESS", data);
     const handleError = (data: any) => saveGenericApiResponse("ERROR", data);
     const handleExperimentCreated = (data: any) =>
       saveGenericApiResponse("EXPERIMENT_CREATED", data);
-    const handleExperimentEnded = (data: any) =>
-      saveGenericApiResponse("EXPERIMENT_ENDED", data);
+    const handleExperimentEnded = (data: any) => saveGenericApiResponse("EXPERIMENT_ENDED", data);
     const handleExperimentStarted = (data: any) =>
       saveGenericApiResponse("EXPERIMENT_STARTED", data);
-    const handleKickNotification = (data: any) =>
-      saveGenericApiResponse("KICK_NOTIFICATION", data);
+    const handleKickNotification = (data: any) => saveGenericApiResponse("KICK_NOTIFICATION", data);
     const handlePong = async (data: any) => {
       saveGenericApiResponse("PONG", data);
       if ("time" in data.ping_data) {
@@ -246,8 +216,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         console.log("Ping RTT:", rtt, "ms");
       }
     };
-    const handleFiltersData = (data: any) =>
-      saveGenericApiResponse("FILTERS_DATA", data);
+    const handleFiltersData = (data: any) => saveGenericApiResponse("FILTERS_DATA", data);
     const handleGetFiltersTestStatus = (data: any) =>
       saveGenericApiResponse("GET_FILTERS_TEST_STATUS", data);
     const handleFiltersTestStatus = (data: any) =>
@@ -265,10 +234,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
     props.connection.api.on("FILTERS_DATA", handleFiltersData);
-    props.connection.api.on(
-      "GET_FILTERS_TEST_STATUS",
-      handleGetFiltersTestStatus
-    );
+    props.connection.api.on("GET_FILTERS_TEST_STATUS", handleGetFiltersTestStatus);
     props.connection.api.on("FILTERS_TEST_STATUS", handleFiltersTestStatus);
 
     return () => {
@@ -284,10 +250,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
       props.connection.api.off("PONG", handlePong);
       props.connection.api.off("FILTERS_DATA", handleFiltersData);
-      props.connection.api.off(
-        "GET_FILTERS_TEST_STATUS",
-        handleGetFiltersTestStatus
-      );
+      props.connection.api.off("GET_FILTERS_TEST_STATUS", handleGetFiltersTestStatus);
       props.connection.api.off("FILTERS_TEST_STATUS", handleFiltersTestStatus);
     };
   }, [props.connection.api, responses]);
@@ -446,9 +409,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           </button>
         </div>
         <button
-          onClick={() =>
-            props.connection.sendMessage("PING", { time: new Date().getTime() })
-          }
+          onClick={() => props.connection.sendMessage("PING", { time: new Date().getTime() })}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           PING
@@ -469,11 +430,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           );
         })}
       </div>
-      {responses.length > 0 ? (
-        <PrettyJson json={responses[highlightedResponse].data} />
-      ) : (
-        ""
-      )}
+      {responses.length > 0 ? <PrettyJson json={responses[highlightedResponse].data} /> : ""}
     </>
   );
 }
@@ -484,13 +441,17 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
       <p className="apiSubsectionHeader">Filter Presets:</p>
       <div className="requestButtons">
         <button
-          onClick={() =>
+          onClick={() => {
             props.connection.sendMessage("SET_FILTERS", {
               participant_id: "all",
               audio_filters: [],
               video_filters: []
-            })
-          }
+            });
+            props.connection.sendMessage("SET_GROUP_FILTERS", {
+              audio_group_filters: [],
+              video_group_filters: []
+            });
+          }}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           None
@@ -838,6 +799,25 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
         >
           Simple Glasses Detection
         </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_GROUP_FILTERS", {
+              audio_group_filters: [],
+              video_group_filters: [
+                {
+                  name: "TEMPLATE_GF",
+                  id: "template_gf",
+                  channel: "video",
+                  groupFilter: true,
+                  config: {}
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          TEMPLATE GF
+        </button>
       </div>
     </>
   );
@@ -870,9 +850,7 @@ function ReplaceConnection(props: {
     props.connection.userType
   );
   const [sessionId, setSessionId] = useState(props.connection.sessionId ?? "");
-  const [participantId, setParticipantId] = useState(
-    props.connection.participantId ?? ""
-  );
+  const [participantId, setParticipantId] = useState(props.connection.participantId ?? "");
   const [experimenterPassword, setExperimenterPassword] = useState(
     props.connection.experimenterPassword ?? ""
   );
@@ -911,23 +889,13 @@ function ReplaceConnection(props: {
     e.preventDefault();
     const newUserType = e.target.value as "participant" | "experimenter";
     setUserType(newUserType);
-    updateConnection(
-      newUserType,
-      sessionId,
-      participantId,
-      experimenterPassword
-    );
+    updateConnection(newUserType, sessionId, participantId, experimenterPassword);
   };
 
   const handleSessionId = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setSessionId(e.target.value);
-    updateConnection(
-      userType,
-      e.target.value,
-      participantId,
-      experimenterPassword
-    );
+    updateConnection(userType, e.target.value, participantId, experimenterPassword);
   };
 
   const handleParticipantId = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -936,9 +904,7 @@ function ReplaceConnection(props: {
     updateConnection(userType, sessionId, e.target.value, experimenterPassword);
   };
 
-  const handleExperimenterPassword = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleExperimenterPassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setExperimenterPassword(e.target.value);
     updateConnection(userType, sessionId, participantId, e.target.value);
@@ -953,10 +919,7 @@ function ReplaceConnection(props: {
       <form className="replaceConnectionForm">
         <label>
           Type:&nbsp;&nbsp;
-          <select
-            defaultValue={props.connection.userType}
-            onChange={handleUserType}
-          >
+          <select defaultValue={props.connection.userType} onChange={handleUserType}>
             <option value="participant">Participant</option>
             <option value="experimenter">Experimenter</option>
           </select>
@@ -965,19 +928,11 @@ function ReplaceConnection(props: {
           <>
             <label>
               Session ID:&nbsp;&nbsp;
-              <input
-                type="text"
-                onChange={handleSessionId}
-                defaultValue={sessionId}
-              />
+              <input type="text" onChange={handleSessionId} defaultValue={sessionId} />
             </label>
             <label>
               ParticipantID:&nbsp;&nbsp;
-              <input
-                type="text"
-                onChange={handleParticipantId}
-                defaultValue={participantId}
-              />
+              <input type="text" onChange={handleParticipantId} defaultValue={participantId} />
             </label>
           </>
         ) : (

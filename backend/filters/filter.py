@@ -40,7 +40,7 @@ class Filter(ABC):
     """Video hub.track_handler.TrackHandler for the stream this filter is part of.
 
     Use to communicate with video filters running on the same stream.  Depending on the
-    type of this filter, the filter is either managed by `video_track_handler` or
+    type of this filter, the filter is either managed by `audio_track_handler` or
     `video_track_handler`.
     """
 

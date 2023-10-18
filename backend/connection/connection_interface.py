@@ -177,6 +177,32 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    async def set_video_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        """Set or update video filters to `filters`.
+
+        Parameters
+        ----------
+        filters : list of filters.FilterDict
+            List of video filter configs.
+        """
+        pass
+
+    @abstractmethod
+    async def set_audio_group_filters(
+        self, group_filters: list[FilterDict], ports: list[int]
+    ) -> None:
+        """Set or update audio filters to `filters`.
+
+        Parameters
+        ----------
+        filters : list of filters.FilterDict
+            List of audio filter configs.
+        """
+        pass
+
+    @abstractmethod
     async def start_recording(self) -> None:
         """Start recording tracks for this connection.
 
