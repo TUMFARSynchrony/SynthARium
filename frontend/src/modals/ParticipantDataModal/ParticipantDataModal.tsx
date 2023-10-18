@@ -68,7 +68,6 @@ function ParticipantDataModal({
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
   const filtersData = useAppSelector(selectFiltersDataSession);
-  console.log(filtersData, typeof filtersData);
   const individualFilters = filtersData.filter((filter) => filter.groupFilter !== true);
   const groupFilters = filtersData.filter((filter) => filter.groupFilter === true);
   const [snackbar, setSnackbar] = useState(initialSnackbar);
@@ -173,9 +172,11 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = async (filter: Filter) => {
+  const handleFilterSelect = async (filter: Filter, isGroupFilter: boolean) => {
+    console.log(filter, isGroupFilter);
     setSelectedFilter(filter);
     const newParticipantData = structuredClone(participantCopy);
+    console.log(newParticipantData);
     const newFilter = structuredClone(filter);
     newFilter.id = uuid();
 
@@ -196,32 +197,43 @@ function ParticipantDataModal({
           newFilter["config"][key]["value"] = id;
           setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
-            newParticipantData.video_filters.push(otherFilter);
+            otherFilter.groupFilter
+              ? newParticipantData.video_group_filters.push(otherFilter)
+              : newParticipantData.video_filters.push(otherFilter);
           }
           if (otherFilter.channel === "audio" || otherFilter.channel === "both") {
-            newParticipantData.audio_filters.push(otherFilter);
+            otherFilter.groupFilter
+              ? newParticipantData.audio_group_filters.push(otherFilter)
+              : newParticipantData.audio_filters.push(otherFilter);
           }
         }
       }
     }
 
-    if (
-      filtersData
-        .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
-        .includes(filter.id)
-    ) {
-      newParticipantData.video_filters.push(newFilter);
+    if (newFilter.channel === "video" || newFilter.channel === "both") {
+      isGroupFilter
+        ? newParticipantData.video_group_filters.push(newFilter)
+        : newParticipantData.video_filters.push(newFilter);
     }
-    if (
-      filtersData
-        .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
-        .includes(filter.id)
-    ) {
-      newParticipantData.audio_filters.push(newFilter);
+    if (newFilter.channel === "audio" || newFilter.channel === "both") {
+      isGroupFilter
+        ? newParticipantData.audio_group_filters.push(newFilter)
+        : newParticipantData.audio_filters.push(newFilter);
     }
     setParticipantCopy(newParticipantData);
   };
 
+  /**
+   * This function deletes the required filters in each filter array.
+   * @param filterId - The id of the filter to be deleted.
+   * @param otherFilterId - The id of the other filter to be deleted.
+   * @param newParticipantData - The participant data to be updated.
+   * @returns The updated participant data.
+   * @remarks
+   * This function is called when a filter should be deleted in each filter array.
+   * It looks in all filter arrays and deletes the filters with id.
+   * If the id is not found, then the filter is not deleted in the specific filter array.
+   * */
   const deleteRequiredFiltersInEachFilterArray = (
     filterId: string,
     otherFilterId: string,
@@ -236,9 +248,30 @@ function ParticipantDataModal({
         filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
     );
 
+    newParticipantData.video_group_filters = newParticipantData.video_group_filters.filter(
+      (filteredFilter: Filter) =>
+        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
+    );
+
+    newParticipantData.audio_group_filters = newParticipantData.audio_group_filters.filter(
+      (filteredFilter: Filter) =>
+        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
+    );
+
     return newParticipantData;
   };
 
+  /**
+   * This function deletes all required filters.
+   * @param filter - The filter to be deleted.
+   * @param newParticipantData - The participant data to be updated.
+   * @param isGroupFilter - A boolean value to check if the filter is a group filter.
+   * @returns The updated participant data.
+   * @remarks
+   * This function is called when a filter is deleted.
+   * If a filter is required for another filter, then both the filters are deleted.
+   * If a filter requires another filter, then both the filters are deleted.
+   * */
   const deleteAllRequiredFilters = (filter: Filter, newParticipantData: Participant) => {
     // if filter is required for another filter, removes current filter and other filter
     if (requiredFilters.has(filter.id)) {
@@ -265,16 +298,28 @@ function ParticipantDataModal({
     return newParticipantData;
   };
 
-  const handleDeleteVideoFilter = (videoFilter: Filter, filterCopyIndex: number) => {
+  const handleDeleteVideoFilter = (
+    videoFilter: Filter,
+    filterCopyIndex: number,
+    isGroupFilter: boolean
+  ) => {
     const newParticipantData = structuredClone(participantCopy);
-    newParticipantData.video_filters.splice(filterCopyIndex, 1);
+    isGroupFilter
+      ? newParticipantData.video_group_filters.splice(filterCopyIndex, 1)
+      : newParticipantData.video_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(videoFilter, newParticipantData));
   };
 
-  const handleDeleteAudioFilter = (audioFilter: Filter, filterCopyIndex: number) => {
+  const handleDeleteAudioFilter = (
+    audioFilter: Filter,
+    filterCopyIndex: number,
+    isGroupFilter: boolean
+  ) => {
     const newParticipantData = structuredClone(participantCopy);
-    newParticipantData.audio_filters.splice(filterCopyIndex, 1);
+    isGroupFilter
+      ? newParticipantData.audio_group_filters.splice(filterCopyIndex, 1)
+      : newParticipantData.audio_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(audioFilter, newParticipantData));
   };
@@ -393,7 +438,9 @@ function ParticipantDataModal({
                         <MenuItem
                           key={individualFilter.id}
                           value={individualFilter.name}
-                          onClick={() => handleFilterSelect(individualFilter)}
+                          onClick={() =>
+                            handleFilterSelect(individualFilter, individualFilter.groupFilter)
+                          }
                         >
                           {individualFilter.name}
                         </MenuItem>
@@ -407,7 +454,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={groupFilter.id}
                           value={groupFilter.name}
-                          onClick={() => handleFilterSelect(groupFilter)}
+                          onClick={() => handleFilterSelect(groupFilter, groupFilter.groupFilter)}
                         >
                           {groupFilter.name}
                         </MenuItem>
@@ -441,7 +488,11 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
+                            handleDeleteAudioFilter(
+                              audioFilter,
+                              audioFilterIndex,
+                              audioFilter.groupFilter
+                            );
                           }}
                         />
                       </Box>
@@ -561,7 +612,255 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteVideoFilter(videoFilter, videoFilterIndex);
+                            handleDeleteVideoFilter(
+                              videoFilter,
+                              videoFilterIndex,
+                              videoFilter.groupFilter
+                            );
+                          }}
+                        />
+                      </Box>
+
+                      {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          flexWrap: "wrap"
+                        }}
+                      >
+                        {Object.keys(videoFilter.config).map((configType, configIndex) => {
+                          if (Array.isArray(videoFilter["config"][configType]["defaultValue"])) {
+                            return (
+                              <FormControl
+                                key={configIndex}
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                size="small"
+                              >
+                                <InputLabel htmlFor="grouped-select">
+                                  {configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                </InputLabel>
+                                <Select
+                                  key={configIndex}
+                                  value={
+                                    (videoFilter["config"][configType] as FilterConfigArray)[
+                                      "requiresOtherFilter"
+                                    ]
+                                      ? (
+                                          videoFilter["config"][configType][
+                                            "defaultValue"
+                                          ] as string[]
+                                        )[0]
+                                      : videoFilter["config"][configType]["value"]
+                                  }
+                                  id="grouped-select"
+                                  onChange={(e) => {
+                                    handleFilterChange(
+                                      videoFilterIndex,
+                                      configType,
+                                      e.target.value,
+                                      "video_filters"
+                                    );
+                                  }}
+                                >
+                                  {(
+                                    videoFilter["config"][configType]["defaultValue"] as string[]
+                                  ).map((value: string) => {
+                                    return (
+                                      <MenuItem key={value} value={value}>
+                                        {value}
+                                      </MenuItem>
+                                    );
+                                  })}
+                                </Select>
+                              </FormControl>
+                            );
+                          } else if (
+                            typeof videoFilter["config"][configType]["defaultValue"] == "number"
+                          ) {
+                            return (
+                              <TextField
+                                key={configIndex}
+                                label={configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                defaultValue={videoFilter["config"][configType]["value"]}
+                                InputProps={{
+                                  inputProps: {
+                                    min: (videoFilter["config"][configType] as FilterConfigNumber)[
+                                      "min"
+                                    ],
+                                    max: (videoFilter["config"][configType] as FilterConfigNumber)[
+                                      "max"
+                                    ],
+                                    step: (videoFilter["config"][configType] as FilterConfigNumber)[
+                                      "step"
+                                    ]
+                                  }
+                                }}
+                                type="number"
+                                size="small"
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                onChange={(e) => {
+                                  handleFilterChange(
+                                    videoFilterIndex,
+                                    configType,
+                                    parseInt(e.target.value),
+                                    "video_filters"
+                                  );
+                                }}
+                              />
+                            );
+                          }
+                        })}
+                      </Box>
+                    </Box>
+                  );
+                }
+              )}
+
+              {/* Displays applied group filters */}
+              <Typography variant="overline" display="block">
+                Group Filters
+              </Typography>
+              {participantCopy.audio_group_filters.map(
+                (audioFilter: Filter, audioFilterIndex: number) => {
+                  return (
+                    <Box
+                      key={audioFilterIndex}
+                      sx={{ display: "flex", justifyContent: "flex-start" }}
+                    >
+                      <Box sx={{ minWidth: 140 }}>
+                        <Chip
+                          key={audioFilterIndex}
+                          label={audioFilter.name}
+                          variant="outlined"
+                          size="medium"
+                          color="secondary"
+                          onDelete={() => {
+                            handleDeleteAudioFilter(
+                              audioFilter,
+                              audioFilterIndex,
+                              audioFilter.groupFilter
+                            );
+                          }}
+                        />
+                      </Box>
+
+                      {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          flexWrap: "wrap"
+                        }}
+                      >
+                        {Object.keys(audioFilter.config).map((configType, configIndex) => {
+                          if (Array.isArray(audioFilter["config"][configType]["defaultValue"])) {
+                            return (
+                              <FormControl
+                                key={configIndex}
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                size="small"
+                              >
+                                <InputLabel htmlFor="grouped-select">
+                                  {configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                </InputLabel>
+                                <Select
+                                  key={configIndex}
+                                  value={
+                                    (audioFilter["config"][configType] as FilterConfigArray)[
+                                      "requiresOtherFilter"
+                                    ]
+                                      ? (
+                                          audioFilter["config"][configType][
+                                            "defaultValue"
+                                          ] as string[]
+                                        )[0]
+                                      : audioFilter["config"][configType]["value"]
+                                  }
+                                  id="grouped-select"
+                                  onChange={(e) => {
+                                    handleFilterChange(
+                                      audioFilterIndex,
+                                      configType,
+                                      e.target.value,
+                                      "audio_filters"
+                                    );
+                                  }}
+                                >
+                                  {(
+                                    audioFilter["config"][configType]["defaultValue"] as string[]
+                                  ).map((value: string) => {
+                                    return (
+                                      <MenuItem key={value} value={value}>
+                                        {value}
+                                      </MenuItem>
+                                    );
+                                  })}
+                                </Select>
+                              </FormControl>
+                            );
+                          } else if (
+                            typeof audioFilter["config"][configType]["defaultValue"] == "number"
+                          ) {
+                            return (
+                              <TextField
+                                key={configIndex}
+                                label={configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                defaultValue={audioFilter["config"][configType]["value"]}
+                                InputProps={{
+                                  inputProps: {
+                                    min: (audioFilter["config"][configType] as FilterConfigNumber)[
+                                      "min"
+                                    ],
+                                    max: (audioFilter["config"][configType] as FilterConfigNumber)[
+                                      "max"
+                                    ],
+                                    step: (audioFilter["config"][configType] as FilterConfigNumber)[
+                                      "step"
+                                    ]
+                                  }
+                                }}
+                                type="number"
+                                size="small"
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                onChange={(e) => {
+                                  handleFilterChange(
+                                    audioFilterIndex,
+                                    configType,
+                                    parseInt(e.target.value),
+                                    "audio_filters"
+                                  );
+                                }}
+                              />
+                            );
+                          }
+                        })}
+                      </Box>
+                    </Box>
+                  );
+                }
+              )}
+              {participantCopy.video_group_filters.map(
+                (videoFilter: Filter, videoFilterIndex: number) => {
+                  console.log(videoFilter);
+                  return (
+                    <Box
+                      key={videoFilterIndex}
+                      sx={{ display: "flex", justifyContent: "flex-start" }}
+                    >
+                      <Box sx={{ minWidth: 140 }}>
+                        <Chip
+                          key={videoFilterIndex}
+                          label={videoFilter.name}
+                          variant="outlined"
+                          size="medium"
+                          color="secondary"
+                          onDelete={() => {
+                            handleDeleteVideoFilter(
+                              videoFilter,
+                              videoFilterIndex,
+                              videoFilter.groupFilter
+                            );
                           }}
                         />
                       </Box>

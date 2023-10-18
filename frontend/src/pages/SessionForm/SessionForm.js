@@ -18,7 +18,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -65,8 +65,6 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
       setXAxis(0);
       setYAxis(0);
     }
-
-    onGetFiltersConfig();
   }, [openSession]);
 
   useEffect(() => {
@@ -97,6 +95,10 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
       return;
     }
   }, [snackbarResponse]);
+
+  useEffect(() => {
+    onGetFiltersConfig();
+  }, []);
 
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
