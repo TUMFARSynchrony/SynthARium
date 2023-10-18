@@ -118,7 +118,7 @@ class GroupFilter(ABC):
         config is a dictionary of dictionaries which can be also empty
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract get_filter_json() method."
+            f"{self} is missing it's implementation of the static abstract init_config() method."
         )
 
     def __repr__(self) -> str:
@@ -171,7 +171,7 @@ class GroupFilter(ABC):
         This is used to build the filters_data JSON object
         """
         raise NotImplementedError(
-            f"{__name__} is missing it's implementation of the static abstract name()"
+            f"{__name__} is missing it's implementation of the static abstract filter_type()"
             " method."
         )
 
