@@ -449,7 +449,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
                 {
                   name: "EDGE_OUTLINE",
                   id: "edge",
-                  channel: "both",
+                  channel: "video",
                   groupFilter: false,
                   config: {}
                 }
