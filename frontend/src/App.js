@@ -110,7 +110,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
-      connection.api.off("FILTERS_TEST_STATUS", onFiltersTestStatus);
+      connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
 
@@ -302,9 +302,11 @@ function App() {
       })
     );
   };
+
   const handleFiltersData = (data) => {
     dispatch(updateFiltersData(data));
   };
+
   /**
    * Get a specific session information
    * Used in participant's view
@@ -325,10 +327,6 @@ function App() {
 
   const onGetFiltersDataSendToParticipant = (data) => {
     connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
-  };
-
-  const onFiltersTestStatus = (data) => {
-    console.log("onFiltersTestStatus", data);
   };
 
   const onDeleteSession = (sessionId) => {
