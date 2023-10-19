@@ -48,18 +48,8 @@ class SimpleGlassesDetection(Filter):
         return "TEST"
 
     @staticmethod
-    def init_config() -> FilterDict:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="video",
-            groupFilter=False,
-            config={},
-        )
+    def channel() -> str:
+        return "video"
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape

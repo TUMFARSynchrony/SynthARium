@@ -25,18 +25,8 @@ class AudioSpeakingTimeFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config() -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="audio",
-            groupFilter=False,
-            config={},
-        )
+    def channel() -> str:
+        return "audio"
 
     async def process(
         self, audioFrame: AudioFrame, ndarray: numpy.ndarray

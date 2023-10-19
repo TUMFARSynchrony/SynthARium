@@ -5,7 +5,6 @@ import numpy
 from av import VideoFrame
 
 from filters.filter import Filter
-from filters import FilterDict
 
 
 class EdgeOutlineFilter(Filter):
@@ -26,18 +25,8 @@ class EdgeOutlineFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config() -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="video",
-            groupFilter=False,
-            config={},
-        )
+    def channel() -> str:
+        return "video"
 
     async def process(self, _: VideoFrame, ndarray: numpy.ndarray) -> numpy.ndarray:
         # For docstring see filters.filter.Filter or hover over function declaration

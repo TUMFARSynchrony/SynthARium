@@ -6,7 +6,6 @@ from datetime import datetime
 from custom_types.message import MessageDict
 
 from filters.filter import Filter
-from filters import FilterDict
 
 
 class FilterAPITestFilter(Filter):
@@ -21,17 +20,8 @@ class FilterAPITestFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config() -> object:
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="both",
-            groupFilter=False,
-            config={},
-        )
+    def channel() -> str:
+        return "both"
 
     counter = 0
 

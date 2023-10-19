@@ -32,31 +32,25 @@ class RotationFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config() -> FilterDict:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="video",
-            groupFilter=False,
-            config={
-                "direction": {
-                    "defaultValue": ["clockwise", "anti-clockwise"],
-                    "value": "clockwise",
-                    "requiresOtherFilter": False,
-                },
-                "angle": {
-                    "min": 1,
-                    "max": 180,
-                    "step": 1,
-                    "value": 45,
-                    "defaultValue": 45,
-                },
+    def channel() -> str:
+        return "video"
+
+    @staticmethod
+    def default_config() -> dict:
+        return {
+            "direction": {
+                "defaultValue": ["clockwise", "anti-clockwise"],
+                "value": "clockwise",
+                "requiresOtherFilter": False,
             },
-        )
+            "angle": {
+                "min": 1,
+                "max": 180,
+                "step": 1,
+                "value": 45,
+                "defaultValue": 45,
+            },
+        }
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray

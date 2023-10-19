@@ -144,7 +144,7 @@ def get_filters_config() -> FilterConfigDict:
         if filter_type == "NONE":
             continue
         elif filter_type == "TEST" or filter_type == "SESSION":
-            filter_config = filter.init_config()
+            filter_config = init_config(filter, group_filter=False)
 
             if not is_valid_filter_config(filter, filter_config):
                 raise ValueError(f"{filter} has incorrect values in init_config.")
@@ -160,7 +160,7 @@ def get_filters_config() -> FilterConfigDict:
         if filter_type == "NONE":
             continue
         elif filter_type == "TEST" or filter_type == "SESSION":
-            filter_config = group_filter.init_config()
+            filter_config = init_config(group_filter, group_filter=True)
 
             if not is_valid_filter_config(group_filter, filter_config):
                 raise ValueError(f"{filter} has incorrect values in init_config.")
@@ -235,4 +235,16 @@ def name_of_other_filter_exists(filter, config, name):
         f"{filter}'s get_filter_json is incorrect. "
         + f"In config > {config} > defaultValue > {name} the name does not exist."
         + "Check for misspellings."
+    )
+
+
+def init_config(filter_cls, group_filter) -> FilterDict:
+    name = filter_cls.name()
+    id = name.lower().replace("_", "-")
+    return FilterDict(
+        name=name,
+        id=id,
+        channel=filter_cls.channel(),
+        groupFilter=group_filter,
+        config=filter_cls.default_config(),
     )

@@ -1,7 +1,6 @@
 import numpy
 
 from filters import Filter
-from filters import FilterDict
 from filters.simple_line_writer import SimpleLineWriter
 
 
@@ -26,39 +25,35 @@ class TemplateFilter(Filter):
         return "NONE"
 
     @staticmethod
-    def init_config() -> object:
+    def channel() -> str:
+        # TODO: change this according to your filter channel (video, audio, both)
+        return "video"
+
+    @staticmethod
+    def default_config() -> dict:
         # TODO: change this according to your filter config
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="video",
-            groupFilter=False,
-            config={
-                # example of how a filter config can look like
-                # add or delete this
-                # This would show that there is a string variable (direction) which can have different values
-                # and another int variable (size)
-                # in the frontend, we would then have either a dropdown (direction) or input number (size)
-                # The values can be changed and sent back to the backend
-                #
-                #
-                # "direction": {
-                #     "defaultValue": ["clockwise", "anti-clockwise"],
-                #     "value": "clockwise",
-                #     "requiresOtherFilter": False,
-                # },
-                # "size": {
-                #     "min": 1,
-                #     "max": 60,
-                #     "step": 1,
-                #     "value": 45,
-                #     "defaultValue": 45,
-                # },
-            },
-        )
+        return {
+            # example of how a filter config can look like
+            # add or delete this
+            # This would show that there is a string variable (direction) which can have different values
+            # and another int variable (size)
+            # in the frontend, we would then have either a dropdown (direction) or input number (size)
+            # The values can be changed and sent back to the backend
+            #
+            #
+            # "direction": {
+            #     "defaultValue": ["clockwise", "anti-clockwise"],
+            #     "value": "clockwise",
+            #     "requiresOtherFilter": False,
+            # },
+            # "size": {
+            #     "min": 1,
+            #     "max": 60,
+            #     "step": 1,
+            #     "value": 45,
+            #     "defaultValue": 45,
+            # },
+        }
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # TODO: change this to implement filter

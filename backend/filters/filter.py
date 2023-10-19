@@ -144,6 +144,29 @@ class Filter(ABC):
             " method."
         )
 
+    @staticmethod
+    @abstractmethod
+    def channel() -> str:
+        """Provide the channel of the filter.
+
+        It can be either "video", "audio" or "both"
+        This is used to build the filters_data JSON object
+        """
+        raise NotImplementedError(
+            f"{__name__} is missing it's implementation of the static abstract channel()"
+            " method."
+        )
+
+    @staticmethod
+    def default_config() -> dict:
+        """Provide the default config for the filter.
+
+        By default, the default config is an empty dictionary, overwrite this in the
+        filter class to provide a custom config in the filters_data JSON object.
+        This is used to build the filters_data JSON object
+        """
+        return {}
+
     @abstractmethod
     async def process(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
@@ -176,21 +199,6 @@ class Filter(ABC):
     @staticmethod
     def validate_dict(data) -> TypeGuard[FilterDict]:
         return util.check_valid_typeddict_keys(data, FilterDict)
-
-    @staticmethod
-    @abstractmethod
-    def init_config() -> FilterDict:
-        """Provide config of the filters.
-
-        It requires at name, id, channel, groupFilter and config
-        name and id are collected from the name() method
-        channel is either "audio" or "video"
-        groupFilter is a boolean
-        config is a dictionary of dictionaries which can be also empty
-        """
-        raise NotImplementedError(
-            f"{__name__} is missing it's implementation of the static abstract get_filter_json() method."
-        )
 
     def __repr__(self) -> str:
         """Get string representation for this filter."""

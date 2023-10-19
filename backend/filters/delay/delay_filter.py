@@ -39,26 +39,20 @@ class DelayFilter(Filter):
         return "SESSION"
 
     @staticmethod
-    def init_config() -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = __class__.name()
-        id = name.lower()
-        id = id.replace("_", "-")
-        return FilterDict(
-            name=name,
-            id=id,
-            channel="both",
-            groupFilter=False,
-            config={
-                "size": {
-                    "min": 0,
-                    "max": 120,
-                    "step": 1,
-                    "value": 60,
-                    "defaultValue": 60,
-                },
+    def channel() -> str:
+        return "both"
+
+    @staticmethod
+    def default_config() -> dict:
+        return {
+            "size": {
+                "min": 0,
+                "max": 120,
+                "step": 1,
+                "value": 60,
+                "defaultValue": 60,
             },
-        )
+        }
 
     async def process(
         self, _: VideoFrame | AudioFrame, ndarray: numpy.ndarray
