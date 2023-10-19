@@ -92,12 +92,7 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
-    connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
-    connection.api.on(
-      "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
-      handleGetFiltersDataSendToParticipant
-    );
-    connection.api.on("FILTERS_DATA", handleFiltersTestStatus);
+    connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -114,12 +109,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
-      connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
-      connection.api.off(
-        "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
-        handleGetFiltersDataSendToParticipant
-      );
-      connection.api.off("FILTERS_DATA", handleFiltersTestStatus);
+      connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
 
@@ -326,15 +316,15 @@ function App() {
     dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
   };
 
-  const handleGetFiltersData = (data) => {
+  const onGetFiltersData = (data) => {
     connection.sendMessage("GET_FILTERS_DATA", data);
   };
 
-  const handleGetFiltersDataSendToParticipant = (data) => {
+  const onGetFiltersDataSendToParticipant = (data) => {
     connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
   };
 
-  const handleFiltersTestStatus = (data) => {
+  const handleFiltersData = (data) => {
     console.log(data);
   };
 
