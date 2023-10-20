@@ -75,7 +75,9 @@ export const openSessionSlice = createSlice({
         creation_time: 0,
         participants: payload.participants.map((p) => ({
           ...p,
-          id: ""
+          id: "",
+          lastMessageSentTime: 0,
+          lastMessageReadTime: 0
         }))
       };
     }
