@@ -42,7 +42,10 @@ class ParticipantDict(TypedDict):
         Chat log between experimenter and participant.
     banned : bool
         Whether this participant is banned from the experiment.
-
+    lastMessageSentTime: int
+        Last message sent time.
+    lastMessageReadTime: int
+        Last message read time by experimenter.
     See Also
     --------
     ParticipantSummaryDict :
@@ -64,3 +67,5 @@ class ParticipantDict(TypedDict):
     size: SizeDict
     chat: list[ChatMessageDict]
     banned: bool
+    lastMessageSentTime: int
+    lastMessageReadTime: int

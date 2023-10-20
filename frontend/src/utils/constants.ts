@@ -37,6 +37,8 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   audio_group_filters: [],
   video_group_filters: [],
   chat: [],
+  lastMessageSentTime: 0,
+  lastMessageReadTime: 0,
   position: {
     x: 10,
     y: 10,

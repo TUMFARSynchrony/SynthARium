@@ -10,6 +10,7 @@ import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./Lobby.css";
+import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -95,7 +96,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
           {connectionState === ConnectionState.CONNECTED && isChatModalActive && (
-            <ChatTab
+            <ParticipantChatTab
               onChat={onChat}
               onGetSession={onGetSession}
               currentUser="participant"

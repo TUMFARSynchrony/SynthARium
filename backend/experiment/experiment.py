@@ -234,6 +234,7 @@ class Experiment(AsyncIOEventEmitter):
             # In this case target or author is assumed to be a single participant
             if target == "experimenter":
                 participant = self.session.participants.get(author)
+                participant.lastMessageSentTime = chat_message["time"]
             else:
                 participant = self.session.participants.get(target)
 
@@ -378,6 +379,28 @@ class Experiment(AsyncIOEventEmitter):
         # Mute participant if participant is already connected
         if participant_id in self._participants:
             await self._participants[participant_id].set_muted(video, audio)
+
+    async def set_message_read_time(self, participant_id: str, time: int):
+        """Update message read time to display notifications
+
+        Parameters
+        ----------
+        participant_id : str
+            ID of the target participant
+        time: int
+            Message read time
+        """
+        participant_data = self.session.participants.get(participant_id)
+        if participant_data is None:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=(
+                    "Failed to select participant, requested participantId is not part "
+                    "of this experiment."
+                ),
+            )
+        participant_data.lastMessageReadTime = time
 
     def add_experimenter(self, experimenter: Experimenter):
         """Add experimenter to experiment.
