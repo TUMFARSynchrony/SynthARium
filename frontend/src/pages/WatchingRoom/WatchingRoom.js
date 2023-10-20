@@ -39,20 +39,6 @@ function WatchingRoom({
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
   const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
-  const [showInformationTab, setShowInformationTab] = useState(false);
-
-  useEffect(() => {
-    const participants = sessionData["participants"];
-    for (let participant in participants) {
-      const audio_filters = participants[participant]["audio_filters"];
-      for (let audio_filter in audio_filters) {
-        if (audio_filters[audio_filter]["name"] === "SPEAKING_TIME") {
-          setShowInformationTab(true);
-          return;
-        }
-      }
-    }
-  }, []);
 
   return (
     <div className="h-[calc(100vh-84px)] w-full">
@@ -133,7 +119,7 @@ function WatchingRoom({
               />
             )}
             {isInstructionsModalActive && <InstructionsTab />}
-            {isFilterInformationModalActive && showInformationTab && (
+            {isFilterInformationModalActive && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
                 participants={sessionData["participants"]}
