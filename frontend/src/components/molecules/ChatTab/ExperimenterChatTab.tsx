@@ -9,10 +9,11 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { ChatMessage, Session } from "../../../types";
+import { ChatMessage, Participant, Session } from "../../../types";
 import Select from "react-select";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { UniformSpeechBubble } from "../../atoms/ChatMessage/UniformSpeechBubble";
+import "./ExperimenterChatTab.css";
 
 type Props = {
   onChat: (newMessage: ChatMessage) => void;
@@ -86,14 +87,16 @@ export const ExperimenterChatTab = (props: Props) => {
     }
   };
 
+  const hasUnreadMessages = (participants: Array<Participant>) => {
+    return currentSession.participants.some(
+      (p) => p.lastMessageSentTime > p.lastMessageReadTime
+    );
+  };
+
   const toAllParticipantOption = {
     value: "participants",
     label: "To all participants",
-    shouldShowNotification:
-      currentSession &&
-      currentSession.participants.some(
-        (p) => p.lastMessageSentTime > p.lastMessageReadTime
-      )
+    shouldShowNotification: false
   };
   const participantOptions =
     currentSession &&
@@ -108,24 +111,33 @@ export const ExperimenterChatTab = (props: Props) => {
       <div className="flex flex-col items-center justify-between gap-x-2 border-b-2 border-b-gray-200 w-full py-2 px-6 gap-y-2">
         <h3 className="text-3xl">Chat</h3>
 
-        <div className="flex flex-row justify-center items-center text-sm w-2/3">
+        <div className="flex flex-row justify-center items-center text-sm w-2/3 relative">
+          <div className="absolute z-10 translate-x-1/2 left-0">
+            {currentSession &&
+              hasUnreadMessages(currentSession.participants) && (
+                <FontAwesomeIcon icon={faCircle} style={{ color: "#fb6641" }} />
+              )}
+          </div>
           <Select
             className="w-full"
             options={participantOptions}
             defaultValue={toAllParticipantOption}
             onChange={(event) => handleChange(event.value)}
+            isSearchable={false}
             getOptionLabel={(props: any) => {
               const { value, label, shouldShowNotification } = props;
               return (
-                <div className="flex items-center justify-between gap-y-5 w-full">
-                  <span>{label}</span>
-                  {shouldShowNotification && (
-                    <FontAwesomeIcon
-                      icon={faCircle}
-                      style={{ color: "#fb6641" }}
-                    />
-                  )}
-                </div>
+                <>
+                  <div className="absolute translate-x-1/2 left-0">
+                    {shouldShowNotification && (
+                      <FontAwesomeIcon
+                        icon={faCircle}
+                        style={{ color: "#fb6641" }}
+                      />
+                    )}
+                  </div>
+                  <span className="pl-4">{label}</span>
+                </>
               ) as unknown as string;
             }}
           />
