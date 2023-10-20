@@ -4,13 +4,13 @@ The following steps only concern the backend (also referred to as server). In ca
 
 ## Prerequisites
 
--   At least Python 3.10.x - [python.org](https://www.python.org/)
--   pip - usually comes with python.
+- At least Python 3.10.x - [python.org](https://www.python.org/)
+- pip - usually comes with python.
 
 ## Setup
 
--   Execute `pip install -r requirements.txt` inside the backend folder. This will install all server requirements.
--   Take a look at the config `backend/config.json` and change the `experimenter_password`. Details can be seen in the [configuration section](#configuration) bellow.
+- Execute `pip install -r requirements.txt` inside the backend folder. This will install all server requirements.
+- Take a look at the config `backend/config.json` and change the `experimenter_password`. Details can be seen in the [configuration section](#configuration) bellow.
 
 ## Start
 
@@ -24,21 +24,21 @@ For testing, the `testing_main.py` provides an alternative to the above `main.py
 
 The backend can be configured using the `backend/config.json`.
 
--   `experimenter_password` - str: password experimenters must provide to authenticate themselves
--   `host` - str : host address the backend should use
--   `port` - int : port the backend should use
--   `environment` - str : `dev` or `prod`
--   `serve_frontend` - bool : Whether the server should serve the frontend. Set to `false` if the frontend is hosted by a different server (see note bellow)
-    -   Developer Note: A better way to host the frontend would be using a [Reverse Proxy](https://en.wikipedia.org/wiki/Reverse_proxy) like [nginx](https://nginx.org/) or [CDN](https://en.wikipedia.org/wiki/Content_delivery_network) services, as noted in [aiohttp](https://docs.aiohttp.org/en/stable/web_advanced.html?highlight=static#static-file-handling) which we use for hosting.
--   `https` - bool : Whether the backend should use https
--   `ssl_cert` - str : path to ssl certificate. Only used if https is true
--   `ssl_key` - str : path to ssl private key. Only used if https is true
--   `log` - str : Logging level for Hub. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `INFO`
--   `log_file` - null | str : If given, the logger will write the log into the file instead of the console
--   `log_dependencies` - str : Logging level for project 3rd party dependencies (see [requirements.txt](./requirements.txt)). Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`. Using `INFO` or `DEBUG` may lead to a strong increase in output.
--   `ping_subprocesses` - float : If greater than 0, all subprocesses will be pinged in an interval defined by the value of `ping_subprocesses` (in seconds). Used for debugging, default should be `0.0`.
--   `experimenter_multiprocessing` - bool : If true, experimenter connections will be executed on independent processes
--   `participant_multiprocessing` - bool : If true, participant connections will be executed on independent processes
+- `experimenter_password` - str: password experimenters must provide to authenticate themselves
+- `host` - str : host address the backend should use
+- `port` - int : port the backend should use
+- `environment` - str : `dev` or `prod`
+- `serve_frontend` - bool : Whether the server should serve the frontend. Set to `false` if the frontend is hosted by a different server (see note bellow)
+  - Developer Note: A better way to host the frontend would be using a [Reverse Proxy](https://en.wikipedia.org/wiki/Reverse_proxy) like [nginx](https://nginx.org/) or [CDN](https://en.wikipedia.org/wiki/Content_delivery_network) services, as noted in [aiohttp](https://docs.aiohttp.org/en/stable/web_advanced.html?highlight=static#static-file-handling) which we use for hosting.
+- `https` - bool : Whether the backend should use https
+- `ssl_cert` - str : path to ssl certificate. Only used if https is true
+- `ssl_key` - str : path to ssl private key. Only used if https is true
+- `log` - str : Logging level for Hub. Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `INFO`
+- `log_file` - null | str : If given, the logger will write the log into the file instead of the console
+- `log_dependencies` - str : Logging level for project 3rd party dependencies (see [requirements.txt](./requirements.txt)). Must be one of: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`. Default: `WARNING`. Using `INFO` or `DEBUG` may lead to a strong increase in output.
+- `ping_subprocesses` - float : If greater than 0, all subprocesses will be pinged in an interval defined by the value of `ping_subprocesses` (in seconds). Used for debugging, default should be `0.0`.
+- `experimenter_multiprocessing` - bool : If true, experimenter connections will be executed on independent processes
+- `participant_multiprocessing` - bool : If true, participant connections will be executed on independent processes
 
 ## Logging overview
 
@@ -52,8 +52,8 @@ The following logging levels are available for `log` and `log_dependencies` in t
 | error         |    x    |   x    |     x     |    x    |     -      |
 | critical      |    x    |   x    |     x     |    x    |     x      |
 
--   If the logger is set to `INFO`, information with the debug level is ignored and only important events are logged, possibly with less detail.
--   If the logger is set to `DEBUG` everything is logged. This also includes additional information that can be helpful in debugging.
+- If the logger is set to `INFO`, information with the debug level is ignored and only important events are logged, possibly with less detail.
+- If the logger is set to `DEBUG` everything is logged. This also includes additional information that can be helpful in debugging.
 
 # Using a SSL Certificate
 

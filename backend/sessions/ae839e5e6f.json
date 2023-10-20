@@ -40,7 +40,9 @@
         }
       ],
       "audio_filters": [],
-      "video_filters": []
+      "video_filters": [],
+      "audio_group_filters": [],
+      "video_group_filters": []
     },
     {
       "id": "25a882669d",
@@ -78,7 +80,9 @@
         }
       ],
       "audio_filters": [],
-      "video_filters": []
+      "video_filters": [],
+      "audio_group_filters": [],
+      "video_group_filters": []
     },
     {
       "id": "8e39086e83",
@@ -116,7 +120,9 @@
         }
       ],
       "audio_filters": [],
-      "video_filters": []
+      "video_filters": [],
+      "audio_group_filters": [],
+      "video_group_filters": []
     }
   ],
   "log": []

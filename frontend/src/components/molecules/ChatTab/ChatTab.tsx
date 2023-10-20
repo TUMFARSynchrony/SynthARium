@@ -20,13 +20,7 @@ type Props = {
 };
 
 export const ChatTab = (props: Props) => {
-  const {
-    onChat,
-    onGetSession,
-    currentUser,
-    participantId,
-    onLeaveExperiment
-  } = props;
+  const { onChat, onGetSession, currentUser, participantId, onLeaveExperiment } = props;
   const [message, setMessage] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const currentSession = useAppSelector(selectCurrentSession);
@@ -163,10 +157,7 @@ export const ChatTab = (props: Props) => {
               isIconOnly={true}
               onClick={() => onSendMessage(messageTarget)}
             >
-              <FontAwesomeIcon
-                icon={faPaperPlane}
-                style={{ color: "#ffffff" }}
-              />{" "}
+              <FontAwesomeIcon icon={faPaperPlane} style={{ color: "#ffffff" }} />{" "}
             </Button>
           </div>
         </div>
