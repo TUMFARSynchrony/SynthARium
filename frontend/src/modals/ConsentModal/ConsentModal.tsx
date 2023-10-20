@@ -30,9 +30,9 @@ function ConsentModal({ onConsentGiven }: ConsentModalProps) {
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1" align="justify" sx={{ mb: 3 }}>
-          DESCRIPTION: You are invited to play a game called MIME. You will play
-          against another player. The goal is to mime a word to the other player
-          or to guess the word the other player is miming.
+          DESCRIPTION: You are invited to play a game called MIME. You will play against another
+          player. The goal is to mime a word to the other player or to guess the word the other
+          player is miming.
           <br />
           <br />
           If you are ready please check the two boxes below to start the game:
