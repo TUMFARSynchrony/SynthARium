@@ -12,10 +12,11 @@ export const SpeechBubble = (props: Props) => {
   const { author, target, message, date, currentUser, color } = props;
   const shouldApplySelfEnd = (): boolean => {
     if (author === "experimenter" && currentUser === "experimenter") {
-      return false;
-    } else if (author === "experimenter" && currentUser !== "experimenter") {
       return true;
-    } else return author !== "experimenter" && currentUser === "experimenter";
+    } else if (author === "experimenter" && currentUser !== "experimenter") {
+      return false;
+    } else
+      return !(author !== "experimenter" && currentUser === "experimenter");
   };
   return (
     <div className="flex flex-col">
