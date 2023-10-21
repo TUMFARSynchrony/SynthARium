@@ -15,15 +15,12 @@ export const SpeechBubble = (props: Props) => {
       return true;
     } else if (author === "experimenter" && currentUser !== "experimenter") {
       return false;
-    } else
-      return !(author !== "experimenter" && currentUser === "experimenter");
+    } else return !(author !== "experimenter" && currentUser === "experimenter");
   };
   return (
     <div className="flex flex-col">
       <div
-        className={`${
-          shouldApplySelfEnd() ? "self-end" : "self-start"
-        } text-[0.65rem] max-w-full`}
+        className={`${shouldApplySelfEnd() ? "self-end" : "self-start"} text-[0.65rem] max-w-full`}
       >
         {moment(date).format("lll")}
       </div>

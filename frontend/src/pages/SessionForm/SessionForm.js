@@ -19,11 +19,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
-import {
-  ActionButton,
-  ActionIconButton,
-  LinkButton
-} from "../../components/atoms/Button";
+import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
@@ -50,9 +46,7 @@ function SessionForm({ onSendSessionToBackend }) {
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [showSessionDataForm, setShowSessionDataForm] = useState(true);
   const [participantDimensions, setParticipantDimensions] = useState(
-    getParticipantDimensions(
-      sessionData.participants ? sessionData.participants : []
-    )
+    getParticipantDimensions(sessionData.participants ? sessionData.participants : [])
   );
 
   // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
@@ -92,10 +86,7 @@ function SessionForm({ onSendSessionToBackend }) {
       return;
     }
 
-    if (
-      snackbarResponse.participantOriginalEmpty &&
-      !snackbarResponse.newInputEqualsOld
-    ) {
+    if (snackbarResponse.participantOriginalEmpty && !snackbarResponse.newInputEqualsOld) {
       setSnackbar({
         open: true,
         text: "You need to save the information first!",
@@ -198,6 +189,8 @@ function SessionForm({ onSendSessionToBackend }) {
           banned: false,
           audio_filters: [],
           video_filters: [],
+          audio_group_filters: [],
+          video_group_filters: [],
           chat: [],
           position: {
             x: 10,
@@ -231,12 +224,7 @@ function SessionForm({ onSendSessionToBackend }) {
             <div className="px-4 flex flex-col h-full">
               <div className="flex justify-start items-center">
                 <ChevronLeft sx={{ color: "gray" }} />
-                <LinkButton
-                  text="Back to Session Overview"
-                  variant="text"
-                  size="small"
-                  path="/"
-                />
+                <LinkButton text="Back to Session Overview" variant="text" size="small" path="/" />
               </div>
               <CardContent>
                 {/* Override text fields' margin and width using MUI classnames */}
@@ -255,9 +243,7 @@ function SessionForm({ onSendSessionToBackend }) {
                       value={sessionData.title}
                       size="small"
                       required
-                      onChange={(event) =>
-                        handleSessionDataChange("title", event.target.value)
-                      }
+                      onChange={(event) => handleSessionDataChange("title", event.target.value)}
                     />
                     <TextField
                       label="Description"
@@ -265,27 +251,20 @@ function SessionForm({ onSendSessionToBackend }) {
                       size="small"
                       required
                       onChange={(event) =>
-                        handleSessionDataChange(
-                          "description",
-                          event.target.value
-                        )
+                        handleSessionDataChange("description", event.target.value)
                       }
                     />
                   </Box>
                   <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
                     <TextField
-                      value={
-                        sessionData.date ? formatDate(sessionData.date) : ""
-                      }
+                      value={sessionData.date ? formatDate(sessionData.date) : ""}
                       type="datetime-local"
                       size="small"
                       required
                       onChange={(event) =>
                         handleSessionDataChange(
                           "date",
-                          event.target.value
-                            ? new Date(event.target.value).getTime()
-                            : 0
+                          event.target.value ? new Date(event.target.value).getTime() : 0
                         )
                       }
                     />
@@ -302,9 +281,7 @@ function SessionForm({ onSendSessionToBackend }) {
                       control={<Checkbox />}
                       label="Record Session"
                       checked={sessionData.record}
-                      onChange={() =>
-                        handleSessionDataChange("record", !sessionData.record)
-                      }
+                      onChange={() => handleSessionDataChange("record", !sessionData.record)}
                     />
                     {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
                   </Box>

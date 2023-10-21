@@ -97,6 +97,12 @@ class ParticipantData(BaseData):
     video_filters: list[FilterDict] = field(repr=False)
     """Active video filters for participant."""
 
+    audio_group_filters: list[FilterDict] = field(repr=False)
+    """Active audio group filters for participant."""
+
+    video_group_filters: list[FilterDict] = field(repr=False)
+    """Active video group filters for participant."""
+
     lastMessageSentTime: int = field(repr=False)
     """Last message sent time"""
 
@@ -128,6 +134,8 @@ class ParticipantData(BaseData):
             "chat": self.chat,
             "audio_filters": self.audio_filters,
             "video_filters": self.video_filters,
+            "audio_group_filters": self.audio_group_filters,
+            "video_group_filters": self.video_group_filters,
             "lastMessageSentTime": self.lastMessageSentTime,
             "lastMessageReadTime": self.lastMessageReadTime,
         }

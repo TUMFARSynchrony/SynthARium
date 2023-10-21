@@ -5,6 +5,11 @@ import os
 class OpenFace:
     def __init__(self, port: int):
         try:
+            # Adjust environment variables for better performance
+            env = os.environ.copy()
+            env["OMP_NUM_THREADS"] = "1"
+            env["VECLIB_MAXIMUM_THREADS"] = "1"
+
             self._openface_process = subprocess.Popen(
                 [
                     os.path.join(
@@ -17,9 +22,10 @@ class OpenFace:
                                 )
                             )
                         ),
+                        "experimental-hub-openface",
                         "build",
                         "bin",
-                        "OwnExtractor",
+                        "AUExtractor",
                     ),
                     f"{port}",
                 ],

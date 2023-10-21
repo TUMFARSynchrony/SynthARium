@@ -9,7 +9,7 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { ChatMessage, Session } from "../../../types";
+import { ChatMessage } from "../../../types";
 
 type Props = {
   onChat: (newMessage: ChatMessage) => void;
@@ -20,13 +20,7 @@ type Props = {
 };
 
 export const ParticipantChatTab = (props: Props) => {
-  const {
-    onChat,
-    onGetSession,
-    currentUser,
-    participantId,
-    onLeaveExperiment
-  } = props;
+  const { onChat, onGetSession, currentUser, participantId, onLeaveExperiment } = props;
   const [message, setMessage] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const currentSession = useAppSelector(selectCurrentSession);
@@ -109,10 +103,7 @@ export const ParticipantChatTab = (props: Props) => {
               isIconOnly={true}
               onClick={() => onSendMessage(messageTarget)}
             >
-              <FontAwesomeIcon
-                icon={faPaperPlane}
-                style={{ color: "#ffffff" }}
-              />{" "}
+              <FontAwesomeIcon icon={faPaperPlane} style={{ color: "#ffffff" }} />{" "}
             </Button>
           </div>
         </div>

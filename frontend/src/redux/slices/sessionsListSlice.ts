@@ -7,10 +7,7 @@ import {
   getSessionById,
   sortSessions
 } from "../../utils/utils";
-import {
-  BanMuteUnmuteParticipantPayload,
-  ExperimentTypesPayload
-} from "../payloadTypes";
+import { BanMuteUnmuteParticipantPayload, ExperimentTypesPayload } from "../payloadTypes";
 
 type SessionsListState = {
   sessions: Session[];
@@ -61,9 +58,7 @@ export const sessionsListSlice = createSlice({
           participant.chat.push(payload.message);
         });
       } else if (target === "experimenter") {
-        const participant = session.participants.find(
-          (participant) => participant.id === author
-        );
+        const participant = session.participants.find((participant) => participant.id === author);
         participant.chat.push(payload.message);
       } else {
         const participant = getParticipantById(target, session);
@@ -93,10 +88,7 @@ export const sessionsListSlice = createSlice({
 
       participant[payload.action] = payload.value;
 
-      const newParticipantList = filterListById(
-        session.participants,
-        payload.participantId
-      );
+      const newParticipantList = filterListById(session.participants, payload.participantId);
       newParticipantList.push(participant);
       session.participants = newParticipantList;
 
@@ -105,10 +97,7 @@ export const sessionsListSlice = createSlice({
       state.sessions = sortSessions(state.sessions);
     },
 
-    setExperimentTimes: (
-      state,
-      { payload }: PayloadAction<ExperimentTypesPayload>
-    ) => {
+    setExperimentTimes: (state, { payload }: PayloadAction<ExperimentTypesPayload>) => {
       const session = getSessionById(payload.sessionId, state.sessions);
       session[payload.action] = payload.value;
 
@@ -135,12 +124,8 @@ export const {
 export default sessionsListSlice.reducer;
 
 export const selectSessions = (state: RootState) => state.sessionsList.sessions;
-export const selectCurrentSession = (state: RootState) =>
-  state.sessionsList.currentSession;
-export const selectMessagesCurrentSession = (
-  state: RootState,
-  participantId: string
-) =>
+export const selectCurrentSession = (state: RootState) => state.sessionsList.currentSession;
+export const selectMessagesCurrentSession = (state: RootState, participantId: string) =>
   state.sessionsList.currentSession.participants.filter(
     (participant) => participant.id === participantId
   )[0].chat;

@@ -28,8 +28,12 @@ class ParticipantDict(TypedDict):
         Whether the participants' audio is forcefully muted by the experimenter.
     audio_filters : list of filters.FilterDict
         Active audio filters for this participant.
-    audio_filters : list of filters.FilterDict
+    video_filters : list of filters.FilterDict
         Active video filters for this participant.
+    audio_group_filters : list of filters.FilterDict
+        Active audio group filters for this participant.
+    video_group_filters : list of filters.FilterDict
+        Active video group filters for this participant.
     position : custom_types.position.PositionDict
         Position of the participant's stream on the canvas.
     size : custom_types.size_types.SizeDict
@@ -57,6 +61,8 @@ class ParticipantDict(TypedDict):
     muted_audio: bool
     audio_filters: list[FilterDict]
     video_filters: list[FilterDict]
+    audio_group_filters: list[FilterDict]
+    video_group_filters: list[FilterDict]
     position: PositionDict
     size: SizeDict
     chat: list[ChatMessageDict]

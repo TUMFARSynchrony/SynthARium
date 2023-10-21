@@ -33,6 +33,8 @@ export type Participant = {
   chat: ChatMessage[];
   audio_filters: Filter[];
   video_filters: Filter[];
+  audio_group_filters: Filter[];
+  video_group_filters: Filter[];
   lastMessageSentTime: number;
   lastMessageReadTime: number;
 };
