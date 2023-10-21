@@ -13,7 +13,6 @@ import { ChatMessage, Participant, Session } from "../../../types";
 import Select from "react-select";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { UniformSpeechBubble } from "../../atoms/ChatMessage/UniformSpeechBubble";
-import "./ExperimenterChatTab.css";
 
 type Props = {
   onChat: (newMessage: ChatMessage) => void;
@@ -22,10 +21,7 @@ type Props = {
   participantId?: string;
   onLeaveExperiment?: () => void;
   onSendSessionToBackend?: (session: Session) => void;
-  onUpdateMessageReadTime?: (
-    participantId: string,
-    lastReadTime: number
-  ) => void;
+  onUpdateMessageReadTime?: (participantId: string, lastReadTime: number) => void;
 };
 
 export const ExperimenterChatTab = (props: Props) => {
@@ -39,12 +35,8 @@ export const ExperimenterChatTab = (props: Props) => {
   } = props;
   const [message, setMessage] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentSession = useAppSelector(
-    (state) => state.sessionsList.currentSession
-  );
-  const participants = useAppSelector(
-    (state) => state.sessionsList.currentSession.participants
-  );
+  const currentSession = useAppSelector((state) => state.sessionsList.currentSession);
+  const participants = useAppSelector((state) => state.sessionsList.currentSession.participants);
   const sessionId = currentSession?.id ?? searchParams.get("sessionId");
   const [messageTarget, setMessageTarget] = useState("participants");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -88,9 +80,7 @@ export const ExperimenterChatTab = (props: Props) => {
   };
 
   const hasUnreadMessages = (participants: Array<Participant>) => {
-    return currentSession.participants.some(
-      (p) => p.lastMessageSentTime > p.lastMessageReadTime
-    );
+    return currentSession.participants.some((p) => p.lastMessageSentTime > p.lastMessageReadTime);
   };
 
   const toAllParticipantOption = {
@@ -113,10 +103,9 @@ export const ExperimenterChatTab = (props: Props) => {
 
         <div className="flex flex-row justify-center items-center text-sm w-2/3 relative">
           <div className="absolute z-10 translate-x-1/2 left-0">
-            {currentSession &&
-              hasUnreadMessages(currentSession.participants) && (
-                <FontAwesomeIcon icon={faCircle} style={{ color: "#fb6641" }} />
-              )}
+            {currentSession && hasUnreadMessages(currentSession.participants) && (
+              <FontAwesomeIcon icon={faCircle} style={{ color: "#fb6641" }} />
+            )}
           </div>
           <Select
             className="w-full"
@@ -130,10 +119,7 @@ export const ExperimenterChatTab = (props: Props) => {
                 <>
                   <div className="absolute translate-x-1/2 left-0">
                     {shouldShowNotification && (
-                      <FontAwesomeIcon
-                        icon={faCircle}
-                        style={{ color: "#fb6641" }}
-                      />
+                      <FontAwesomeIcon icon={faCircle} style={{ color: "#fb6641" }} />
                     )}
                   </div>
                   <span className="pl-4">{label}</span>
@@ -226,10 +212,7 @@ export const ExperimenterChatTab = (props: Props) => {
               isIconOnly={true}
               onClick={() => onSendMessage(messageTarget)}
             >
-              <FontAwesomeIcon
-                icon={faPaperPlane}
-                style={{ color: "#ffffff" }}
-              />{" "}
+              <FontAwesomeIcon icon={faPaperPlane} style={{ color: "#ffffff" }} />{" "}
             </Button>
           </div>
         </div>
