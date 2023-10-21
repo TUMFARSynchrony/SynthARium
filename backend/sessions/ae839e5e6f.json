@@ -42,7 +42,7 @@
       "audio_filters": [],
       "video_filters": [],
       "audio_group_filters": [],
-      "video_group_filters": []
+      "video_group_filters": [],
       "video_filters": [],
       "lastMessageSentTime": 0,
       "lastMessageReadTime": 0
@@ -85,7 +85,7 @@
       "audio_filters": [],
       "video_filters": [],
       "audio_group_filters": [],
-      "video_group_filters": []
+      "video_group_filters": [],
       "video_filters": [],
       "lastMessageSentTime": 0,
       "lastMessageReadTime": 0
@@ -128,7 +128,7 @@
       "audio_filters": [],
       "video_filters": [],
       "audio_group_filters": [],
-      "video_group_filters": []
+      "video_group_filters": [],
       "video_filters": [],
       "lastMessageSentTime": 0,
       "lastMessageReadTime": 0
