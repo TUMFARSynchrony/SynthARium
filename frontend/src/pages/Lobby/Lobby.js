@@ -53,6 +53,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   useEffect(() => {
     if (participantStream && userConsent && videoElement.current) {
       videoElement.current.srcObject = localStream;
+      videoElement.current.muted = true;
     }
   }, [localStream, participantStream, userConsent]);
 
@@ -80,7 +81,14 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
                   ownParticipantId={participantIdParam}
                 />
               ) : (
-                <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
+                <video
+                  ref={videoElement}
+                  autoPlay
+                  playsInline
+                  width="100%"
+                  height="100%"
+                  muted={true}
+                ></video>
               )
             ) : (
               <Typography>

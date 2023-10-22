@@ -276,14 +276,26 @@ function SessionForm({ onSendSessionToBackend }) {
                       disabled
                     />
                   </Box>
-                  <Box sx={{ mt: 1, mb: 3 }}>
+                  <Box sx={{ mt: 1, mb: 1 }}>
                     <FormControlLabel
                       control={<Checkbox />}
                       label="Record Session"
                       checked={sessionData.record}
                       onChange={() => handleSessionDataChange("record", !sessionData.record)}
                     />
-                    {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
+                  </Box>
+                  <Box sx={{ mt: 1, mb: 1 }}>
+                    <FormControlLabel
+                      control={<Checkbox />}
+                      label="Activate sentiment analysis"
+                      checked={sessionData.sentiment_analysis}
+                      onChange={() =>
+                        handleSessionDataChange(
+                          "sentiment_analysis",
+                          !sessionData.sentiment_analysis
+                        )
+                      }
+                    />
                   </Box>
                 </Box>
 

@@ -13,7 +13,8 @@ export const INITIAL_SESSION_DATA: Session = {
   end_time: 0,
   creation_time: 0,
   notes: [],
-  log: []
+  log: [],
+  sentiment_analysis: false
 };
 
 export const CANVAS_SIZE = {

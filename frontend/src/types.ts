@@ -14,6 +14,7 @@ export type Session = {
   notes: Note[];
   participants: Participant[];
   log: [];
+  sentiment_analysis: boolean;
 };
 
 export type Note = {
