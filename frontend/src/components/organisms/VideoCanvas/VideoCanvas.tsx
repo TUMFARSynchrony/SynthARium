@@ -40,6 +40,7 @@ function VideoCanvas({ connectedParticipants, sessionData, ownParticipantId, loc
             src={localStream}
             participantData={getParticipantById(ownParticipantId, sessionData)}
             title="You"
+            shouldMute={true}
           />
         ) : null}
         {/* Render videos for other connected participants */}
