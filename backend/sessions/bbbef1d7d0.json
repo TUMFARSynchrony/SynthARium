@@ -3,6 +3,7 @@
     "title": "CONNECTION TEST SESSION",
     "date": 1799844840000,
     "record": false,
+    "sentiment_analysis": false,
     "time_limit": 3000000,
     "description": "Test session with 10 participants!",
     "creation_time": 0,
