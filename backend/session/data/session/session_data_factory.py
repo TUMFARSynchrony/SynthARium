@@ -1,3 +1,5 @@
+import logging
+
 from hub.exceptions import ErrorDictException
 from session.data.participant import participant_data_factory
 from session.data.session import SessionDict, SessionData
@@ -38,7 +40,6 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
             code=400,
             description="Duplicate participant ID found in session data.",
         )
-
     _generate_participant_ids(session_dict)
     participants = {}
     for participant_dict in session_dict["participants"]:
@@ -50,6 +51,7 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
         session_dict["title"],
         session_dict["date"],
         session_dict["record"],
+        session_dict["sentiment_analysis"],
         session_dict["time_limit"],
         session_dict["description"],
         session_dict["notes"],

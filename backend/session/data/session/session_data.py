@@ -64,6 +64,9 @@ class SessionData(BaseData):
     record: bool = field(repr=False)
     """Whether the session will be recorded."""
 
+    sentiment_analysis: bool = field(repr=False)
+    """Whether the sentiment analysis active or not"""
+
     time_limit: int = field(repr=False)
     """Session time limit in milliseconds."""
 
@@ -164,6 +167,7 @@ class SessionData(BaseData):
             "title": self.title,
             "date": self.date,
             "record": self.record,
+            "sentiment_analysis": self.sentiment_analysis,
             "time_limit": self.time_limit,
             "description": self.description,
             "creation_time": self.creation_time,
@@ -209,6 +213,7 @@ class SessionData(BaseData):
         self.title = session_dict["title"]
         self.date = session_dict["date"]
         self.record = session_dict["record"]
+        self.sentiment_analysis = session_dict["sentiment_analysis"]
         self.time_limit = session_dict["time_limit"]
         self.description = session_dict["description"]
         self.notes = session_dict["notes"]

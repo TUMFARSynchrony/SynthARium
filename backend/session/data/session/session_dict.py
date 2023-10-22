@@ -28,6 +28,8 @@ class SessionDict(TypedDict):
         Experiment time limit in milliseconds since January 1, 1970, 00:00:00 (UTC).
     record : bool
         Whether the experiment is to be recorded.
+    sentiment_analysis : bool, default false
+        Whether sentiment analysis active or not
     participants : list of custom_types.participant.ParticipantDict
         List of invited participants.
     creation_time : int, default 0
@@ -58,6 +60,7 @@ class SessionDict(TypedDict):
     date: int
     time_limit: int
     record: bool
+    sentiment_analysis: bool
     participants: list[ParticipantDict]
     creation_time: int
     start_time: int

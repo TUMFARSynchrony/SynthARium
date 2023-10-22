@@ -17,6 +17,7 @@ from group_filters.group_filter_aggregator import GroupFilterAggregator
 from filters.filter_dict import FilterDict
 from group_filters import group_filter_aggregator_factory
 import asyncio
+from transformers import pipeline
 
 if TYPE_CHECKING:
     from users import Experimenter, Participant
@@ -37,6 +38,7 @@ class Experiment(AsyncIOEventEmitter):
     _participants: dict[str, Participant]
     _audio_group_filter_aggregators: dict[str, GroupFilterAggregator]
     _video_group_filter_aggregators: dict[str, GroupFilterAggregator]
+    sentiment_classifier = None
 
     def __init__(self, session: SessionData):
         """Start a new Experiment.
@@ -57,6 +59,9 @@ class Experiment(AsyncIOEventEmitter):
         self.session.creation_time = timestamp()
         self._audio_group_filter_aggregators = {}
         self._video_group_filter_aggregators = {}
+        # Create the sentiment analysis pipeline only once
+        if Experiment.sentiment_classifier is None:
+            Experiment.sentiment_classifier = pipeline("sentiment-analysis")
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -244,6 +249,9 @@ class Experiment(AsyncIOEventEmitter):
                     type="UNKNOWN_USER",
                     description="No participant found for the given ID.",
                 )
+            if self.session.sentiment_analysis:
+                sentiment_score = Experiment.Sentiment_classifier(chat_message)
+                chat_message["sentiment_score"] = sentiment_score
             participant.chat.append(chat_message)
 
         # Send message
