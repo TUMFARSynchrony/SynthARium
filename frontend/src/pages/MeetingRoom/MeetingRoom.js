@@ -7,15 +7,15 @@ import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
-import "./Lobby.css";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
+import "./MeetingRoom.css";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
-  const [participantStream, setParticipantStream] = useState(localStream);
+  const [participantStream, setParticipantStream] = useState(null);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,17 +31,26 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
     console.groupEnd();
     setConnectedParticipants(peers);
   };
+
+  const handleGetFiltersData = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA", data);
+  };
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
+    connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
     return () => {
       // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
+      connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
     };
   }, [connection]);
+  useEffect(() => {
+    setParticipantStream(localStream);
+  }, [localStream]);
 
   useEffect(() => {
     if (participantStream && videoElement.current) {
