@@ -1,8 +1,8 @@
 from typing import TypedDict
 
 
-class GetFiltersTestStatusRequestDict(TypedDict):
-    """TypedDict for `GET_FILTERS_TEST_STATUS` requests.
+class GetFiltersDataSendToParticipantRequestDict(TypedDict):
+    """TypedDict for `GET_FILTERS_DATA_SEND_TO_PARTICIPANT` requests.
 
     Attributes
     ----------
@@ -19,7 +19,7 @@ class GetFiltersTestStatusRequestDict(TypedDict):
 
     See Also
     --------
-    Data Types Wiki :https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#getfiltersteststatusrequest
+    Data Types Wiki :https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#getfiltersdatasendtoparticipantrequest
     """
 
     participant_id: str

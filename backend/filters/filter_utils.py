@@ -3,9 +3,11 @@ from typing import TypeGuard
 
 from .filter import Filter
 from .filter_dict import FilterDict
-from .filters_request_dict import SetFiltersRequestDict
+from .set_filters_request_dict import SetFiltersRequestDict
 from .get_filters_data_request_dict import GetFiltersDataRequestDict
-from .get_filters_test_status_request_dict import GetFiltersTestStatusRequestDict
+from .get_filters_data_send_to_participant_request_dict import (
+    GetFiltersDataSendToParticipantRequestDict,
+)
 
 import custom_types.util as util
 
@@ -140,9 +142,9 @@ def is_valid_get_filters_data_dict(data) -> TypeGuard[GetFiltersDataRequestDict]
     return False
 
 
-def is_valid_get_filters_test_status_dict(
+def is_valid_get_filters_data_send_to_participant_dict(
     data,
-) -> TypeGuard[GetFiltersTestStatusRequestDict]:
+) -> TypeGuard[GetFiltersDataSendToParticipantRequestDict]:
     """Check if `data` is a valid custom_types.filters.GetFiltersTestStatusRequestDict.
 
     Checks if all required and no unknown keys exist in data as well as the data types
@@ -161,7 +163,7 @@ def is_valid_get_filters_test_status_dict(
         True if `data` is a valid FilterDict.
     """
     if not util.check_valid_typeddict_keys(
-        data, GetFiltersTestStatusRequestDict
+        data, GetFiltersDataSendToParticipantRequestDict
     ) or not isinstance(data["participant_id"], str):
         return False
 
