@@ -30,9 +30,6 @@ function WatchingRoom({
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
-  const [connectionState, setConnectionState] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [highlightedResponse, setHighlightedResponse] = useState(0);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
@@ -42,7 +39,6 @@ function WatchingRoom({
 
   useEffect(() => {
     const recentlyJoinedParticipantId = getRecentlyJoinedParticipantId(connectedParticipants);
-    console.log("connec", connection);
     if (recentlyJoinedParticipantId && connection) {
       connection.sendMessage("SET_FILTERS", {
         participant_id: recentlyJoinedParticipantId,
@@ -57,16 +53,14 @@ function WatchingRoom({
           }
         ]
       });
-      console.log("Message send to participant");
     }
   }, [connectedParticipants, connection]);
 
   const onGetFiltersDataSendToParticipant = (data) => {
     connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
-    // saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
   };
-
-  useEffect(() => {
+  // Define a function to send messages to participants
+  const sendMessageToParticipants = () => {
     if (connection && connectedParticipants.length > 0) {
       const data = {
         filter_id: "simple-glasses-detection",
@@ -77,15 +71,22 @@ function WatchingRoom({
         const participant_id = connectedParticipants[i].summary;
         data.participant_id = participant_id;
         onGetFiltersDataSendToParticipant(data);
-        console.log("Message send to participant", participant_id);
+        console.log("Message sent to participant", participant_id);
       }
     }
-  }, [connection, connectedParticipants]);
-
-  const saveGenericApiResponse = async (endpoint, messageData) => {
-    setResponses([{ endpoint, data: messageData }, ...responses]);
-    setHighlightedResponse(0);
   };
+
+  useEffect(() => {
+    sendMessageToParticipants();
+
+    // Set up a setInterval to run the effect every 30 seconds
+    const intervalId = setInterval(() => {
+      sendMessageToParticipants();
+    }, 10000); // 15,000 milliseconds = 10 seconds
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, [connection, connectedParticipants]);
   const getRecentlyJoinedParticipantId = (connectedParticipants) => {
     if (connectedParticipants.length > 0) {
       const lastParticipant = connectedParticipants[connectedParticipants.length - 1];
