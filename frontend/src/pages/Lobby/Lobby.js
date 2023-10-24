@@ -12,6 +12,7 @@ import { ActionButton } from "../../components/atoms/Button";
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
   const [connectionState, setConnectionState] = useState(null);
+  const [glassDetected, setGlassDetected] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const [responses, setResponses] = useState([]);
   const [highlightedResponse, setHighlightedResponse] = useState(0);
@@ -30,7 +31,10 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     }
   }, [connection, connectionState, onGetSession, sessionIdParam]);
   const handleFiltersData = (data) => {
-    console.log("data", data);
+    const glassFilter = data[participantIdParam].video.find(
+      (obj) => obj.id === "simple-glasses-detection"
+    );
+    setGlassDetected(glassFilter.data["Glasses Detected"]);
   };
 
   useEffect(() => {
@@ -94,7 +98,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
             <InstructionsTab
               onInstructionsCheckChange={setAreInstructionsChecked}
-              connection={connection}
+              glassDetected={glassDetected}
             />
           )}
         </div>

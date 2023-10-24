@@ -4,15 +4,17 @@ import React, { useState, useEffect } from "react";
 
 interface InstructionsTabProps {
   onInstructionsCheckChange: (consent: boolean) => void;
+  glassDetected: boolean;
 }
 
-const InstructionsTab = ({ onInstructionsCheckChange }: InstructionsTabProps) => {
+const InstructionsTab = ({ onInstructionsCheckChange, glassDetected }: InstructionsTabProps) => {
   const [checkedInstructions, setCheckedInstructions] = useState(
     instructionsList.map(() => false) // Initialize all checkboxes as unchecked
   );
 
   useEffect(() => {
     // Calculate whether all checkboxes are checked
+    checkedInstructions[0] = !glassDetected; // The first checkbox is always checked if glass is not detected
     const allChecked = checkedInstructions.every((checked) => checked);
     onInstructionsCheckChange(allChecked); // Pass the status to the parent component
   }, [checkedInstructions, onInstructionsCheckChange]);
@@ -28,16 +30,28 @@ const InstructionsTab = ({ onInstructionsCheckChange }: InstructionsTabProps) =>
       <div className="text-3xl">Instructions</div>
       <div className="w-full flex flex-col h-full items-start space-y-6">
         {instructionsList.map((instruction, index) => (
-          <FormControlLabel
-            key={index}
-            control={
-              <Checkbox
-                checked={checkedInstructions[index]}
-                onChange={() => handleCheckboxChange(index)}
+          <div key={index} className="flex items-center space-x-3">
+            {index === 0 ? (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ color: glassDetected ? "red" : "green" }}>
+                  {glassDetected ? "✗" : "✓"}
+                </span>
+                <span style={{ marginLeft: "8px", color: glassDetected ? "red" : "green" }}>
+                  {instruction}
+                </span>
+              </div>
+            ) : (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedInstructions[index]}
+                    onChange={() => handleCheckboxChange(index)}
+                  />
+                }
+                label={instruction}
               />
-            }
-            label={instruction}
-          />
+            )}
+          </div>
         ))}
       </div>
     </div>
