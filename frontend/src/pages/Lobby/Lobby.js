@@ -13,6 +13,8 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
+  const [responses, setResponses] = useState([]);
+  const [highlightedResponse, setHighlightedResponse] = useState(0);
   const sessionData = useAppSelector(selectCurrentSession);
   const [participantStream, setParticipantStream] = useState(null);
   const isChatModalActive = useAppSelector(selectChatTab);
@@ -25,24 +27,41 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
+      if (participantStream && videoElement.current) {
+        connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", {
+          participant_id: "all",
+          filter_id: "simple-glasses-detection",
+          filter_channel: "video",
+          filter_name: "SIMPLE_GLASSES_DETECTION"
+        });
+        console.log("message sent");
+      }
     }
   }, [connection, connectionState, onGetSession, sessionIdParam]);
 
-  const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
-    console.groupEnd();
-    setConnectedParticipants(peers);
+  const handleGetFiltersDataSendToParticipant = (data) => {
+    saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+    console.log("handleGetFiltersDataSendToParticipant", data);
   };
-
+  const saveGenericApiResponse = async (endpoint, messageData) => {
+    setResponses([{ endpoint, data: messageData }, ...responses]);
+    setHighlightedResponse(0);
+  };
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
-    connection.on("connectedPeersChange", connectedPeersChangeHandler);
+    connection.api.on(
+      "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+      handleGetFiltersDataSendToParticipant
+    );
     return () => {
       // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
-      connection.off("connectedPeersChange", connectedPeersChangeHandler);
+      connection.api.off(
+        "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+        handleGetFiltersDataSendToParticipant
+      );
     };
   }, [connection]);
 
@@ -91,7 +110,10 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab onInstructionsCheckChange={setAreInstructionsChecked} />
+            <InstructionsTab
+              onInstructionsCheckChange={setAreInstructionsChecked}
+              connection={connection}
+            />
           )}
         </div>
       </div>
