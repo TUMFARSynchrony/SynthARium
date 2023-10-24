@@ -61,13 +61,11 @@ function WatchingRoom({
     }
   }, [connectedParticipants, connection]);
   const handleGetFiltersDataSendToParticipant = (data) => {
-    console.log("HElooo!");
     console.log("handleGetFiltersDataSendToParticipant", data);
     saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
   };
   useEffect(() => {
     if (connection.api && connectedParticipants) {
-      console.log("Hrllo");
       connection.api.on(
         "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
         handleGetFiltersDataSendToParticipant
