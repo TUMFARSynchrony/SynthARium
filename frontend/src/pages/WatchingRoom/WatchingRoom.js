@@ -82,7 +82,7 @@ function WatchingRoom({
     // Set up a setInterval to run the effect every 30 seconds
     const intervalId = setInterval(() => {
       sendMessageToParticipants();
-    }, 10000); // 15,000 milliseconds = 10 seconds
+    }, 10000); // 10,000 milliseconds = 10 seconds
 
     // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
