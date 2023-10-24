@@ -443,16 +443,13 @@ class Experiment(AsyncIOEventEmitter):
             # Reuse existing filter for matching id and name.
             if (
                 filter_id in old_group_filter_aggregators
-                and old_group_filter_aggregators[filter_id]._group_filter.config["name"]
+                and old_group_filter_aggregators[filter_id]._group_filter.name()
                 == config["name"]
             ):
                 self._video_group_filter_aggregators[
                     filter_id
                 ] = old_group_filter_aggregators[filter_id]
 
-                self._video_group_filter_aggregators[
-                    filter_id
-                ]._group_filter.set_config(config)
                 self._video_group_filter_aggregators[filter_id].delete_data()
             else:
                 # Create a new filter for configs with empty id.
@@ -492,16 +489,13 @@ class Experiment(AsyncIOEventEmitter):
             # Reuse existing filter for matching id and name.
             if (
                 filter_id in old_group_filter_aggregators
-                and old_group_filter_aggregators[filter_id]._group_filter.config["name"]
+                and old_group_filter_aggregators[filter_id]._group_filter.name()
                 == config["name"]
             ):
                 self._audio_group_filter_aggregators[
                     filter_id
                 ] = old_group_filter_aggregators[filter_id]
 
-                self._audio_group_filter_aggregators[
-                    filter_id
-                ]._group_filter.set_config(config)
                 self._audio_group_filter_aggregators[filter_id].delete_data()
             else:
                 # Create a new filter for configs with empty id.
