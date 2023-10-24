@@ -122,6 +122,9 @@ class GroupFilterAggregator(object):
                     self._logger.debug(
                         f"Exception: {e} | Data aggregation cannot be performed."
                     )
+                except asyncio.CancelledError:
+                    # If the task is cancelled, break the loop and stop execution
+                    break
 
     def align_data(self, participant_ids: tuple) -> list[list[Any]]:
         data = {}
