@@ -787,7 +787,13 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
             props.connection.sendMessage("SET_GROUP_FILTERS", {
               audio_group_filters: [],
               video_group_filters: [
-                { type: "SYNC_SCORE_GF", id: "sync_score_gf" }
+                {
+                  name: "SYNC_SCORE_GF",
+                  id: "sync_score_gf",
+                  channel: "video",
+                  groupFilter: true,
+                  config: {}
+                }
               ]
             })
           }
