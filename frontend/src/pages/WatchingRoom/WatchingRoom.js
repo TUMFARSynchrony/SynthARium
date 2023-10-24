@@ -60,24 +60,27 @@ function WatchingRoom({
       console.log("Message send to participant");
     }
   }, [connectedParticipants, connection]);
-  const handleGetFiltersDataSendToParticipant = (data) => {
-    console.log("handleGetFiltersDataSendToParticipant", data);
-    saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+
+  const onGetFiltersDataSendToParticipant = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+    // saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
   };
+
   useEffect(() => {
-    if (connection.api && connectedParticipants) {
-      connection.api.on(
-        "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
-        handleGetFiltersDataSendToParticipant
-      );
-      return () => {
-        connection.api.off(
-          "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
-          handleGetFiltersDataSendToParticipant
-        );
+    if (connection && connectedParticipants.length > 0) {
+      const data = {
+        filter_id: "simple-glasses-detection",
+        filter_channel: "video",
+        filter_name: "SIMPLE_GLASSES_DETECTION"
       };
+      for (let i = 0; i < connectedParticipants.length; i++) {
+        const participant_id = connectedParticipants[i].summary;
+        data.participant_id = participant_id;
+        onGetFiltersDataSendToParticipant(data);
+        console.log("Message send to participant", participant_id);
+      }
     }
-  }, [connectedParticipants, connection]);
+  }, [connection, connectedParticipants]);
 
   const saveGenericApiResponse = async (endpoint, messageData) => {
     setResponses([{ endpoint, data: messageData }, ...responses]);
