@@ -33,8 +33,8 @@ class OpenFace:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"OpenFace Error: {e}")
 
     def __del__(self):
         try:

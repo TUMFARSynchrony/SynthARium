@@ -36,7 +36,16 @@ class OpenFaceAUExtractor:
         self.socket.close()
         del self.port_manager, self.open_face
 
-    def extract(self, ndarray: numpy.ndarray) -> tuple[int, str, object]:
+    def extract(
+        self, ndarray: numpy.ndarray, roi: dict[str, int] = None
+    ) -> tuple[int, str, object]:
+        # If ROI is sent from the OpenFace, only send that region
+        if roi is not None and roi["width"] != 0:
+            ndarray = ndarray[
+                roi["y"] : (roi["y"] + roi["height"]),
+                roi["x"] : (roi["x"] + roi["width"]),
+            ]
+
         port_msg = f"Port: {self.port_manager.port}"
 
         if not self.is_connected:

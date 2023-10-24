@@ -37,16 +37,10 @@ class SyncScoreGroupFilter(GroupFilter):
     async def process_individual_frame(
         self, original: VideoFrame | AudioFrame, ndarray: np.ndarray
     ) -> Any:
-        # If ROI is sent from the OpenFace, only send that region
-        if "roi" in self.au_data.keys() and self.au_data["roi"]["width"] != 0:
-            roi = self.au_data["roi"]
-            ndarray = ndarray[
-                roi["y"] : (roi["y"] + roi["height"]),
-                roi["x"] : (roi["x"] + roi["width"]),
-            ]
-
         # Extract AU from the frame
-        exit_code, _, result = self.au_extractor.extract(ndarray)
+        exit_code, _, result = self.au_extractor.extract(
+            ndarray, self.au_data.get("roi", None)
+        )
 
         if exit_code != 0:
             return None

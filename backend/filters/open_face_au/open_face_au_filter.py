@@ -55,17 +55,9 @@ class OpenFaceAUFilter(Filter):
     ) -> numpy.ndarray:
         self.frame = self.frame + 1
 
-        # If ROI is sent from the OpenFace, only send that region
-        if "roi" in self.data.keys() and self.data["roi"]["width"] != 0:
-            roi = self.data["roi"]
-            exit_code, msg, result = self.au_extractor.extract(
-                ndarray[
-                    roi["y"] : (roi["y"] + roi["height"]),
-                    roi["x"] : (roi["x"] + roi["width"]),
-                ]
-            )
-        else:
-            exit_code, msg, result = self.au_extractor.extract(ndarray)
+        exit_code, msg, result = self.au_extractor.extract(
+            ndarray, self.data.get("roi", None)
+        )
 
         if exit_code == 0:
             self.data = result
