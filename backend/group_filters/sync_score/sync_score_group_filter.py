@@ -10,14 +10,29 @@ from group_filters.sync_score.bow import BoW
 from group_filters.sync_score.oasis import oasis
 
 
-class SyncScoreGroupFilter(GroupFilter):
-    bow_window_size = 8  # how many frames each window contains
-    bow_word_size = 4  # how many symbols each window is mapped to (window_length / word_length is a prositive integer)
-    bow_n_bins = 3  # the size of the alphabet or the number of symbols used to represent the time series signal
-    bow_strategy = "uniform"
-    oasis_energy_threshold = 0.1
+bow_window_size = 8  # how many frames each window contains
+bow_word_size = 4  # how many symbols each window is mapped to (window_length / word_length is a prositive integer)
+bow_n_bins = 3  # the size of the alphabet or the number of symbols used to represent the time series signal
+bow_strategy = "uniform"  # the strategy used by the Bag-of-Words (BoW) algorithm
+oasis_energy_threshold = 0.1  # min signal energy required for the OASIS algorithm
+oasis_min_required_data = (
+    2 * bow_window_size - 1
+)  # min signal length required for the OASIS algorithm
 
-    data_len_per_participant = 2 * bow_window_size - 1
+# Warm up the BoW
+for _ in range(10):
+    BoW(
+        window_size=bow_window_size,
+        word_size=bow_word_size,
+        n_bins=bow_n_bins,
+        strategy=bow_strategy,
+    ).apply_bow_for_2_participants(
+        np.zeros(oasis_min_required_data), np.zeros(oasis_min_required_data)
+    )
+
+
+class SyncScoreGroupFilter(GroupFilter):
+    data_len_per_participant = oasis_min_required_data
     num_participants_in_aggregation = 2
 
     def __init__(self, config: FilterDict, participant_id: str):
@@ -29,10 +44,6 @@ class SyncScoreGroupFilter(GroupFilter):
     @staticmethod
     def name() -> str:
         return "SYNC_SCORE_GF"
-
-    async def cleanup(self) -> None:
-        del self.au_extractor
-        await super().cleanup()
 
     async def process_individual_frame(
         self, original: VideoFrame | AudioFrame, ndarray: np.ndarray
@@ -82,10 +93,10 @@ class SyncScoreGroupFilter(GroupFilter):
 
         # Apply BoW algorithm on the AU data
         bow = BoW(
-            window_size=__class__.bow_window_size,
-            word_size=__class__.bow_word_size,
-            n_bins=__class__.bow_n_bins,
-            strategy=__class__.bow_strategy,
+            window_size=bow_window_size,
+            word_size=bow_word_size,
+            n_bins=bow_n_bins,
+            strategy=bow_strategy,
         )
 
         bow1, bow2 = bow.apply_bow_for_2_participants(
@@ -98,9 +109,9 @@ class SyncScoreGroupFilter(GroupFilter):
             smile_user1=normalized_data1,
             word_bins_user2=bow2,
             smile_user2=normalized_data2,
-            window_size=__class__.bow_window_size,
-            n_bins=__class__.bow_n_bins,
-            energy_threshold=__class__.oasis_energy_threshold,
+            window_size=bow_window_size,
+            n_bins=bow_n_bins,
+            energy_threshold=oasis_energy_threshold,
         )
 
         sync_score_u2u1 = oasis(
@@ -108,9 +119,9 @@ class SyncScoreGroupFilter(GroupFilter):
             smile_user1=normalized_data2,
             word_bins_user2=bow1,
             smile_user2=normalized_data1,
-            window_size=__class__.bow_window_size,
-            n_bins=__class__.bow_n_bins,
-            energy_threshold=__class__.oasis_energy_threshold,
+            window_size=bow_window_size,
+            n_bins=bow_n_bins,
+            energy_threshold=oasis_energy_threshold,
         )
 
         return (sync_score_u1u2 + sync_score_u2u1) / 2.0
