@@ -69,6 +69,11 @@ class GroupFilterAggregator(object):
 
         self._data[participant_id] = q
 
+        self._logger.debug(
+            f"Data added for {participant_id} at {time}: {data},"
+            + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
+        )
+
     async def run(self) -> None:
         while True:
             if self.is_socket_connected:
@@ -77,10 +82,6 @@ class GroupFilterAggregator(object):
 
                     self.add_data(
                         message["participant_id"], message["time"], message["data"]
-                    )
-                    self._logger.debug(
-                        f"Data added for {message['participant_id']}: {message},"
-                        + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
                     )
 
                     num_participants_in_aggregation = None
@@ -113,10 +114,9 @@ class GroupFilterAggregator(object):
                                 # Aggregate data
                                 aggregated_data = self._group_filter.aggregate(data)
                                 self._logger.debug(
-                                    "Data aggregation is triggered by participant"
-                                    + f" {message['participant_id']}: {message}"
-                                    + f" with data: {data},"
-                                    + f" aggregation result: {aggregated_data}"
+                                    "Data aggregation is performed."
+                                    + f"\n\tData: {data}"
+                                    + f"\n\tResult: {aggregated_data}"
                                 )
                 except Exception as e:
                     self._logger.debug(

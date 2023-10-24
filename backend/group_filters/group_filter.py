@@ -124,9 +124,9 @@ class GroupFilter(ABC):
                 try:
                     self._socket.send_json(message, flags=zmq.NOBLOCK)
 
-                    self._logger.debug(
-                        f"Data sent for {self.participant_id}: {message}"
-                    )
+                    # self._logger.debug(
+                    #     f"Data sent for {self.participant_id}: {message}"
+                    # )
                 except Exception as e:
                     self._logger.debug(
                         f"Exception: {e} | Data cannot be sent for {self.participant_id}: {message}"
