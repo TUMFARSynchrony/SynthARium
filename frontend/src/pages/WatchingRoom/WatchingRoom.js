@@ -14,7 +14,7 @@ import ParticipantsTab from "../../components/molecules/ParticipantsTab/Particip
 import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 
 function WatchingRoom({
@@ -25,16 +25,75 @@ function WatchingRoom({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
-  onEndExperiment
+  onEndExperiment,
+  connection
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
+  const [connectionState, setConnectionState] = useState(null);
+  const [responses, setResponses] = useState([]);
+  const [highlightedResponse, setHighlightedResponse] = useState(0);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
+
+  useEffect(() => {
+    const recentlyJoinedParticipantId = getRecentlyJoinedParticipantId(connectedParticipants);
+    console.log("connec", connection);
+    if (recentlyJoinedParticipantId && connection) {
+      connection.sendMessage("SET_FILTERS", {
+        participant_id: recentlyJoinedParticipantId,
+        audio_filters: [],
+        video_filters: [
+          {
+            name: "SIMPLE_GLASSES_DETECTION",
+            id: "simple-glasses-detection",
+            channel: "video",
+            groupFilter: false,
+            config: {}
+          }
+        ]
+      });
+      console.log("Message send to participant");
+    }
+  }, [connectedParticipants, connection]);
+  const handleGetFiltersDataSendToParticipant = (data) => {
+    console.log("HElooo!");
+    console.log("handleGetFiltersDataSendToParticipant", data);
+    saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+  };
+  useEffect(() => {
+    if (connection.api && connectedParticipants) {
+      console.log("Hrllo");
+      connection.api.on(
+        "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+        handleGetFiltersDataSendToParticipant
+      );
+      return () => {
+        connection.api.off(
+          "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+          handleGetFiltersDataSendToParticipant
+        );
+      };
+    }
+  }, [connectedParticipants, connection]);
+
+  const saveGenericApiResponse = async (endpoint, messageData) => {
+    setResponses([{ endpoint, data: messageData }, ...responses]);
+    setHighlightedResponse(0);
+  };
+  const getRecentlyJoinedParticipantId = (connectedParticipants) => {
+    if (connectedParticipants.length > 0) {
+      const lastParticipant = connectedParticipants[connectedParticipants.length - 1];
+      if (lastParticipant && lastParticipant.summary) {
+        return lastParticipant.summary;
+      }
+    }
+    return null;
+  };
   return (
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (

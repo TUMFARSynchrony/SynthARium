@@ -27,41 +27,23 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
-      if (participantStream && videoElement.current) {
-        connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", {
-          participant_id: "all",
-          filter_id: "simple-glasses-detection",
-          filter_channel: "video",
-          filter_name: "SIMPLE_GLASSES_DETECTION"
-        });
-        console.log("message sent");
-      }
     }
   }, [connection, connectionState, onGetSession, sessionIdParam]);
+  const handleFiltersData = (data) => {
+    console.log("data", data);
+  };
 
-  const handleGetFiltersDataSendToParticipant = (data) => {
-    saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
-    console.log("handleGetFiltersDataSendToParticipant", data);
-  };
-  const saveGenericApiResponse = async (endpoint, messageData) => {
-    setResponses([{ endpoint, data: messageData }, ...responses]);
-    setHighlightedResponse(0);
-  };
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
-    connection.api.on(
-      "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
-      handleGetFiltersDataSendToParticipant
-    );
+
+    connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
-      connection.api.off(
-        "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
-        handleGetFiltersDataSendToParticipant
-      );
+
+      connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
 

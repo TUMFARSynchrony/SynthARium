@@ -526,6 +526,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    connection={connection}
                   />
                 }
               />
@@ -566,6 +567,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    connection={connection}
                   />
                 }
                 centerContentOnYAxis={true}
