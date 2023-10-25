@@ -114,7 +114,7 @@ class GroupFilterAggregator(object):
                                 # Aggregate data
                                 aggregated_data = self._group_filter.aggregate(data)
                                 self._logger.debug(
-                                    "Data aggregation is performed."
+                                    "Data aggregation performed."
                                     + f"\n\tData: {data}"
                                     + f"\n\tResult: {aggregated_data}"
                                 )
@@ -132,17 +132,35 @@ class GroupFilterAggregator(object):
             data[pid] = list(self._data[pid].queue)
 
         # Use the first participant's time horizon as the basis for alignment
-        p0_x, p0_y = zip(*data[participant_ids[0]])
-        aligned_data = [list(p0_y)]
+        p0_x, p0_y = map(list, zip(*data[participant_ids[0]]))
+        p0_y = [float(y) for y in p0_y]
+        aligned_data = [p0_y]
+
+        debug_str = (
+            "Data alignment performed."
+            + f"\n\tParticipant: {participant_ids[0]}"
+            + f"\n\tBase Time Horizon: {p0_x}"
+            + f"\n\tData: {p0_y}"
+        )
 
         # Align the data for each participant
         for pid in participant_ids[1:]:
-            x, y = zip(*data[pid])
+            x, y = map(list, zip(*data[pid]))
 
             # Align the data
             y_aligned = self._group_filter.align_data(x, y, p0_x)
 
             # Store the aligned data
             aligned_data.append(y_aligned)
+
+            debug_str += (
+                "\n"
+                + f"\n\tParticipant: {pid}"
+                + f"\n\tTime Horizon: {x}"
+                + f"\n\tData: {y}"
+                + f"\n\tAligned Data: {y_aligned}"
+            )
+
+        self._logger.debug(debug_str)
 
         return aligned_data
