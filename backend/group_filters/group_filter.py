@@ -111,7 +111,7 @@ class GroupFilter(ABC):
         return f"{self.__class__.__name__}(config={self.config})"
 
     async def process_individual_frame_and_send_data_to_aggregator(
-        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray, ts: int
+        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray, ts: float
     ) -> None:
         if self.is_socket_connected:
             data = await self.process_individual_frame(original, ndarray)
