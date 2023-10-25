@@ -96,7 +96,7 @@ class GroupFilterAggregator(object):
                         for c in combinations(
                             self._data.keys(), num_participants_in_aggregation
                         ):
-                            # Check if all participants have enough data to align
+                            # Check if all participants have enough data
                             participants_have_enough_data = True
                             if self._group_filter.data_len_per_participant != 0:
                                 for pid in c:
@@ -107,17 +107,19 @@ class GroupFilterAggregator(object):
                                         participants_have_enough_data = False
                                         break
 
-                            if participants_have_enough_data:
-                                # Align data
-                                data = self.align_data(c)
+                            if not participants_have_enough_data:
+                                continue
 
-                                # Aggregate data
-                                aggregated_data = self._group_filter.aggregate(data)
-                                self._logger.debug(
-                                    "Data aggregation performed."
-                                    + f"\n\tData: {data}"
-                                    + f"\n\tResult: {aggregated_data}"
-                                )
+                            # Align data
+                            data = self.align_data(c)
+
+                            # Aggregate data
+                            aggregated_data = self._group_filter.aggregate(data)
+                            self._logger.debug(
+                                "Data aggregation performed."
+                                + f"\n\tData: {data}"
+                                + f"\n\tResult: {aggregated_data}"
+                            )
                 except Exception as e:
                     self._logger.debug(
                         f"Exception: {e} | Data aggregation cannot be performed."
@@ -131,20 +133,35 @@ class GroupFilterAggregator(object):
         for pid in participant_ids:
             data[pid] = list(self._data[pid].queue)
 
-        # Use the first participant's time horizon as the basis for alignment
-        p0_x, p0_y = map(list, zip(*data[participant_ids[0]]))
+        # Find the participant with the smallest time horizon
+        def time_horizon(q):
+            return q[-1][0] - q[0][0]
+
+        min_time_horizon = time_horizon(data[participant_ids[0]])
+        pid_with_min_time_horizon = 0
+        for pid in participant_ids[1:]:
+            th = time_horizon(data[pid])
+            if th < min_time_horizon:
+                min_time_horizon = th
+                pid_with_min_time_horizon = pid
+
+        # Use the time horizon of the participant with the smallest time horizon as the basis for alignment
+        p0_x, p0_y = map(list, zip(*data[pid_with_min_time_horizon]))
         p0_y = [float(y) for y in p0_y]
         aligned_data = [p0_y]
 
         debug_str = (
             "Data alignment performed."
-            + f"\n\tParticipant: {participant_ids[0]}"
+            + f"\n\tParticipant: {pid_with_min_time_horizon}"
             + f"\n\tBase Time Horizon: {p0_x}"
             + f"\n\tData: {p0_y}"
         )
 
-        # Align the data for each participant
-        for pid in participant_ids[1:]:
+        # Align the data for other participants
+        for pid in participant_ids:
+            if pid == pid_with_min_time_horizon:
+                continue
+
             x, y = map(list, zip(*data[pid]))
 
             # Align the data
