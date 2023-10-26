@@ -9,6 +9,7 @@ import zmq.asyncio
 from queue import Queue
 from itertools import combinations
 from typing import Any
+import numpy as np
 
 
 class GroupFilterAggregator(object):
@@ -113,8 +114,13 @@ class GroupFilterAggregator(object):
                             # Align data
                             data = self.align_data(c)
 
+                            # Skip if the alignment cannot be performed because of there is no overlapping time horizon
+                            if data is None:
+                                continue
+
                             # Aggregate data
                             aggregated_data = self._group_filter.aggregate(data)
+
                             self._logger.debug(
                                 "Data aggregation performed."
                                 + f"\n\tData: {data}"
@@ -128,44 +134,46 @@ class GroupFilterAggregator(object):
                     # If the task is cancelled, break the loop and stop execution
                     break
 
-    def align_data(self, participant_ids: tuple) -> list[list[Any]]:
+    def align_data(self, participant_ids: tuple) -> list[list[Any]] | None:
         data = {}
         for pid in participant_ids:
             data[pid] = list(self._data[pid].queue)
 
-        # Find the participant with the smallest time horizon
-        def time_horizon(q):
-            return q[-1][0] - q[0][0]
-
-        min_time_horizon = time_horizon(data[participant_ids[0]])
-        pid_with_min_time_horizon = 0
+        # Calculate the base time horizon as the intersection: max of time horizon starts - min of time horizon ends
+        base_time_horizon_start = data[participant_ids[0]][0][0]
+        base_time_horizon_end = data[participant_ids[0]][-1][0]
         for pid in participant_ids[1:]:
-            th = time_horizon(data[pid])
-            if th < min_time_horizon:
-                min_time_horizon = th
-                pid_with_min_time_horizon = pid
+            th_start = data[pid][0][0]
+            if th_start > base_time_horizon_start:
+                base_time_horizon_start = th_start
 
-        # Use the time horizon of the participant with the smallest time horizon as the basis for alignment
-        p0_x, p0_y = map(list, zip(*data[pid_with_min_time_horizon]))
-        p0_y = [float(y) for y in p0_y]
-        aligned_data = [p0_y]
+            th_end = data[pid][-1][0]
+            if th_end < base_time_horizon_end:
+                base_time_horizon_end = th_end
+
+        # Return None if the start of base time horizon is greater than its end to prevent aggregation
+        if base_time_horizon_start > base_time_horizon_end:
+            return None
+
+        base_time_horizon = list(
+            np.linspace(
+                base_time_horizon_start,
+                base_time_horizon_end,
+                self._group_filter.data_len_per_participant,
+            )
+        )
 
         debug_str = (
-            "Data alignment performed."
-            + f"\n\tParticipant: {pid_with_min_time_horizon}"
-            + f"\n\tBase Time Horizon: {p0_x}"
-            + f"\n\tData: {p0_y}"
+            f"Data alignment performed with base time horizon: {base_time_horizon}"
         )
 
         # Align the data for other participants
+        aligned_data = []
         for pid in participant_ids:
-            if pid == pid_with_min_time_horizon:
-                continue
-
             x, y = map(list, zip(*data[pid]))
 
             # Align the data
-            y_aligned = self._group_filter.align_data(x, y, p0_x)
+            y_aligned = self._group_filter.align_data(x, y, base_time_horizon)
 
             # Store the aligned data
             aligned_data.append(y_aligned)

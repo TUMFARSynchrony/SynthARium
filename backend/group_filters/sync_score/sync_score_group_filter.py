@@ -70,7 +70,7 @@ class SyncScoreGroupFilter(GroupFilter):
         return smile
 
     def align_data(x: list, y: list, base_timeline: list) -> list:
-        interpolator = interp1d(x, y, kind="cubic", fill_value="extrapolate")
+        interpolator = interp1d(x, y, kind="linear")
         return list(interpolator(base_timeline))
 
     def aggregate(data: list[list[Any]]) -> Any:

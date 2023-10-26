@@ -40,7 +40,7 @@ class TemplateGroupFilter(GroupFilter):
     def align_data(x: list, y: list, base_timeline: list) -> list:
         # TODO: Change this to implement an alignment function.
         # Needs to be implemented as a static method.
-        interpolator = interp1d(x, y, kind="nearest", fill_value="extrapolate")
+        interpolator = interp1d(x, y, kind="nearest")
         return list(interpolator(base_timeline))
 
     def aggregate(data: list[list[Any]]) -> Any:
