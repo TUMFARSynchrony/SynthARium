@@ -22,7 +22,7 @@ class TemplateFilter(Filter):
     @staticmethod
     def filter_type(self) -> str:
         # change this according to your filter type (SESSION or TEST)
-        return "SESSION"
+        return "NONE"
 
     @staticmethod
     def get_filter_json(self) -> object:

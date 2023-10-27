@@ -99,7 +99,8 @@ export const PARTICIPANT_HOST = "http://localhost:3000/lobby/";
 
 // Displays the same set of instructions in both the /lobby and in the /watchingRoom.
 export const instructionsList = [
-  "Please remove any glasses, caps or other such articles if you are wearing any.",
+  "Please remove any glasses if you are wearing any.",
+  "Please remove any caps or other such articles if you are wearing any.",
   "Ensure that your surrounding lighting is good.",
   "We would like to know about your experience, so please take 5  minutes at the end to do the Feedback Survey."
 ];

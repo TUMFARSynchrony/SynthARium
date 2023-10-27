@@ -11,10 +11,10 @@ import {
   selectParticipantsTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 
 function WatchingRoom({
@@ -25,7 +25,8 @@ function WatchingRoom({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
-  onEndExperiment
+  onEndExperiment,
+  connection
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
@@ -35,6 +36,66 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
+
+  useEffect(() => {
+    const recentlyJoinedParticipantId = getRecentlyJoinedParticipantId(connectedParticipants);
+    if (recentlyJoinedParticipantId && connection) {
+      connection.sendMessage("SET_FILTERS", {
+        participant_id: recentlyJoinedParticipantId,
+        audio_filters: [],
+        video_filters: [
+          {
+            name: "SIMPLE_GLASSES_DETECTION",
+            id: "simple-glasses-detection",
+            channel: "video",
+            groupFilter: false,
+            config: {}
+          }
+        ]
+      });
+    }
+  }, [connectedParticipants, connection]);
+
+  const onGetFiltersDataSendToParticipant = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+  };
+  // Define a function to send messages to participants
+  const sendMessageToParticipants = () => {
+    if (connection && connectedParticipants.length > 0) {
+      const data = {
+        filter_id: "simple-glasses-detection",
+        filter_channel: "video",
+        filter_name: "SIMPLE_GLASSES_DETECTION"
+      };
+      for (let i = 0; i < connectedParticipants.length; i++) {
+        const participant_id = connectedParticipants[i].summary;
+        data.participant_id = participant_id;
+        onGetFiltersDataSendToParticipant(data);
+        console.log("Message sent to participant", participant_id);
+      }
+    }
+  };
+
+  useEffect(() => {
+    sendMessageToParticipants();
+
+    // Set up a setInterval to run the effect every 30 seconds
+    const intervalId = setInterval(() => {
+      sendMessageToParticipants();
+    }, 10000); // 15,000 milliseconds = 10 seconds
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, [connection, connectedParticipants]);
+  const getRecentlyJoinedParticipantId = (connectedParticipants) => {
+    if (connectedParticipants.length > 0) {
+      const lastParticipant = connectedParticipants[connectedParticipants.length - 1];
+      if (lastParticipant && lastParticipant.summary) {
+        return lastParticipant.summary;
+      }
+    }
+    return null;
+  };
   return (
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
@@ -113,7 +174,7 @@ function WatchingRoom({
                 onMuteParticipant={onMuteParticipant}
               />
             )}
-            {isInstructionsModalActive && <InstructionsTab />}
+            {isInstructionsModalActive && <InstructionsTab onInstructionsCheckChange={false} />}
           </div>
         </div>
       ) : (

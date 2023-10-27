@@ -7,10 +7,13 @@ import ConnectionState from "./networking/ConnectionState";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import Lobby from "./pages/Lobby/Lobby";
+import MeetingRoom from "./pages/MeetingRoom/MeetingRoom";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
 import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import Consent from "./pages/Consent/Consent";
+import End from "./pages/End/End";
 import PageTemplate from "./components/templates/PageTemplate";
 import HeaderActionArea from "./components/atoms/Button/HeaderActionArea";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
@@ -45,6 +48,9 @@ function App() {
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
+  const sessionIdParam = searchParams.get("sessionId");
+  const participantIdParam = searchParams.get("participantId");
+  const experimenterPasswordParam = searchParams.get("experimenterPassword");
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsListRef = useRef();
@@ -92,6 +98,7 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -108,6 +115,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
 
@@ -115,11 +123,6 @@ function App() {
     const closeConnection = () => {
       connection?.stop();
     };
-
-    const sessionIdParam = searchParams.get("sessionId");
-    const participantIdParam = searchParams.get("participantId");
-    const experimenterPasswordParam = searchParams.get("experimenterPassword");
-
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
     let experimenterPassword = experimenterPasswordParam ?? "";
@@ -128,6 +131,7 @@ function App() {
     const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage =
       pathname === "/connectiontest" || pathname === "/connectionlatencytest";
+    const isConsentOrEndPage = pathname === "/consent" || pathname === "/end";
 
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
@@ -155,8 +159,12 @@ function App() {
       true
     );
 
-    setConnection(newConnection);
-    if (userType === "participant" && pathname !== "/connectionlatencytest") {
+    !isConsentOrEndPage && setConnection(newConnection);
+    if (
+      userType === "participant" &&
+      pathname !== "/connectionlatencytest" &&
+      !isConsentOrEndPage
+    ) {
       asyncStreamHelper(newConnection);
       return;
     }
@@ -283,6 +291,12 @@ function App() {
   };
 
   const handleExperimentEnded = (data) => {
+    if (window.location.pathname === "/meetingRoom") {
+      navigate({
+        pathname: "/end",
+        search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`
+      });
+    }
     dispatch(
       setExperimentTimes({
         action: ExperimentTimes.END_TIME,
@@ -312,6 +326,18 @@ function App() {
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
     dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
+  };
+
+  const onGetFiltersData = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA", data);
+  };
+
+  const onGetFiltersDataSendToParticipant = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+  };
+
+  const handleFiltersData = (data) => {
+    console.log(data);
   };
 
   const onDeleteSession = (sessionId) => {
@@ -392,6 +418,8 @@ function App() {
               />
             }
           />
+          <Route exact path="/consent" element={<Consent />} />
+          <Route exact path="/end" element={<End />} />
           <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
@@ -416,7 +444,41 @@ function App() {
                   }
                   customComponent={
                     <Lobby
-                      connectedParticipants={connectedParticipants}
+                      localStream={localStream}
+                      connection={connection}
+                      onGetSession={onGetSession}
+                      onChat={onChat}
+                    />
+                  }
+                />
+              ) : (
+                "Loading..."
+              )
+            }
+          />
+          <Route
+            exact
+            path="/meetingRoom"
+            element={
+              connection ? (
+                <PageTemplate
+                  title={"Meeting Room"}
+                  buttonListComponent={
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => toggleModal(Tabs.CHAT),
+                          icon: faComment
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                          icon: faClipboardCheck
+                        }
+                      ]}
+                    />
+                  }
+                  customComponent={
+                    <MeetingRoom
                       localStream={localStream}
                       connection={connection}
                       onGetSession={onGetSession}
@@ -464,6 +526,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    connection={connection}
                   />
                 }
               />
@@ -504,6 +567,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    connection={connection}
                   />
                 }
                 centerContentOnYAxis={true}
