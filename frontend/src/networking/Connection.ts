@@ -408,4 +408,40 @@ export default class Connection extends ConnectionBase<
     }
     subConnection.handleAnswer(data);
   }
+
+  protected async handleIceCandidate(candidate: RTCIceCandidate): Promise<void> {
+    const request = {
+      candidate: candidate
+    };
+
+    this.log("Sending ICE candidate");
+
+    let response;
+    try {
+      response = await fetch(BACKEND + "/iceCandidate", {
+        body: JSON.stringify({ request }),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        method: "POST",
+        mode: ENVIRONMENT === "development" ? "cors" : undefined
+      });
+    } catch (error) {
+      this.logError("Failed to connect to backend.", error.message);
+      this.setState(ConnectionState.FAILED);
+      return;
+    }
+
+    if (!response.ok) {
+      this.logError("Failed to connect to backend. Response not ok");
+      this.setState(ConnectionState.FAILED);
+      return;
+    }
+
+    const answer = await response.json();
+    if (answer.type !== "SUCCESS") {
+      this.log("Received unexpected answer from backend. type:", answer.type);
+      return;
+    }
+  }
 }

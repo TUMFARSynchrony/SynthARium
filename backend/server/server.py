@@ -60,6 +60,7 @@ class Server:
         routes = [
             self._app.router.add_get("/hello-world", self.get_hello_world),
             self._app.router.add_post("/offer", self.handle_offer),
+            self._app.router.add_post("/iceCandidate", self.handle_ice_candidate),
         ]
 
         # Serve frontend build
@@ -302,6 +303,20 @@ class Server:
         # Create response
         answer = MessageDict(type="SESSION_DESCRIPTION", data=data)
         return web.Response(content_type="application/json", text=json.dumps(answer))
+
+    async def handle_ice_candidate(self, request: web.Request) -> web.StreamResponse:
+        self._logger.info(f"Received ice candidate from {request.remote}")
+
+        data: dict[str, str] = {
+            "type: ": "ICE_CANDIDATE",
+            "description": "Ice candidate was succesfully received."
+        }
+        answer = MessageDict(type="SUCCESS", data=data)
+
+        return web.Response(
+            content_type="application/json",
+            text=json.dumps(answer)
+        )
 
     async def get_index(self, request: web.Request):
         """Respond with index.html to a request."""

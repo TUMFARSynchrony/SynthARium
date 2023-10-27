@@ -90,4 +90,9 @@ export default class SubConnection extends ConnectionBase<MediaStream | string> 
       this.stop();
     }
   }
+
+  protected async handleIceCandidate(candidate: RTCIceCandidate): Promise<void> {
+    // TODO: send to backend via main connection
+    return;
+  }
 }

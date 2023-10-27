@@ -120,20 +120,21 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     const offer = await this.pc.createOffer(options);
     await this.pc.setLocalDescription(offer);
 
+    // TODO: remove
     // Wait for iceGatheringState to be "complete".
-    await new Promise((resolve) => {
-      if (this.pc?.iceGatheringState === "complete") {
-        resolve(undefined);
-      } else {
-        const checkState = () => {
-          if (this.pc?.iceGatheringState === "complete") {
-            this.pc.removeEventListener("icegatheringstatechange", checkState);
-            resolve(undefined);
-          }
-        };
-        this.pc?.addEventListener("icegatheringstatechange", checkState);
-      }
-    });
+    // await new Promise((resolve) => {
+    //   if (this.pc?.iceGatheringState === "complete") {
+    //     resolve(undefined);
+    //   } else {
+    //     const checkState = () => {
+    //       if (this.pc?.iceGatheringState === "complete") {
+    //         this.pc.removeEventListener("icegatheringstatechange", checkState);
+    //         resolve(undefined);
+    //       }
+    //     };
+    //     this.pc?.addEventListener("icegatheringstatechange", checkState);
+    //   }
+    // });
 
     return this.pc.localDescription;
   }
@@ -155,6 +156,18 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     this.pc.addEventListener(
       "signalingstatechange",
       this.handleSignalingStateChange.bind(this),
+      false
+    );
+
+    // handle new ice candidates
+    this.pc.addEventListener(
+      "icecandidate",
+      (e) => {
+        if (e.candidate) {
+          this.log(`New ICE candidate: ${JSON.stringify(e.candidate)}`); //TODO: remove
+          this.handleIceCandidate(e.candidate);
+        }
+      },
       false
     );
 
@@ -202,4 +215,9 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
    * Handle the `iceconnectionstatechange` event on {@link pc}.
    */
   protected abstract handleIceConnectionStateChange(): void;
+
+  /**
+   * Handle the `icecandidate` event on {@link pc}.
+   */
+  protected abstract handleIceCandidate(candidate: RTCIceCandidate): void;
 }
