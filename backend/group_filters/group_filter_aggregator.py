@@ -60,19 +60,19 @@ class GroupFilterAggregator(object):
     def delete_data(self) -> None:
         self._data = {}
 
-    def add_data(self, participant_id: str, time: float, data: Any) -> None:
+    def add_data(self, participant_id: str, t: float, data: Any) -> None:
         q = self._data.get(
             participant_id, Queue(maxsize=self._group_filter.data_len_per_participant)
         )
 
         if q.full():
             q.get()
-        q.put((time, data))
+        q.put((t, data))
 
         self._data[participant_id] = q
 
         self._logger.debug(
-            f"Data added for {participant_id} at {time}: {data},"
+            f"Data added for {participant_id} at {time()}: ({t}, {data}),"
             + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
         )
 
@@ -81,7 +81,7 @@ class GroupFilterAggregator(object):
         while True:
             if self.is_socket_connected:
                 try:
-                    message = await self._socket.recv_json()
+                    message = self._socket.recv_json()
 
                     self.add_data(
                         message["participant_id"], message["time"], message["data"]
@@ -153,13 +153,13 @@ class GroupFilterAggregator(object):
                                 + f"\n\tData: {data}"
                                 + f"\n\tResult: {aggregated_data}"
                             )
+                except asyncio.CancelledError:
+                    # If the task is cancelled, break the loop and stop execution
+                    break
                 except Exception as e:
                     self._logger.debug(
                         f"Exception: {e} | Data aggregation cannot be performed."
                     )
-                except asyncio.CancelledError:
-                    # If the task is cancelled, break the loop and stop execution
-                    break
 
     def align_data(
         self, participant_ids: tuple[str], data: dict[str, list[float]]
