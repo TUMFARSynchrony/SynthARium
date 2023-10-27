@@ -216,6 +216,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         console.log("Ping RTT:", rtt, "ms");
       }
     };
+    const handleFiltersConfig = (data: any) => saveGenericApiResponse("FILTERS_CONFIG", data);
 
     // Add listeners to connection
     props.connection.api.on("TEST", handleTest);
@@ -228,6 +229,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
+    props.connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
 
     return () => {
       // Remove listeners from connection
@@ -241,6 +243,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
       props.connection.api.off("PONG", handlePong);
+      props.connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
     };
   }, [props.connection.api, responses]);
 
@@ -259,6 +262,12 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           GET_SESSION_LIST
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("GET_FILTERS_CONFIG", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_CONFIG
         </button>
         <button
           onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
