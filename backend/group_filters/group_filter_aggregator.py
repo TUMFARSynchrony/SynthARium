@@ -81,7 +81,7 @@ class GroupFilterAggregator(object):
         while True:
             if self.is_socket_connected:
                 try:
-                    message = self._socket.recv_json()
+                    message = await self._socket.recv_json()
 
                     self.add_data(
                         message["participant_id"], message["time"], message["data"]
