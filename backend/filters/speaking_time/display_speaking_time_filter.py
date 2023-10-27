@@ -19,7 +19,7 @@ class DisplaySpeakingTimeFilter(Filter):
         return "DISPLAY_SPEAKING_TIME"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod

@@ -148,7 +148,7 @@ class GroupFilter(ABC):
 
     @staticmethod
     @abstractmethod
-    def filter_type() -> str:
+    def type() -> str:
         """Provide the type of the group filter.
 
         It can be either "TEST" or "SESSION"

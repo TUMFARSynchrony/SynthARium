@@ -21,7 +21,7 @@ class EdgeOutlineFilter(Filter):
         return "EDGE_OUTLINE"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod

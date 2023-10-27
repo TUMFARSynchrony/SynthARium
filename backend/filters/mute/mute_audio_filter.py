@@ -44,7 +44,7 @@ class MuteAudioFilter(Filter):
         return "MUTE_AUDIO"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "NONE"
 
     @staticmethod

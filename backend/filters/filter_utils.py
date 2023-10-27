@@ -140,7 +140,7 @@ def get_filters_config() -> FilterConfigDict:
     """Generate the filters_data JSON object."""
     filters_config = FilterConfigDict(TEST=[], SESSION=[])
     for filter in Filter.__subclasses__():
-        filter_type = filter.filter_type()
+        filter_type = filter.type()
         if filter_type == "NONE":
             continue
         elif filter_type == "TEST" or filter_type == "SESSION":
@@ -156,7 +156,7 @@ def get_filters_config() -> FilterConfigDict:
             )
 
     for group_filter in GroupFilter.__subclasses__():
-        filter_type = group_filter.filter_type()
+        filter_type = group_filter.type()
         if filter_type == "NONE":
             continue
         elif filter_type == "TEST" or filter_type == "SESSION":

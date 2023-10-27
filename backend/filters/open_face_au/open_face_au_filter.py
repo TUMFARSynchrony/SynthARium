@@ -33,7 +33,7 @@ class OpenFaceAUFilter(Filter):
         return "OPENFACE_AU"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod

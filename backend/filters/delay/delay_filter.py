@@ -35,7 +35,7 @@ class DelayFilter(Filter):
         return "DELAY"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod

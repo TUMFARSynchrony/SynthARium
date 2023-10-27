@@ -44,7 +44,7 @@ class SimpleGlassesDetection(Filter):
         return "SIMPLE_GLASSES_DETECTION"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "TEST"
 
     @staticmethod

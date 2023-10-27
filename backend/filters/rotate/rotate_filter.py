@@ -28,7 +28,7 @@ class RotationFilter(Filter):
         return "ROTATION"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod

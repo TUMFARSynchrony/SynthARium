@@ -16,7 +16,7 @@ class FilterAPITestFilter(Filter):
         return "FILTER_API_TEST"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod

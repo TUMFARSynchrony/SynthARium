@@ -48,7 +48,7 @@ class MuteVideoFilter(Filter):
         return "MUTE_VIDEO"
 
     @staticmethod
-    def filter_type() -> str:
+    def type() -> str:
         return "NONE"
 
     @staticmethod
