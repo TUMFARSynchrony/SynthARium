@@ -10,6 +10,7 @@ from queue import Queue
 from itertools import combinations
 from typing import Any
 import numpy as np
+from time import time
 
 
 class GroupFilterAggregator(object):
@@ -76,6 +77,7 @@ class GroupFilterAggregator(object):
         )
 
     async def run(self) -> None:
+        aggregation_history = {}
         while True:
             if self.is_socket_connected:
                 try:
@@ -111,18 +113,43 @@ class GroupFilterAggregator(object):
                             if not participants_have_enough_data:
                                 continue
 
-                            # Align data
-                            data = self.align_data(c)
+                            # Take snapshot from the data queues
+                            c_data = {}
+                            for pid in c:
+                                c_data[pid] = list(self._data[pid].queue)
 
-                            # Skip if the alignment cannot be performed because of there is no overlapping time horizon
+                            # Check if all participant's data is recently updated
+                            participants_data_updated_recently = True
+                            latest_aggregated_data = aggregation_history.get(c, None)
+                            if latest_aggregated_data is not None:
+                                for pid in c:
+                                    if np.array_equal(
+                                        latest_aggregated_data[pid], c_data[pid]
+                                    ):
+                                        participants_data_updated_recently = False
+                                        break
+
+                            if not participants_data_updated_recently:
+                                continue
+
+                            # Align data
+                            data, debug_str = self.align_data(c, c_data)
+
+                            # Skip if the alignment cannot be performed because there is no overlapping time horizon among participants
                             if data is None:
                                 continue
 
                             # Aggregate data
                             aggregated_data = self._group_filter.aggregate(data)
 
+                            # Update aggregation history
+                            aggregation_history[c] = c_data
+
                             self._logger.debug(
-                                "Data aggregation performed."
+                                debug_str
+                                + "\n"
+                                + "\n\tData aggregation performed."
+                                + f"\n\tTime: {time()}"
                                 + f"\n\tData: {data}"
                                 + f"\n\tResult: {aggregated_data}"
                             )
@@ -134,11 +161,9 @@ class GroupFilterAggregator(object):
                     # If the task is cancelled, break the loop and stop execution
                     break
 
-    def align_data(self, participant_ids: tuple) -> list[list[Any]] | None:
-        data = {}
-        for pid in participant_ids:
-            data[pid] = list(self._data[pid].queue)
-
+    def align_data(
+        self, participant_ids: tuple[str], data: dict[str, list[float]]
+    ) -> list[list[Any]] | None:
         # Calculate the base time horizon as the intersection: max of time horizon starts - min of time horizon ends
         base_time_horizon_start = data[participant_ids[0]][0][0]
         base_time_horizon_end = data[participant_ids[0]][-1][0]
@@ -186,6 +211,4 @@ class GroupFilterAggregator(object):
                 + f"\n\tAligned Data: {y_aligned}"
             )
 
-        self._logger.debug(debug_str)
-
-        return aligned_data
+        return aligned_data, debug_str
