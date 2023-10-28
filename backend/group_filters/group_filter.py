@@ -76,7 +76,7 @@ class GroupFilter(ABC):
         self._context = zmq.asyncio.Context.instance()
         self._socket = self._context.socket(zmq.PUSH)
         try:
-            self._socket.connect(f"tcp://127.0.0.1:{port}")
+            self._socket.connect(f"ipc://127.0.0.1:{port}")
             self.is_socket_connected = True
         except zmq.ZMQError as e:
             self._logger.error(f"ZMQ Error: {e}")

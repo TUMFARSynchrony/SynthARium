@@ -39,7 +39,7 @@ class GroupFilterAggregator(object):
         self._data = {}
 
         try:
-            self._socket.bind(f"tcp://127.0.0.1:{port}")
+            self._socket.bind(f"ipc://127.0.0.1:{port}")
             self.is_socket_connected = True
         except zmq.ZMQError as e:
             self.is_socket_connected = False
