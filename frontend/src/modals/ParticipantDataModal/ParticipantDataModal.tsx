@@ -195,7 +195,8 @@ function ParticipantDataModal({
           const id = uuid();
           otherFilter.id = id;
           newFilter["config"][key]["value"] = id;
-          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
+          // add bidirectional mapping of ids to required filters map; important for deleting filters
+          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id).set(newFilter.id, id)));
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
             otherFilter.groupFilter
               ? newParticipantData.video_group_filters.push(otherFilter)
@@ -273,26 +274,12 @@ function ParticipantDataModal({
    * If a filter requires another filter, then both the filters are deleted.
    * */
   const deleteAllRequiredFilters = (filter: Filter, newParticipantData: Participant) => {
-    // if filter is required for another filter, removes current filter and other filter
+    // if filter is required for another filter or requires another filter, removes current filter and other filter
     if (requiredFilters.has(filter.id)) {
       const otherFilterId = requiredFilters.get(filter.id);
       requiredFilters.delete(filter.id);
+      requiredFilters.delete(otherFilterId);
       deleteRequiredFiltersInEachFilterArray(filter.id, otherFilterId, newParticipantData);
-    }
-
-    // if filter requires another filter, removes current filter and other filter
-    for (const key in filter["config"]) {
-      if (Array.isArray(filter["config"][key]["defaultValue"])) {
-        if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
-          const otherFilterId = (filter["config"][key] as FilterConfigArray)["value"];
-
-          if (requiredFilters.has(otherFilterId)) {
-            requiredFilters.delete(otherFilterId);
-          }
-
-          deleteRequiredFiltersInEachFilterArray(filter.id, otherFilterId, newParticipantData);
-        }
-      }
     }
 
     return newParticipantData;
