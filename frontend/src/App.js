@@ -447,6 +447,7 @@ function App() {
                     onGetRecordingList={onGetRecordingList}
                   />
                 }
+                centerContentOnYAxis={true}
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
