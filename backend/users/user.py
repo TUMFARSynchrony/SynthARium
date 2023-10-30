@@ -14,8 +14,12 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
+from custom_types.success import SuccessDict
 
-from connection.messages import ConnectionOfferDict, is_valid_connection_offer_dict
+from connection.messages import (
+    ConnectionOfferDict, is_valid_connection_offer_dict,
+    AddIceCandidateDict, is_valid_add_ice_candidate_dict
+)
 from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
@@ -117,6 +121,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._connection = None
         self.__lock = asyncio.Lock()
         self.on_message("PING", self._handle_ping)
+        # self.on_message("ADD_ICE_CANDIDATE", self._handle_add_ice_candidate)
 
     @property
     def muted_video(self) -> bool:
@@ -299,6 +304,25 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 msg = MessageDict(type="CONNECTION_ANSWER", data=answer)
                 await user.send(msg)
 
+        @user.on("ADD_ICE_CANDIDATE")
+        async def _handle_add_ice_candidate(candidate: AddIceCandidateDict):
+            if self._connection is None:
+                self._logger.error("Called _handle_add_ice_candidate with connection == None")
+                return
+
+            if candidate["id"] == proposal["id"]:
+                try:
+                    await self._connection.handle_subscriber_add_ice_candidate(candidate)
+                except ErrorDictException as err:
+                    await user.send(err.error_message)
+                    return
+                success = SuccessDict(
+                    type="ADD_ICE_CANDIDATE",
+                    description="Successfully added ice candidate"
+                )
+                msg = MessageDict(type="SUCCESS", data=success)
+                await user.send(msg)
+
         @self.on("disconnected")
         def _remove_listener(_):
             try:
@@ -385,6 +409,19 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                 await self.send(MessageDict(type="ERROR", data=err))
                 return
             self.emit("CONNECTION_OFFER", message["data"])
+            return
+        
+        if endpoint == "ADD_ICE_CANDIDATE":
+            if not is_valid_add_ice_candidate_dict(message["data"]):
+                self._logger.warning("Received invalid ADD_ICE_CANDIDATE")
+                err = ErrorDict(
+                    code=400,
+                    type="INVALID_DATATYPE",
+                    description="Invalid add ice candidate dict",
+                )
+                await self.send(MessageDict(type="ERROR", data=err))
+                return
+            self.emit("ADD_ICE_CANDIDATE", message["data"])
             return
 
         handler_functions = self._handlers.get(endpoint, None)

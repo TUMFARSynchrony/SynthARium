@@ -14,6 +14,7 @@ from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     RTCSessionDescriptionDict,
+    AddIceCandidateDict,
 )
 from hub import BACKEND_DIR
 from server import Config
@@ -153,6 +154,14 @@ class ConnectionSubprocess(ConnectionInterface):
         # Send command and wait for response.
         answer = await self._send_command_wait_for_response("HANDLE_OFFER", offer)
         return answer
+    
+    async def handle_subscriber_add_ice_candidate(
+        self, candidate: AddIceCandidateDict
+    ):
+        # For docstring see ConnectionInterface or hover over function declaration
+        # Send command and wait for response.
+        await self._send_command_wait_for_response("ADD_ICE_CANDIDATE", candidate) # TODO: make work
+
 
     async def get_local_description(self) -> RTCSessionDescription:
         """Get localdescription.  Blocks until subprocess sends localdescription."""

@@ -12,6 +12,7 @@ from os.path import join
 
 from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
+from custom_types.success import SuccessDict
 from custom_types.error import ErrorDict
 
 from hub.exceptions import ErrorDictException
@@ -305,13 +306,14 @@ class Server:
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
     async def handle_ice_candidate(self, request: web.Request) -> web.StreamResponse:
-        self._logger.info(f"Received ice candidate from {request.remote}")
+        # TODO: remove
+        # self._logger.info(f"Received ice candidate from {request.remote}")
 
-        data: dict[str, str] = {
-            "type: ": "ICE_CANDIDATE",
-            "description": "Ice candidate was succesfully received."
-        }
-        answer = MessageDict(type="SUCCESS", data=data)
+        sucess = SuccessDict(
+            type="ADD_ICE_CANDIDATE",
+            description="Ice candidate was succesfully received."
+        )
+        answer = MessageDict(type="SUCCESS", data=sucess)
 
         return web.Response(
             content_type="application/json",

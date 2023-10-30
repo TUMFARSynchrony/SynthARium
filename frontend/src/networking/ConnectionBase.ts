@@ -159,18 +159,6 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
       false
     );
 
-    // handle new ice candidates
-    this.pc.addEventListener(
-      "icecandidate",
-      (e) => {
-        if (e.candidate) {
-          this.log(`New ICE candidate: ${JSON.stringify(e.candidate)}`); //TODO: remove
-          this.handleIceCandidate(e.candidate);
-        }
-      },
-      false
-    );
-
     // handle incoming audio / video tracks
     this.pc.addEventListener("track", (e) => {
       this.log(`Received a ${e.track.kind}, track from remote`);

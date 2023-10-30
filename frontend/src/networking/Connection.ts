@@ -306,6 +306,18 @@ export default class Connection extends ConnectionBase<
   private async negotiate() {
     const offer = await this.createOffer();
 
+    // from now on new ice candidates need to be sent to the backend server
+    this.pc.addEventListener(
+      "icecandidate",
+      (e) => {
+        if (e.candidate) {
+          this.log(`New ICE candidate: ${JSON.stringify(e.candidate)}`); //TODO: remove
+          this.handleIceCandidate(e.candidate);
+        }
+      },
+      false
+    );
+
     let request;
     if (this.userType === "participant") {
       request = {
@@ -324,6 +336,7 @@ export default class Connection extends ConnectionBase<
       };
     }
     this.log("Sending initial offer");
+    this.log("Request", request);
 
     let response;
     try {

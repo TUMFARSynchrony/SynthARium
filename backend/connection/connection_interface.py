@@ -3,12 +3,14 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
+from custom_types.success import SuccessDict
 
 from connection.connection_state import ConnectionState
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     ConnectionProposalDict,
+    AddIceCandidateDict,
 )
 
 from filters import FilterDict
@@ -114,6 +116,15 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Connection Protocol Wiki :
             Details about the connection protocol this function is part of.
             https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
+        """
+        pass
+
+    @abstractmethod
+    async def handle_subscriber_add_ice_candidate(
+        self, candidate: AddIceCandidateDict
+    ):
+        """
+        TODO
         """
         pass
 

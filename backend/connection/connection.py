@@ -8,16 +8,22 @@ from aiortc import (
     RTCSessionDescription,
     MediaStreamTrack,
     RTCRtpSender,
+    RTCIceCandidate,
 )
+from aioice import Candidate
+from aiortc.rtcicetransport import candidate_from_aioice
+
 import shortuuid
 import asyncio
 import logging
 import json
+from custom_types.success import SuccessDict
 
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     ConnectionProposalDict,
+    AddIceCandidateDict,
 )
 from connection.sub_connection import SubConnection
 from hub.track_handler import TrackHandler
@@ -250,6 +256,32 @@ class Connection(ConnectionInterface):
             offer["offer"]["sdp"], offer["offer"]["type"]
         )
         return await sc.handle_offer(offer_description)
+
+    async def handle_subscriber_add_ice_candidate(
+        self, candidate: AddIceCandidateDict
+    ):
+        # For docstring see ConnectionInterface or hover over function declaration
+        subconnection_id = candidate["id"]
+        sc = self._sub_connections.get(subconnection_id)
+        if sc is None:
+            raise ErrorDictException(
+                code=0,
+                type="UNKNOWN_SUBCONNECTION_ID",
+                description=f"Unknown subconnection ID {subconnection_id}",
+            )
+      
+        # Create ice candidate object
+        rtc_candidate = candidate_from_aioice( # TODO check if this is working 
+            Candidate.from_sdp(
+                candidate["candidate"]["candidate"].removeprefix('candidate:')
+            )
+        )
+        rtc_candidate.sdpMid = candidate["candidate"]["sdpMid"]
+        rtc_candidate.sdpMLineIndex = candidate["candidate"]["sdpMLineIndex"]
+        rtc_candidate.usernameFragment = \
+            candidate["candidate"]["usernameFragment"]
+
+        await sc.handle_ice_candidate(rtc_candidate)
 
     async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
