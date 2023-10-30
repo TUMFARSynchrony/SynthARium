@@ -9,6 +9,7 @@ import Select from "@mui/material/Select";
 import { useEffect, useState } from "react";
 import ConnectionState from "../../networking/ConnectionState";
 import { LinkActionButton } from "../../components/atoms/Button";
+import HeroText from "../../components/atoms/HeroText/HeroText";
 
 function PostProcessing({
   status,
@@ -53,10 +54,7 @@ function PostProcessing({
         <Grid item sx={{ textAlign: "center" }}>
           <Typography variant="h6">
             You can have your recorded video data extracted here using{" "}
-            <Link
-              href="https://github.com/TadasBaltrusaitis/OpenFace"
-              underline="hover"
-            >
+            <Link href="https://github.com/TadasBaltrusaitis/OpenFace" underline="hover">
               {"OpenFace"}
             </Link>
             .<br></br>
@@ -81,10 +79,7 @@ function PostProcessing({
                 >
                   {recordings.map((session) => {
                     return (
-                      <MenuItem
-                        key={session.session_id}
-                        value={session.session_id}
-                      >
+                      <MenuItem key={session.session_id} value={session.session_id}>
                         {session.session_title}
                       </MenuItem>
                     );
@@ -105,12 +100,9 @@ function PostProcessing({
       )}
       {isProcessing && (
         <Grid item sx={{ textAlign: "center" }}>
-          <Typography variant="h4">
-            The OpenFace extraction is still in progress.
-          </Typography>
+          <Typography variant="h4">The OpenFace extraction is still in progress.</Typography>
           <Typography variant="h6">
-            Please wait until it is finished before running the new
-            post-processing.<br></br>
+            Please wait until it is finished before running the new post-processing.<br></br>
             See the{" "}
             <Link
               href="https://github.com/TUMFARSynchrony/experimental-hub/wiki/Usage"

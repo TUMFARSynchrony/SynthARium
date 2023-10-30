@@ -7,14 +7,7 @@ interface LinkActionButtonProps extends ButtonProps {
   onClick: () => void;
 }
 
-function LinkActionButton({
-  text,
-  variant,
-  path,
-  size,
-  color,
-  onClick
-}: LinkActionButtonProps) {
+function LinkActionButton({ text, variant, path, size, color, onClick }: LinkActionButtonProps) {
   const navigate = useNavigate();
 
   const handleButtonClick = () => {

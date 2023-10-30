@@ -4,11 +4,7 @@ import { EvaluationResults, MergedData, PingEvaluation } from "./def";
 export function avg(arr: number[]) {
   const filtered = arr.filter((e) => e !== undefined);
   if (arr.length !== filtered.length) {
-    console.warn(
-      "Ignoring",
-      arr.length - filtered.length,
-      "undefined values in input for avg()"
-    );
+    console.warn("Ignoring", arr.length - filtered.length, "undefined values in input for avg()");
   }
   return filtered.reduce((a, b) => a + b, 0) / filtered.length;
 }
@@ -49,14 +45,10 @@ export function download(data: any, title: string) {
 }
 
 /** Calculates EvaluationResults based on `data`. Slice input `data` to set interval. */
-export function calculateEvaluation(
-  data: MergedData[],
-  log = true
-): EvaluationResults {
+export function calculateEvaluation(data: MergedData[], log = true): EvaluationResults {
   // Duration
   const durationTotalMs = data[data.length - 1].timestamp - data[0].timestamp;
-  const [durationMin, durationSec, durationMs] =
-    getDetailedTime(durationTotalMs);
+  const [durationMin, durationSec, durationMs] = getDetailedTime(durationTotalMs);
 
   // Latency
   const invalidLatencyDataPoints = data
@@ -65,16 +57,12 @@ export function calculateEvaluation(
   const invalidLatencyDataPointsPercent = Math.round(
     (invalidLatencyDataPoints / data.length) * 100
   );
-  const latencyArr = data
-    .map((entry) => entry.latency)
-    .filter((l) => l !== null);
+  const latencyArr = data.map((entry) => entry.latency).filter((l) => l !== null);
   const avgLatency = avg(latencyArr);
   const medianLatency = median(latencyArr);
 
   // True / corrected latency
-  const trueLatencyArr = data
-    .map((entry) => entry.trueLatency)
-    .filter((l) => l !== null);
+  const trueLatencyArr = data.map((entry) => entry.trueLatency).filter((l) => l !== null);
   const avgTrueLatency = avg(trueLatencyArr);
   const medianTrueLatency = median(trueLatencyArr);
 
@@ -86,8 +74,7 @@ export function calculateEvaluation(
   // QR code generation
   const qrCodeGenTimeArr = data.map((d) => d.qrCodeGenerationTime);
   const qrCodeGenTimeArrFiltered = qrCodeGenTimeArr.filter((t) => t !== null);
-  const missingQRCodeGenDataPoints =
-    qrCodeGenTimeArr.length - qrCodeGenTimeArrFiltered.length;
+  const missingQRCodeGenDataPoints = qrCodeGenTimeArr.length - qrCodeGenTimeArrFiltered.length;
   const missingQRCodeGenDataPointsPercent = Math.round(
     (missingQRCodeGenDataPoints / data.length) * 100
   );
@@ -107,9 +94,7 @@ export function calculateEvaluation(
     const pingDataFiltered = pingData.filter((d) => d !== undefined);
 
     const missingPingDataPoints = pingData.length - pingDataFiltered.length;
-    const missingPingDataPointsPercent = Math.round(
-      (missingPingDataPoints / data.length) * 100
-    );
+    const missingPingDataPointsPercent = Math.round((missingPingDataPoints / data.length) * 100);
 
     const rtt = pingDataFiltered.map((d) => d.rtt);
     const avgPingRtt = avg(rtt);
@@ -205,8 +190,7 @@ export function calculateEvaluation(
 }
 
 export function getRandomString(length: number) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let str = "";
   for (let i = 0; i < length; i++) {
     str += characters.charAt(Math.floor(Math.random() * characters.length));

@@ -66,6 +66,8 @@ class ConnectionRunner:
         log_name_suffix: str,
         audio_filters: list[FilterDict],
         video_filters: list[FilterDict],
+        audio_group_filters: list[FilterDict],
+        video_group_filters: list[FilterDict],
         record_data: list,
     ) -> None:
         """Run the ConnectionRunner.  Returns after the ConnectionRunner finished.
@@ -85,6 +87,8 @@ class ConnectionRunner:
             log_name_suffix,
             audio_filters,
             video_filters,
+            audio_group_filters,
+            video_group_filters,
             filter_api,
             record_data,
         )
@@ -167,6 +171,10 @@ class ConnectionRunner:
                 await self._connection.set_video_filters(data)
             case "SET_AUDIO_FILTERS":
                 await self._connection.set_audio_filters(data)
+            case "SET_VIDEO_GROUP_FILTERS":
+                await self._connection.set_video_group_filters(data[0], data[1])
+            case "SET_AUDIO_GROUP_FILTERS":
+                await self._connection.set_audio_group_filters(data[0], data[1])
             case "START_RECORDING":
                 await self._connection.start_recording()
             case "STOP_RECORDING":

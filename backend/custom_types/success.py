@@ -42,6 +42,7 @@ SUCCESS_TYPES = Literal[
     "MUTE",
     "SET_FILTERS",
     "POST_PROCESSING_VIDEO",
+    "SET_GROUP_FILTERS",
 ]
 """Possible success types for custom_types.success.SuccessDict.
 
