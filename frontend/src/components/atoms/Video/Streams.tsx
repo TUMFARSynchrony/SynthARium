@@ -4,12 +4,10 @@ const constraints = { video: true, audio: true };
 let userPromise: Promise<MediaStream> | null;
 function getUserMedia() {
   if (!userPromise) {
-    userPromise = navigator.mediaDevices
-      .getUserMedia(constraints)
-      .catch(function (err) {
-        console.log(err.name + ": " + err.message);
-        throw err;
-      });
+    userPromise = navigator.mediaDevices.getUserMedia(constraints).catch(function (err) {
+      console.log(err.name + ": " + err.message);
+      throw err;
+    });
   }
   return userPromise;
 }
