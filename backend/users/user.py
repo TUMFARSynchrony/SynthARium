@@ -399,8 +399,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             self._logger.warning(f"No handler for {endpoint} found")
             return
 
-        self._logger.info(f"Received {endpoint}")
-        self._logger.debug(f"Calling {len(handler_functions)} handler(s)")
+        # don't log PONG messages, because they are too frequent
+        if endpoint != "PONG":
+            self._logger.info(f"Received {endpoint}")
+            self._logger.debug(f"Calling {len(handler_functions)} handler(s)")
+
         for handler in handler_functions:
             try:
                 response = await handler(message["data"])
@@ -569,21 +572,40 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         await self._connection.stop_recording()
 
     async def start_pinging(self) -> None:
-        """Start sending ping messages to the frontend."""
+        """Start sending ping messages to the frontend.
+        If not yet connected, wait for until connection is set."""
         if self._pinging:
             return
         self._pinging = True
         self._pingBuffer.clear()
 
-        ping = PingDict(sent=timestamp(), data=[])
-        await self.send(MessageDict("PING", data=ping))
+        # if self._connection is not None:
+        #     ping = PingDict(sent=timestamp(), data="")
+        #     await self.send(MessageDict(type="PING", data=ping))
+        # else:
+
+        #     @self.once("connection_set")
+        #     async def _start_pinging_later(_):
+        #         if self._connection is None:
+        #             self._logger.error(
+        #                 "_start_pinging_later callback failed, _connection is "
+        #                 "None."
+        #             )
+        #             return
+        #         ping = PingDict(sent=timestamp(), data="")
+        #         await self.send(MessageDict(type="PING", data=ping))
 
     def stop_pinging(self) -> None:
         """Stop sending ping messages to the frontend."""
         self._pinging = False
 
-    def get_current_ping(self) -> int:
+    async def get_current_ping(self) -> int:
         """Get the average ping in ms."""
+
+        if self._pinging:
+            ping = PingDict(sent=timestamp(), data="")
+            await self.send(MessageDict(type="PING", data=ping))
+
         if len(self._pingBuffer) == 0:
             return 0
         return sum(self._pingBuffer) / len(self._pingBuffer)
@@ -638,12 +660,12 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         # save ping time
         current_time = timestamp()
         ping_time = current_time - data["ping_data"]["sent"]
-        self._pingBuffer.append(ping_time)
+        self._pingBuffer.append(int(ping_time))
 
         # send new ping when still pinging
-        if (self._pinging):
-            ping = PingDict(sent=timestamp(), data=None)
-            return MessageDict("PING", data=ping)
+        # if (self._pinging):
+        #     ping = PingDict(sent=timestamp(), data=None)
+        #     return MessageDict("PING", data=ping)
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:

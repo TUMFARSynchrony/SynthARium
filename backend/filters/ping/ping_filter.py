@@ -1,21 +1,23 @@
 import numpy
+import cv2
 
 from filters import Filter
 from filter_api import FilterAPIInterface
-from filters.simple_line_writer import SimpleLineWriter
 
 
 class PingFilter(Filter):
     """A simple example filter printing the current API ping on a video Track."""
 
-    line_writer: SimpleLineWriter
     filter_api: FilterAPIInterface
+    counter: int
+    last_ping: int
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
-        self.line_writer = SimpleLineWriter()
 
         self.filter_api = video_track_handler.filter_api
+        self.counter = 0
+        self.last_ping = 0
 
     async def complete_setup(self) -> None:
         await self.filter_api.start_pinging()
@@ -49,10 +51,21 @@ class PingFilter(Filter):
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # add ping to image
-        self.line_writer.write_line(ndarray, f"{await self.get_current_ping()}")
+        height, _, _ = ndarray.shape
+        origin = (10, height - 10)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_size = 1
+        thickness = 3
+        color = (0, 255, 0)
 
+        if not self.counter % 3:
+            self.last_ping = await self.filter_api.get_current_ping()
+
+        text = str(self.last_ping) + " ms"
+        ndarray = cv2.putText(
+            ndarray, text, origin, font, font_size, color, thickness
+        )
+
+        self.counter += 1
         # Return modified frame
         return ndarray
-
-    async def get_current_ping(self) -> int:
-        return await self.filter_api.get_current_ping()

@@ -52,7 +52,7 @@ class FilterAPIInterface(ABC):
         pass
 
     @abstractmethod
-    def get_current_ping(self) -> int:
+    async def get_current_ping(self) -> int:
         """Get the current API ping in ms.
 
         Raises

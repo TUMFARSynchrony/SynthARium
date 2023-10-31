@@ -48,7 +48,7 @@ class FilterSubprocessAPI(FilterAPIInterface):
             "EXPERIMENT_SEND", {"to": to, "data": data, "exclude": exclude}
         )
 
-    def get_current_ping(self) -> int:
+    async def get_current_ping(self) -> int:
         # For docstring see FilterAPIInterface or hover over function declaration
         self._send_command("GET_CURRENT_PING", {})
 
