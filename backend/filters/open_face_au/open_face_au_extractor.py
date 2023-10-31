@@ -22,7 +22,7 @@ class OpenFaceAUExtractor:
         self.open_face = OpenFace(self.port_manager.port)
 
         context = zmq.Context()
-        self.socket = context.socket(zmq.REQ)
+        self.socket = context.socket(zmq.PAIR)
         try:
             self.socket.bind(f"tcp://127.0.0.1:{self.port_manager.port}")
             self.is_connected = True
@@ -40,7 +40,7 @@ class OpenFaceAUExtractor:
         self, ndarray: numpy.ndarray, roi: dict[str, int] = None
     ) -> tuple[int, str, object]:
         # If ROI is sent from the OpenFace, only send that region
-        if roi is not None and roi["width"] != 0:
+        if roi is not None and roi["width"] > 2:
             ndarray = ndarray[
                 roi["y"] : (roi["y"] + roi["height"]),
                 roi["x"] : (roi["x"] + roi["width"]),
