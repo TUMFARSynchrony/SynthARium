@@ -14,9 +14,10 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
+from collections import deque
 
 from connection.messages import ConnectionOfferDict, is_valid_connection_offer_dict
-from custom_types.ping import PongDict
+from custom_types.ping import PongDict, PingDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
 from custom_types.message import MessageDict
@@ -85,6 +86,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _muted_audio: bool
     _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
+    _pingBuffer: deque  # buffer of n last ping times
+    _pinging: bool
     __subscribers: dict[str, str]  # User ID -> subconnection_id
     __disconnected: bool
     __lock: asyncio.Lock
@@ -112,11 +115,14 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._muted_video = muted_video
         self._muted_audio = muted_audio
         self._handlers = {}
+        self._pingBuffer = deque(maxlen=100)  # TODO adjust size
+        self._pinging = False
         self.__subscribers = {}
         self.__disconnected = False
         self._connection = None
         self.__lock = asyncio.Lock()
         self.on_message("PING", self._handle_ping)
+        self.on_message("PONG", self._handle_pong)
 
     @property
     def muted_video(self) -> bool:
@@ -562,6 +568,26 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording for this user."""
         await self._connection.stop_recording()
 
+    async def start_pinging(self) -> None:
+        """Start sending ping messages to the frontend."""
+        if self._pinging:
+            return
+        self._pinging = True
+        self._pingBuffer.clear()
+
+        ping = PingDict(sent=timestamp(), data=[])
+        await self.send(MessageDict("PING", data=ping))
+
+    def stop_pinging(self) -> None:
+        """Stop sending ping messages to the frontend."""
+        self._pinging = False
+
+    def get_current_ping(self) -> int:
+        """Get the average ping in ms."""
+        if len(self._pingBuffer) == 0:
+            return 0
+        return sum(self._pingBuffer) / len(self._pingBuffer)
+
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.
 
@@ -600,6 +626,24 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """
         pong = PongDict(server_time=timestamp(), ping_data=data)
         return MessageDict(type="PONG", data=pong)
+
+    async def _handle_pong(self, data: Any) -> MessageDict | None:
+        """Handle requests with type `PONG`. Stores times in self._pingData.
+
+        Parameters
+        ----------
+        data : any
+            Message data, can be anything.
+        """
+        # save ping time
+        current_time = timestamp()
+        ping_time = current_time - data["ping_data"]["sent"]
+        self._pingBuffer.append(ping_time)
+
+        # send new ping when still pinging
+        if (self._pinging):
+            ping = PingDict(sent=timestamp(), data=None)
+            return MessageDict("PING", data=ping)
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:

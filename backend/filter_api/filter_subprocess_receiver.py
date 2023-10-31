@@ -64,5 +64,12 @@ class FilterSubprocessReceiver:
                     )
                 except ErrorDictException as e:
                     self._logger.error(f"Failed experiment_send: {e}")
+            case "GET_CURRENT_PING":
+                ping = self._filter_api.get_current_ping()
+                self._logger.debug(f"Ping: {ping}")
+            case "START_PINGING":
+                await self._filter_api.start_pinging()
+            case "STOP_PINGING":
+                self._filter_api.stop_pinging()
             case _:
                 self._logger.warning(f'Unknown command: "{command}"')

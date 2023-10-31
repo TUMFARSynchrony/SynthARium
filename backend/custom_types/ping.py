@@ -16,3 +16,18 @@ class PongDict(TypedDict):
 
     server_time: int
     ping_data: Any
+
+
+class PingDict(TypedDict):
+    """TypedDict for `PING` messages
+
+    Attributes
+    ----------
+    sent : int
+        Server timestamp when ping was sent.
+    data : Any
+        Any additional data to be sent back with `PONG` message.
+    """
+
+    sent: int
+    data: Any
