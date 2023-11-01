@@ -37,4 +37,5 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         participant_dict["audio_group_filters"],
         participant_dict["video_group_filters"],
         participant_dict["view"],
+        participant_dict["canvas_id"],
     )

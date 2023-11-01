@@ -45,6 +45,8 @@ class ParticipantDict(TypedDict):
         Whether this participant is banned from the experiment.
     view : list of custom_types.canvas_element.CanvasElementDict
         Asymmetric view of the participant
+    canvas_id: str
+        Unique id for the placement of the participant stream
 
     See Also
     --------
@@ -68,3 +70,4 @@ class ParticipantDict(TypedDict):
     chat: list[ChatMessageDict]
     banned: bool
     view: list[CanvasElementDict]
+    canvas_id: str

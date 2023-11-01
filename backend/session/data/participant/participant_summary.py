@@ -32,6 +32,8 @@ class ParticipantSummaryDict(TypedDict):
         Chat log between experimenter and participant.
     view : list of custom_types.canvas_element.CanvasElementDict
         Asymmetric view of the participant
+    canvas_id : str
+        Unique id for the placement of the participant stream
 
     See Also
     --------
@@ -46,3 +48,4 @@ class ParticipantSummaryDict(TypedDict):
     size: SizeDict
     chat: list[ChatMessageDict]
     view: list[CanvasElementDict]
+    canvas_id: str
