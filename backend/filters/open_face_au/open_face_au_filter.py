@@ -55,8 +55,18 @@ class OpenFaceAUFilter(Filter):
         self, original: VideoFrame, ndarray: numpy.ndarray
     ) -> numpy.ndarray:
         self.frame = self.frame + 1
-        success, image = cv2.imencode(".png", ndarray)
-        response = self.publisher.send(image.tostring())
+
+        # If ROI is sent from the OpenFace, only send that region
+        # if "roi" in self.data.keys() and self.data["roi"]["width"] != 0:
+        #     roi = self.data["roi"]
+        #     exit_code, msg, result = self.au_extractor.extract(
+        #         ndarray[
+        #             roi["y"] : (roi["y"] + roi["height"]),
+        #             roi["x"] : (roi["x"] + roi["width"]),
+        #         ]
+        #     )
+        # else:
+        #     exit_code, msg, result = self.au_extractor.extract(ndarray)
 
         # if exit_code == 0:
         #     self.data = result
@@ -72,6 +82,16 @@ class OpenFaceAUFilter(Filter):
         # ndarray = self.line_writer.write_lines(
         #     ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg]
         # )
+
+        is_success, image_enc = cv2.imencode(".png", ndarray)
+
+        if not is_success:
+            return False
+
+        im_bytes = bytearray(image_enc.tobytes())
+        im_64 = base64.b64encode(im_bytes)
+
+        response = self.publisher.send(im_64)
         return ndarray
 
     async def cleanup(self) -> None:

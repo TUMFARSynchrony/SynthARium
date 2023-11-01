@@ -55,10 +55,7 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const connectedPeersChangeHandler = async (peers) => {
-    console.groupCollapsed(
-      "%cConnection peer streams change Handler",
-      "color:blue"
-    );
+    console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
@@ -69,10 +66,7 @@ function App() {
 
   /** Handle `connectionStateChange` event of {@link Connection} */
   const stateChangeHandler = async (state) => {
-    console.log(
-      `%cConnection state change Handler: ${ConnectionState[state]}`,
-      "color:blue"
-    );
+    console.log(`%cConnection state change Handler: ${ConnectionState[state]}`, "color:blue");
 
     setConnectionState(state);
   };
@@ -129,8 +123,7 @@ function App() {
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
     let experimenterPassword = experimenterPasswordParam ?? "";
-    const userType =
-      sessionId && participantId ? "participant" : "experimenter";
+    const userType = sessionId && participantId ? "participant" : "experimenter";
 
     const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage =
@@ -138,11 +131,7 @@ function App() {
 
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
-    if (
-      !isConnectionTestPage &&
-      userType === "experimenter" &&
-      !experimenterPassword
-    ) {
+    if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
       //experimenterPassword = prompt("Please insert experimenter password");
       experimenterPassword = "no-password-given";
     }
@@ -400,13 +389,38 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/postProcessingRoom"),
+                        label: "Post-Processing Room"
+                      }
+                    ]}
+                  />
+                }
               />
             }
           />
           <Route
             exact
             path="/postProcessingRoom"
-            element={<PostProcessing />}
+            element={
+              <PageTemplate
+                title={"Post-Processing Room"}
+                customComponent={<PostProcessing />}
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/"),
+                        label: "Back to Session Overview"
+                      }
+                    ]}
+                  />
+                }
+              />
+            }
           />
           <Route
             exact
@@ -531,11 +545,7 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={
-                  <SessionForm
-                    onSendSessionToBackend={onSendSessionToBackend}
-                  />
-                }
+                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
                 centerContentOnYAxis={true}
               />
             }
