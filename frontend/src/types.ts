@@ -22,7 +22,7 @@ export type Note = {
   content: string;
 };
 
-type CanvasElement = {
+export type CanvasElement = {
   id: string;
   participant_name: string;
   size: {
@@ -47,7 +47,8 @@ export type Participant = {
   chat: ChatMessage[];
   audio_filters: Filter[];
   video_filters: Filter[];
-  view?: CanvasElement[];
+  view: CanvasElement[];
+  canvas_id: string;
   audio_group_filters: Filter[];
   video_group_filters: Filter[];
 };
