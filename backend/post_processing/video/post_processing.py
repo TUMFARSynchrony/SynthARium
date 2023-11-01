@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 import os
 import subprocess
+import time
 
 from ..post_processing_interface import PostProcessingInterface
 from .producer import PostVideoProducer
@@ -20,6 +21,7 @@ class VideoPostProcessing(PostProcessingInterface):
     def execute(self) -> None:
         """Execute video post-processing."""
         self.run_consumer()
+        time.sleep(1)
         self._producer = PostVideoProducer()
         self._producer.publish(self.recording_list)
     
