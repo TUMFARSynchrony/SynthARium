@@ -37,12 +37,14 @@ class TemplateGroupFilter(GroupFilter):
         # TODO: Change this to implement the individual frame processing step.
         return ndarray.mean()
 
+    @staticmethod
     def align_data(x: list, y: list, base_timeline: list) -> list:
         # TODO: Change this to implement an alignment function.
         # Needs to be implemented as a static method.
         interpolator = interp1d(x, y, kind="nearest")
         return list(interpolator(base_timeline))
 
+    @staticmethod
     def aggregate(data: list[list[Any]]) -> Any:
         # TODO: Change this to implement the aggregation step.
         # Needs to be implemented as a static method.
