@@ -1,10 +1,11 @@
 import numpy
 import SpoutGL
-from itertools import islice, cycle
+from itertools import islice, cycle, repeat
 import time
 from OpenGL import GL
 from random import randint
 import cv2
+import array
 
 from filters import Filter
 from filters.simple_line_writer import SimpleLineWriter
@@ -33,7 +34,12 @@ class SpoutReceiver(Filter):
         # self.sender = SpoutGL.SpoutSender()
         # self.sender.setSenderName("chloeR")
         self.receiver = SpoutGL.SpoutReceiver()
-        self.receiver.setReceiverName("SpOut")
+        self.name = self.receiver.getSenderName()
+        # self.receiver.setReceiverName(str(name))
+        self.receiver.setReceiverName("TDSyphonSpoutOut")
+        self.buffer = None
+        self.result = self.receiver.receiveImage(self.buffer, GL.GL_RGBA, False, 0)
+        # self.update = self.receiver.isUpdated()
 
     @staticmethod
     def name(self) -> str:
@@ -91,16 +97,38 @@ class SpoutReceiver(Filter):
         # sender_height = 256
         # sender_name = "SpoutGL-test3"
         # buffer = None
-        result = self.receiver.receiveImage("SpoutOut", 256, 256,  GL.GL_RGBA, False,)
 
+        self.receiver.receiveImage(self.buffer, GL.GL_RGBA, False, 0)
+        image_data= None
+        width = self.receiver.getSenderWidth()
+        height = self.receiver.getSenderHeight()
+        self.buffer = array.array('B', repeat(0, width * height * 4))
+        if SpoutGL.helpers.isBufferEmpty(self.buffer):
+            image_data = numpy.frombuffer(self.buffer, dtype=numpy.uint8).reshape((height, width, 4))
+            self.line_writer.write_line(ndarray, "{0}".format(type(image_data)))
+        # name = self.receiver.getSenderName()
+        # self.line_writer.write_line(ndarray, "{0}".format(name))
+        # if self.receiver.isUpdated():
+        #     self.line_writer.write_line(ndarray, "True")
+        # else:
+        #     self.line_writer.write_line(ndarray, "No update")
+
+        # if self.update:
+        #     self.line_writer.write_line(ndarray, "True")
+        # else:
+        #     self.line_writer.write_line(ndarray, "No update")
+        # self.line_writer.write_line(ndarray, "{0}".format(buffer))
+        # width = self.receiver.getSenderWidth()
+        # height = self.receiver.getSenderHeight()
+        # # result = self.receiver.receiveImage("SpoutGL-test", 256, 256,  GL.GL_RGBA, False,)
+        # image_data = numpy.frombuffer(buffer, dtype=numpy.uint8).reshape((height, width, 4))
+        # # Convert from RGBA to BGR (OpenCV's default color format)
+        # image_bgr = cv2.cvtColor(image_data, cv2.COLOR_RGBA2BGR)
         # width = self.receiver.getSenderWidth()
         # height = self.receiver.getSenderHeight()
         # # buffer = array.array('B', repeat(0, width * height * 4))
         # image_data = numpy.frombuffer(buffer, dtype=numpy.uint8).reshape((height, width, 4))
         # image_bgr = cv2.cvtColor(image_data, cv2.COLOR_RGBA2BGR)
-        self.line_writer.write_line(ndarray, "Receive")
-
-        
         
         # self.sender.sendImage(pixels, sender_width, sender_height, GL.GL_RGBA, False, 0)
 #       sender.sendImage(pixels, SEND_WIDTH, SEND_HEIGHT, GL.GL_RGBA, False, 0)

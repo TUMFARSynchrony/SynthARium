@@ -33,7 +33,7 @@ class SpoutSender(Filter):
         
         # Sender Initialize
         self.sender = SpoutGL.SpoutSender()
-        self.sender.setSenderName("chloe")
+        self.sender.setSenderName("exp-hub-sender")
     
   
 
@@ -98,7 +98,7 @@ class SpoutSender(Filter):
         SEND_WIDTH, SEND_HEIGHT = image.size
 
         
-        self.sender.sendImage(pixels, SEND_WIDTH, SEND_HEIGHT, GL.GL_RGB, False, 0)
+        self.sender.sendImage(pixels, SEND_WIDTH, SEND_HEIGHT, GL.GL_BGR, False, 0)
 
         # Return modified frame
         return ndarray
