@@ -10,7 +10,7 @@ from queue import Queue
 from itertools import combinations
 from typing import Any
 import numpy as np
-from time import time
+from time import perf_counter
 
 
 class GroupFilterAggregator(object):
@@ -72,7 +72,7 @@ class GroupFilterAggregator(object):
         self._data[participant_id] = q
 
         self._logger.debug(
-            f"Data added for {participant_id} at {time()}: ({t}, {data}),"
+            f"Data added for {participant_id} at {perf_counter()}: ({t}, {data}),"
             + f" # of data: {[(k, v.qsize()) for k, v in self._data.items()]}"
         )
 
@@ -82,6 +82,12 @@ class GroupFilterAggregator(object):
             if self.is_socket_connected:
                 try:
                     message = await self._socket.recv_json()
+
+                    start_time = perf_counter()
+
+                    self._logger.debug(
+                        f"Message waited for {start_time - message['timestamp']} seconds"
+                    )
 
                     self.add_data(
                         message["participant_id"], message["time"], message["data"]
@@ -145,11 +151,13 @@ class GroupFilterAggregator(object):
                             # Update aggregation history
                             aggregation_history[c] = c_data
 
+                            end_time = perf_counter()
                             self._logger.debug(
                                 debug_str
                                 + "\n"
                                 + "\n\tData aggregation performed."
-                                + f"\n\tTime: {time()}"
+                                + f"\n\tTime: {end_time}"
+                                + f"\n\tRuntime: {end_time - start_time}"
                                 + f"\n\tData: {data}"
                                 + f"\n\tResult: {aggregated_data}"
                             )
@@ -162,31 +170,39 @@ class GroupFilterAggregator(object):
                     )
 
     def align_data(
-        self, participant_ids: tuple[str], data: dict[str, list[float]]
+        self, participant_ids: tuple[str], data: dict[str, list[tuple[float, Any]]]
     ) -> list[list[Any]] | None:
-        # Calculate the base time horizon as the intersection: max of time horizon starts - min of time horizon ends
-        base_time_horizon_start = data[participant_ids[0]][0][0]
-        base_time_horizon_end = data[participant_ids[0]][-1][0]
-        for pid in participant_ids[1:]:
-            th_start = data[pid][0][0]
-            if th_start > base_time_horizon_start:
-                base_time_horizon_start = th_start
+        if self._group_filter.data_len_per_participant == 1:
+            # Align the data based on average time points
+            total = 0
+            for pid in participant_ids:
+                total += data[pid][0][0]
 
-            th_end = data[pid][-1][0]
-            if th_end < base_time_horizon_end:
-                base_time_horizon_end = th_end
+            base_time_horizon = [total / len(participant_ids)]
+        else:
+            # Calculate the base time horizon as the intersection: max of time horizon starts - min of time horizon ends
+            base_time_horizon_start = data[participant_ids[0]][0][0]
+            base_time_horizon_end = data[participant_ids[0]][-1][0]
+            for pid in participant_ids[1:]:
+                th_start = data[pid][0][0]
+                if th_start > base_time_horizon_start:
+                    base_time_horizon_start = th_start
 
-        # Return None if the start of base time horizon is greater than its end to prevent aggregation
-        if base_time_horizon_start > base_time_horizon_end:
-            return None
+                th_end = data[pid][-1][0]
+                if th_end < base_time_horizon_end:
+                    base_time_horizon_end = th_end
 
-        base_time_horizon = list(
-            np.linspace(
-                base_time_horizon_start,
-                base_time_horizon_end,
-                self._group_filter.data_len_per_participant,
+            # Return None if the start of base time horizon is greater than its end to prevent aggregation
+            if base_time_horizon_start > base_time_horizon_end:
+                return None
+
+            base_time_horizon = list(
+                np.linspace(
+                    base_time_horizon_start,
+                    base_time_horizon_end,
+                    self._group_filter.data_len_per_participant,
+                )
             )
-        )
 
         debug_str = (
             f"Data alignment performed with base time horizon: {base_time_horizon}"
