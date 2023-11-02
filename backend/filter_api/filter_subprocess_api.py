@@ -28,8 +28,13 @@ class FilterSubprocessAPI(FilterAPIInterface):
     """
 
     _relay_command: Callable
+    _relay_command_with_response: Callable
 
-    def __init__(self, relay_command: Callable) -> None:
+    def __init__(
+        self,
+        relay_command: Callable,
+        relay_command_with_response: Callable
+    ) -> None:
         """Initialize new FilterSubprocessAPI.
 
         Parameters
@@ -38,9 +43,14 @@ class FilterSubprocessAPI(FilterAPIInterface):
             Relay function to send data to
             hub.filter_subprocess_receiver.FilterSubprocessReceiver on the main
             process.
+        relay_command_with_response : Callable
+            Relay function to send data to
+            hub.filter_subprocess_receiver.FilterSubprocessReceiver on the main
+            process. Waits for a response and returns it.
         """
         super().__init__()
         self._relay_command = relay_command
+        self._relay_command_with_response = relay_command_with_response
 
     async def experiment_send(self, to: str, data, exclude: str) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
@@ -50,7 +60,11 @@ class FilterSubprocessAPI(FilterAPIInterface):
 
     async def get_current_ping(self) -> int:
         # For docstring see FilterAPIInterface or hover over function declaration
-        self._send_command("GET_CURRENT_PING", {})
+        answer = await self._send_command_wait_for_response(
+            "GET_CURRENT_PING",
+            {}
+        )
+        return answer["ping"] if answer is not None else 0
 
     async def start_pinging(self) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
@@ -78,6 +92,32 @@ class FilterSubprocessAPI(FilterAPIInterface):
             handler in hub.filter_subprocess_receiver.FilterSubprocessReceiver.
         """
         self._relay_command("FILTER_API", {"command": command, "data": data})
+
+    async def _send_command_wait_for_response(
+        self,
+        command: str,
+        data
+    ) -> dict | None:
+        """Send a command to FilterSubprocessReceiver on the main process and wait for a response.
+
+        Parameters
+        ----------
+        command : str
+            Command identifier used to identify the command in
+            hub.filter_subprocess_receiver.FilterSubprocessReceiver.
+        data : anything json serializable
+            Data associated with the command.
+
+        See Also
+        --------
+        hub.filter_subprocess_receiver.FilterSubprocessReceiver
+            Handle commands on the main process.  Each command send should have a
+            handler in hub.filter_subprocess_receiver.FilterSubprocessReceiver.
+        """
+        return await self._relay_command_with_response(
+            "FILTER_API",
+            {"command": command, "data": data}
+        )
 
 
 FilterAPIInterface.register(FilterSubprocessAPI)
