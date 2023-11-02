@@ -447,7 +447,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               audio_filters: [],
               video_filters: [
                 {
-                  name: "SPOUT-SENDER",
+                  name: "SPOUT_SENDER",
                   id: "spout-sender",
                   channel: "video",
                   groupFilter: false,

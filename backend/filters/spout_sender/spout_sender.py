@@ -93,7 +93,7 @@ class SpoutSender(Filter):
         # change this to implement filter
         self.line_writer.write_line(ndarray, "Hello")
 
-        image = Image.fromarray(ndarray, 'RGBA')
+        image = Image.fromarray(ndarray, 'RGB')
         pixels = image.tobytes()
         SEND_WIDTH, SEND_HEIGHT = image.size
 

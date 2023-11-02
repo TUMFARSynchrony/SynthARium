@@ -12,6 +12,8 @@ from .delay import DelayFilter
 from .open_face_au import OpenFaceAUFilter
 from .glasses_detection import SimpleGlassesDetection
 from .speaking_time import DisplaySpeakingTimeFilter, AudioSpeakingTimeFilter
+from .spout_receiver import SpoutReceiver
+from .spout_sender import SpoutSender
 
 # Do not import filters after here
 from . import filter_factory
