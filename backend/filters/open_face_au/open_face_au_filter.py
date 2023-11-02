@@ -89,9 +89,8 @@ class OpenFaceAUFilter(Filter):
             return False
 
         im_bytes = bytearray(image_enc.tobytes())
-        im_64 = base64.b64encode(im_bytes)
 
-        response = self.publisher.send(im_64)
+        response = self.publisher.send(im_bytes)
         return ndarray
 
     async def cleanup(self) -> None:

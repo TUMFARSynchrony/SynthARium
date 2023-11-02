@@ -21,17 +21,18 @@ class OpenFacePublisher():
 
         self.channel = self.connection.channel()
         queue_name = "test"
-        try:
-            # Attempt to declare an exclusive queue
-            result = self.channel.queue_declare(queue='test', exclusive=True)
-            print(f"Declared exclusive queue: {queue_name}")
-        except pika.exceptions.ChannelClosedByBroker as e:
-            if "RESOURCE_LOCKED" in str(e):
-                print(f"Queue '{queue_name}' is already declared as exclusive on another connection.")
-                self.channel.queue_bind
-            else:
-                raise
+        # try:
+        #     # Attempt to declare an exclusive queue
+        #     result = self.channel.queue_declare(queue='test', exclusive=True)
+        #     print(f"Declared exclusive queue: {queue_name}")
+        # except pika.exceptions.ChannelClosedByBroker as e:
+        #     if "RESOURCE_LOCKED" in str(e):
+        #         print(f"Queue '{queue_name}' is already declared as exclusive on another connection.")
+        #         self.channel.queue_bind
+        #     else:
+        #         raise
         
+        self.channel.queue_bind(queue_name, "amq.direct", queue_name)
         self.callback_queue = queue_name
         self.logger.debug(
             f"Declaring queue: {self.callback_queue}"

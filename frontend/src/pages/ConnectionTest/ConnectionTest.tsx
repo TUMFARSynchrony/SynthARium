@@ -578,7 +578,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               video_filters: [
                 {
                   name: "OPENFACE_AU",
-                  id: "zmq",
+                  id: "openface-au",
                   channel: "both",
                   groupFilter: false,
                   config: {}
