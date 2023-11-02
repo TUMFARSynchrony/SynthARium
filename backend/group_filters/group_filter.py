@@ -13,6 +13,7 @@ from custom_types import util
 from filters.filter_dict import FilterDict
 import logging
 from typing import Any
+from time import perf_counter
 
 
 class GroupFilter(ABC):
@@ -120,6 +121,7 @@ class GroupFilter(ABC):
                 message["participant_id"] = self.participant_id
                 message["time"] = ts
                 message["data"] = data
+                message["timestamp"] = perf_counter()
 
                 try:
                     self._socket.send_json(message, flags=zmq.NOBLOCK)
