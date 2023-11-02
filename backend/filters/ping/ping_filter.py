@@ -61,7 +61,7 @@ class PingFilter(Filter):
         if not self.counter % 3:
             self.last_ping = await self.filter_api.get_current_ping()
 
-        text = str(self.last_ping) + " ms"
+        text = "{:.0f} ms".format(self.last_ping)
         ndarray = cv2.putText(
             ndarray, text, origin, font, font_size, color, thickness
         )
