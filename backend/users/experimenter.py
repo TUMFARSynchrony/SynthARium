@@ -825,7 +825,14 @@ class Experimenter(User):
                 video_list.append(PostProcessingData("video", filename, session_id, participant_id))
             else:
                 continue
-
+        
+        if (len(video_list) == 0):
+            raise ErrorDictException(
+                code=404,
+                type="FILE_NOT_FOUND",
+                description=f'No video recordings available for session {session_id}.'
+            )
+        
         video_post_processing.recording_list = video_list
         video_post_processing.execute()
 

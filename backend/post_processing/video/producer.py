@@ -5,6 +5,7 @@ import logging
 import time
 import zmq
 
+from server import Config
 from ..post_processing_data import PostProcessingData
 
 
@@ -12,19 +13,23 @@ class PostVideoProducer():
     """Handles producer for post-processing experiments' video."""
 
     _logger: logging.Logger
+    _config: Config
     _sock: zmq.Socket
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config):
         """Initialize new PostVideoProducer."""
         super().__init__()
         self._logger = logging.getLogger("PostVideoProducer")
         context = zmq.Context()
         self._sock = context.socket(zmq.PUB)
+        self._config = config
         try:
-            self._sock.bind("tcp://*:6000")
-            time.sleep(0.3)
+            self._sock.bind(f"tcp://{self._config.host}:{self._config.post_processing['port']}")
+            # Give zmq some time to bind with consumer
+            time.sleep(self._config.post_processing['time_sleep'])
         except zmq.ZMQError as e:
             self._logger.error(f"ZMQError: {e}")
+            raise Exception(e)
 
     def publish(self, recording_list: list[PostProcessingData]):
         """Publish the recorded data to consumer."""

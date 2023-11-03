@@ -6,6 +6,7 @@ import jsonpickle
 import logging
 import subprocess
 import os
+import sys
 import time
 import zmq
 
@@ -16,7 +17,7 @@ class PostVideoConsumer():
     _root_dir: str
     _sock: zmq.Socket
 
-    def __init__(self) -> None:
+    def __init__(self, host: str = "localhost", port: int = 6000):
         """Initialize new PostVideoConsumer."""
         super().__init__()
         logging.basicConfig(
@@ -37,18 +38,19 @@ class PostVideoConsumer():
         context = zmq.Context()
         self._sock = context.socket(zmq.SUB)
         try:
-             self._sock.connect("tcp://localhost:6000")
+             self._sock.connect(f"tcp://{host}:{port}")
              self._sock.setsockopt_string(zmq.SUBSCRIBE, "")
         except zmq.ZMQError as e:
             self._logger.error(f"ZMQError: {e}")
+            raise Exception(e)
 
     def consume(self):
         """Activate consumer to receive messages."""
         while True:
-            self._logger.info("Waiting for a message")
+            self._logger.info("Waiting for a message...")
             message= self._sock.recv_string()
             if message == "0":
-                self._logger.info("Stopped post-processing consumer")
+                self._logger.info("Post-processing consumer exited")
                 break
             self._logger.info(f"Receive: {message}")
             try:
@@ -107,5 +109,8 @@ class PostVideoConsumer():
                                f"Exception: {error}")
 
 if __name__ == "__main__":
-    consumer = PostVideoConsumer()
+    if (len(sys.argv) < 3):
+        raise Exception("No host and port defined.")
+
+    consumer = PostVideoConsumer(sys.argv[1], int(sys.argv[2]))
     consumer.consume()
