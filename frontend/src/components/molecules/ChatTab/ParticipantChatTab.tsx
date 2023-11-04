@@ -2,14 +2,16 @@ import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import { selectCurrentSession } from "../../../redux/slices/sessionsListSlice";
 import { useEffect, useRef, useState } from "react";
 import { INITIAL_CHAT_DATA } from "../../../utils/constants";
-import { SpeechBubble } from "../../atoms/ChatMessage/SpeechBubble";
 import { useBackListener } from "../../../hooks/useBackListener";
 import useAutosizeTextArea from "../../../hooks/useAutosizeTextArea";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { ChatMessage } from "../../../types";
+import Select from "react-select";
+import { UniformSpeechBubbleParticipant } from "../../atoms/ChatMessage/UniformSpeechBubbleParticipant";
+import { getParticipantName } from "../../../utils/utils";
 
 type Props = {
   onChat: (newMessage: ChatMessage) => void;
@@ -28,6 +30,7 @@ export const ParticipantChatTab = (props: Props) => {
   const [messageTarget, setMessageTarget] = useState("participants");
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const dispatch = useAppDispatch();
   useAutosizeTextArea(textAreaRef.current, message);
   useBackListener(() => onLeaveExperiment());
 
@@ -37,6 +40,10 @@ export const ParticipantChatTab = (props: Props) => {
     }
   }, [onGetSession, sessionId]);
 
+  const handleChange = (messageTarget: string) => {
+    setMessageTarget(messageTarget);
+  };
+
   const onSendMessage = (messageTarget: string) => {
     if (message.length === 0) {
       return;
@@ -45,7 +52,7 @@ export const ParticipantChatTab = (props: Props) => {
     newMessage["message"] = message;
     newMessage["time"] = Date.now();
     newMessage["author"] = participantId;
-    newMessage["target"] = "experimenter";
+    newMessage["target"] = messageTarget;
 
     onChat(newMessage);
     onGetSession(sessionId);
@@ -59,29 +66,70 @@ export const ParticipantChatTab = (props: Props) => {
     }
   };
 
+  const toExperimenter = {
+    value: "experimenter",
+    label: "Experimenter"
+  };
+  const participantOptions =
+    currentSession &&
+    currentSession.participants
+      .filter((p) => p.id !== participantId)
+      .map((p, index) => ({
+        value: p.id,
+        label: p.participant_name
+      }));
+  participantOptions && participantOptions.unshift(toExperimenter);
+
   return (
     <div className="flex flex-col border-l-gray-200 border-l-2 h-full w-full items-center">
-      <div className="flex flex-row justify-center items-center gap-x-2 border-b-2 border-b-gray-200 w-full py-2">
+      <div className="flex flex-col items-center justify-between gap-x-2 border-b-2 border-b-gray-200 w-full py-2 px-6 gap-y-2">
         <div className="text-3xl text-center">Chat</div>
+        <div className="flex flex-row justify-center items-center text-sm w-2/3 relative">
+          <Select
+            className="w-full"
+            options={participantOptions}
+            defaultValue={participantOptions}
+            onChange={(event) => handleChange(event.value)}
+            isSearchable={false}
+            getOptionLabel={(props: any) => {
+              const { value, label, shouldShowNotification } = props;
+              return (
+                <>
+                  <div className="absolute translate-x-1/2 left-0">
+                    {shouldShowNotification && (
+                      <FontAwesomeIcon icon={faCircle} style={{ color: "#fb6641" }} />
+                    )}
+                  </div>
+                  <span className="pl-1">{label}</span>
+                </>
+              ) as unknown as string;
+            }}
+          />
+        </div>
       </div>
 
       <div className="w-full flex flex-col justify-between overflow-y-auto h-full">
         <div className="p-4 overflow-y-auto">
           {currentUser === "participant" &&
             currentSession &&
-            messageTarget !== "experimenter" &&
             currentSession.participants
-              .find((participant) => participant.id === participantId)
-              .chat.map((message, index) => (
-                <SpeechBubble
-                  key={index}
-                  currentUser={currentUser}
-                  message={message.message}
-                  author={message.author}
-                  target={message.target}
-                  date={message.time}
-                />
-              ))}
+              .filter((participant) => participant.id === participantId)
+              .map((p) => {
+                return p.chat.map((message, index) => (
+                  <UniformSpeechBubbleParticipant
+                    key={index}
+                    message={message.message}
+                    author={message.author}
+                    target={message.target}
+                    date={message.time}
+                    currentParticipantId={participantId}
+                    participant_name={getParticipantName(
+                      message.author,
+                      currentSession.participants
+                    )}
+                  />
+                ));
+              })}
         </div>
         <div className="flex flex-col p-4 py-8">
           <div className="flex flex-row justify-between gap-x-2 items-center">

@@ -169,3 +169,10 @@ export const getVideoTitle = (peer: any, index: number) => {
 export const getParticipantInviteLink = (participantId: string, sessionId: string) => {
   return `${window.location.origin}/lobby?participantId=${participantId}&sessionId=${sessionId}`;
 };
+
+export const getParticipantName = (participantId: string, participants: Array<Participant>) => {
+  if (participantId === "experimenter") {
+    return;
+  }
+  return participants.find((p, i) => p.id === participantId).participant_name;
+};

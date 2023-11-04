@@ -137,7 +137,8 @@ export const ExperimenterChatTab = (props: Props) => {
             messageTarget !== "participants" &&
             participants
               .find((participant) => participant.id === messageTarget)
-              .chat.map((message, index) => (
+              .chat.filter((m, i) => m.author === "experimenter" || m.target === "experimenter")
+              .map((message, index) => (
                 <SpeechBubble
                   key={index}
                   currentUser={currentUser}
@@ -167,6 +168,9 @@ export const ExperimenterChatTab = (props: Props) => {
 
               // Filter the messages to exclude duplicates
               const filteredMessages = allMessages.filter((message) => {
+                if (message.author !== "experimenter" && message.target !== "experimenter") {
+                  return false;
+                }
                 const messageKey = `${message.time}-${message.author}-${message.message}`;
                 if (!uniqueMessagesSet.has(messageKey)) {
                   uniqueMessagesSet.add(messageKey);
