@@ -4,7 +4,7 @@ Use for type hints and static type checking without any overhead during runtime.
 """
 
 from typing import Any, Optional, TypeGuard, TypedDict
-
+from typing_extensions import NotRequired
 import custom_types.util as util
 
 
@@ -24,7 +24,7 @@ class ChatMessageDict(TypedDict):
         For participant: always "experimenter".
         For experimenter: specific participant ID or "participants" for sending message
         to all participants.
-    sentiment_score : Optional[float]
+    sentiment_score : NotRequired[float]
         Sentiment score (optional).
 
 
@@ -38,7 +38,7 @@ class ChatMessageDict(TypedDict):
     time: int
     author: str
     target: str
-    sentiment_score: Optional[float]
+    sentiment_score: NotRequired[float]
 
 
 def is_valid_chatmessage(data: Any) -> TypeGuard[ChatMessageDict]:
@@ -63,8 +63,4 @@ def is_valid_chatmessage(data: Any) -> TypeGuard[ChatMessageDict]:
         and isinstance(data["time"], int)
         and isinstance(data["author"], str)
         and isinstance(data["target"], str)
-        and (
-            data.get("sentiment_score") is None
-            or isinstance(data["sentiment_score"], float)
-        )
     )

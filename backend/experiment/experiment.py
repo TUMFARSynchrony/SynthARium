@@ -18,6 +18,7 @@ from filters.filter_dict import FilterDict
 from group_filters import group_filter_aggregator_factory
 import asyncio
 from transformers import pipeline
+from chat_filters.sentiment_analysis import SentimentAnalysisFilter
 
 if TYPE_CHECKING:
     from users import Experimenter, Participant
@@ -38,7 +39,7 @@ class Experiment(AsyncIOEventEmitter):
     _participants: dict[str, Participant]
     _audio_group_filter_aggregators: dict[str, GroupFilterAggregator]
     _video_group_filter_aggregators: dict[str, GroupFilterAggregator]
-    sentiment_classifier = None
+    sentiment_classifier: SentimentAnalysisFilter
 
     def __init__(self, session: SessionData):
         """Start a new Experiment.
@@ -61,7 +62,8 @@ class Experiment(AsyncIOEventEmitter):
         self._video_group_filter_aggregators = {}
         # Create the sentiment analysis pipeline only once
         if Experiment.sentiment_classifier is None:
-            Experiment.sentiment_classifier = pipeline("sentiment-analysis")
+            Experiment.sentiment_classifier = SentimentAnalysisFilter()
+        self._logger.info(Experiment)
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -232,6 +234,7 @@ class Experiment(AsyncIOEventEmitter):
         # Save message in log of the correct participant(s)
         target = chat_message["target"]
         author = chat_message["author"]
+        # Save message in log of each participant
         if target in "participants":
             for p in self.session.participants.values():
                 p.chat.append(chat_message)
@@ -250,8 +253,18 @@ class Experiment(AsyncIOEventEmitter):
                     description="No participant found for the given ID.",
                 )
             if self.session.sentiment_analysis:
-                sentiment_score = Experiment.Sentiment_classifier(chat_message)
+                sentiment_score = (
+                    Experiment.sentiment_classifier.calculateSentimentScore(
+                        chat_message["message"]
+                    )
+                )
+
                 chat_message["sentiment_score"] = sentiment_score
+
+            self._logger.info(f"{str(chat_message)} test")
+            if target != "experimenter" and author != "experimenter":
+                author = self.session.participants.get(author)
+                author.chat.append(chat_message)
             participant.chat.append(chat_message)
 
         # Send message
