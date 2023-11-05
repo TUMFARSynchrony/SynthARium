@@ -93,13 +93,11 @@ class GroupFilterAggregator(object):
                         message["participant_id"], message["time"], message["data"]
                     )
 
-                    num_participants_in_aggregation = None
-                    if self._group_filter.num_participants_in_aggregation == "all":
+                    num_participants_in_aggregation = (
+                        self._group_filter.num_participants_in_aggregation
+                    )
+                    if num_participants_in_aggregation == "all":
                         num_participants_in_aggregation = len(self._data)
-                    else:
-                        num_participants_in_aggregation = (
-                            self._group_filter.num_participants_in_aggregation
-                        )
 
                     if len(self._data) >= num_participants_in_aggregation:
                         for c in combinations(
