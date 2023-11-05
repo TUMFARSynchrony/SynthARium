@@ -16,7 +16,7 @@ from aiortc.contrib.media import MediaRelay
 
 from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
 from group_filters import GroupFilter, group_filter_factory, group_filter_utils
-from time import perf_counter
+from time import time
 
 if TYPE_CHECKING:
     from connection.connection import Connection
@@ -408,7 +408,7 @@ class TrackHandler(MediaStreamTrack):
     ) -> None:
         """Execute group filter individual frame processing pipeline."""
         async with self.__lock:
-            frame_timestamp = perf_counter()
+            frame_timestamp = time()
             for active_group_filter in self._group_filters.values():
                 await active_group_filter.process_individual_frame_and_send_data_to_aggregator(
                     original, ndarray, frame_timestamp
