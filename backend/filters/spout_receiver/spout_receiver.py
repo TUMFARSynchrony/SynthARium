@@ -6,6 +6,8 @@ from OpenGL import GL
 from random import randint
 import cv2
 import array
+import time
+import logging
 
 from filters import Filter
 from filters.simple_line_writer import SimpleLineWriter
@@ -21,6 +23,7 @@ class SpoutReceiver(Filter):
     sender_height: int
     sender_name : str
     pixels : bytes
+    _logger : logging.Logger
     # sender : 
 
     @staticmethod
@@ -31,6 +34,7 @@ class SpoutReceiver(Filter):
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.line_writer = SimpleLineWriter()
+        self._logger = logging.getLogger("SpoutReceiver")
         # self.sender = SpoutGL.SpoutSender()
         # self.sender.setSenderName("chloeR")
         self.receiver = SpoutGL.SpoutReceiver()
@@ -97,15 +101,32 @@ class SpoutReceiver(Filter):
         # sender_height = 256
         # sender_name = "SpoutGL-test3"
         # buffer = None
-
-        self.receiver.receiveImage(self.buffer, GL.GL_RGBA, False, 0)
+        self._logger.info("PRINT TO CONSOLE")
+        result = self.receiver.receiveImage(self.buffer, GL.GL_RGBA, False, 0)
         image_data= None
-        width = self.receiver.getSenderWidth()
-        height = self.receiver.getSenderHeight()
-        self.buffer = array.array('B', repeat(0, width * height * 4))
-        if SpoutGL.helpers.isBufferEmpty(self.buffer):
+        dsize = (640, 480)  
+        resized_ndarray = None
+        # make depending on nd array
+        
+        #TODO make buffer a local variable, 
+        #TODO shape needs to be read from ndarray
+        #TODO figure out how to write code to console.
+
+        if self.receiver.isUpdated():
+            width = self.receiver.getSenderWidth()
+            height = self.receiver.getSenderHeight()
+            self.buffer = array.array('B', repeat(0, width * height * 4))
+            
+
+        if self.buffer and result and not SpoutGL.helpers.isBufferEmpty(self.buffer):
             image_data = numpy.frombuffer(self.buffer, dtype=numpy.uint8).reshape((height, width, 4))
-            self.line_writer.write_line(ndarray, "{0}".format(type(image_data)))
+            image_data = image_data[:,:, :-1]
+            ndarray= cv2.resize(image_data, dsize)
+
+        self.line_writer.write_line(ndarray, "{0}".format(time.time()))
+        # received image 360, 640, 4
+        # ndarray 480, 640, 3
+        
         # name = self.receiver.getSenderName()
         # self.line_writer.write_line(ndarray, "{0}".format(name))
         # if self.receiver.isUpdated():
