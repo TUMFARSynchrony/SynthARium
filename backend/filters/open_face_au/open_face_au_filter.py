@@ -1,3 +1,4 @@
+import base64
 import cv2
 import numpy
 from av import VideoFrame
@@ -87,10 +88,11 @@ class OpenFaceAUFilter(Filter):
 
         if not is_success:
             return False
-
+        
         im_bytes = bytearray(image_enc.tobytes())
+        im_64 = base64.b64encode(im_bytes)
 
-        response = self.publisher.send(im_bytes)
+        response = self.publisher.send(im_64)
         return ndarray
 
     async def cleanup(self) -> None:
