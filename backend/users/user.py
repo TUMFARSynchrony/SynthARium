@@ -657,7 +657,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         custom_types.message.MessageDict
             MessageDict with type: `PONG`, data: custom_types.ping.PongDict.
         """
-        pong = PongDict(server_time=timestamp(), ping_data=data)
+        pong = PongDict(handled_time=timestamp(), ping_data=data)
         return MessageDict(type="PONG", data=pong)
 
     async def _handle_pong(self, data: Any) -> MessageDict | None:
@@ -672,11 +672,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         current_time = timestamp()
         ping_time = current_time - data["ping_data"]["sent"]
         self._ping_buffer.append(int(ping_time))
-
-        # send new ping when still pinging
-        # if (self._pinging):
-        #     ping = PingDict(sent=timestamp(), data=None)
-        #     return MessageDict("PING", data=ping)
 
     @abstractmethod
     async def _handle_connection_state_change(self, state: ConnectionState) -> None:

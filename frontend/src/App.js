@@ -306,7 +306,7 @@ function App() {
     const timestamp = window.performance.now();
 
     connection.sendMessage("PONG", {
-      client_time: timestamp, // TODO: rename?
+      handled_time: timestamp,
       ping_data: data
     });
   };

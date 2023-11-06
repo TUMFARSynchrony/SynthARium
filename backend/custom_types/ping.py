@@ -8,13 +8,13 @@ class PongDict(TypedDict):
 
     Attributes
     ----------
-    server_time : int
+    handled_time : int
         Server timestamp when message was handled.
     ping_data : Any
         Data from original `PING` message
     """
 
-    server_time: int
+    handled_time: int
     ping_data: Any
 
 
