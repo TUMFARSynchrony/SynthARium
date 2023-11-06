@@ -400,10 +400,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             self._logger.warning(f"No handler for {endpoint} found")
             return
 
-        # don't log PONG messages, because they are too frequent
-        if endpoint != "PONG":
-            self._logger.info(f"Received {endpoint}")
-            self._logger.debug(f"Calling {len(handler_functions)} handler(s)")
+        self._logger.info(f"Received {endpoint}")
+        self._logger.debug(f"Calling {len(handler_functions)} handler(s)")
 
         for handler in handler_functions:
             try:
