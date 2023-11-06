@@ -586,8 +586,8 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
             return
         self._pinging = True
         # buffer is always ~30s long
-        self._ping_buffer = deque(maxlen=max(1, 30 / (period / 1000)))
-        self._ping_task = asyncio.ensure_future(self._ping_loop())
+        self._ping_buffer = deque(maxlen=int(max(1, 30 / (period / 1000))))
+        self._ping_task = asyncio.ensure_future(self._ping_loop(period=period))
 
     def stop_pinging(self) -> None:
         """Stop sending ping messages to the frontend.
