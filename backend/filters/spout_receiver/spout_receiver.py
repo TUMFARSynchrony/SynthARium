@@ -45,6 +45,7 @@ class SpoutReceiver(Filter):
         self.buffer = None
         self.width = 0
         self.height = 0
+        self.dsize = None
 
 
     @staticmethod
@@ -98,20 +99,20 @@ class SpoutReceiver(Filter):
         # pixels = ndarray.tobytes()
         # pixels = bytes(islice(cycle([randcolor(), randcolor(), randcolor(), 255]), send_width * send_height * 4))
         
-        # target_fps = 60
-        # sender_width = 256
-        # sender_height = 256
-        # sender_name = "SpoutGL-test3"
-        # buffer = None
+
         #self._logger.info("PRINT TO CONSOLE")
         #buffer = None
         result = self.receiver.receiveImage(self.buffer, GL.GL_RGBA, False, 0)
         image_data= None
-        dsize = (640, 480)  
-        resized_ndarray = None
+        # dsize = (640, 480)
+        # self._logger.info(f"shape of ndarray {ndarray.shape} and shape of first 2 dimentions {ndarray[:,:,0].shape} and type of first two dimentions {type(ndarray[:,:,0].shape)}")
+        if self.dsize == None:
+            out_dim = ndarray[:,:,0].shape
+            self.dsize = (out_dim[1], out_dim[0])
+
         # make depending on nd array
         # self._logger.info(f"This is the Receiver Result: {result}")
-        #TODO make buffer a local variable, 
+        #TODO make buffer a local variable,  - expensive operation?
         #TODO shape needs to be read from ndarray
         #TODO figure out how to write code to console.
 
@@ -133,7 +134,7 @@ class SpoutReceiver(Filter):
                 if not SpoutGL.helpers.isBufferEmpty(self.buffer):
                     image_data = numpy.frombuffer(self.buffer, dtype=numpy.uint8).reshape((self.height, self.width, 4))
                     image_data = image_data[:,:, :-1]
-                    ndarray= cv2.resize(image_data, dsize)
+                    ndarray= cv2.resize(image_data, self.dsize)
                     # self._logger.info("Resized Image! Yay!")
                     # image_bgr = cv2.cvtColor(image_data, cv2.COLOR_RGBA2BGR)
                     # cv2.imshow('SpoutGL Image', image_bgr)
