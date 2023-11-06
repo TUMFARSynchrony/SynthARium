@@ -4,6 +4,7 @@ from itertools import islice, cycle
 import time
 from OpenGL import GL
 from random import randint
+import logging
 
 from filters import Filter
 from filters.simple_line_writer import SimpleLineWriter
@@ -15,7 +16,8 @@ class SpoutSender(Filter):
     """A simple example filter printing `Hello World` on a video Track.
     Can be used to as a template to copy when creating an own filter."""
 
-    # line_writer: SimpleLineWriter
+    line_writer: SimpleLineWriter
+    _logger : logging.Logger
     # target_fps: int
     # sender_width: int
     # sender_height: int
@@ -31,6 +33,7 @@ class SpoutSender(Filter):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.line_writer = SimpleLineWriter()
         
+        #TODO get sendername from filter config
         # Sender Initialize
         self.sender = SpoutGL.SpoutSender()
         self.sender.setSenderName("exp-hub-sender")
