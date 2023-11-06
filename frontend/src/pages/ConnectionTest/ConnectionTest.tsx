@@ -447,6 +447,26 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
               audio_filters: [],
               video_filters: [
                 {
+                  name: "SPOUT_SENDER_RECEIVER",
+                  id: "spout-sender-receiver",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          SPOUT SENDER RECEIVER
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [
+                {
                   name: "SPOUT_SENDER",
                   id: "spout-sender",
                   channel: "video",

@@ -14,6 +14,7 @@ from .glasses_detection import SimpleGlassesDetection
 from .speaking_time import DisplaySpeakingTimeFilter, AudioSpeakingTimeFilter
 from .spout_receiver import SpoutReceiver
 from .spout_sender import SpoutSender
+from .spout_sender_receiver import SpoutSenderReceiver
 
 # Do not import filters after here
 from . import filter_factory

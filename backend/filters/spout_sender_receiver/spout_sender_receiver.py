@@ -1,49 +1,54 @@
 import numpy
 import SpoutGL
-from itertools import islice, cycle
+from itertools import islice, cycle, repeat
 import time
 from OpenGL import GL
 from random import randint
+import cv2
+import array
+import time
 import logging
+from PIL import Image
+
 
 from filters import Filter
 from filters.simple_line_writer import SimpleLineWriter
 
-from PIL import Image
 
-
-class SpoutSender(Filter):
+class SpoutSenderReceiver(Filter):
     """A simple example filter printing `Hello World` on a video Track.
     Can be used to as a template to copy when creating an own filter."""
 
     line_writer: SimpleLineWriter
     _logger : logging.Logger
-    # target_fps: int
-    # sender_width: int
-    # sender_height: int
-    # sender_name : str
-    # pixels : bytes
-    # sender : 
 
-    @staticmethod
-    def randcolor(self) -> None:
-        return randint(0, 255)
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.line_writer = SimpleLineWriter()
-        
-        #TODO get sendername from filter config
+        self._logger = logging.getLogger("SpoutReceiver")
+
         # Sender Initialize
+        #TODO get sendername from filter config
         self.sender = SpoutGL.SpoutSender()
         self.sender.setSenderName("exp-hub-sender")
-    
-  
+
+        #TODO assign getReceiverName from filter config
+        # Receiver Initalize
+        self.receiver = SpoutGL.SpoutReceiver()
+        self.receiver.setReceiverName("TDSyphonSpoutOut")
+        self.name = self.receiver.getSenderName()
+        self.format = self.receiver.getSenderFormat()
+        self.buffer = None
+        self.width = 0
+        self.height = 0
+        self.dsize = None
+
 
     @staticmethod
     def name(self) -> str:
         # change this name to your filter name in all capslock
-        return "SPOUT_SENDER"
+        return "SPOUT_SENDER_RECEIVER"
 
     @staticmethod
     def filter_type(self) -> str:
@@ -86,47 +91,49 @@ class SpoutSender(Filter):
             },
         }
 
-
-    # def rescale(arr):
-    #     arr_min = arr.min()
-    #     arr_max = arr.max()
-    #     return (arr- arr_min)/(arr_max - arr_min)
-
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
-        # change this to implement filter
-        self.line_writer.write_line(ndarray, "Hello")
-
+        #send ndarray through spout
         image = Image.fromarray(ndarray, 'RGB')
         pixels = image.tobytes()
         SEND_WIDTH, SEND_HEIGHT = image.size
 
         #TODO try to send same size as receiving array.
         self.sender.sendImage(pixels, SEND_WIDTH, SEND_HEIGHT, GL.GL_BGR, False, 0)
+       
+       #TODO make buffer a local variable,  - expensive operation?
+        #self._logger.info("PRINT TO CONSOLE")
+        #receive image from spout
+        result = self.receiver.receiveImage(self.buffer, GL.GL_RGBA, False, 0)
+        image_data= None
+        # self._logger.info(f"shape of ndarray {ndarray.shape} and shape of first 2 dimentions {ndarray[:,:,0].shape} and type of first two dimentions {type(ndarray[:,:,0].shape)}")
+        # allocates dsize to resize image from the initial ndarray shape 
+        if self.dsize == None:
+            out_dim = ndarray[:,:,0].shape
+            self.dsize = (out_dim[1], out_dim[0])
+        
+        # initializes buffer to a byte array of 0s if receiver is updated 
+        if self.receiver.isUpdated():
+            self.width = self.receiver.getSenderWidth()
+            self.height = self.receiver.getSenderHeight()
+            self.buffer = array.array('B', repeat(0, self.width * self.height * 4))
 
-        # Return modified frame
+        # if buffer and result exist, try to see if buffer is not empty and 
+        # receive buffer data updated by calling receiveImage on line 100. 
+        if self.buffer and result:
+            #and not SpoutGL.helpers.isBufferEmpty(self.buffer):
+            try: 
+                if not SpoutGL.helpers.isBufferEmpty(self.buffer):
+                    image_data = numpy.frombuffer(self.buffer, dtype=numpy.uint8).reshape((self.height, self.width, 4))
+                    image_data = image_data[:,:, :-1]
+                    ndarray= cv2.resize(image_data, self.dsize)
+                    # Optional lines of code to also print the output to a seperate window
+                    # image_bgr = cv2.cvtColor(image_data, cv2.COLOR_RGBA2BGR)
+                    # cv2.imshow('SpoutGL Image', image_bgr)
+                    # cv2.waitKey(1)  # Update the display window
+            except Exception as err:
+                self._logger.error(err)
+            
+        # Optional line of code to write text to screen
+        # self.line_writer.write_line(ndarray, "{0}".format(time.time()))
+      
         return ndarray
-
-
-# TARGET_FPS = 60
-# SEND_WIDTH = 256
-# SEND_HEIGHT = 256
-# SENDER_NAME = "SpoutGL-test2"
-# def randcolor():
-#     return randint(0, 255)
-
-# with SpoutGL.SpoutSender() as sender:
-#     sender.setSenderName(SENDER_NAME)
-
-#     while True:
-#         # Generating bytes in Python is very slow; ideally you should pass in a buffer obtained elsewhere
-#         # or re-use an already allocated array instead of allocating one on the fly
-#         pixels = bytes(islice(cycle([randcolor(), randcolor(), randcolor(), 255]), SEND_WIDTH * SEND_HEIGHT * 4))
-
-#         result = sender.sendImage(pixels, SEND_WIDTH, SEND_HEIGHT, GL.GL_RGBA, False, 0)
-#         print("Send result", result)
-        
-#         # Indicate that a frame is ready to read
-#         sender.setFrameSync(SENDER_NAME)
-        
-#         # Wait for next send attempt
-#         time.sleep(1./TARGET_FPS)
