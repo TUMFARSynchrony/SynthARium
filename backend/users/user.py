@@ -86,8 +86,9 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _muted_audio: bool
     _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
-    _pingBuffer: deque  # buffer of n last ping times
+    _ping_buffer: deque  # buffer of n last ping times
     _pinging: bool
+    _ping_task: asyncio.Task | None
     __subscribers: dict[str, str]  # User ID -> subconnection_id
     __disconnected: bool
     __lock: asyncio.Lock
@@ -115,7 +116,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._muted_video = muted_video
         self._muted_audio = muted_audio
         self._handlers = {}
-        self._pingBuffer = deque(maxlen=100)  # TODO adjust size
+        self._ping_buffer = deque(maxlen=100)
         self._pinging = False
         self.__subscribers = {}
         self.__disconnected = False
@@ -571,44 +572,56 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording for this user."""
         await self._connection.stop_recording()
 
-    async def start_pinging(self) -> None:
+    async def start_pinging(self, period: float = 1000) -> None:
         """Start sending ping messages to the frontend.
-        If not yet connected, wait for until connection is set."""
+
+        This method starts a background task that sends ping messages to the
+        frontend at a specified period.
+
+        Parameters
+        ----------
+        period : float, optional
+            The period at which to send ping messages, in milliseconds.
+            Default is 1000ms.
+        """
         if self._pinging:
             return
         self._pinging = True
-        self._pingBuffer.clear()
-
-        # if self._connection is not None:
-        #     ping = PingDict(sent=timestamp(), data="")
-        #     await self.send(MessageDict(type="PING", data=ping))
-        # else:
-
-        #     @self.once("connection_set")
-        #     async def _start_pinging_later(_):
-        #         if self._connection is None:
-        #             self._logger.error(
-        #                 "_start_pinging_later callback failed, _connection is "
-        #                 "None."
-        #             )
-        #             return
-        #         ping = PingDict(sent=timestamp(), data="")
-        #         await self.send(MessageDict(type="PING", data=ping))
+        # buffer is always ~30s long
+        self._ping_buffer = deque(maxlen=max(1, 30 / (period / 1000)))
+        self._ping_task = asyncio.ensure_future(self._ping_loop())
 
     def stop_pinging(self) -> None:
-        """Stop sending ping messages to the frontend."""
+        """Stop sending ping messages to the frontend.
+        Cancels the ping task
+        """
         self._pinging = False
+
+        try:
+            self._ping_task.cancel()
+        except Exception as err:
+            self._logger.error(f"Failed to cancel ping task: {err}")
+
+    async def _ping_loop(self, period: float) -> None:
+        """Async loop which sends ping messages
+        to the frontend at a specified period.
+
+        Parameters
+        ----------
+        period : float
+            Ping period in milliseconds.
+        """
+        while True:
+            await asyncio.sleep(period/1000)
+            ping = PingDict(sent=timestamp(), data="")
+            await self.send(MessageDict(type="PING", data=ping))
 
     async def get_current_ping(self) -> int:
         """Get the average ping in ms."""
 
-        if self._pinging:
-            ping = PingDict(sent=timestamp(), data="")
-            await self.send(MessageDict(type="PING", data=ping))
-
-        if len(self._pingBuffer) == 0:
+        if len(self._ping_buffer) == 0:
             return 0
-        return sum(self._pingBuffer) / len(self._pingBuffer)
+        return sum(self._ping_buffer) / len(self._ping_buffer)
 
     def _handle_disconnect(self) -> None:
         """Handle this user disconnecting.
@@ -660,7 +673,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         # save ping time
         current_time = timestamp()
         ping_time = current_time - data["ping_data"]["sent"]
-        self._pingBuffer.append(int(ping_time))
+        self._ping_buffer.append(int(ping_time))
 
         # send new ping when still pinging
         # if (self._pinging):

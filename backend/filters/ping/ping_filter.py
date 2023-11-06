@@ -6,7 +6,8 @@ from filter_api import FilterAPIInterface
 
 
 class PingFilter(Filter):
-    """A simple example filter printing the current API ping on a video Track."""
+    """A simple example filter printing the current API ping on a video Track.
+    """
 
     filter_api: FilterAPIInterface
     counter: int
@@ -50,7 +51,7 @@ class PingFilter(Filter):
         }
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
-        # add ping to image
+        # fetch current ping and display it on the video frame
         height, _, _ = ndarray.shape
         origin = (10, height - 10)
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -58,7 +59,7 @@ class PingFilter(Filter):
         thickness = 3
         color = (0, 255, 0)
 
-        if not self.counter % 3:
+        if not self.counter % 30:
             self.last_ping = await self.filter_api.get_current_ping()
 
         text = "{:.0f} ms".format(self.last_ping)
@@ -67,5 +68,5 @@ class PingFilter(Filter):
         )
 
         self.counter += 1
-        # Return modified frame
+
         return ndarray
