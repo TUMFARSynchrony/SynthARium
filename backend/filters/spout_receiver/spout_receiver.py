@@ -43,6 +43,8 @@ class SpoutReceiver(Filter):
         self.name = self.receiver.getSenderName()
         self.format = self.receiver.getSenderFormat()
         self.buffer = None
+        self.width = 0
+        self.height = 0
 
 
     @staticmethod
@@ -108,41 +110,39 @@ class SpoutReceiver(Filter):
         dsize = (640, 480)  
         resized_ndarray = None
         # make depending on nd array
-        self._logger.info(f"This is the Receiver Result: {result}")
+        # self._logger.info(f"This is the Receiver Result: {result}")
         #TODO make buffer a local variable, 
         #TODO shape needs to be read from ndarray
         #TODO figure out how to write code to console.
 
         if self.receiver.isUpdated():
-            width = self.receiver.getSenderWidth()
-            height = self.receiver.getSenderHeight()
-            self.buffer = array.array('B', repeat(0, width * height * 4))
-            self._logger.info("SPOUT RECEIVER IS UPDATED")
+            self.width = self.receiver.getSenderWidth()
+            self.height = self.receiver.getSenderHeight()
+            self.buffer = array.array('B', repeat(0, self.width * self.height * 4))
+            # self._logger.info("SPOUT RECEIVER IS UPDATED")
         
-        self._logger.info(f"buffer content: {self.buffer}")
-        try:
-            self._logger.info(f"self.buffer: {bool(self.buffer)} and result: {bool(result)} and isBufferEmpy: {SpoutGL.helpers.isBufferEmpty(self.buffer)}")    
-        except Exception as err:
-            self._logger.error(err)
+        # self._logger.info(f"buffer content: {self.buffer}")
+        # try:
+        #     self._logger.info(f"self.buffer: {bool(self.buffer)} and result: {bool(result)} and isBufferEmpy: {SpoutGL.helpers.isBufferEmpty(self.buffer)}")    
+        # except Exception as err:
+        #     self._logger.error(err)
 
         if self.buffer and result:
             #and not SpoutGL.helpers.isBufferEmpty(self.buffer):
             try: 
                 if not SpoutGL.helpers.isBufferEmpty(self.buffer):
-                    width = self.receiver.getSenderWidth()
-                    height = self.receiver.getSenderHeight()
-                    image_data = numpy.frombuffer(self.buffer, dtype=numpy.uint8).reshape((height, width, 4))
+                    image_data = numpy.frombuffer(self.buffer, dtype=numpy.uint8).reshape((self.height, self.width, 4))
                     image_data = image_data[:,:, :-1]
                     ndarray= cv2.resize(image_data, dsize)
-                    self._logger.info("Resized Image! Yay!")
-                    image_bgr = cv2.cvtColor(image_data, cv2.COLOR_RGBA2BGR)
-                    cv2.imshow('SpoutGL Image', image_bgr)
-                    cv2.waitKey(1)  # Update the display window
+                    # self._logger.info("Resized Image! Yay!")
+                    # image_bgr = cv2.cvtColor(image_data, cv2.COLOR_RGBA2BGR)
+                    # cv2.imshow('SpoutGL Image', image_bgr)
+                    # cv2.waitKey(1)  # Update the display window
             except Exception as err:
                 self._logger.error(err)
             
 
-        self.line_writer.write_line(ndarray, "{0}".format(time.time()))
+        # self.line_writer.write_line(ndarray, "{0}".format(time.time()))
         #this line below breaks.
         #self.receiver.waitFrameSync(self.name, 0)
         # received image 360, 640, 4
