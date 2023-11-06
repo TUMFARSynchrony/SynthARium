@@ -327,6 +327,10 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         def _remove_listener(_):
             try:
                 user.remove_listener("CONNECTION_OFFER", _handle_offer)
+                user.remove_listener(
+                    "ADD_ICE_CANDIDATE",
+                    _handle_add_ice_candidate
+                )
             except KeyError:
                 return
 

@@ -78,7 +78,11 @@ class Hub:
         self.experimenters = []
         self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = Server(self.handle_offer, self.config)
+        self.server = Server(
+            self.handle_offer,
+            self.handle_ice_candidate,
+            self.config
+        )
 
     async def start(self):
         """Start the hub.  Starts the server."""
@@ -284,6 +288,18 @@ class Hub:
         )
 
         return answer, participant_data.as_summary_dict()
+    
+    async def handle_ice_candidate(
+        self,
+        offer: RTCSessionDescription,
+        user_type: Literal["participant", "experimenter"],
+        participant_id: str | None,
+        session_id: str | None,
+        experimenter_id: str | None,
+    ) -> tuple[RTCSessionDescription, ParticipantSummaryDict | None]:
+        """Handle new incoming ice candidate from a client.
+        TODO
+        """
 
     async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.

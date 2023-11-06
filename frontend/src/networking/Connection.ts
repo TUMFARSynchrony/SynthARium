@@ -10,6 +10,7 @@ import {
   ConnectedPeer
 } from "./typing";
 import SubConnection from "./SubConnection";
+import { user } from "@nextui-org/react";
 
 /**
  * Class handling the connection with the backend.
@@ -423,15 +424,28 @@ export default class Connection extends ConnectionBase<
   }
 
   protected async handleIceCandidate(candidate: RTCIceCandidate): Promise<void> {
-    const request = {
-      candidate: candidate
-    };
+    let request;
+    if (this.userType === "participant") {
+      request = {
+        candidate: candidate,
+        user_type: "participant",
+        session_id: this.sessionId,
+        participant_id: this.participantId
+      };
+    } else {
+      request = {
+        candidate: candidate,
+        user_type: "experimenter",
+        session_id: this.sessionId,
+        experimenter_password: this.experimenterPassword
+      };
+    }
 
     this.log("Sending ICE candidate");
 
     let response;
     try {
-      response = await fetch(BACKEND + "/iceCandidate", {
+      response = await fetch(BACKEND + "/addIceCandidate", {
         body: JSON.stringify({ request }),
         headers: {
           "Content-Type": "application/json"

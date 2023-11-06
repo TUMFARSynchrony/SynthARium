@@ -38,11 +38,17 @@ class Server:
     _index: str
     _logger: logging.Logger
     _hub_handle_offer: _HANDLER
+    _hub_handle_ice_candidate: _HANDLER
     _app: web.Application
     _runner: web.AppRunner
     _config: Config
 
-    def __init__(self, hub_handle_offer: _HANDLER, config: Config):
+    def __init__(
+        self,
+        hub_handle_offer: _HANDLER,
+        hub_handle_ice_candidate: _HANDLER,
+        config: Config
+    ):
         """Instantiate new Server instance.
 
         Parameters
@@ -54,6 +60,7 @@ class Server:
         """
         self._logger = logging.getLogger("Server")
         self._hub_handle_offer = hub_handle_offer
+        self._hub_handle_ice_candidate = hub_handle_ice_candidate
         self._config = config
 
         self._app = web.Application()
@@ -61,7 +68,7 @@ class Server:
         routes = [
             self._app.router.add_get("/hello-world", self.get_hello_world),
             self._app.router.add_post("/offer", self.handle_offer),
-            self._app.router.add_post("/iceCandidate", self.handle_ice_candidate),
+            self._app.router.add_post("/addIceCandidate", self.handle_ice_candidate),
         ]
 
         # Serve frontend build
@@ -306,8 +313,7 @@ class Server:
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
     async def handle_ice_candidate(self, request: web.Request) -> web.StreamResponse:
-        # TODO: remove
-        # self._logger.info(f"Received ice candidate from {request.remote}")
+        # TODO: parse and call hub function
 
         sucess = SuccessDict(
             type="ADD_ICE_CANDIDATE",

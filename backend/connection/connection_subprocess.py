@@ -159,9 +159,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self, candidate: AddIceCandidateDict
     ):
         # For docstring see ConnectionInterface or hover over function declaration
-        # Send command and wait for response.
-        await self._send_command_wait_for_response("ADD_ICE_CANDIDATE", candidate) # TODO: make work
-
+        await self._send_command("ADD_SUBSCRIBER_ICE_CANDIDATE", candidate)
 
     async def get_local_description(self) -> RTCSessionDescription:
         """Get localdescription.  Blocks until subprocess sends localdescription."""
