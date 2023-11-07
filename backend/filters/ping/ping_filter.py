@@ -11,14 +11,14 @@ class PingFilter(Filter):
 
     filter_api: FilterAPIInterface
     counter: int
-    last_ping: int
+    ping: int
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
 
         self.filter_api = video_track_handler.filter_api
         self.counter = 0
-        self.last_ping = 0
+        self.ping = 0
 
     async def complete_setup(self) -> None:
         await self.filter_api.start_pinging()
@@ -60,9 +60,9 @@ class PingFilter(Filter):
         color = (0, 255, 0)
 
         if not self.counter % 30:
-            self.last_ping = await self.filter_api.get_current_ping()
+            self.ping = await self.filter_api.get_current_ping()
 
-        text = "{:.0f} ms".format(self.last_ping)
+        text = "{:.0f} ms".format(self.ping)
         ndarray = cv2.putText(
             ndarray, text, origin, font, font_size, color, thickness
         )
