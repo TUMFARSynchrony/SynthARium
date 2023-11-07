@@ -9,6 +9,7 @@ from os.path import join
 from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
 
 from connection.messages import (
     ConnectionAnswerDict,
@@ -146,6 +147,10 @@ class ConnectionSubprocess(ConnectionInterface):
             "CREATE_PROPOSAL", participant_summary
         )
         return offer
+
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("ADD_ICE_CANDIDATE", candidate)
 
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict

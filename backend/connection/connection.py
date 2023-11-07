@@ -238,6 +238,22 @@ class Connection(ConnectionInterface):
         self._sub_connections[subconnection_id] = sc
         return sc.proposal
 
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidate):
+        # For docstring see ConnectionInterface or hover over function declaration
+
+        # Create ice candidate object
+        rtc_candidate = candidate_from_aioice( # TODO check if this is working 
+            Candidate.from_sdp(
+                candidate["candidate"].removeprefix('candidate:')
+            )
+        )
+        rtc_candidate.sdpMid = candidate["sdpMid"]
+        rtc_candidate.sdpMLineIndex = candidate["sdpMLineIndex"]
+        rtc_candidate.usernameFragment = \
+            candidate["usernameFragment"]
+
+        await self._main_pc.addIceCandidate(rtc_candidate)
+
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
@@ -269,7 +285,7 @@ class Connection(ConnectionInterface):
                 type="UNKNOWN_SUBCONNECTION_ID",
                 description=f"Unknown subconnection ID {subconnection_id}",
             )
-      
+
         # Create ice candidate object
         rtc_candidate = candidate_from_aioice( # TODO check if this is working 
             Candidate.from_sdp(

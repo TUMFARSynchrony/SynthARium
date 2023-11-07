@@ -3,6 +3,7 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
 from custom_types.success import SuccessDict
 
 from connection.connection_state import ConnectionState
@@ -90,6 +91,20 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        """Handle an new ice candidate which was send by the client.
+
+        This is used to handle the establishment of new main connections.
+        For subconnections, use `handle_subscriber_add_ice_candidate`.
+
+        Parameters
+        ----------
+        candidate : connection.messages.rtc_ice_candidate_dict.RTCIceCandidateDict
+            New ice candidate send by the client.
+        """
+        pass
+
+    @abstractmethod
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
@@ -123,8 +138,15 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     async def handle_subscriber_add_ice_candidate(
         self, candidate: AddIceCandidateDict
     ):
-        """
-        TODO
+        """Handle an new ice candidate which was send by the client.
+
+        This is used to handle the establishment of new sub connections.
+        For main connections, use `handle_add_ice_candidate`.
+
+        Parameters
+        ----------
+        candidate : connection.messages.add_ice_candidate_dict.AddIceCandidateDict
+            New ice candidate send by the client, including subconnection ID.
         """
         pass
 

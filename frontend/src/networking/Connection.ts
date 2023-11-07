@@ -424,24 +424,12 @@ export default class Connection extends ConnectionBase<
   }
 
   protected async handleIceCandidate(candidate: RTCIceCandidate): Promise<void> {
-    let request;
-    if (this.userType === "participant") {
-      request = {
-        candidate: candidate,
-        user_type: "participant",
-        session_id: this.sessionId,
-        participant_id: this.participantId
-      };
-    } else {
-      request = {
-        candidate: candidate,
-        user_type: "experimenter",
-        session_id: this.sessionId,
-        experimenter_password: this.experimenterPassword
-      };
-    }
+    const request = {
+      candidate: candidate
+    };
 
     this.log("Sending ICE candidate");
+    this.log("Request", request);
 
     let response;
     try {

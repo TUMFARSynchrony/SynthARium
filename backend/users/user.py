@@ -14,6 +14,7 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
 from custom_types.success import SuccessDict
 
 from connection.messages import (
@@ -121,7 +122,6 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._connection = None
         self.__lock = asyncio.Lock()
         self.on_message("PING", self._handle_ping)
-        # self.on_message("ADD_ICE_CANDIDATE", self._handle_add_ice_candidate)
 
     @property
     def muted_video(self) -> bool:
@@ -456,6 +456,17 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
             if response is not None:
                 await self.send(response)
+
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        """Handle an new ice candidate which was send by the client
+        while establishing the main connection.
+
+        Parameters
+        ----------
+        candidate : connection.messages.rtc_ice_candidate_dict.RTCIceCandidateDict
+            New ice candidate send by the client.
+        """
+        await self._connection.handle_add_ice_candidate(candidate)
 
     def get_experiment_or_raise(self, action_prefix: str = "") -> _exp.Experiment:
         """Get `self._experiment` or raise ErrorDictException if it is None.

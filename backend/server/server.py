@@ -14,6 +14,7 @@ from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 from custom_types.error import ErrorDict
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict, is_valid_rtc_ice_candidate_dict
 
 from hub.exceptions import ErrorDictException
 from hub import FRONTEND_BUILD_DIR
@@ -242,6 +243,62 @@ class Server:
 
         # Successfully parsed parameters
         return params
+    
+    async def _parse_ice_candidate_request(self, request: web.Request) -> RTCIceCandidateDict:
+        """Parse a request made to the `/addIceCandidate` endpoint.
+
+        Checks the parameters in the request and check if the types are correct.
+
+        Parameters
+        ----------
+        request : aiohttp.web.Request
+            Incoming request to the `/addIceCandidate` endpoint.
+
+        Returns
+        -------
+        RTCIceCandidateDict
+            Parsed ice candidate.
+
+        Raises
+        ------
+        ErrorDictException
+            If any error occurres while parsing.  E.g. incorrect request parameters or
+            missing keys.
+        """
+        if request.content_type != "application/json":
+            raise ErrorDictException(
+                code=415,
+                type="INVALID_REQUEST",
+                description="Content type must be 'application/json'.",
+            )
+
+        # Parse request
+        try:
+            params: dict = (await request.json())["request"]
+        except json.JSONDecodeError:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Failed to parse request.",
+            )
+
+        if "candidate" not in params:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Missing request parameters: candidate.",
+            )
+
+        # Check if candidate is valid
+        if not is_valid_rtc_ice_candidate_dict(params["candidate"]):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Invalid candidate.",
+            )
+
+        # Successfully parsed parameters
+        return params["candidate"]
 
     async def handle_offer(self, request: web.Request) -> web.StreamResponse:
         """Handle incoming requests to the `/offer` endpoint.
@@ -313,7 +370,29 @@ class Server:
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
     async def handle_ice_candidate(self, request: web.Request) -> web.StreamResponse:
-        # TODO: parse and call hub function
+        self._logger.debug(f"Received ice candidate: {request}")
+
+        try:
+            candidate = await self._parse_ice_candidate_request(request)
+        except ErrorDictException as error:
+            self._logger.warning(f"Failed to parse ice candidate. {error.description}")
+            return web.Response(
+                content_type="application/json",
+                status=error.code,
+                reason=error.description,
+                text=error.error_message_str,
+            )
+
+        try:
+            await self._hub_handle_ice_candidate(candidate)
+        except ErrorDictException as error:
+            self._logger.warning(f"Failed to handle add ice candidate. {error.description}")
+            return web.Response(
+                content_type="application/json",
+                status=error.code,
+                reason=error.description,
+                text=error.error_message_str,
+            )
 
         sucess = SuccessDict(
             type="ADD_ICE_CANDIDATE",
