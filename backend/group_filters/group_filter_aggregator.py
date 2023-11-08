@@ -10,7 +10,7 @@ from queue import Queue
 from itertools import combinations
 from typing import Any
 import numpy as np
-from time import perf_counter
+from time import perf_counter, time
 
 
 class GroupFilterAggregator(object):
@@ -154,7 +154,7 @@ class GroupFilterAggregator(object):
                                 debug_str
                                 + "\n"
                                 + "\n\tData aggregation performed."
-                                + f"\n\tTime: {end_time}"
+                                + f"\n\tTime: {time()}"
                                 + f"\n\tRuntime: {end_time - start_time}"
                                 + f"\n\tData: {data}"
                                 + f"\n\tResult: {aggregated_data}"
