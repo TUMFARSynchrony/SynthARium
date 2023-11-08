@@ -297,6 +297,18 @@ class Server:
                 description="Invalid candidate.",
             )
 
+        # if usernameFragment is not set, try to parse it from candidate
+        if params["candidate"]["usernameFragment"] is None:
+            try:
+                ufrag = params["candidate"]["candidate"].split("ufrag ")[1].split(" ")[0]
+                params["candidate"]["usernameFragment"] = ufrag
+            except IndexError:
+                raise ErrorDictException(
+                    code=400,
+                    type="INVALID_REQUEST",
+                    description="Candidate does not contain usernameFragment.",
+                )
+
         # Successfully parsed parameters
         return params["candidate"]
 

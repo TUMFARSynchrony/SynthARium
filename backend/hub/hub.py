@@ -11,6 +11,7 @@ from hub import FRONTEND_DIR
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
+from connection.connection_state import ConnectionState
 
 from experiment import Experiment
 from hub.util import generate_unique_id
@@ -314,6 +315,8 @@ class Hub:
         """
         ufrag = candiate['usernameFragment']
 
+        self._logger.debug(f"Received ice candidate for {ufrag}")
+
         if ufrag not in self._pending_connections:
             # Buffer candidate if connection is not yet established
             if ufrag not in self._ice_candidate_buffer:
@@ -322,7 +325,7 @@ class Hub:
             return
 
         user = self._pending_connections[ufrag]
-        await user.handle_ice_candidate(candiate)
+        await user.handle_add_ice_candidate(candiate)
 
     async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
@@ -382,9 +385,22 @@ class Hub:
             WebRTC offer that was received from the client.
         user : hub.users.user.User
             User that is connecting.
+
+        Raises
+        ------
+        ErrorDictException
+            If the offer does not contain a username fragment.
         """
-        # TODO error handling
-        ufrag = offer.sdp.split("a=ice-ufrag:")[1].split("\r\n")[0]
+        # extrac username fragment from offer
+        try:
+            ufrag = offer.sdp.split("a=ice-ufrag:")[1].split("\r\n")[0]
+        except IndexError:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Offer does not contain username fragment."
+            )
+
         self._pending_connections[ufrag] = user
 
         # check if there are candidates buffered for this connection and
@@ -394,11 +410,38 @@ class Hub:
                 await user.handle_add_ice_candidate(candidate)
             del self._ice_candidate_buffer[ufrag]
 
-        user.add_listener("disconnected", self._remove_pending_connection(ufrag))
-        #user.connection.add_listener("state_change", ) TODO: when connection is established remove from pending
+        # remove connection from pending connections
+        # if it is closed or fully connected
+        def _handle_connection_state_change(
+            state: ConnectionState
+        ):
+            if state in [ConnectionState.CLOSED,
+                         ConnectionState.FAILED,
+                         ConnectionState.CONNECTED]:
+                self._remove_pending_connection(ufrag)
+                user.connection.remove_listener(
+                    "state_change",
+                    _handle_connection_state_change
+                )
+
+        user.connection.add_listener(
+            "state_change",
+            _handle_connection_state_change
+        )
 
     def _remove_pending_connection(self, username_fragment: str):
-        del self._pending_connections[username_fragment]
+        """Removes temporary stored references from `_pending_connections`
+        and ice candidates from `_ice_candidadte_buffer` for a given connection
+
+        Parameters
+        ----------
+        username_fragment : str
+            Username fragment of the connection that should be removed.
+        """
+        if username_fragment in self._pending_connections:
+            del self._pending_connections[username_fragment]
+        if username_fragment in self._ice_candidate_buffer:
+            del self._ice_candidate_buffer[username_fragment]
 
     async def send_to_experimenters(
         self, data: MessageDict, exclude: Experimenter | None = None

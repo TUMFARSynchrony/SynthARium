@@ -50,4 +50,4 @@ def is_valid_rtc_ice_candidate_dict(
     return isinstance(data["candidate"], str) and \
         isinstance(data["sdpMid"], str) and \
         isinstance(data["sdpMLineIndex"], int) and \
-        isinstance(data["usernameFragment"], str)
+        isinstance(data["usernameFragment"], str | None)
