@@ -3,11 +3,14 @@
 from __future__ import annotations
 import logging
 import time
+
 from aiortc.contrib.media import MediaRecorder, MediaBlackhole
+from pyee.asyncio import AsyncIOEventEmitter
+
 from hub.track_handler import TrackHandler
 
 
-class RecordHandler:
+class RecordHandler():
     """Handles audio and video recording of the stream."""
 
     _logger: logging.Logger
@@ -15,6 +18,7 @@ class RecordHandler:
     _record: bool
     _record_to: str
     _track: TrackHandler
+    _start_time: float
 
     def __init__(
         self, track: TrackHandler, record: bool = False, record_to: str = None
@@ -40,6 +44,7 @@ class RecordHandler:
         self._track = track
         self._record = record
         self._record_to = record_to
+
         if self._track.kind == "audio":
             track_format = "mp3"
         else:
@@ -47,13 +52,14 @@ class RecordHandler:
 
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         self._record_to = self._record_to + "_" + timestamp + "." + track_format
-        if self._record:
+        if self._record and self._record_to != "":
             self._recorder = MediaRecorder(self._record_to)
         else:
             self._recorder = MediaBlackhole()
-
+            
     async def start(self) -> None:
         """Start recorder."""
+        self._start_time = time.time()
         await self._recorder.start()
         self._logger.debug("Start recording: " + self._record_to)
 
@@ -66,9 +72,11 @@ class RecordHandler:
             The audio/video track.
         """
         self._recorder.addTrack(track)
-        self._logger.debug("add_track: " + self._record_to)
+        self._logger.debug("Add track: " + self._record_to)
 
     async def stop(self):
         """Stop RecordHandler."""
+        duration = time.time() - self._start_time
+        self._logger.debug("Duration recording: " + str(duration))
         await self._recorder.stop()
         self._logger.debug("Stop recording: " + self._record_to)
