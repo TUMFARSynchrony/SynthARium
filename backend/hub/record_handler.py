@@ -3,14 +3,11 @@
 from __future__ import annotations
 import logging
 import time
-
 from aiortc.contrib.media import MediaRecorder, MediaBlackhole
-from pyee.asyncio import AsyncIOEventEmitter
-
 from hub.track_handler import TrackHandler
 
 
-class RecordHandler():
+class RecordHandler:
     """Handles audio and video recording of the stream."""
 
     _logger: logging.Logger
@@ -44,6 +41,7 @@ class RecordHandler():
         self._track = track
         self._record = record
         self._record_to = record_to
+        self._start_time = 0
 
         if self._track.kind == "audio":
             track_format = "mp3"
