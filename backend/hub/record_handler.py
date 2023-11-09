@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 import logging
+import math
+import os
+import subprocess
 import time
+
 from aiortc.contrib.media import MediaRecorder, MediaBlackhole
 from hub.track_handler import TrackHandler
 
@@ -15,6 +19,7 @@ class RecordHandler:
     _record: bool
     _record_to: str
     _track: TrackHandler
+    _track_format: str
     _start_time: float
 
     def __init__(
@@ -44,13 +49,13 @@ class RecordHandler:
         self._start_time = 0
 
         if self._track.kind == "audio":
-            track_format = "mp3"
+            self._track_format = "mp3"
         else:
-            track_format = "mp4"
+            self._track_format = "mp4"
 
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        self._record_to = self._record_to + "_" + timestamp + "." + track_format
         if self._record and self._record_to != "":
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            self._record_to = self._record_to + "_" + timestamp + "." + self._track_format
             self._recorder = MediaRecorder(self._record_to)
         else:
             self._recorder = MediaBlackhole()
@@ -59,7 +64,7 @@ class RecordHandler:
         """Start recorder."""
         self._start_time = time.time()
         await self._recorder.start()
-        self._logger.debug("Start recording: " + self._record_to)
+        self._logger.debug(f"Start recording {self._record_to}")
 
     def add_track(self, track: TrackHandler) -> None:
         """Add track to recorder.
@@ -70,11 +75,42 @@ class RecordHandler:
             The audio/video track.
         """
         self._recorder.addTrack(track)
-        self._logger.debug("Add track: " + self._record_to)
+        self._logger.debug(f"Add track: {self._record_to}")
 
     async def stop(self):
         """Stop RecordHandler."""
-        duration = time.time() - self._start_time
-        self._logger.debug("Duration recording: " + str(duration))
-        await self._recorder.stop()
-        self._logger.debug("Stop recording: " + self._record_to)
+        end_time = time.time()
+        duration = end_time - self._start_time
+        self._logger.debug(f"Duration %.2f seconds" % duration)
+        self._recorder.stop()
+        self._logger.debug(f"Stop recording {self._record_to}")
+
+        # TODO: need to wait for stop recorder finish. black screen handling
+        await self.trim(duration)
+        self._logger.info(f"Finish processing: {self._record_to}")
+
+    async def trim(self, duration: float):
+        try:
+            start_time = time.time()
+            duration_str = str(math.ceil(duration) * -1)
+            output = f"{self._record_to}_trimmed.{self._track_format}"
+            ffmpeg = subprocess.Popen(
+                    [
+                        "ffmpeg",
+                        "-sseof",
+                        duration_str,
+                        "-i",
+                        self._record_to,
+                        output,
+                    ],
+                    shell=True
+                )
+            self._logger.debug(f"[PID {ffmpeg.pid}]. Run ffmpeg subprocess for trimming.")
+            ffmpeg.communicate()
+            finish_time = time.time() - start_time
+            self._logger.debug(f"[PID {ffmpeg.pid}] Finished trimming in %.2f seconds" % finish_time)
+            os.remove(self._record_to)
+            os.rename(output, self._record_to)
+        except Exception as error:
+            raise Exception("Error running ffmpeg." + 
+                               f"Exception: {error}.")
