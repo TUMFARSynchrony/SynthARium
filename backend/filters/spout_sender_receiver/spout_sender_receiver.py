@@ -93,8 +93,28 @@ class SpoutSenderReceiver(Filter):
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         #send ndarray through spout
+        #resize incoming array
+        new_ndarray = cv2.resize(ndarray, (640, 360))
+        # self._logger.info(f"shape of origional ndarray: {ndarray.shape} and new shape: {new_ndarray.shape}")
+        # self._logger.info(f"shape of origional ndarray: {ndarray.shape}")
+       
+        zeros_nd = numpy.ones((360,640)) 
+        zeros_nd = numpy.expand_dims(zeros_nd, axis = 2)
+
+        # self._logger.info(f"shape of the new empy dimention: {zeros_nd.shape}")
+
+        concat_nd = numpy.concatenate( (new_ndarray, zeros_nd), axis = 2)
+
+        # self._logger.info(f"shape of the new nd array to be read as pizels: {concat_nd.shape}")
+
         image = Image.fromarray(ndarray, 'RGB')
+        # self._logger.info(f"image was read sucessfully: {type(image)}")
+
+        
+        # 360, 640
+        # resized_image = cv2.resize()
         pixels = image.tobytes()
+        # TODO change to 360, 640
         SEND_WIDTH, SEND_HEIGHT = image.size
 
         #TODO try to send same size as receiving array.
