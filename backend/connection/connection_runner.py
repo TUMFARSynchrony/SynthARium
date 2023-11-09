@@ -163,9 +163,9 @@ class ConnectionRunner:
                     return
                 self._send_command("CONNECTION_ANSWER", answer, command_nr)
             case "ADD_ICE_CANDIDATE":
-                self._connection.handle_add_ice_candidate(data)
+                await self._connection.handle_add_ice_candidate(data)
             case "ADD_SUBSCRIBER_ICE_CANDIDATE":
-                self._connection.handle_subscriber_add_ice_candidate(data)
+                await self._connection.handle_subscriber_add_ice_candidate(data)
             case "STOP_SUBCONNECTION":
                 await self._connection.stop_subconnection(data)
             case "SET_MUTED":
