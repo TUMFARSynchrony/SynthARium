@@ -81,17 +81,22 @@ class RecordHandler:
         """Stop RecordHandler."""
         end_time = time.time()
         duration = end_time - self._start_time
-        self._logger.debug(f"Duration %.2f seconds" % duration)
         self._recorder.stop()
         self._logger.debug(f"Stop recording {self._record_to}")
 
-        # TODO: need to wait for stop recorder finish. black screen handling
-        await self.trim(duration)
-        self._logger.info(f"Finish processing: {self._record_to}")
+        if self._track.kind == 'video':
+            while(True):
+                if (os.path.isfile(self._record_to)):
+                    # Trim black frames
+                    self.trim(duration)
+                    self._logger.info(f"Finish processing: {self._record_to}")
+                    break
 
-    async def trim(self, duration: float):
+                # Need to wait until recording file is saved
+                time.sleep(1)
+
+    def trim(self, duration: float):
         try:
-            start_time = time.time()
             duration_str = str(math.ceil(duration) * -1)
             output = f"{self._record_to}_trimmed.{self._track_format}"
             ffmpeg = subprocess.Popen(
@@ -102,15 +107,12 @@ class RecordHandler:
                         "-i",
                         self._record_to,
                         output,
-                    ],
-                    shell=True
+                    ]
                 )
-            self._logger.debug(f"[PID {ffmpeg.pid}]. Run ffmpeg subprocess for trimming.")
+            self._logger.debug(f"[PID {ffmpeg.pid}]. Run ffmpeg subprocess for trimming {self._record_to}")
             ffmpeg.communicate()
-            finish_time = time.time() - start_time
-            self._logger.debug(f"[PID {ffmpeg.pid}] Finished trimming in %.2f seconds" % finish_time)
             os.remove(self._record_to)
             os.rename(output, self._record_to)
         except Exception as error:
-            raise Exception("Error running ffmpeg." + 
+            self._logger.error("Error running ffmpeg." + 
                                f"Exception: {error}.")
