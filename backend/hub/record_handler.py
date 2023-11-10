@@ -81,7 +81,7 @@ class RecordHandler:
         """Stop RecordHandler."""
         end_time = time.time()
         duration = end_time - self._start_time
-        self._recorder.stop()
+        await self._recorder.stop()
         self._logger.debug(f"Stop recording {self._record_to}")
 
         if self._track.kind == 'video':
