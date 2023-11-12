@@ -275,14 +275,14 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         <div className="inputBtnBox">
           <input
             type="text"
-            placeholder="Session ID"
+            placeholder="bbbef1d7d0"
             onChange={(e) => setSessionId(e.target.value)}
-            value={sessionId}
+            value="bbbef1d7d0"
           />
           <button
             onClick={() =>
               props.connection.sendMessage("CREATE_EXPERIMENT", {
-                session_id: sessionId
+                session_id: "bbbef1d7d0"
               })
             }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -892,7 +892,12 @@ function ReplaceConnection(props: {
           <>
             <label>
               Session ID:&nbsp;&nbsp;
-              <input type="text" onChange={handleSessionId} defaultValue={sessionId} />
+              <input
+                type="text"
+                onChange={handleSessionId}
+                placeholder="bbbef1d7d0"
+                defaultValue={sessionId}
+              />
             </label>
             <label>
               ParticipantID:&nbsp;&nbsp;
