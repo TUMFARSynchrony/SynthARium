@@ -32,20 +32,15 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
     setConnectedParticipants(peers);
   };
 
-  const handleGetFiltersData = (data) => {
-    connection.sendMessage("GET_FILTERS_DATA", data);
-  };
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
-    connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
     return () => {
       // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
-      connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
     };
   }, [connection]);
   useEffect(() => {
@@ -80,7 +75,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
                 ownParticipantId={participantIdParam}
               />
             ) : (
-              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
+              <div className="loader">You are being directed to the Meeting Room...</div>
             )
           ) : (
             <Typography>

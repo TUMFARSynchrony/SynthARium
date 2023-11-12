@@ -20,7 +20,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false); // State to track checkbox status
+  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false);
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
@@ -35,11 +35,18 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   };
 
   useEffect(() => {
+    if (sessionData && connectedParticipants) {
+      // If sessionData and connectedParticipants are available,
+      // redirect to the meeting room page
+      window.location.href = `/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`;
+    }
+  }, [sessionData, connectedParticipants, participantIdParam, sessionIdParam]);
+
+  useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
     return () => {
-      // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
@@ -64,14 +71,25 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     setConnectionState(state);
   };
 
+  // Determine the href for the "Continue" button based on conditions
+  const continueButtonHref =
+    !areInstructionsChecked || !sessionData || !connectedParticipants
+      ? null
+      : `/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`;
+
   return (
     <>
       <div className="flex h-[calc(100vh-84px)]">
         <div className="px-6 py-4 w-3/4 flex flex-col">
           {participantStream ? (
-            <div className="flex h-full justify-center gap-y-4 xl:w-1/2">
-              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
-            </div>
+            <video
+              ref={videoElement}
+              autoPlay
+              playsInline
+              width="50%" // Set the width to 50% for half size
+              height="auto" // Let the height adjust to maintain aspect ratio
+              className="mx-auto" // Center the video horizontally
+            ></video>
           ) : (
             <Typography>
               Unable to access your video. Please check that you have allowed access to your camera
@@ -97,10 +115,16 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
       </div>
       <div className="self-center h-fit">
         <a
-          href={`${window.location.origin}/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`}
+          href={continueButtonHref}
           className={!areInstructionsChecked ? "pointer-events-none" : ""}
         >
-          <ActionButton text="Continue" variant="contained" disabled={!areInstructionsChecked} />
+          <ActionButton
+            text={
+              continueButtonHref ? "Continue" : "Experimenter is waiting to start the experiment"
+            }
+            variant="contained"
+            disabled={!areInstructionsChecked || !continueButtonHref}
+          />
         </a>
       </div>
     </>
