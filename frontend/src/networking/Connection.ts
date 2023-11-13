@@ -7,11 +7,11 @@ import {
   isValidConnectionAnswer,
   isValidMessage,
   Message,
-  ConnectedPeer
+  ConnectedPeer,
+  IceCandidate
 } from "./typing";
 import SubConnection from "./SubConnection";
 import { v4 as uuid } from "uuid";
-import { user } from "@nextui-org/react";
 
 /**
  * Class handling the connection with the backend.
@@ -425,7 +425,7 @@ export default class Connection extends ConnectionBase<
   }
 
   protected async handleIceCandidate(candidate: RTCIceCandidate): Promise<void> {
-    const request = {
+    const request: IceCandidate = {
       id: this.id,
       candidate: candidate
     };
