@@ -120,22 +120,6 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     const offer = await this.pc.createOffer(options);
     await this.pc.setLocalDescription(offer);
 
-    // TODO: remove
-    // Wait for iceGatheringState to be "complete".
-    // await new Promise((resolve) => {
-    //   if (this.pc?.iceGatheringState === "complete") {
-    //     resolve(undefined);
-    //   } else {
-    //     const checkState = () => {
-    //       if (this.pc?.iceGatheringState === "complete") {
-    //         this.pc.removeEventListener("icegatheringstatechange", checkState);
-    //         resolve(undefined);
-    //       }
-    //     };
-    //     this.pc?.addEventListener("icegatheringstatechange", checkState);
-    //   }
-    // });
-
     return this.pc.localDescription;
   }
 

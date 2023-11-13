@@ -314,7 +314,6 @@ export default class Connection extends ConnectionBase<
     this.pc.addEventListener(
       "icecandidate",
       (e) => {
-        this.log(`New ICE candidate: ${JSON.stringify(e.candidate)}`); //TODO: remove
         this.handleIceCandidate(e.candidate);
       },
       false
@@ -340,7 +339,6 @@ export default class Connection extends ConnectionBase<
       };
     }
     this.log("Sending initial offer");
-    this.log("Request", request);
 
     let response;
     try {
@@ -433,7 +431,6 @@ export default class Connection extends ConnectionBase<
     };
 
     this.log("Sending ICE candidate");
-    this.log("Request", request);
 
     let response;
     try {

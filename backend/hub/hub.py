@@ -88,7 +88,7 @@ class Hub:
         self._ice_candidate_buffer = {}
         self.server = Server(
             self.handle_offer,
-            self.handle_ice_candidate,
+            self.handle_add_ice_candidate,
             self.config
         )
 
@@ -175,7 +175,7 @@ class Hub:
         """
         if user_type == "participant":
             return await self._handle_offer_participant(
-                offer, participant_id, session_id
+                offer, participant_id, session_id, connection_id
             )
 
         elif user_type == "experimenter":
@@ -307,7 +307,7 @@ class Hub:
 
         return answer, participant_data.as_summary_dict()
     
-    async def handle_ice_candidate(
+    async def handle_add_ice_candidate(
         self,
         candiate: AddIceCandidateDict
     ):
@@ -321,8 +321,6 @@ class Hub:
             New ice candidate send by the client.
         """
         id = candiate['id']
-
-        self._logger.debug(f"Received ice candidate for {id}")
 
         if candiate["candidate"] is None:
             # Null candidate is used to signal the end of the candidate

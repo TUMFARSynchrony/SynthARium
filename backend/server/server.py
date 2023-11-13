@@ -40,7 +40,7 @@ class Server:
     _index: str
     _logger: logging.Logger
     _hub_handle_offer: _HANDLER
-    _hub_handle_ice_candidate: _HANDLER
+    _hub_handle_add_ice_candidate: _HANDLER
     _app: web.Application
     _runner: web.AppRunner
     _config: Config
@@ -48,7 +48,7 @@ class Server:
     def __init__(
         self,
         hub_handle_offer: _HANDLER,
-        hub_handle_ice_candidate: _HANDLER,
+        hub_handle_add_ice_candidate: _HANDLER,
         config: Config
     ):
         """Instantiate new Server instance.
@@ -62,7 +62,7 @@ class Server:
         """
         self._logger = logging.getLogger("Server")
         self._hub_handle_offer = hub_handle_offer
-        self._hub_handle_ice_candidate = hub_handle_ice_candidate
+        self._hub_handle_add_ice_candidate = hub_handle_add_ice_candidate
         self._config = config
 
         self._app = web.Application()
@@ -70,7 +70,7 @@ class Server:
         routes = [
             self._app.router.add_get("/hello-world", self.get_hello_world),
             self._app.router.add_post("/offer", self.handle_offer),
-            self._app.router.add_post("/addIceCandidate", self.handle_ice_candidate),
+            self._app.router.add_post("/addIceCandidate", self.handle_add_ice_candidate),
         ]
 
         # Serve frontend build
@@ -364,8 +364,8 @@ class Server:
         answer = MessageDict(type="SESSION_DESCRIPTION", data=data)
         return web.Response(content_type="application/json", text=json.dumps(answer))
 
-    async def handle_ice_candidate(self, request: web.Request) -> web.StreamResponse:
-        self._logger.debug(f"Received ice candidate: {request}")
+    async def handle_add_ice_candidate(self, request: web.Request) -> web.StreamResponse:
+        self._logger.debug(f"Received ice candidate from {request.remote}")
 
         try:
             candidate = await self._parse_ice_candidate_request(request)
@@ -379,7 +379,7 @@ class Server:
             )
 
         try:
-            await self._hub_handle_ice_candidate(candidate)
+            await self._hub_handle_add_ice_candidate(candidate)
         except ErrorDictException as error:
             self._logger.warning(f"Failed to handle add ice candidate. {error.description}")
             return web.Response(
