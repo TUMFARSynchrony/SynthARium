@@ -11,6 +11,7 @@ from hub import FRONTEND_DIR
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
+from connection.messages.add_ice_candidate_dict import AddIceCandidateDict
 from connection.connection_state import ConnectionState
 
 from experiment import Experiment
@@ -136,6 +137,7 @@ class Hub:
         participant_id: str | None,
         session_id: str | None,
         experimenter_password: str | None,
+        connection_id: str,
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict | None]:
         """Handle incoming offer from a client.
 
@@ -155,6 +157,8 @@ class Hub:
             user_type is "participant").
         experimenter_password : str or None
             Experimenter password to authenticate experimenter.  Can be set in config.
+        connection_id : str
+            Unique ID for the connection. Used to assign ice candidates to connections.
 
         Returns
         -------
@@ -194,7 +198,7 @@ class Hub:
             )
             self.experimenters.append(experimenter)
 
-            await self._add_pending_connection(offer, experimenter)
+            await self._add_pending_connection(connection_id, experimenter)
 
             # Remove experimenter from hub when experimenter disconnects
             experimenter.add_listener("disconnected", self.remove_experimenter)
@@ -210,6 +214,7 @@ class Hub:
         offer: RTCSessionDescription,
         participant_id: Optional[str],
         session_id: Optional[str],
+        connection_id: str,
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict]:
         """Handle incoming offer for a participant.
 
@@ -222,6 +227,8 @@ class Hub:
         session_id : str, optional
             Session ID, defining what session a participant wants to connect to (if
             user_type is "participant").  Will raise an ErrorDictException if missing.
+        connection_id : str
+            Unique ID for the connection. Used to assign ice candidates to connections.
 
         Returns
         -------
@@ -296,13 +303,13 @@ class Hub:
             offer, participant_id, experiment, participant_data, self, self.config
         )
 
-        await self._add_pending_connection(offer, participant)
+        await self._add_pending_connection(connection_id, participant)
 
         return answer, participant_data.as_summary_dict()
     
     async def handle_ice_candidate(
         self,
-        candiate: RTCIceCandidateDict
+        candiate: AddIceCandidateDict
     ):
         """Handle new incoming ice candidate from a connecting client.
         The candidates are mapped to users/connections using
@@ -310,22 +317,27 @@ class Hub:
 
         Parameters
         ----------
-        candidate : connection.messages.rtc_ice_candidate_dict.RTCIceCandidateDict
+        candidate : connection.messages.add_ice_candidate_dict.AddIceCandidateDict
             New ice candidate send by the client.
         """
-        ufrag = candiate['usernameFragment']
+        id = candiate['id']
 
-        self._logger.debug(f"Received ice candidate for {ufrag}")
+        self._logger.debug(f"Received ice candidate for {id}")
 
-        if ufrag not in self._pending_connections:
-            # Buffer candidate if connection is not yet established
-            if ufrag not in self._ice_candidate_buffer:
-                self._ice_candidate_buffer[ufrag] = []
-            self._ice_candidate_buffer[ufrag].append(candiate)
+        if candiate["candidate"] is None:
+            # Null candidate is used to signal the end of the candidate
+            self._remove_pending_connection(id)
             return
 
-        user = self._pending_connections[ufrag]
-        await user.handle_add_ice_candidate(candiate)
+        if id not in self._pending_connections:
+            # Buffer candidate if connection is not yet established
+            if id not in self._ice_candidate_buffer:
+                self._ice_candidate_buffer[id] = []
+            self._ice_candidate_buffer[id].append(candiate["candidate"])
+            return
+
+        user = self._pending_connections[id]
+        await user.handle_add_ice_candidate(candiate["candidate"])
 
     async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
@@ -376,13 +388,13 @@ class Hub:
 
         return experiment
 
-    async def _add_pending_connection(self, offer: RTCSessionDescription, user: User):
+    async def _add_pending_connection(self, connection_id: str, user: User):
         """Add a pending connection to the hub.
 
         Parameters
         ----------
-        offer : RTCSessionDescription
-            WebRTC offer that was received from the client.
+        connection_id : str
+            ID of the connection.
         user : hub.users.user.User
             User that is connecting.
 
@@ -391,34 +403,23 @@ class Hub:
         ErrorDictException
             If the offer does not contain a username fragment.
         """
-        # extrac username fragment from offer
-        try:
-            ufrag = offer.sdp.split("a=ice-ufrag:")[1].split("\r\n")[0]
-        except IndexError:
-            raise ErrorDictException(
-                code=400,
-                type="INVALID_REQUEST",
-                description="Offer does not contain username fragment."
-            )
-
-        self._pending_connections[ufrag] = user
+        self._pending_connections[connection_id] = user
 
         # check if there are candidates buffered for this connection and
         # handle them
-        if ufrag in self._ice_candidate_buffer:
-            for candidate in self._ice_candidate_buffer[ufrag]:
+        if connection_id in self._ice_candidate_buffer:
+            for candidate in self._ice_candidate_buffer[connection_id]:
                 await user.handle_add_ice_candidate(candidate)
-            del self._ice_candidate_buffer[ufrag]
+            del self._ice_candidate_buffer[connection_id]
 
         # remove connection from pending connections
-        # if it is closed or fully connected
+        # if it is closed
         def _handle_connection_state_change(
             state: ConnectionState
         ):
             if state in [ConnectionState.CLOSED,
-                         ConnectionState.FAILED,
-                         ConnectionState.CONNECTED]:
-                self._remove_pending_connection(ufrag)
+                         ConnectionState.FAILED]:
+                self._remove_pending_connection(connection_id)
                 user.connection.remove_listener(
                     "state_change",
                     _handle_connection_state_change
@@ -429,19 +430,19 @@ class Hub:
             _handle_connection_state_change
         )
 
-    def _remove_pending_connection(self, username_fragment: str):
+    def _remove_pending_connection(self, connection_id: str):
         """Removes temporary stored references from `_pending_connections`
         and ice candidates from `_ice_candidadte_buffer` for a given connection
 
         Parameters
         ----------
-        username_fragment : str
-            Username fragment of the connection that should be removed.
+        connection_id : str
+            Connection id of the connection that should be removed.
         """
-        if username_fragment in self._pending_connections:
-            del self._pending_connections[username_fragment]
-        if username_fragment in self._ice_candidate_buffer:
-            del self._ice_candidate_buffer[username_fragment]
+        if connection_id in self._pending_connections:
+            del self._pending_connections[connection_id]
+        if connection_id in self._ice_candidate_buffer:
+            del self._ice_candidate_buffer[connection_id]
 
     async def send_to_experimenters(
         self, data: MessageDict, exclude: Experimenter | None = None

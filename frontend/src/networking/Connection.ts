@@ -10,6 +10,7 @@ import {
   ConnectedPeer
 } from "./typing";
 import SubConnection from "./SubConnection";
+import { v4 as uuid } from "uuid";
 import { user } from "@nextui-org/react";
 
 /**
@@ -49,6 +50,7 @@ export default class Connection extends ConnectionBase<
   readonly participantId?: string;
   readonly experimenterPassword?: string;
   readonly userType: "participant" | "experimenter";
+  readonly id: string; // unique id for this connection used to assign candidates to the correct connection
 
   private _state: ConnectionState;
   private localStream: MediaStream;
@@ -92,6 +94,7 @@ export default class Connection extends ConnectionBase<
     this.userType = userType;
     this.subConnections = new Map();
     this._state = ConnectionState.NEW;
+    this.id = uuid();
 
     this.api = new EventHandler();
     this.api.on("CONNECTION_PROPOSAL", this.handleConnectionProposal.bind(this));
@@ -311,10 +314,8 @@ export default class Connection extends ConnectionBase<
     this.pc.addEventListener(
       "icecandidate",
       (e) => {
-        if (e.candidate) {
-          this.log(`New ICE candidate: ${JSON.stringify(e.candidate)}`); //TODO: remove
-          this.handleIceCandidate(e.candidate);
-        }
+        this.log(`New ICE candidate: ${JSON.stringify(e.candidate)}`); //TODO: remove
+        this.handleIceCandidate(e.candidate);
       },
       false
     );
@@ -324,6 +325,7 @@ export default class Connection extends ConnectionBase<
       request = {
         sdp: offer.sdp,
         type: offer.type,
+        connection_id: this.id,
         user_type: "participant",
         session_id: this.sessionId,
         participant_id: this.participantId
@@ -332,6 +334,7 @@ export default class Connection extends ConnectionBase<
       request = {
         sdp: offer.sdp,
         type: offer.type,
+        connection_id: this.id,
         user_type: "experimenter",
         experimenter_password: this.experimenterPassword
       };
@@ -425,6 +428,7 @@ export default class Connection extends ConnectionBase<
 
   protected async handleIceCandidate(candidate: RTCIceCandidate): Promise<void> {
     const request = {
+      id: this.id,
       candidate: candidate
     };
 

@@ -15,6 +15,7 @@ from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 from custom_types.error import ErrorDict
 from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict, is_valid_rtc_ice_candidate_dict
+from connection.messages.add_ice_candidate_dict import AddIceCandidateDict, is_valid_add_ice_candidate_dict
 
 from hub.exceptions import ErrorDictException
 from hub import FRONTEND_BUILD_DIR
@@ -220,7 +221,7 @@ class Server:
             )
 
         # Check if all required keys exist in params
-        required_keys = ["sdp", "type", "user_type"]
+        required_keys = ["sdp", "type", "user_type", "connection_id"]
         if params.get("user_type") == "participant":
             required_keys.extend(["session_id", "participant_id"])
         elif params.get("user_type") == "experimenter":
@@ -244,7 +245,7 @@ class Server:
         # Successfully parsed parameters
         return params
     
-    async def _parse_ice_candidate_request(self, request: web.Request) -> RTCIceCandidateDict:
+    async def _parse_ice_candidate_request(self, request: web.Request) -> AddIceCandidateDict:
         """Parse a request made to the `/addIceCandidate` endpoint.
 
         Checks the parameters in the request and check if the types are correct.
@@ -282,35 +283,16 @@ class Server:
                 description="Failed to parse request.",
             )
 
-        if "candidate" not in params:
-            raise ErrorDictException(
-                code=400,
-                type="INVALID_REQUEST",
-                description="Missing request parameters: candidate.",
-            )
-
         # Check if candidate is valid
-        if not is_valid_rtc_ice_candidate_dict(params["candidate"]):
+        if not is_valid_add_ice_candidate_dict(params):
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
                 description="Invalid candidate.",
             )
 
-        # if usernameFragment is not set, try to parse it from candidate
-        if params["candidate"]["usernameFragment"] is None:
-            try:
-                ufrag = params["candidate"]["candidate"].split("ufrag ")[1].split(" ")[0]
-                params["candidate"]["usernameFragment"] = ufrag
-            except IndexError:
-                raise ErrorDictException(
-                    code=400,
-                    type="INVALID_REQUEST",
-                    description="Candidate does not contain usernameFragment.",
-                )
-
         # Successfully parsed parameters
-        return params["candidate"]
+        return params
 
     async def handle_offer(self, request: web.Request) -> web.StreamResponse:
         """Handle incoming requests to the `/offer` endpoint.
@@ -363,6 +345,7 @@ class Server:
                 params.get("participant_id"),
                 params.get("session_id"),
                 params.get("experimenter_password"),
+                params.get("connection_id"),
             )
         except ErrorDictException as error:
             self._logger.warning(f"Failed to handle offer. {error.description}")

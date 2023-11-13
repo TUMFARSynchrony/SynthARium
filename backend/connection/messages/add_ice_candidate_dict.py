@@ -51,6 +51,5 @@ def is_valid_add_ice_candidate_dict(
     if not util.check_valid_typeddict_keys(data, AddIceCandidateDict):
         return False
 
-    return isinstance(data["id"], str) and is_valid_rtc_ice_candidate_dict(
-        data["candidate"]
-    )
+    return isinstance(data["id"], str) and \
+    (data["candidate"] is None or is_valid_rtc_ice_candidate_dict(data["candidate"]))
