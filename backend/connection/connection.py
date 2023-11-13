@@ -17,7 +17,6 @@ import shortuuid
 import asyncio
 import logging
 import json
-from custom_types.success import SuccessDict
 
 from connection.messages import (
     ConnectionAnswerDict,

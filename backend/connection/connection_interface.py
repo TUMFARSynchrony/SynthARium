@@ -4,7 +4,6 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
 from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
-from custom_types.success import SuccessDict
 
 from connection.connection_state import ConnectionState
 from connection.messages import (

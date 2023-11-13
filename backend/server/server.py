@@ -14,7 +14,6 @@ from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
 from custom_types.success import SuccessDict
 from custom_types.error import ErrorDict
-from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict, is_valid_rtc_ice_candidate_dict
 from connection.messages.add_ice_candidate_dict import AddIceCandidateDict, is_valid_add_ice_candidate_dict
 
 from hub.exceptions import ErrorDictException
