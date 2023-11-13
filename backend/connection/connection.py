@@ -75,6 +75,7 @@ class Connection(ConnectionInterface):
     _tasks: list[asyncio.Task]
     _audio_record_handler: RecordHandler
     _video_record_handler: RecordHandler
+    _raw_video_record_handler: RecordHandler
 
     def __init__(
         self,
@@ -126,7 +127,14 @@ class Connection(ConnectionInterface):
         self._video_record_handler = RecordHandler(
             self._incoming_video, record, record_to
         )
+        # Since experimenter's path recording is empty, so we try to avoid adding raw so experimenter will not be recorded
+        if (record_to != ""):
+            record_to += "_raw"
 
+        self._raw_video_record_handler = RecordHandler(
+            self._incoming_video, record, record_to
+        )
+        
         self._dc = None
         self._tasks = []
 
@@ -321,13 +329,13 @@ class Connection(ConnectionInterface):
     async def start_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await asyncio.gather(
-            self._video_record_handler.start(), self._audio_record_handler.start()
+            self._video_record_handler.start(), self._raw_video_record_handler.start(), self._audio_record_handler.start()
         )
 
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await asyncio.gather(
-            self._video_record_handler.stop(), self._audio_record_handler.stop()
+            self._video_record_handler.stop(), self._raw_video_record_handler.stop(), self._audio_record_handler.stop()
         )
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
@@ -479,6 +487,7 @@ class Connection(ConnectionInterface):
             task = asyncio.create_task(self._incoming_video.set_track(track))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._video_record_handler.add_track(self._incoming_video.subscribe())
+            self._raw_video_record_handler.add_track(track)
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
