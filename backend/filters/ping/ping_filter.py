@@ -3,6 +3,8 @@ import cv2
 
 from filters import Filter
 from filter_api import FilterAPIInterface
+from filters.filter_data_dict import FilterDataDict
+from filters.filter_dict import FilterDict
 
 
 class PingFilter(Filter):
@@ -13,7 +15,9 @@ class PingFilter(Filter):
     counter: int
     ping: int
 
-    def __init__(self, config, audio_track_handler, video_track_handler):
+    def __init__(
+        self, config: FilterDict, audio_track_handler, video_track_handler
+    ) -> None:
         super().__init__(config, audio_track_handler, video_track_handler)
 
         self.filter_api = video_track_handler.filter_api
@@ -49,6 +53,12 @@ class PingFilter(Filter):
             "groupFilter": False,
             "config": {},
         }
+
+    async def get_filter_data(self) -> None | FilterDataDict:
+        return FilterDataDict(
+            id=self.id,
+            data={"ping": self.ping},
+        )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # fetch current ping and display it on the video frame
