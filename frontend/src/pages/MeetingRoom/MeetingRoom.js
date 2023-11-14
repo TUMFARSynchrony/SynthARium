@@ -60,7 +60,6 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const stateChangeHandler = async (state) => {
     setConnectionState(state);
   };
-
   return (
     <>
       {/* Grid takes up screen space left from the AppToolbar */}
@@ -71,11 +70,14 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
-                localStream={localStream}
+                localStream={connection.remoteStream}
                 ownParticipantId={participantIdParam}
               />
             ) : (
-              <div className="loader">You are being directed to the Meeting Room...</div>
+              <div className="loader">
+                You are being directed to the meeting room... /n If it takes longer than a few
+                minutes, please refresh the page and fill out the consent form again.{" "}
+              </div>
             )
           ) : (
             <Typography>
