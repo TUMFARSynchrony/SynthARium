@@ -106,8 +106,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
   /**
    * Create a new Offer for this connection.
    *
-   * Calls `createOffer`, `setLocalDescription`, waits for iceGatheringState to be "complete"
-   * and returns `localDescription` of {@link pc}
+   * Calls `createOffer`, `setLocalDescription` and returns `localDescription` of {@link pc}
    *
    * @returns `localDescription` of {@link pc}
    */
