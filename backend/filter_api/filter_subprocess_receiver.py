@@ -3,6 +3,7 @@
 import logging
 from hub.exceptions import ErrorDictException
 from filter_api.filter_api import FilterAPI
+from typing import Callable
 
 
 class FilterSubprocessReceiver:
@@ -27,7 +28,11 @@ class FilterSubprocessReceiver:
     _filter_api: FilterAPI
     _logger: logging.Logger
 
-    def __init__(self, filter_api: FilterAPI) -> None:
+    def __init__(
+        self,
+        filter_api: FilterAPI,
+        relay_command: Callable
+    ) -> None:
         """Initialize new FilterSubprocessReceiver.
 
         Parameters
@@ -39,7 +44,10 @@ class FilterSubprocessReceiver:
         self._filter_api = filter_api
         self._logger = logging.getLogger("FilterSubprocessReceiver")
 
-    async def handle(self, message: dict):
+    async def handle(
+        self,
+        message: dict
+    ) -> None | dict:
         """Handle a incoming message from a subprocess FilterSubprocessAPI.
 
         Parameters
@@ -64,5 +72,12 @@ class FilterSubprocessReceiver:
                     )
                 except ErrorDictException as e:
                     self._logger.error(f"Failed experiment_send: {e}")
+            case "GET_CURRENT_PING":
+                ping = await self._filter_api.get_current_ping()
+                return {"ping": ping}
+            case "START_PINGING":
+                await self._filter_api.start_pinging()
+            case "STOP_PINGING":
+                self._filter_api.stop_pinging()
             case _:
                 self._logger.warning(f'Unknown command: "{command}"')

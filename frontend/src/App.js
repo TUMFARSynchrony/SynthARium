@@ -92,6 +92,7 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("PING", handlePing);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -108,6 +109,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("PING", handlePing);
     };
   }, [connection]);
 
@@ -298,6 +300,15 @@ function App() {
         sessionId: ongoingExperimentRef.current.sessionId
       })
     );
+  };
+
+  const handlePing = (data) => {
+    const timestamp = window.performance.now();
+
+    connection.sendMessage("PONG", {
+      handled_time: timestamp,
+      ping_data: data
+    });
   };
 
   /**
