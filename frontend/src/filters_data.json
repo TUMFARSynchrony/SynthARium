@@ -66,24 +66,11 @@
       "config": {}
     },
     {
-      "name": "AUDIO_SPEAKING_TIME",
-      "id": "audio-speaking-time",
+      "name": "SPEAKING_TIME",
+      "id": "speaking-time",
       "channel": "audio",
       "groupFilter": false,
       "config": {}
-    },
-    {
-      "name": "DISPLAY_SPEAKING_TIME",
-      "id": "display-speaking-time",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {
-        "filterId": {
-          "defaultValue": ["AUDIO_SPEAKING_TIME"],
-          "value": "",
-          "requiresOtherFilter": true
-        }
-      }
     }
   ]
 }
