@@ -12,6 +12,7 @@ from aiortc import (
 )
 from aioice import Candidate
 from aiortc.rtcicetransport import candidate_from_aioice
+from aiortc.sdp import candidate_from_sdp
 
 import shortuuid
 import asyncio
@@ -249,10 +250,11 @@ class Connection(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
 
         # Create ice candidate object
-        rtc_candidate = candidate_from_aioice( # TODO check if this is working 
-            Candidate.from_sdp(
-                candidate["candidate"].removeprefix('candidate:')
-            )
+        if candidate["candidate"] == '':
+            return
+
+        rtc_candidate = candidate_from_sdp(
+            candidate["candidate"].split(":", 1)[1]
         )
         rtc_candidate.sdpMid = candidate["sdpMid"]
         rtc_candidate.sdpMLineIndex = candidate["sdpMLineIndex"]
@@ -293,11 +295,11 @@ class Connection(ConnectionInterface):
                 description=f"Unknown subconnection ID {subconnection_id}",
             )
 
-        # Create ice candidate object
-        rtc_candidate = candidate_from_aioice( # TODO check if this is working 
-            Candidate.from_sdp(
-                candidate["candidate"]["candidate"].removeprefix('candidate:')
-            )
+        if candidate["candidate"]["candidate"] == '':
+            return
+
+        rtc_candidate = candidate_from_sdp(
+            candidate["candidate"]["candidate"].split(":", 1)[1]
         )
         rtc_candidate.sdpMid = candidate["candidate"]["sdpMid"]
         rtc_candidate.sdpMLineIndex = candidate["candidate"]["sdpMLineIndex"]
