@@ -10,8 +10,6 @@ from aiortc import (
     RTCRtpSender,
     RTCIceCandidate,
 )
-from aioice import Candidate
-from aiortc.rtcicetransport import candidate_from_aioice
 from aiortc.sdp import candidate_from_sdp
 
 import shortuuid
