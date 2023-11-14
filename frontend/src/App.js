@@ -291,7 +291,7 @@ function App() {
   };
 
   const handleExperimentEnded = (data) => {
-    if (window.location.pathname === "/lobby") {
+    if (window.location.pathname === "/meetingRoom") {
       navigate({
         pathname: "/end",
         search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`

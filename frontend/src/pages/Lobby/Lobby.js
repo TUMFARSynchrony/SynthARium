@@ -86,8 +86,8 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
               ref={videoElement}
               autoPlay
               playsInline
-              width="50%" // Set the width to 50% for half size
-              height="auto" // Let the height adjust to maintain aspect ratio
+              width="50%"
+              height="auto"
               className="mx-auto" // Center the video horizontally
             ></video>
           ) : (
