@@ -15,8 +15,8 @@ export const FilterInformationTab = (props: Props) => {
   useEffect(() => {
     function getFiltersData() {
       const filter_id = "all";
-      const filter_name = "SPEAKING_TIME";
-      const filter_channel = "audio";
+      const filter_name = "PING";
+      const filter_channel = "video";
 
       const data = {
         filter_id: filter_id,
