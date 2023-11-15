@@ -1,9 +1,11 @@
 from __future__ import annotations
+import json
 import logging
 import os
 import subprocess
 
 from server import Config
+from hub.exceptions import ErrorDictException
 from ..post_processing_interface import PostProcessingInterface
 from .producer import PostVideoProducer
 
@@ -40,6 +42,23 @@ class VideoPostProcessing(PostProcessingInterface):
         out = proc3.stdout.readlines()
         count = len(out)
         if count <= 0:
+            error_path = os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            "errors.json"
+                        )
+            if os.path.exists(error_path):
+                 with open(error_path, 'r') as f:
+                    data = json.load(f)
+                    error_messages = []
+                    for err in data:
+                        error_messages.append(err['message'])
+                    os.remove(error_path)
+                    raise ErrorDictException(
+                        code=400,
+                        type="POST_PROCESSING_FAILED",
+                        description=f'Feature extraction process failed. Error: {error_messages}.'
+                    )
+                 
             return False
         else:
             for line in out:

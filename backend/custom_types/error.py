@@ -58,6 +58,7 @@ ERROR_TYPES = Literal[
     "FILE_NOT_FOUND",
     "FILE_ALREADY_EXISTS",
     "STILL_PROCESSING",
+    "POST_PROCESSING_FAILED",
 ]
 """Possible error types for custom_types.error.ErrorDict.
 

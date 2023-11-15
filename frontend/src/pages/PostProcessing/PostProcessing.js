@@ -22,17 +22,30 @@ function PostProcessing({
 }) {
   const [selectedSession, setSelectedSession] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loop, setLoop] = useState(null);
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
-      onCheckPostProcessing();
       onGetRecordingList();
+      onCheckPostProcessing();
     }
   }, [connection, connectionState]);
 
   useEffect(() => {
     if (status) {
       setIsProcessing(status.is_processing);
+      if (!status.is_processing) {
+        setLoop((interval) => {
+          clearInterval(interval);
+          return null;
+        });
+      } else {
+        setLoop(
+          setInterval(() => {
+            onCheckPostProcessing();
+          }, 10000)
+        );
+      }
     }
   }, [status]);
 
@@ -43,9 +56,6 @@ function PostProcessing({
   const onClickExtract = (session_id) => {
     onPostProcessingVideo(session_id);
     onCheckPostProcessing();
-    if (status && status.is_processing != isProcessing) {
-      setIsProcessing(status.is_processing);
-    }
   };
 
   return (

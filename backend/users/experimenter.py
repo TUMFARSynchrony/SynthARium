@@ -836,11 +836,7 @@ class Experimenter(User):
         video_post_processing.recording_list = video_list
         video_post_processing.execute()
 
-        success = SuccessDict(
-            type="POST_PROCESSING_VIDEO",
-            description=f"Successfully start video post-processing. Result directory: {out_dir}"
-        )
-        return MessageDict(type="SUCCESS", data=success)
+        return MessageDict(type="POST_PROCESSING_VIDEO", data=f"Start video post-processing. Result directory: {out_dir}")
     
 
     async def _handle_get_recording_list(self, _) -> MessageDict:

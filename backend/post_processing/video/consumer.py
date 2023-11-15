@@ -46,6 +46,7 @@ class PostVideoConsumer():
 
     def consume(self):
         """Activate consumer to receive messages."""
+        errors = []
         while True:
             self._logger.info("Waiting for a message...")
             message= self._sock.recv_string()
@@ -71,12 +72,44 @@ class PostVideoConsumer():
                                           video["_session_id"],
                                           video["_filename"])
                 subprocess = self.run_feature_extraction(video_path, out_dir)
-                output, error = subprocess.communicate()
-                if subprocess.returncode < 0:
-                    self._logger.error(f"Output: {output}. Error: {error}")
-                    continue
+                
+                success = False
+                line = None
+                for line in subprocess.stdout.readlines():
+                    self._logger.info(line.decode("utf-8"))
+
                 end_video = time.time()
-                self._logger.info(f"Feature extraction finished in {(end_video - start_video)} seconds")
+                # TODO: write the last 3 lines of stdout to an error file and trigger interval every 30s at postProcessing.js
+                if not os.path.isdir(out_dir):
+                    self._logger.error(f"Error: {line.decode('utf-8')}")
+                else:
+                    # add csv extension to filename
+                    if not os.path.exists(os.path.join(out_dir, video["_filename"])):
+                        self._logger.error(f"Error: {line.decode('utf-8')}")
+                    else:
+                        self._logger.info(f"Feature extraction finished in {(end_video - start_video)} seconds")
+                        success = True
+
+                # Data to be written
+                if not success:
+                    errors.append({
+                            "session_id": video["_session_id"],
+                            "filename": video["_filename"],
+                            "message": line.decode("utf-8")
+                    })
+                    
+                    # Serializing json
+                    json_object = json.dumps(errors, indent=4)
+                    
+                    # Writing to sample.json
+                    error_path = os.path.join(parent_directory,
+                                       "post_processing",
+                                       "video",
+                                       "errors.json")
+                    with open(error_path, "w") as outfile:
+                        outfile.write(json_object)
+
+
             except Exception as error:
                 self._logger.error("Error post-processing consumer." + 
                                 f"Message: {message}." + 
@@ -98,7 +131,9 @@ class PostVideoConsumer():
                     f"{video_path}",
                     "-out_dir",
                     f"{out_dir}",
-                ]
+                ],
+                stdout = subprocess.PIPE,
+                stderr=subprocess.STDOUT
             )
             self._logger.info(f"[PID {self._feature_extraction.pid}]. Processing: {video_path}")
             return self._feature_extraction
