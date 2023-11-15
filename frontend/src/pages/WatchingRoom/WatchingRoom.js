@@ -42,16 +42,17 @@ function WatchingRoom({
   const [showInformationTab, setShowInformationTab] = useState(false);
 
   useEffect(() => {
-    const participants = sessionData["participants"];
-    for (let participant in participants) {
-      const audio_filters = participants[participant]["audio_filters"];
-      for (let audio_filter in audio_filters) {
-        if (audio_filters[audio_filter]["name"] === "SPEAKING_TIME") {
-          setShowInformationTab(true);
-          return;
-        }
-      }
-    }
+    setShowInformationTab(true);
+    // const participants = sessionData["participants"];
+    // for (let participant in participants) {
+    //   const video_filters = participants[participant]["video_filters"];
+    //   for (let video_filter in video_filters) {
+    //     if (video_filters[video_filter]["name"] === "PING") {
+    //       setShowInformationTab(true);
+    //       return;
+    //     }
+    //   }
+    // }
   }, []);
 
   return (

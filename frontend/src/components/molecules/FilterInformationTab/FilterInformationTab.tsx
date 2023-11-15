@@ -58,20 +58,20 @@ export const FilterInformationTab = (props: Props) => {
                 Participant
               </th>
               <th scope="col" className="px-6 py-3">
-                Speaking Time
+                Ping (ms)
               </th>
             </tr>
           </thead>
           {filtersData !== null &&
             Object.keys(filtersData).map((id) => {
               const name = getNameById(id);
-              return filtersData[id].audio.map((filter_data) => {
+              return filtersData[id].video.map((filter_data) => {
                 return Object.keys(filter_data.data).map((key) => {
                   return (
                     <tbody className="text-base text-gray-700 text-center" key={key}>
                       <tr>
                         <td>{name}</td>
-                        <td>{Math.round((filter_data.data[key] + Number.EPSILON) * 100) / 100}</td>
+                        <td>{Math.round(filter_data.data[key])}</td>
                       </tr>
                     </tbody>
                   );
