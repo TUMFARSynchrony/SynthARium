@@ -46,6 +46,8 @@ function App() {
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const [recordings, setRecordings] = useState([]);
   const [status, setPostProcessingStatus] = useState(null);
+  const [errorPostProc, setPostProcessingError] = useState(null);
+  const [successPostProc, setPostProcessingSuccess] = useState(null);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
@@ -249,7 +251,10 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    if (data.type !== "CHECK_POST_PROCESSING") {
+    if (data.type == "POST_PROCESSING_VIDEO") {
+      setPostProcessingSuccess(data.description);
+      setPostProcessingError(null);
+    } else {
       setSnackbar({
         open: true,
         text: `SUCCESS: ${data.description}`,
@@ -259,7 +264,12 @@ function App() {
   };
 
   const handleError = (data) => {
-    setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
+    if (data.type == "POST_PROCESSING_FAILED") {
+      setPostProcessingError(data.description);
+      setPostProcessingSuccess(null);
+    } else {
+      setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
+    }
   };
 
   const handleSessionChange = (data) => {
@@ -442,6 +452,8 @@ function App() {
                     recordings={recordings}
                     connection={connection}
                     connectionState={connectionState}
+                    errorMessage={errorPostProc}
+                    successMessage={successPostProc}
                     onPostProcessingVideo={onPostProcessingVideo}
                     onCheckPostProcessing={onCheckPostProcessing}
                     onGetRecordingList={onGetRecordingList}

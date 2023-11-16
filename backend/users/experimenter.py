@@ -787,8 +787,9 @@ class Experimenter(User):
             )
         
         video_post_processing = VideoPostProcessing()
+        status = video_post_processing.check_existing_process()
 
-        if video_post_processing.check_existing_process():
+        if status["is_processing"]:
             raise ErrorDictException(
                 code=102,
                 type="STILL_PROCESSING",
@@ -936,17 +937,19 @@ class Experimenter(User):
             MessageDict with type: `CHECK_POST_PROCESSING`.
         """
         video_post_processing = VideoPostProcessing()
-        description = "There is no running FeatureExtraction subprocess."
-        is_processing = False
-        if video_post_processing.check_existing_process():
-            description = "There is a running FeatureExtraction subprocess."
-            is_processing = True
+        status = video_post_processing.check_existing_process()
 
         result = {
-            "description": description,
-            "is_processing": is_processing
+            "description": status["message"],
+            "is_processing": status["is_processing"]
         }
         
+        if not result["is_processing"] and result["description"] != "":
+            success = SuccessDict(
+                type="POST_PROCESSING_VIDEO", description=result["description"]
+            )
+            return MessageDict(type="SUCCESS", data=success)
+
         return MessageDict(type="CHECK_POST_PROCESSING", data=result)
 
     async def _handle_set_group_filters(self, data: Any) -> MessageDict:

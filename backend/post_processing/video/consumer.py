@@ -79,34 +79,45 @@ class PostVideoConsumer():
                     self._logger.info(line.decode("utf-8"))
 
                 end_video = time.time()
-                # TODO: write the last 3 lines of stdout to an error file and trigger interval every 30s at postProcessing.js
+
                 if not os.path.isdir(out_dir):
                     self._logger.error(f"Error: {line.decode('utf-8')}")
                 else:
-                    # add csv extension to filename
-                    if not os.path.exists(os.path.join(out_dir, video["_filename"])):
+                    csv_filename = f'{video["_filename"].split(".")[0]}.csv'
+                    if not os.path.exists(os.path.join(out_dir, csv_filename)):
                         self._logger.error(f"Error: {line.decode('utf-8')}")
                     else:
                         self._logger.info(f"Feature extraction finished in {(end_video - start_video)} seconds")
                         success = True
 
-                # Data to be written
                 if not success:
                     errors.append({
-                            "session_id": video["_session_id"],
-                            "filename": video["_filename"],
-                            "message": line.decode("utf-8")
+                        "session_id": video["_session_id"],
+                        "filename": video["_filename"],
+                        "message": line.decode("utf-8")
                     })
                     
-                    # Serializing json
                     json_object = json.dumps(errors, indent=4)
                     
-                    # Writing to sample.json
                     error_path = os.path.join(parent_directory,
                                        "post_processing",
                                        "video",
                                        "errors.json")
                     with open(error_path, "w") as outfile:
+                        outfile.write(json_object)
+                else:
+                    successMessage = {
+                        "session_id": video["_session_id"],
+                        "message": f'Successfully finished post-processing. Result directory: {out_dir}'
+                    }
+                    
+                    json_object = json.dumps(successMessage, indent=4)
+                    
+                    success_path = os.path.join(parent_directory,
+                                       "post_processing",
+                                       "video",
+                                       "success.json")
+                    with open(success_path, "w") as outfile:
                         outfile.write(json_object)
 
 

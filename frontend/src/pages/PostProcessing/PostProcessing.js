@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
+import Alert from "@mui/material/Alert";
 import { useEffect, useState } from "react";
 import ConnectionState from "../../networking/ConnectionState";
 import { LinkActionButton } from "../../components/atoms/Button";
@@ -16,6 +17,8 @@ function PostProcessing({
   recordings,
   connection,
   connectionState,
+  errorMessage,
+  successMessage,
   onPostProcessingVideo,
   onCheckPostProcessing,
   onGetRecordingList
@@ -34,17 +37,20 @@ function PostProcessing({
   useEffect(() => {
     if (status) {
       setIsProcessing(status.is_processing);
-      if (!status.is_processing) {
-        setLoop((interval) => {
-          clearInterval(interval);
-          return null;
-        });
-      } else {
-        setLoop(
-          setInterval(() => {
-            onCheckPostProcessing();
-          }, 10000)
-        );
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (status && status.is_processing && !loop) {
+      setLoop(
+        setInterval(() => {
+          onCheckPostProcessing();
+        }, 10000)
+      );
+    } else {
+      if (status && !status.is_processing && loop) {
+        clearInterval(loop);
+        setLoop(null);
       }
     }
   }, [status]);
@@ -106,6 +112,17 @@ function PostProcessing({
             size="large"
             onClick={() => onClickExtract(selectedSession)}
           />
+          {errorMessage && (
+            <Alert severity="error" sx={{ display: "flex", justifyContent: "center" }}>
+              <Typography variant="subtitle1"> {errorMessage} </Typography>
+            </Alert>
+          )}
+
+          {successMessage && (
+            <Alert severity="success" sx={{ display: "flex", justifyContent: "center" }}>
+              <Typography variant="subtitle1"> {successMessage} </Typography>
+            </Alert>
+          )}
         </Grid>
       )}
       {isProcessing && (

@@ -28,7 +28,7 @@ class VideoPostProcessing(PostProcessingInterface):
         self._producer = PostVideoProducer(self._config)
         self._producer.publish(self.recording_list)
     
-    def check_existing_process(self) -> bool:
+    def check_existing_process(self) -> dict:
         """Check whether there are FeatureExtraction subprocesses running."""
         proc = subprocess.Popen(["ps", "aux"],
                                 stdout = subprocess.PIPE,
@@ -46,6 +46,11 @@ class VideoPostProcessing(PostProcessingInterface):
                             os.path.dirname(os.path.abspath(__file__)),
                             "errors.json"
                         )
+            
+            success_path = os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            "success.json"
+                        )
             if os.path.exists(error_path):
                  with open(error_path, 'r') as f:
                     data = json.load(f)
@@ -56,14 +61,28 @@ class VideoPostProcessing(PostProcessingInterface):
                     raise ErrorDictException(
                         code=400,
                         type="POST_PROCESSING_FAILED",
-                        description=f'Feature extraction process failed. Error: {error_messages}.'
+                        description=f'Post-processing failed. Error: {error_messages}.'
                     )
+            elif os.path.exists(success_path):
+                with open(success_path, 'r') as f:
+                    data = json.load(f)
+                    os.remove(success_path)
+                    return {
+                        "is_processing": False,
+                        "message": data['message']
+                    }
                  
-            return False
+            return {
+                "is_processing": False,
+                "message": ""
+            }
         else:
             for line in out:
                 self._logger.info(line)
-            return True
+            return {
+                "is_processing": True,
+                "message": "The OpenFace extraction is still in progress."
+            }
 
     def run_consumer(self) -> subprocess:
         """Run consumer subprocess."""
