@@ -99,6 +99,7 @@ function ParticipantDataModal({
   const handleChange = <T extends keyof Participant>(objKey: T, objValue: Participant[T]) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
+    console.log(newParticipantData);
     setParticipantCopy(newParticipantData);
   };
 

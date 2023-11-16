@@ -24,6 +24,7 @@ const getVideoTitle = (
     if (peer.summary instanceof Object) {
       return `${peer.summary.participant_name}`;
     }
+    console.log(getParticipantById(peer.summary, sessionData).participant_name);
     return ` ${getParticipantById(peer.summary, sessionData).participant_name}`;
   }
   return ownParticipantId ? "You" : `Peer stream ${index + 1}`;

@@ -159,6 +159,7 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onSaveSession = () => {
+    console.log(checkValidSession(sessionData));
     if (!checkValidSession(sessionData)) {
       setSnackbar({
         open: true,
