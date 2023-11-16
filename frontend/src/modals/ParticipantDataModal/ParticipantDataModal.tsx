@@ -375,6 +375,14 @@ function ParticipantDataModal({
                   handleChange("muted_video", !participantCopy.muted_video);
                 }}
               />
+              <FormControlLabel
+                control={<Checkbox />}
+                label="Asymmetric Video"
+                checked={participantCopy.asymmetric_view}
+                onChange={() => {
+                  handleChange("asymmetric_view", !participantCopy.asymmetric_view);
+                }}
+              />
             </Box>
 
             {/* Displays the list of filters available in the backend in a dropdown */}

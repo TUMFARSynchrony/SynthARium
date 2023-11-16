@@ -1,13 +1,5 @@
 {
-  "TEST": [
-    {
-      "name": "SIMPLE_GLASSES_DETECTION",
-      "id": "simple-glasses-detection",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {}
-    }
-  ],
+  "TEST": [],
   "SESSION": [
     {
       "name": "FILTER_API_TEST",
@@ -34,13 +26,7 @@
           "value": "clockwise",
           "requiresOtherFilter": false
         },
-        "angle": {
-          "min": 1,
-          "max": 180,
-          "step": 1,
-          "value": 45,
-          "defaultValue": 45
-        }
+        "angle": { "min": 1, "max": 180, "step": 1, "value": 45, "defaultValue": 45 }
       }
     },
     {
@@ -48,15 +34,7 @@
       "id": "delay",
       "channel": "both",
       "groupFilter": false,
-      "config": {
-        "size": {
-          "min": 0,
-          "max": 120,
-          "step": 1,
-          "value": 60,
-          "defaultValue": 60
-        }
-      }
+      "config": { "size": { "min": 0, "max": 120, "step": 1, "value": 60, "defaultValue": 60 } }
     },
     {
       "name": "OPENFACE_AU",
