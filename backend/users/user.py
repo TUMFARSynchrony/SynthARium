@@ -208,11 +208,13 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         message : custom_types.message.MessageDict
             Message for the client.
         """
-        if self._connection is not None:
+        if self._connection is not None and \
+                self._connection.state == ConnectionState.CONNECTED:
             await self._connection.send(message)
         else:
             self._logger.debug(
-                f"Not sending {message['type']} message, connection is None"
+                f"Not sending {message['type']} message, connection is None \
+                or connection is not fully connected"
             )
 
     async def disconnect(self) -> None:
@@ -606,7 +608,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording for this user."""
         await self._connection.stop_recording()
 
-    async def start_pinging(self, period: float = 1000) -> None:
+    async def start_pinging(self, period: float = 10) -> None:
         """Start sending ping messages to the frontend.
 
         This method starts a background task that sends ping messages to the
