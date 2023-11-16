@@ -11,7 +11,7 @@ import MeetingRoom from "./pages/MeetingRoom/MeetingRoom";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
-import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import ExperimentOverview from "./pages/ExperimentOverview/ExperimentOverview";
 import Consent from "./pages/Consent/Consent";
 import End from "./pages/End/End";
 import PageTemplate from "./components/templates/PageTemplate";
@@ -281,6 +281,12 @@ function App() {
   };
 
   const handleExperimentStarted = (data) => {
+    if (window.location.pathname === "/lobby") {
+      navigate({
+        pathname: "/meetingRoom",
+        search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`
+      });
+    }
     dispatch(
       setExperimentTimes({
         action: ExperimentTimes.START_TIME,
@@ -516,7 +522,7 @@ function App() {
                   />
                 }
                 customComponent={
-                  <WatchingRoom
+                  <ExperimentOverview
                     connectedParticipants={connectedParticipants}
                     onKickBanParticipant={onKickBanParticipant}
                     onAddNote={onAddNote}
@@ -533,10 +539,10 @@ function App() {
           />
           <Route
             exact
-            path="/watchingRoom"
+            path="/experimentOverview"
             element={
               <PageTemplate
-                title={"Watching Room"}
+                title={"Experiment Overview"}
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
@@ -556,7 +562,7 @@ function App() {
                   />
                 }
                 customComponent={
-                  <WatchingRoom
+                  <ExperimentOverview
                     connectedParticipants={connectedParticipants}
                     onKickBanParticipant={onKickBanParticipant}
                     onAddNote={onAddNote}

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
+import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
 import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
@@ -35,14 +36,6 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   };
 
   useEffect(() => {
-    if (sessionData && connectedParticipants) {
-      // If sessionData and connectedParticipants are available,
-      // redirect to the meeting room page
-      window.location.href = `/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`;
-    }
-  }, [sessionData, connectedParticipants, participantIdParam, sessionIdParam]);
-
-  useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
@@ -70,12 +63,6 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const stateChangeHandler = async (state) => {
     setConnectionState(state);
   };
-
-  // Determine the href for the "Continue" button based on conditions
-  const continueButtonHref =
-    !areInstructionsChecked || !sessionData || !connectedParticipants
-      ? null
-      : `/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`;
 
   return (
     <>
@@ -115,16 +102,10 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
       </div>
       <div className="self-center h-fit">
         <a
-          href={continueButtonHref}
+          href={`${window.location.origin}/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`}
           className={!areInstructionsChecked ? "pointer-events-none" : ""}
         >
-          <ActionButton
-            text={
-              continueButtonHref ? "Continue" : "Experimenter is waiting to start the experiment"
-            }
-            variant="contained"
-            disabled={!areInstructionsChecked || !continueButtonHref}
-          />
+          <ActionButton text="Continue" variant="contained" disabled={!areInstructionsChecked} />
         </a>
       </div>
     </>

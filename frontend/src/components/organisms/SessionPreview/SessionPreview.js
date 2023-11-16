@@ -275,7 +275,7 @@ function SessionPreview({
                   variant="contained"
                   color="primary"
                   size="medium"
-                  path="/watchingRoom"
+                  path="/experimentOverview"
                   onClick={() => {
                     onCreateExperiment(selectedSession.id);
                     dispatch(setCurrentSession(selectedSession));
@@ -289,7 +289,7 @@ function SessionPreview({
               text="JOIN"
               variant="contained"
               size="medium"
-              path="/watchingRoom"
+              path="/experimentOverview"
               onClick={() => onJoinExperiment(selectedSession)}
               icon={<PlayArrowOutlined />}
             />
