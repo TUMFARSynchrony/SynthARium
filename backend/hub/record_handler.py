@@ -62,9 +62,10 @@ class RecordHandler:
             
     async def start(self) -> None:
         """Start recorder."""
-        self._start_time = time.time()
-        await self._recorder.start()
-        self._logger.debug(f"Start recording {self._record_to}")
+        if self._record_to != "":
+            self._start_time = time.time()
+            await self._recorder.start()
+            self._logger.debug(f"Start recording {self._record_to}")
 
     def add_track(self, track: TrackHandler) -> None:
         """Add track to recorder.
@@ -74,26 +75,30 @@ class RecordHandler:
         track : TrackHandler
             The audio/video track.
         """
-        self._recorder.addTrack(track)
-        self._logger.debug(f"Add track: {self._record_to}")
+
+        if self._record_to != "":
+            self._recorder.addTrack(track)
+            self._logger.debug(f"Add track: {self._record_to}")
 
     async def stop(self):
         """Stop RecordHandler."""
-        end_time = time.time()
-        duration = end_time - self._start_time
-        await self._recorder.stop()
-        self._logger.debug(f"Stop recording {self._record_to}")
 
-        if self._track.kind == 'video':
-            while(True):
-                if (os.path.isfile(self._record_to)):
-                    # Trim black frames
-                    self.trim(duration)
-                    self._logger.info(f"Finish processing: {self._record_to}")
-                    break
+        if self._record_to != "":
+            end_time = time.time()
+            duration = end_time - self._start_time
+            await self._recorder.stop()
+            self._logger.debug(f"Stop recording {self._record_to}")
 
-                # Need to wait until recording file is saved
-                time.sleep(1)
+            if self._track.kind == 'video':
+                while(True):
+                    if (os.path.isfile(self._record_to)):
+                        # Trim black frames
+                        self.trim(duration)
+                        self._logger.info(f"Finish processing: {self._record_to}")
+                        break
+
+                    # Need to wait until recording file is saved
+                    time.sleep(1)
 
     def trim(self, duration: float):
         try:
