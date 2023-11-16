@@ -608,7 +608,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording for this user."""
         await self._connection.stop_recording()
 
-    async def start_pinging(self, period: float = 10) -> None:
+    async def start_pinging(self, period: float = 1000) -> None:
         """Start sending ping messages to the frontend.
 
         This method starts a background task that sends ping messages to the
