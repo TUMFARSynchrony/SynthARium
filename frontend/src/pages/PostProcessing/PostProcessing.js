@@ -96,7 +96,7 @@ function PostProcessing({
                   {recordings.map((session) => {
                     return (
                       <MenuItem key={session.session_id} value={session.session_id}>
-                        {session.session_title}
+                        {session.session_title} ({session.session_id})
                       </MenuItem>
                     );
                   })}
