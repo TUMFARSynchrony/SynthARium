@@ -1,6 +1,7 @@
 """Provide the `Experiment` class."""
 from __future__ import annotations
 
+import copy
 import logging
 from typing import Any, TYPE_CHECKING
 from pyee.asyncio import AsyncIOEventEmitter
@@ -39,7 +40,7 @@ class Experiment(AsyncIOEventEmitter):
     _participants: dict[str, Participant]
     _audio_group_filter_aggregators: dict[str, GroupFilterAggregator]
     _video_group_filter_aggregators: dict[str, GroupFilterAggregator]
-    sentiment_classifier: SentimentAnalysisFilter
+    sentiment_classifier = None
 
     def __init__(self, session: SessionData):
         """Start a new Experiment.
@@ -61,9 +62,7 @@ class Experiment(AsyncIOEventEmitter):
         self._audio_group_filter_aggregators = {}
         self._video_group_filter_aggregators = {}
         # Create the sentiment analysis pipeline only once
-        if Experiment.sentiment_classifier is None:
-            Experiment.sentiment_classifier = SentimentAnalysisFilter()
-        self._logger.info(Experiment)
+        Experiment.sentiment_classifier = SentimentAnalysisFilter()
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -252,14 +251,22 @@ class Experiment(AsyncIOEventEmitter):
                     type="UNKNOWN_USER",
                     description="No participant found for the given ID.",
                 )
-            if self.session.sentiment_analysis:
-                sentiment_score = (
-                    Experiment.sentiment_classifier.calculateSentimentScore(
-                        chat_message["message"]
-                    )
-                )
+            if participant.chat_filters:
+                for chat_filter in participant.chat_filters:
+                    filter_name = chat_filter.get("name", "")
+                    self._logger.info(f"{filter_name} filter_namesss")
+                    # Creating conditions based on the "name" field
+                    if filter_name == "SENTIMENT ANALYSIS":
+                        self._logger.info(f"Performing sentiment analysis")
+                        sentiment_score = Experiment.sentiment_classifier.apply_filter(
+                            chat_message["message"]
+                        )
 
-                chat_message["sentiment_score"] = sentiment_score
+                        chat_message["sentiment_score"] = sentiment_score
+                    elif filter_name == "Some Other Filter":
+                        print("Performing some other filter.")
+                    else:
+                        print("Unknown filter:", filter_name)
 
             self._logger.info(f"{str(chat_message)} test")
             if target != "experimenter" and author != "experimenter":

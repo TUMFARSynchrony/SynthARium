@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from chat_filters import ChatFilterDict
 
 if TYPE_CHECKING:
     from session.data.participant import ParticipantDict, ParticipantSummaryDict
@@ -97,6 +98,9 @@ class ParticipantData(BaseData):
     video_filters: list[FilterDict] = field(repr=False)
     """Active video filters for participant."""
 
+    chat_filters: list[ChatFilterDict] = field(repr=False)
+    """Active chat filters for participant"""
+
     audio_group_filters: list[FilterDict] = field(repr=False)
     """Active audio group filters for participant."""
 
@@ -134,6 +138,7 @@ class ParticipantData(BaseData):
             "chat": self.chat,
             "audio_filters": self.audio_filters,
             "video_filters": self.video_filters,
+            "chat_filters": self.chat_filters,
             "audio_group_filters": self.audio_group_filters,
             "video_group_filters": self.video_group_filters,
             "lastMessageSentTime": self.lastMessageSentTime,
