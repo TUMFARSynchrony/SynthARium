@@ -146,6 +146,7 @@ export const ExperimenterChatTab = (props: Props) => {
                   author={message.author}
                   target={message.target}
                   date={message.time}
+                  sentimentScore={message.sentiment_score}
                 />
               ))}
           {currentSession &&
@@ -159,7 +160,8 @@ export const ExperimenterChatTab = (props: Props) => {
                   author: message.author,
                   target: message.target,
                   time: new Date(message.time).getTime(), // Convert time to a sortable format
-                  participant_name: p.participant_name
+                  participant_name: p.participant_name,
+                  sentiment_score: message.sentiment_score && message.sentiment_score
                 }))
               );
 
@@ -192,6 +194,7 @@ export const ExperimenterChatTab = (props: Props) => {
                   target={message.target}
                   date={message.time}
                   participant_name={message.participant_name}
+                  sentimentScore={message.sentiment_score}
                 />
               ));
             })()}

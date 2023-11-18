@@ -20,13 +20,24 @@ import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
 import { useAppSelector } from "../../redux/hooks";
 import { selectNumberOfParticipants } from "../../redux/slices/openSessionSlice";
-import { Filter, FilterConfigArray, FilterConfigNumber, Participant } from "../../types";
+import {
+  ChatFilter,
+  Filter,
+  FilterConfigArray,
+  FilterConfigNumber,
+  Participant
+} from "../../types";
 import { v4 as uuid } from "uuid";
 
 import filtersData from "../../filters_data.json";
+import chatFiltersData from "../../chat_filters.json";
 
 // Loading filters data before the component renders, because the Select component needs value.
 const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
+  return filter;
+});
+
+const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
 });
 
@@ -36,6 +47,12 @@ const defaultFilter = {
   name: "Placeholder",
   channel: "",
   groupFilter: false,
+  config: {}
+};
+
+const defaultChatFilter = {
+  id: "",
+  name: "Placeholder",
   config: {}
 };
 
@@ -79,6 +96,7 @@ function ParticipantDataModal({
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
+  const [selectedChatFilter, setSelectedChatFilter] = useState<ChatFilter>(defaultChatFilter);
   const individualFilters = getIndividualFilters();
   const groupFilters = getGroupFilters();
   const [snackbar, setSnackbar] = useState(initialSnackbar);
@@ -111,6 +129,16 @@ function ParticipantDataModal({
     const filtersCopy: any = structuredClone(participantCopy[keyParticipantData]);
     filtersCopy[index]["config"][key]["value"] = value;
     handleChange(keyParticipantData, filtersCopy);
+  };
+
+  const handleChatChange = <T extends keyof Participant>(
+    index: number,
+    key: string,
+    value: number | string
+  ) => {
+    const chatFilters: ChatFilter[] = structuredClone(participantCopy.chat_filters);
+    chatFilters[index]["config"][key]["value"] = value;
+    handleChange("chat_filters", chatFilters);
   };
 
   // On closing the edit participant dialog, the entered data is checked (if data is not saved,
@@ -232,6 +260,15 @@ function ParticipantDataModal({
     setParticipantCopy(newParticipantData);
   };
 
+  const handleSelectChatFilter = (chatFilter: ChatFilter) => {
+    setSelectedChatFilter(chatFilter);
+    const newParticipantData = structuredClone(participantCopy);
+    const newFilter = structuredClone(chatFilter);
+    newFilter.id = uuid();
+    newParticipantData.chat_filters.push(newFilter);
+    setParticipantCopy(newParticipantData);
+  };
+
   const deleteRequiredFiltersInEachFilterArray = (
     filterId: string,
     otherFilterId: string,
@@ -289,6 +326,13 @@ function ParticipantDataModal({
     setParticipantCopy(deleteAllRequiredFilters(audioFilter, newParticipantData));
   };
 
+  const handleDeleteChatFilter = (chatFilter: ChatFilter, filterCopyIndex: number) => {
+    const newParticipantData = structuredClone(participantCopy);
+    newParticipantData.chat_filters.splice(filterCopyIndex, 1);
+
+    setParticipantCopy(newParticipantData);
+  };
+  console.log(participantCopy);
   return (
     <>
       <CustomSnackbar
@@ -381,15 +425,68 @@ function ParticipantDataModal({
             <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
               <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
                 <InputLabel id="filters-select">Filters</InputLabel>
-                {
+
+                <Select
+                  value={selectedFilter.name}
+                  id="filters-select"
+                  label="Filters"
+                  displayEmpty={true}
+                  renderValue={(selected) => {
+                    if (selected === "Placeholder") {
+                      return <em>Select a Filter</em>;
+                    }
+                    return selected;
+                  }}
+                >
+                  <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
+                    Individual Filters
+                  </ListSubheader>
+                  {/* Uncomment the below block to use new filters. */}
+                  {individualFilters.map((individualFilter: Filter) => {
+                    return (
+                      <MenuItem
+                        key={individualFilter.id}
+                        value={individualFilter.name}
+                        onClick={() => handleFilterSelect(individualFilter)}
+                      >
+                        {individualFilter.name}
+                      </MenuItem>
+                    );
+                  })}
+                  <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
+                    Group Filters
+                  </ListSubheader>
+                  {groupFilters.map((groupFilter: Filter) => {
+                    return (
+                      <MenuItem
+                        key={groupFilter.id}
+                        value={groupFilter.name}
+                        onClick={() => handleFilterSelect(groupFilter)}
+                      >
+                        {groupFilter.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+              <Typography variant="caption" sx={{ mt: 4 }}>
+                (NOTE: You can select each filter multiple times)
+              </Typography>
+            </Box>
+
+            {chatFilters && (
+              <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+                <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
+                  <InputLabel id="filters-select">Chat Filters (BETA)</InputLabel>
+
                   <Select
-                    value={selectedFilter.name}
+                    value={selectedChatFilter.name}
                     id="filters-select"
-                    label="Filters"
+                    label="Chat Filters (BETA)"
                     displayEmpty={true}
                     renderValue={(selected) => {
                       if (selected === "Placeholder") {
-                        return <em>Select a Filter</em>;
+                        return <em>Select a Chat Filter</em>;
                       }
                       return selected;
                     }}
@@ -397,40 +494,21 @@ function ParticipantDataModal({
                     <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
                       Individual Filters
                     </ListSubheader>
-                    {/* Uncomment the below block to use new filters. */}
-                    {individualFilters.map((individualFilter: Filter) => {
+                    {chatFilters.map((chatFilter: ChatFilter) => {
                       return (
                         <MenuItem
-                          key={individualFilter.id}
-                          value={individualFilter.name}
-                          onClick={() => handleFilterSelect(individualFilter)}
+                          key={chatFilter.id}
+                          value={chatFilter.name}
+                          onClick={() => handleSelectChatFilter(chatFilter)}
                         >
-                          {individualFilter.name}
-                        </MenuItem>
-                      );
-                    })}
-                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
-                      Group Filters
-                    </ListSubheader>
-                    {groupFilters.map((groupFilter: Filter) => {
-                      return (
-                        <MenuItem
-                          key={groupFilter.id}
-                          value={groupFilter.name}
-                          onClick={() => handleFilterSelect(groupFilter)}
-                        >
-                          {groupFilter.name}
+                          {chatFilter.name}
                         </MenuItem>
                       );
                     })}
                   </Select>
-                }
-              </FormControl>
-              <Typography variant="caption" sx={{ mt: 4 }}>
-                (NOTE: You can select each filter multiple times)
-              </Typography>
-            </Box>
-
+                </FormControl>
+              </Box>
+            )}
             {/* Displays applied audio filters */}
             <Box>
               <Typography variant="overline" display="block">
@@ -671,6 +749,52 @@ function ParticipantDataModal({
                   );
                 }
               )}
+              <Typography variant="overline" display="block">
+                Chat Filters
+              </Typography>
+              {participantCopy.chat_filters.map((chatFilter: ChatFilter, index: number) => {
+                return (
+                  <Box key={index} sx={{ display: "flex", justifyContent: "flex-start" }}>
+                    <Box sx={{ minWidth: 140 }}>
+                      <Chip
+                        key={index}
+                        label={chatFilter.name}
+                        variant="outlined"
+                        size="medium"
+                        color="secondary"
+                        onDelete={() => {
+                          handleDeleteChatFilter(chatFilter, index);
+                        }}
+                      />
+                    </Box>
+
+                    {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      {Object.keys(chatFilter.config).map((configType, configIndex) => {
+                        if (chatFilter["config"][configType]["excludeExperimenter"]) {
+                          return (
+                            <FormControl
+                              key={configIndex}
+                              sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                              size="small"
+                            >
+                              <InputLabel htmlFor="grouped-select">
+                                {configType.charAt(0).toUpperCase() + configType.slice(1)}
+                              </InputLabel>
+                            </FormControl>
+                          );
+                        }
+                      })}
+                    </Box>
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         </DialogContent>

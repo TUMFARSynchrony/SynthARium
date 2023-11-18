@@ -171,7 +171,7 @@ export const getParticipantInviteLink = (participantId: string, sessionId: strin
 };
 
 export const getParticipantName = (participantId: string, participants: Array<Participant>) => {
-  if (participantId === "experimenter") {
+  if (participantId === "experimenter" || participantId === "participants") {
     return;
   }
   return participants.find((p, i) => p.id === participantId).participant_name;

@@ -68,7 +68,7 @@ export const ParticipantChatTab = (props: Props) => {
 
   const toExperimenter = {
     value: "experimenter",
-    label: "Experimenter"
+    label: "To Experimenter"
   };
   const participantOptions =
     currentSession &&
@@ -88,7 +88,7 @@ export const ParticipantChatTab = (props: Props) => {
           <Select
             className="w-full"
             options={participantOptions}
-            defaultValue={participantOptions}
+            defaultValue={toExperimenter}
             onChange={(event) => handleChange(event.value)}
             isSearchable={false}
             getOptionLabel={(props: any) => {
@@ -122,11 +122,10 @@ export const ParticipantChatTab = (props: Props) => {
                     author={message.author}
                     target={message.target}
                     date={message.time}
+                    sentimentScore={message.sentiment_score}
                     currentParticipantId={participantId}
-                    participant_name={getParticipantName(
-                      message.author,
-                      currentSession.participants
-                    )}
+                    author_name={getParticipantName(message.author, currentSession.participants)}
+                    target_name={getParticipantName(message.target, currentSession.participants)}
                   />
                 ));
               })}
