@@ -18,7 +18,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -170,52 +170,6 @@ function SessionForm({ onSendSessionToBackend }) {
     onSendSessionToBackend(sessionData);
   };
 
-  const addRandomSessionData = () => {
-    const futureDate = new Date().setDate(new Date().getDate() + 7);
-
-    let newSessionData = {
-      id: "",
-      title: "Hello World",
-      description: "Randomly created session",
-      date: new Date(futureDate).getTime(),
-      time_limit: 3600000,
-      record: true,
-      participants: [
-        {
-          id: "",
-          participant_name: "Max Mustermann",
-          muted_audio: true,
-          muted_video: true,
-          banned: false,
-          audio_filters: [],
-          video_filters: [],
-          audio_group_filters: [],
-          video_group_filters: [],
-          chat: [],
-          position: {
-            x: 10,
-            y: 10,
-            z: 0
-          },
-          size: {
-            width: 250,
-            height: 250
-          }
-        }
-      ],
-      start_time: 0,
-      end_time: 0,
-      creation_time: 0,
-      notes: [],
-      log: ""
-    };
-
-    setTimeLimit(newSessionData.time_limit / 60000);
-    dispatch(initializeSession(newSessionData));
-    let dimensions = getParticipantDimensions(newSessionData.participants);
-    setParticipantDimensions(dimensions);
-  };
-
   return (
     <>
       <div className="flex h-[calc(100vh-84px)] flex-row px-4 py-8 items-start">
@@ -282,19 +236,6 @@ function SessionForm({ onSendSessionToBackend }) {
                       label="Record Session"
                       checked={sessionData.record}
                       onChange={() => handleSessionDataChange("record", !sessionData.record)}
-                    />
-                  </Box>
-                  <Box sx={{ mt: 1, mb: 1 }}>
-                    <FormControlLabel
-                      control={<Checkbox />}
-                      label="Activate sentiment analysis"
-                      checked={sessionData.sentiment_analysis}
-                      onChange={() =>
-                        handleSessionDataChange(
-                          "sentiment_analysis",
-                          !sessionData.sentiment_analysis
-                        )
-                      }
                     />
                   </Box>
                 </Box>

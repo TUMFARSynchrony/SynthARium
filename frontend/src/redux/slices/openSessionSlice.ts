@@ -19,8 +19,7 @@ const initialState: OpenSessionState = {
     end_time: 0,
     creation_time: 0,
     notes: [],
-    log: [],
-    sentiment_analysis: false
+    log: []
   }
 };
 

@@ -60,7 +60,6 @@ class SessionDict(TypedDict):
     date: int
     time_limit: int
     record: bool
-    sentiment_analysis: bool
     participants: list[ParticipantDict]
     creation_time: int
     start_time: int

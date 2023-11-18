@@ -51,7 +51,6 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
         session_dict["title"],
         session_dict["date"],
         session_dict["record"],
-        session_dict["sentiment_analysis"],
         session_dict["time_limit"],
         session_dict["description"],
         session_dict["notes"],

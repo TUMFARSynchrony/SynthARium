@@ -13,8 +13,7 @@ export const INITIAL_SESSION_DATA: Session = {
   end_time: 0,
   creation_time: 0,
   notes: [],
-  log: [],
-  sentiment_analysis: false
+  log: []
 };
 
 export const CANVAS_SIZE = {
@@ -35,6 +34,7 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   banned: false,
   video_filters: [],
   audio_filters: [],
+  chat_filters: [],
   audio_group_filters: [],
   video_group_filters: [],
   chat: [],
