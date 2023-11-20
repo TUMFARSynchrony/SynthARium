@@ -128,6 +128,7 @@ class ParticipantData(BaseData):
             "size": self.size.asdict(),
             "muted_video": self.muted_video,
             "muted_audio": self.muted_audio,
+            "asymmetric_view": self.asymmetric_view,
             "position": self.position.asdict(),
             "chat": self.chat,
             "audio_filters": self.audio_filters,

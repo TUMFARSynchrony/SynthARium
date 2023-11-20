@@ -131,7 +131,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         return self._muted_audio
 
     @property
-    def is_asymmetric_view(self) -> bool:
+    def asymmetric_view(self) -> bool:
         """bool indicating if the users view is asymmetric."""
         return self._asymmetric_view
 
