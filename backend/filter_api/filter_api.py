@@ -49,9 +49,13 @@ class FilterAPI(FilterAPIInterface):
         # For docstring see FilterAPIInterface or hover over function declaration
         return await self._user.get_current_ping()
 
-    async def start_pinging(self) -> None:
+    async def start_pinging(
+        self,
+        period: int,
+        buffer_length: int
+    ) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
-        await self._user.start_pinging()
+        await self._user.start_pinging(period, buffer_length)
 
     def stop_pinging(self) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
