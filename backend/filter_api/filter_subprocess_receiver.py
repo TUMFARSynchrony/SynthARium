@@ -76,7 +76,10 @@ class FilterSubprocessReceiver:
                 ping = await self._filter_api.get_current_ping()
                 return {"ping": ping}
             case "START_PINGING":
-                await self._filter_api.start_pinging()
+                await self._filter_api.start_pinging(
+                    data["period"],
+                    data["bufferLength"]
+                )
             case "STOP_PINGING":
                 self._filter_api.stop_pinging()
             case _:

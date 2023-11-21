@@ -12,6 +12,8 @@ class PingFilter(Filter):
     filter_api: FilterAPIInterface
     counter: int
     ping: int
+    period: int
+    buffer_length: int
 
     def __init__(self, config, audio_track_handler, video_track_handler):
         super().__init__(config, audio_track_handler, video_track_handler)
@@ -19,9 +21,11 @@ class PingFilter(Filter):
         self.filter_api = video_track_handler.filter_api
         self.counter = 0
         self.ping = 0
+        self.period = config["config"]["period"]["value"]
+        self.buffer_length = config["config"]["bufferLength"]["value"]
 
     async def complete_setup(self) -> None:
-        await self.filter_api.start_pinging()
+        await self.filter_api.start_pinging(self.period, self.buffer_length)
 
     async def cleanup(self) -> None:
         self.filter_api.stop_pinging()
@@ -47,7 +51,22 @@ class PingFilter(Filter):
             "id": id,
             "channel": "video",
             "groupFilter": False,
-            "config": {},
+            "config": {
+                "period": {
+                    "min": 10,
+                    "max": 60000,
+                    "step": 1,
+                    "value": 1000,
+                    "defaultValue": 1000,
+                },
+                "bufferLength": {
+                    "min": 1,
+                    "max": 300,
+                    "step": 1,
+                    "value": 10,
+                    "defaultValue": 10,
+                },
+            },
         }
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:

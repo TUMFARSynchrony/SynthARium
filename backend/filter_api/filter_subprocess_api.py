@@ -66,9 +66,16 @@ class FilterSubprocessAPI(FilterAPIInterface):
         )
         return answer["ping"] if answer is not None else 0
 
-    async def start_pinging(self) -> None:
+    async def start_pinging(
+        self,
+        period: int,
+        buffer_length: int
+    ) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
-        self._send_command("START_PINGING", {})
+        self._send_command("START_PINGING", {
+            "period": period,
+            "bufferLength": buffer_length
+        })
     
     def stop_pinging(self) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
