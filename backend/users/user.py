@@ -213,7 +213,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         else:
             self._logger.debug(
                 f"Not sending {message['type']} message, connection is None \
-                or connection is not fully connected"
+or connection is not fully connected"
             )
 
     async def disconnect(self) -> None:
