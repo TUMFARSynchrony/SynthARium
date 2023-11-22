@@ -10,13 +10,13 @@ import time
 import uuid
 
 
-class OpenFacePublisher(threading.Thread):
+class OpenFacePublisher(object):
 
-    internal_lock = threading.Lock()
+    """Asynchronous Rpc client."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.daemon = True
+    def __init__(self):
+        super().__init__()
+        # self.daemon = True
         self.is_running = True
         self.response = None
         self.corr_id = None
@@ -53,22 +53,19 @@ class OpenFacePublisher(threading.Thread):
             queue=self.callback_queue,
             on_message_callback=self.on_response)
         
-    def run(self):
-        while self.is_running:
-            self.connection.process_data_events(time_limit=1)
-
+        # thread = threading.Thread(target=self.connection.process_data_events(time_limit=None))
+        # thread.setDaemon(True)
+        # thread.start()
 
     def on_response(self, ch, method, props, body):
-        self.logger.debug(f"Response '{body}'")
-        if self.corr_id == props.correlation_id:
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            self.response = json.loads(body)
+        # if self.corr_id == props.correlation_id:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        self.response = json.loads(body)
 
 
-    def _publish(self, message):
+    def publish(self, message):
         self.response = None
         corr_id = str(uuid.uuid4())
-        
         self.channel.basic_publish(
             exchange='amq.direct',
             routing_key=self.queue_name,
@@ -77,7 +74,12 @@ class OpenFacePublisher(threading.Thread):
                 correlation_id=corr_id,
                 ),
                 body=message)
-        time.sleep(0.3)
+        while self.response is None:
+            self.connection.process_data_events(time_limit=None)
+
+        return self.response
     
-    def publish(self, message):
-        self.connection.add_callback_threadsafe(lambda: self._publish(message))
+    # def publish(self, message):
+    #     self.connection.add_callback_threadsafe(lambda: self._publish(message))
+
+    #     self._logger.debug(f"Received: {self.response}")
