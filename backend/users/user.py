@@ -214,7 +214,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         else:
             self._logger.debug(
                 f"Not sending {message['type']} message, connection is None \
-                or connection is not fully connected"
+or connection is not fully connected"
             )
 
     async def disconnect(self) -> None:
@@ -608,7 +608,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording for this user."""
         await self._connection.stop_recording()
 
-    async def start_pinging(self, period: float = 1000) -> None:
+    async def start_pinging(
+        self,
+        period: int,
+        buffer_length: int
+    ) -> None:
         """Start sending ping messages to the frontend.
 
         This method starts a background task that sends ping messages to the
@@ -616,15 +620,18 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        period : float, optional
+        period : int, optional
             The period at which to send ping messages, in milliseconds.
-            Default is 1000ms.
+        buffer_length : int, optional
+            The length of the ping buffer, in seconds.
         """
         if self._pinging:
             return
         self._pinging = True
         # buffer is always ~30s long
-        self._ping_buffer = deque(maxlen=int(max(1, 30 / (period / 1000))))
+        self._ping_buffer = deque(
+            maxlen=int(max(1, buffer_length / (period / 1000)))
+        )
         self._ping_task = asyncio.ensure_future(self._ping_loop(period=period))
 
     def stop_pinging(self) -> None:
@@ -638,13 +645,13 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         except Exception as err:
             self._logger.error(f"Failed to cancel ping task: {err}")
 
-    async def _ping_loop(self, period: float) -> None:
+    async def _ping_loop(self, period: int) -> None:
         """Async loop which sends ping messages
         to the frontend at a specified period.
 
         Parameters
         ----------
-        period : float
+        period : int
             Ping period in milliseconds.
         """
         while True:

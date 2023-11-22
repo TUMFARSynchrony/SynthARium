@@ -58,8 +58,19 @@ class FilterAPIInterface(ABC):
         pass
 
     @abstractmethod
-    async def start_pinging(self) -> None:
+    async def start_pinging(
+        self,
+        period: int,
+        buffer_length: int
+    ) -> None:
         """Start sending ping messages to the frontend.
+
+        Parameters
+        ----------
+        period : int, optional
+            The period at which to send ping messages, in milliseconds.
+        buffer_length : int, optional
+            The length of the ping buffer, in seconds.
         """
         pass
 
