@@ -7,11 +7,11 @@ import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
+import { getParticipantById } from "../../utils/utils";
 import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./MeetingRoom.css";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
-  const videoElement = useRef(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
@@ -43,15 +43,15 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
     };
   }, [connection]);
-  useEffect(() => {
-    setParticipantStream(localStream);
-  }, [localStream]);
 
   useEffect(() => {
-    if (participantStream && videoElement.current) {
-      videoElement.current.srcObject = localStream;
+    const participant = getParticipantById(participantIdParam, sessionData);
+    if (participant.asymmetric_view) {
+      setParticipantStream(connection.remoteStream);
+    } else {
+      setParticipantStream(localStream);
     }
-  }, [localStream, participantStream]);
+  }, [localStream, sessionData]);
 
   const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -70,7 +70,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
-                localStream={connection.remoteStream}
+                localStream={participantStream}
                 ownParticipantId={participantIdParam}
               />
             ) : (
