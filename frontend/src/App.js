@@ -421,12 +421,41 @@ function App() {
                     onJoinExperiment={onJoinExperiment}
                   />
                 }
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/postProcessingRoom"),
+                        label: "Post-Processing Room"
+                      }
+                    ]}
+                  />
+                }
+              />
+            }
+          />
+          <Route
+            exact
+            path="/postProcessingRoom"
+            element={
+              <PageTemplate
+                title={"Post-Processing Room"}
+                customComponent={<PostProcessing />}
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/"),
+                        label: "Back to Session Overview"
+                      }
+                    ]}
+                  />
+                }
               />
             }
           />
           <Route exact path="/consent" element={<Consent />} />
           <Route exact path="/end" element={<End />} />
-          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
             path="/lobby"

@@ -8,9 +8,10 @@ type VideoProps = {
   src: MediaProvider;
   participantData: Participant;
   title?: string; // Add a title prop
+  shouldMute?: boolean;
 };
 
-const Video = ({ src, participantData, title }: VideoProps) => {
+const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
   const useVideo = (stream: MediaStream | null) => {
     const videoRef = useRef(document.createElement("video"));
 
@@ -19,6 +20,11 @@ const Video = ({ src, participantData, title }: VideoProps) => {
       if (!stream) {
         return;
       }
+
+      if (shouldMute) {
+        video.muted = true;
+      }
+
       video.srcObject = src;
       video.onloadedmetadata = function () {
         video.play();

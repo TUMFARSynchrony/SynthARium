@@ -73,9 +73,14 @@ export const openSessionSlice = createSlice({
         ...payload,
         id: "",
         creation_time: 0,
+        end_time: 0,
+        start_time: 0,
+        notes: [],
+        log: [],
         participants: payload.participants.map((p) => ({
           ...p,
-          id: ""
+          id: "",
+          chat: []
         }))
       };
     }
