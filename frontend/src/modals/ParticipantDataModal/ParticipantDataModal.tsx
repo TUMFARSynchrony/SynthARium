@@ -99,6 +99,7 @@ function ParticipantDataModal({
   const handleChange = <T extends keyof Participant>(objKey: T, objValue: Participant[T]) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
+    console.log(newParticipantData);
     setParticipantCopy(newParticipantData);
   };
 
@@ -194,12 +195,10 @@ function ParticipantDataModal({
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
         if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
           const otherFilter = structuredClone(
-            testData
-              .filter(
-                (filteredFilter) =>
-                  filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
-              )
-              .pop()
+            testData.find(
+              (filteredFilter) =>
+                filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
+            )
           );
           const id = uuid();
           otherFilter.id = id;
@@ -373,6 +372,14 @@ function ParticipantDataModal({
                 checked={participantCopy.muted_video}
                 onChange={() => {
                   handleChange("muted_video", !participantCopy.muted_video);
+                }}
+              />
+              <FormControlLabel
+                control={<Checkbox />}
+                label="Asymmetric Video"
+                checked={participantCopy.asymmetric_view}
+                onChange={() => {
+                  handleChange("asymmetric_view", !participantCopy.asymmetric_view);
                 }}
               />
             </Box>

@@ -24,6 +24,7 @@ const getVideoTitle = (
     if (peer.summary instanceof Object) {
       return `${peer.summary.participant_name}`;
     }
+    console.log(getParticipantById(peer.summary, sessionData).participant_name);
     return ` ${getParticipantById(peer.summary, sessionData).participant_name}`;
   }
   return ownParticipantId ? "You" : `Peer stream ${index + 1}`;
@@ -45,9 +46,6 @@ function VideoCanvas({ connectedParticipants, sessionData, ownParticipantId, loc
         ) : null}
         {/* Render videos for other connected participants */}
         {connectedParticipants?.map((peer: any, i: number) => {
-          if (peer.id === ownParticipantId) {
-            return null; // Skip rendering the participant's own video again
-          }
           const participantData =
             typeof peer.summary === "string"
               ? getParticipantById(peer.summary, sessionData)

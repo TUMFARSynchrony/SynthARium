@@ -19,6 +19,7 @@ from connection.messages import ConnectionOfferDict, is_valid_connection_offer_d
 from custom_types.ping import PongDict
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filters_data_dict import FiltersDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -83,6 +84,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
+    _asymmetric_view: bool
     _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __subscribers: dict[str, str]  # User ID -> subconnection_id
@@ -90,7 +92,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     __lock: asyncio.Lock
 
     def __init__(
-        self, user_id: str, muted_video: bool = False, muted_audio: bool = False
+        self, user_id: str, muted_video: bool = False, muted_audio: bool = False, asymmetric_view: bool = False
     ) -> None:
         """Instantiate new User base class.
 
@@ -111,6 +113,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._experiment = None
         self._muted_video = muted_video
         self._muted_audio = muted_audio
+        self._asymmetric_view = asymmetric_view
         self._handlers = {}
         self.__subscribers = {}
         self.__disconnected = False
@@ -127,6 +130,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     def muted_audio(self) -> bool:
         """bool indicating if the users audio is muted."""
         return self._muted_audio
+
+    @property
+    def asymmetric_view(self) -> bool:
+        """bool indicating if the users view is asymmetric."""
+        return self._asymmetric_view
 
     @property
     def recorded(self) -> bool:
@@ -552,6 +560,41 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
                     )
                     return
                 await self._connection.set_audio_group_filters(group_filters, ports)
+
+    async def get_filters_data_for_all_participants(
+        self, data: Any
+    ) -> dict[str, FiltersDataDict]:
+        experiment = self.get_experiment_or_raise("Failed to set filters.")
+        res: dict[str, FiltersDataDict] = {}
+
+        for p in experiment.participants.values():
+            if p.connection is not None:
+                res[p.id] = await p.get_filters_data_for_one_participant(data)
+
+        return res
+
+    async def get_filters_data_for_one_participant(self, data: Any) -> FiltersDataDict:
+        filter_id = data["filter_id"]
+        filter_name = data["filter_name"]
+        filter_channel = data["filter_channel"]
+        audio_filters = []
+        video_filters = []
+        if filter_channel == "video" or filter_channel == "both":
+            video_filters = await self._connection.get_video_filters_data(
+                filter_id, filter_name
+            )
+        if filter_channel == "audio" or filter_channel == "both":
+            audio_filters = await self._connection.get_audio_filters_data(
+                filter_id, filter_name
+            )
+        if filter_channel not in ["video", "audio", "both"]:
+            raise ErrorDictException(
+                code=404,
+                type="INVALID_REQUEST",
+                description=f'Unknown filter channel: "{filter_channel}".',
+            )
+
+        return FiltersDataDict(video=video_filters, audio=audio_filters)
 
     async def start_recording(self) -> None:
         """Start recording for this user."""

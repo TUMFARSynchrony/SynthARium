@@ -29,8 +29,9 @@ export const CANVAS_SIZE = {
 export const INITIAL_PARTICIPANT_DATA: Participant = {
   id: "",
   participant_name: "",
-  muted_audio: true,
-  muted_video: true,
+  muted_audio: false,
+  muted_video: false,
+  asymmetric_view: false,
   banned: false,
   video_filters: [],
   audio_filters: [],
@@ -97,7 +98,7 @@ function parseIceServers() {
 
 export const PARTICIPANT_HOST = "http://localhost:3000/lobby/";
 
-// Displays the same set of instructions in both the /lobby and in the /watchingRoom.
+// Displays the same set of instructions in both the /lobby and in the /experimentOverview.
 export const instructionsList = [
   "Please remove any glasses, caps or other such articles if you are wearing any.",
   "Ensure that your surrounding lighting is good.",

@@ -31,6 +31,7 @@ class ParticipantData(BaseData):
     size : SizeData
     muted_video : bool
     muted_audio : bool
+    asymmetric_view : bool
     position : PositionData
     chat : list or custom_types.chat_message.ChatMessageDict
     filters : list or filters.FilterDict
@@ -75,6 +76,9 @@ class ParticipantData(BaseData):
 
     muted_audio: bool = field(repr=False)
     """Whether the participants' audio is forcefully muted by the experimenter."""
+
+    asymmetric_view: bool = field(repr=False)
+    """Whether the participants view is forecefull made into a local stream by the experimenter."""
 
     position: PositionData = field(repr=False)
     """Position of the participant on the canvas (frontend).
@@ -124,6 +128,7 @@ class ParticipantData(BaseData):
             "size": self.size.asdict(),
             "muted_video": self.muted_video,
             "muted_audio": self.muted_audio,
+            "asymmetric_view": self.asymmetric_view,
             "position": self.position.asdict(),
             "chat": self.chat,
             "audio_filters": self.audio_filters,

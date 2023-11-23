@@ -11,13 +11,13 @@ import {
   selectParticipantsTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
-import "./WatchingRoom.css";
+import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
+import "./ExperimentOverview.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
 import { useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 
-function WatchingRoom({
+function ExperimentOverview({
   connectedParticipants,
   onKickBanParticipant,
   onChat,
@@ -113,7 +113,7 @@ function WatchingRoom({
                 onMuteParticipant={onMuteParticipant}
               />
             )}
-            {isInstructionsModalActive && <InstructionsTab />}
+            {isInstructionsModalActive && <InstructionsTab onInstructionsCheckChange={false} />}
           </div>
         </div>
       ) : (
@@ -126,4 +126,4 @@ function WatchingRoom({
   );
 }
 
-export default WatchingRoom;
+export default ExperimentOverview;
