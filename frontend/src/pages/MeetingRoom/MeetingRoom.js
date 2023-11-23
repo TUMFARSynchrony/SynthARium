@@ -47,9 +47,9 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   useEffect(() => {
     const participant = getParticipantById(participantIdParam, sessionData);
     if (participant.asymmetric_view) {
-      setParticipantStream(connection.remoteStream);
-    } else {
       setParticipantStream(localStream);
+    } else {
+      setParticipantStream(connection.remoteStream);
     }
   }, [localStream, sessionData]);
 
