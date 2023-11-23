@@ -79,7 +79,7 @@ class Participant(User):
             WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
         super(Participant, self).__init__(
-            participant_id, participant_data.muted_video, participant_data.muted_audio
+            participant_id, participant_data.muted_video, participant_data.muted_audio, participant_data.asymmetric_view
         )
         self._logger = logging.getLogger(f"Participant-{participant_id}")
         self._participant_data = participant_data

@@ -84,6 +84,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
+    _asymmetric_view: bool
     _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     __subscribers: dict[str, str]  # User ID -> subconnection_id
@@ -91,7 +92,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     __lock: asyncio.Lock
 
     def __init__(
-        self, user_id: str, muted_video: bool = False, muted_audio: bool = False
+        self, user_id: str, muted_video: bool = False, muted_audio: bool = False, asymmetric_view: bool = False
     ) -> None:
         """Instantiate new User base class.
 
@@ -112,6 +113,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._experiment = None
         self._muted_video = muted_video
         self._muted_audio = muted_audio
+        self._asymmetric_view = asymmetric_view
         self._handlers = {}
         self.__subscribers = {}
         self.__disconnected = False
@@ -128,6 +130,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     def muted_audio(self) -> bool:
         """bool indicating if the users audio is muted."""
         return self._muted_audio
+
+    @property
+    def asymmetric_view(self) -> bool:
+        """bool indicating if the users view is asymmetric."""
+        return self._asymmetric_view
 
     @property
     def recorded(self) -> bool:

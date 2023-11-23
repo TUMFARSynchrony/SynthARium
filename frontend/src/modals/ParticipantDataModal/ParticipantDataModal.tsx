@@ -99,6 +99,7 @@ function ParticipantDataModal({
   const handleChange = <T extends keyof Participant>(objKey: T, objValue: Participant[T]) => {
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
+    console.log(newParticipantData);
     setParticipantCopy(newParticipantData);
   };
 
@@ -371,6 +372,14 @@ function ParticipantDataModal({
                 checked={participantCopy.muted_video}
                 onChange={() => {
                   handleChange("muted_video", !participantCopy.muted_video);
+                }}
+              />
+              <FormControlLabel
+                control={<Checkbox />}
+                label="Asymmetric Video"
+                checked={participantCopy.asymmetric_view}
+                onChange={() => {
+                  handleChange("asymmetric_view", !participantCopy.asymmetric_view);
                 }}
               />
             </Box>

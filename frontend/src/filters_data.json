@@ -1,13 +1,5 @@
 {
-  "TEST": [
-    {
-      "name": "SIMPLE_GLASSES_DETECTION",
-      "id": "simple-glasses-detection",
-      "channel": "video",
-      "groupFilter": false,
-      "config": {}
-    }
-  ],
+  "TEST": [],
   "SESSION": [
     {
       "name": "FILTER_API_TEST",

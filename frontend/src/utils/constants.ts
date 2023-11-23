@@ -29,8 +29,9 @@ export const CANVAS_SIZE = {
 export const INITIAL_PARTICIPANT_DATA: Participant = {
   id: "",
   participant_name: "",
-  muted_audio: true,
-  muted_video: true,
+  muted_audio: false,
+  muted_video: false,
+  asymmetric_view: false,
   banned: false,
   video_filters: [],
   audio_filters: [],
