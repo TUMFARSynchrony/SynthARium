@@ -314,7 +314,9 @@ export default class Connection extends ConnectionBase<
     this.pc.addEventListener(
       "icecandidate",
       (e) => {
-        this.handleIceCandidate(e.candidate);
+        if (e.candidate) {
+          this.handleIceCandidate(e.candidate);
+        }
       },
       false
     );

@@ -17,7 +17,7 @@ class RTCIceCandidateDict(TypedDict):
     See Also
     --------
     Data Types Wiki :
-        TODO
+        https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#rtcicecandidate
     Connection Protocol Wiki :
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
     """

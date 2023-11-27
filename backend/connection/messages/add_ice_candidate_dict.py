@@ -14,16 +14,14 @@ class AddIceCandidateDict(TypedDict):
     Attributes
     ----------
     id : str
-        Identifier of this offer. Must be used in the
-        connection.messages.connection_answer_dict.ConnectionAnswerDict
-        to identify the answer.
+        Identifier of the connection to which this candidate belongs.
     candidate : connection.messages.rtc_ice_candidate_dict.RTCIceCandidateDict
         New ICE candidate.
 
     See Also
     --------
     Data Types Wiki :
-        TODO
+        https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#addicecandidate
     Connection Protocol Wiki :
         https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
     """
@@ -52,4 +50,4 @@ def is_valid_add_ice_candidate_dict(
         return False
 
     return isinstance(data["id"], str) and \
-    (data["candidate"] is None or is_valid_rtc_ice_candidate_dict(data["candidate"]))
+        is_valid_rtc_ice_candidate_dict(data["candidate"])

@@ -43,7 +43,7 @@ class Hub:
     server: Server
     config: Config
     _logger: logging.Logger
-    _pending_connections: dict[str, User]
+    _current_connections: dict[str, User]
     _ice_candidate_buffer: dict[str, list[RTCIceCandidateDict]]
 
     def __init__(self):
@@ -84,7 +84,7 @@ class Hub:
         self.experimenters = []
         self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
-        self._pending_connections = {}
+        self._current_connections = {}
         self._ice_candidate_buffer = {}
         self.server = Server(
             self.handle_offer,
@@ -198,7 +198,7 @@ class Hub:
             )
             self.experimenters.append(experimenter)
 
-            await self._add_pending_connection(connection_id, experimenter)
+            await self._add_current_connection(connection_id, experimenter)
 
             # Remove experimenter from hub when experimenter disconnects
             experimenter.add_listener("disconnected", self.remove_experimenter)
@@ -303,7 +303,7 @@ class Hub:
             offer, participant_id, experiment, participant_data, self, self.config
         )
 
-        await self._add_pending_connection(connection_id, participant)
+        await self._add_current_connection(connection_id, participant)
 
         return answer, participant_data.as_summary_dict()
     
@@ -322,19 +322,14 @@ class Hub:
         """
         id = candiate['id']
 
-        if candiate["candidate"] is None:
-            # Null candidate is used to signal the end of the candidate
-            self._remove_pending_connection(id)
-            return
-
-        if id not in self._pending_connections:
+        if id not in self._current_connections:
             # Buffer candidate if connection is not yet established
             if id not in self._ice_candidate_buffer:
                 self._ice_candidate_buffer[id] = []
             self._ice_candidate_buffer[id].append(candiate["candidate"])
             return
 
-        user = self._pending_connections[id]
+        user = self._current_connections[id]
         await user.handle_add_ice_candidate(candiate["candidate"])
 
     async def create_experiment(self, session_id: str) -> Experiment:
@@ -386,8 +381,8 @@ class Hub:
 
         return experiment
 
-    async def _add_pending_connection(self, connection_id: str, user: User):
-        """Add a pending connection to the hub.
+    async def _add_current_connection(self, connection_id: str, user: User):
+        """Add a connection to the current connection list for access.
 
         Parameters
         ----------
@@ -401,7 +396,7 @@ class Hub:
         ErrorDictException
             If the offer does not contain a username fragment.
         """
-        self._pending_connections[connection_id] = user
+        self._current_connections[connection_id] = user
 
         # check if there are candidates buffered for this connection and
         # handle them
@@ -417,7 +412,7 @@ class Hub:
         ):
             if state in [ConnectionState.CLOSED,
                          ConnectionState.FAILED]:
-                self._remove_pending_connection(connection_id)
+                self._remove_current_connection(connection_id)
                 user.connection.remove_listener(
                     "state_change",
                     _handle_connection_state_change
@@ -428,8 +423,8 @@ class Hub:
             _handle_connection_state_change
         )
 
-    def _remove_pending_connection(self, connection_id: str):
-        """Removes temporary stored references from `_pending_connections`
+    def _remove_current_connection(self, connection_id: str):
+        """Removes temporary stored references from `_current_connections`
         and ice candidates from `_ice_candidadte_buffer` for a given connection
 
         Parameters
@@ -437,9 +432,12 @@ class Hub:
         connection_id : str
             Connection id of the connection that should be removed.
         """
-        if connection_id in self._pending_connections:
-            del self._pending_connections[connection_id]
+        if connection_id in self._current_connections:
+            del self._current_connections[connection_id]
         if connection_id in self._ice_candidate_buffer:
+            self._logger.warning(
+                f"Ice candidate buffer for id: {connection_id} was not empty when connection was closed"
+            )
             del self._ice_candidate_buffer[connection_id]
 
     async def send_to_experimenters(
