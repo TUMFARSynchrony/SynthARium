@@ -69,6 +69,11 @@ export type ChatMessage = {
   sentiment_score?: SentimentScore;
 };
 
+export type ChatGptMessage = {
+  content: string;
+  role: "user" | "assistant" | "system";
+};
+
 export type SentimentScore = {
   label: string;
   score: number;

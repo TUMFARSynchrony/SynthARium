@@ -6,6 +6,7 @@ import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../utils/utils";
 import { ExperimenterChatTab } from "../../components/molecules/ChatTab/ExperimenterChatTab";
 import {
+  selectChatGptTab,
   selectChatTab,
   selectInstructionsTab,
   selectParticipantsTab
@@ -16,6 +17,7 @@ import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
 import { useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
 function WatchingRoom({
   connectedParticipants,
@@ -36,6 +38,8 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
+
   return (
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
@@ -116,6 +120,7 @@ function WatchingRoom({
               />
             )}
             {isInstructionsModalActive && <InstructionsTab />}
+            {isChatGptModalActive && <ChatGptTab />}
           </div>
         </div>
       ) : (

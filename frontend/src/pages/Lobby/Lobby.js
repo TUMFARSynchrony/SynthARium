@@ -6,10 +6,15 @@ import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
-import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
+import {
+  selectChatGptTab,
+  selectChatTab,
+  selectInstructionsTab
+} from "../../redux/slices/tabsSlice";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./Lobby.css";
 import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -20,6 +25,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const [participantStream, setParticipantStream] = useState(null);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -114,6 +120,8 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
             <InstructionsTab />
           )}
+
+          {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
         </div>
       </div>
     </>
