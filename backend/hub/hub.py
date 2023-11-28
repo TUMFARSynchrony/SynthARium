@@ -390,11 +390,6 @@ class Hub:
             ID of the connection.
         user : hub.users.user.User
             User that is connecting.
-
-        Raises
-        ------
-        ErrorDictException
-            If the offer does not contain a username fragment.
         """
         self._current_connections[connection_id] = user
 
