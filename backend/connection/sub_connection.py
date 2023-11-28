@@ -136,8 +136,8 @@ class SubConnection(AsyncIOEventEmitter):
         if self._pc.connectionState in ["closed", "failed"]:
             await self.stop()
 
-    async def handle_ice_candidate(self, candidate: RTCIceCandidate):
-        """Handle a `ICE_CANDIDATE` message for this SubConnection.
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidate):
+        """Handle a `ADD_ICE_CANDIDATE` message for this SubConnection.
 
         Parameters
         ----------

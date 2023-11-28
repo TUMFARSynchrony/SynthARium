@@ -304,7 +304,7 @@ class Connection(ConnectionInterface):
         rtc_candidate.usernameFragment = \
             candidate["candidate"]["usernameFragment"]
 
-        await sc.handle_ice_candidate(rtc_candidate)
+        await sc.handle_add_ice_candidate(rtc_candidate)
 
     async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
