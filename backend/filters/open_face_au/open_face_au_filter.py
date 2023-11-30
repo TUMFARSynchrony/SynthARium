@@ -2,35 +2,30 @@ import base64
 import logging
 import cv2
 import numpy
-import threading
-import time
 from av import VideoFrame
 
-from time import sleep
 from filters.filter import Filter
 from filters.simple_line_writer import SimpleLineWriter
-from filters.open_face_au.open_face_publisher import OpenFacePublisher
-from .open_face_data_parser import OpenFaceDataParser
+from filters.open_face_au.rabbitmq.mq_publisher import MQPublisher
+from filters.open_face_au.rabbitmq.mq_consumer import MQConsumer
 
 
 class OpenFaceAUFilter(Filter):
     """OpenFace AU Extraction filter."""
-    internal_lock = threading.Lock()
 
     frame: int
     data: dict
-    file_writer: OpenFaceDataParser
     line_writer: SimpleLineWriter
-    publisher: OpenFacePublisher
+    publisher: MQPublisher
+    consumer: MQConsumer
 
-    def __init__(self, config, audio_track_handler, video_track_handler):
+    def __init__(self, config, audio_track_handler, video_track_handler, participant):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.logger = logging.getLogger("OpenFaceAUFilter")
         
-        self.publisher = OpenFacePublisher()
-        self.publisher.start()
-        self.line_writer = SimpleLineWriter()
-        self.file_writer = OpenFaceDataParser()
+        #TODO: check participant id and session id is None
+        self.consumer = MQConsumer(participant["participant_id"], participant["session_id"])
+        self.publisher = MQPublisher(participant["participant_id"], participant["session_id"], f"{participant['participant_id']}_callback")
 
         self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
@@ -76,37 +71,14 @@ class OpenFaceAUFilter(Filter):
         is_success, image_enc = cv2.imencode(".png", ndarray)
 
         if not is_success:
-            #TODO: print error and return ndarray
-            return False
+            self.logger.error(f"Failed to encode image to opencv, frame {self.frame}")
+            return ndarray
         
         im_bytes = bytearray(image_enc.tobytes())
         im_64 = base64.b64encode(im_bytes)
 
-        # self.publisher.response = None
-        print(f" [x] Requesting frame {self.frame}")
-
-        self.publisher.publish(im_64)
-        # with self.internal_lock:
-        #     while self.publisher.response is None:
-        #         time.sleep(0.03)
-        self._logger.debug(f"Received: {self.publisher.response}")
-
-        print(f" [.] Got {self.publisher.response!r}")
-        # if exit_code == 0:
-        #TODO: write as thread daemon process
-        #     self.data = result
-        #     # TODO: use correct frame
-        #     # if a frame is skipped, data corresponds to a frame before current frame, but self.frame does not
-        #     self.file_writer.write(self.frame, self.data)
-        # else:
-        #     self.file_writer.write(self.frame, {"intensity": "-1"})
-
-        # Put text on image
-        au06 = self.data["intensity"]["AU06"]
-        au12 = self.data["intensity"]["AU12"]
-        ndarray = self.line_writer.write_lines(
-            ndarray, [f"AU06: {au06}", f"AU12: {au12}", self.publisher.response]
-        )
+        #TODO: put frame on queue and run publisher as async thread get the frame from queue
+        self.publisher.publish(im_64, str(self.frame))
 
         return ndarray
 

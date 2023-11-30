@@ -38,7 +38,12 @@ def parse_args() -> (
     parser.add_argument(
         "--video-group-filters", dest="video_group_filters", required=False, default=[]
     )
-    parser.add_argument("--record-data", dest="record_data", required=False, default=[])
+    parser.add_argument(
+        "--record-data", dest="record_data", required=False, default=[]
+    )
+    parser.add_argument(
+        "--participant-data", dest="participant", required=False, default=[]
+    )
     args = parser.parse_args()
 
     # Check and parse offer
@@ -49,6 +54,7 @@ def parse_args() -> (
         audio_group_filters = json.loads(args.audio_group_filters)
         video_group_filters = json.loads(args.video_group_filters)
         record_data = json.loads(args.record_data)
+        participant = json.loads(args.participant)
     except (json.JSONDecodeError, TypeError) as e:
         print(
             (
@@ -73,6 +79,7 @@ def parse_args() -> (
         audio_group_filters,
         video_group_filters,
         record_data,
+        participant
     )
 
 
@@ -85,6 +92,7 @@ async def main() -> None:
         audio_group_filters,
         video_group_filters,
         record_data,
+        participant
     ) = parse_args()
 
     runner = ConnectionRunner()
@@ -96,6 +104,7 @@ async def main() -> None:
         audio_group_filters,
         video_group_filters,
         record_data,
+        participant
     )
 
 

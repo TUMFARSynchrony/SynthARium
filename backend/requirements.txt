@@ -14,6 +14,7 @@ dlib~=19.24.2
 
 zmq~=0.0.0
 pyzmq~=25.0.0
+pika~=1.3.2
 NamedAtomicLock~=1.1.3
 
 pyts~=0.13.0

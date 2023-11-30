@@ -69,6 +69,7 @@ class ConnectionRunner:
         audio_group_filters: list[FilterDict],
         video_group_filters: list[FilterDict],
         record_data: list,
+        participant: dict | None = None
     ) -> None:
         """Run the ConnectionRunner.  Returns after the ConnectionRunner finished.
 
@@ -91,6 +92,7 @@ class ConnectionRunner:
             video_group_filters,
             filter_api,
             record_data,
+            participant
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self._send_command(

@@ -1,35 +1,43 @@
 import csv
 import os
-
+import time
 
 class OpenFaceDataParser:
-    def __init__(self):
-        # TODO: get session and participant id
+
+    # TODO: get the action units based on what user needs
+    HEADER = ["frame", "AU06", "AU12"]
+
+    def __init__(self, session_id: str, participant_id: str):
         path = os.path.join(
             os.path.dirname(
                 os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             ),
             "sessions",
-            "ae839e5e6f",
-            "OpenFace",
+            session_id,
+            "open_face_filter",
         )
-        filename = "9ba5fdccde"
-        appendix = ".csv"
+
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{participant_id}_{timestamp}.csv"
 
         if not os.path.exists(path):
             os.makedirs(path)
 
-        filepath = os.path.join(path, filename + appendix)
-        i = 1
-        while os.path.exists(filepath):
-            filepath = os.path.join(path, filename + f"_{i}" + appendix)
-            i = i + 1
+        filepath = os.path.join(path, filename)
 
         self.save_file = open(filepath, "w")
         self.writer = csv.writer(self.save_file, delimiter=",")
+        self.writer.writerow(self.HEADER)
 
     def __del__(self):
         self.save_file.close()
 
-    def write(self, frame: int, openface_data):
-        self.writer.writerow((f"frame {frame}", openface_data))
+    def write(self, frame: int, data: dict):
+        row = [frame]
+        for key in self.HEADER:
+            if key in data["intensity"]:
+                row.append(data["intensity"][key])
+            else:
+                row.append("-")
+
+        self.writer.writerow(row)

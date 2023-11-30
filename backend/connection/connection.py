@@ -32,7 +32,6 @@ from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
-
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
 
@@ -71,6 +70,7 @@ class Connection(ConnectionInterface):
     _audio_record_handler: RecordHandler
     _video_record_handler: RecordHandler
     _raw_video_record_handler: RecordHandler
+    _participant: dict | None
 
     def __init__(
         self,
@@ -79,6 +79,7 @@ class Connection(ConnectionInterface):
         log_name_suffix: str,
         filter_api: FilterAPIInterface,
         record_data: tuple,
+        participant: dict | None = None
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -114,6 +115,7 @@ class Connection(ConnectionInterface):
         self._message_handler = message_handler
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
+        self._participant = participant
 
         (record, record_to) = record_data
         self._audio_record_handler = RecordHandler(
@@ -488,6 +490,7 @@ async def connection_factory(
     video_group_filters: list[FilterDict],
     filter_api: FilterAPIInterface,
     record_data: list,
+    participant: dict | None = None,
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -513,7 +516,7 @@ async def connection_factory(
     pc = RTCPeerConnection()
     record_data = (record_data[0], record_data[1])
     connection = Connection(
-        pc, message_handler, log_name_suffix, filter_api, record_data
+        pc, message_handler, log_name_suffix, filter_api, record_data, participant
     )
     await connection.complete_setup(
         audio_filters, video_filters, audio_group_filters, video_group_filters

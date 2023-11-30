@@ -58,6 +58,10 @@ async def participant_factory(
     filter_api = FilterAPI(participant)
     record_data = (experiment.session.record, participant.get_recording_path())
     log_name_suffix = f"P-{participant_id}"
+    participant_dict = {
+        "participant_id": participant_id,
+        "session_id": experiment.session.id
+    }
 
     if config.participant_multiprocessing:
         answer, connection = await connection_subprocess_factory(
@@ -71,6 +75,7 @@ async def participant_factory(
             participant_data.video_group_filters,
             filter_api,
             record_data,
+            participant_dict
         )
     else:
         answer, connection = await connection_factory(
@@ -83,6 +88,7 @@ async def participant_factory(
             participant_data.video_group_filters,
             filter_api,
             record_data,
+            participant_dict
         )
 
     participant.set_connection(connection)

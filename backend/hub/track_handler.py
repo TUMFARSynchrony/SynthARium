@@ -242,11 +242,16 @@ class TrackHandler(MediaStreamTrack):
                 self._filters[filter_id] = old_filters[filter_id]
                 self._filters[filter_id].set_config(config)
                 continue
-
+            
             # Create a new filter for configs with empty id.
-            self._filters[filter_id] = filter_factory.create_filter(
-                config, self.connection.incoming_audio, self.connection.incoming_video
-            )
+            if self.connection._participant is not None:
+                self._filters[filter_id] = filter_factory.create_filter(
+                    config, self.connection.incoming_audio, self.connection.incoming_video, self.connection._participant
+                )
+            else:
+                self._filters[filter_id] = filter_factory.create_filter(
+                    config, self.connection.incoming_audio, self.connection.incoming_video
+                )
 
         coroutines: list[Coroutine] = []
         # Cleanup old filters
