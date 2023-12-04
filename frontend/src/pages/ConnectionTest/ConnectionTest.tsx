@@ -232,7 +232,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
-    props.connection.api.on("FILTERS_DATA", handleFiltersData);
+    props.connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
     props.connection.api.on(
       "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
       handleGetFiltersDataSendToParticipant
