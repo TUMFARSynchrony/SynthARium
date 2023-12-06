@@ -1,4 +1,0 @@
-black~=23.3.0
-flake8~=6.0.0
-
-aiohttp_cors
