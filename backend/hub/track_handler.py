@@ -100,6 +100,7 @@ class TrackHandler(MediaStreamTrack):
         self._group_filters = {}
 
         # Forward the ended event to this handler.
+        self._track.add_listener("reset_filter", self.reset_filter)
         self._track.add_listener("ended", self.stop)
 
     async def complete_setup(
@@ -399,6 +400,13 @@ class TrackHandler(MediaStreamTrack):
                     ndarray = await active_filter.process(original, ndarray)
 
         return ndarray
+
+    def reset_filter(self, reset: bool):
+        self._logger.debug(f"{reset} reset value")
+        if reset:
+            for active_filter in self._filters.values():
+                if active_filter.name == "OPENFACE_AU":
+                    active_filter.reset()
 
     async def _run_video_group_filters(self, frame: VideoFrame) -> None:
         ndarray = frame.to_ndarray(format="bgr24")

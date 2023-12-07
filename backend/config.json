@@ -19,5 +19,6 @@
     "username": "guest",
     "password": "guest",
     "protocol": "amqp"
-  }
+  },
+  "openface_au": ["AU06", "AU12"]
 }

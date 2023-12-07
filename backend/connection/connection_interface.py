@@ -216,3 +216,9 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Both audio and video recorder will stop.
         """
         pass
+
+    @abstractmethod
+    async def reset_filter(self) -> None:
+        """Reset filter for this connection.
+        """
+        pass

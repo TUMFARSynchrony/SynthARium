@@ -5,7 +5,7 @@ import numpy
 from av import VideoFrame
 
 from filters.filter import Filter
-from filters.simple_line_writer import SimpleLineWriter
+from filters.open_face_au.open_face import OpenFace
 from filters.open_face_au.rabbitmq.mq_publisher import MQPublisher
 from filters.open_face_au.rabbitmq.mq_consumer import MQConsumer
 
@@ -15,23 +15,24 @@ class OpenFaceAUFilter(Filter):
 
     frame: int
     data: dict
-    line_writer: SimpleLineWriter
+    open_face: OpenFace
     publisher: MQPublisher
     consumer: MQConsumer
 
     def __init__(self, config, audio_track_handler, video_track_handler, participant):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.logger = logging.getLogger("OpenFaceAUFilter")
-        
-        #TODO: check participant id and session id is None
-        self.consumer = MQConsumer(participant["participant_id"], participant["session_id"])
-        self.publisher = MQPublisher(participant["participant_id"], participant["session_id"], f"{participant['participant_id']}_callback")
 
         self.data = {"intensity": {"AU06": "-", "AU12": "-"}}
         self.frame = 0
+        self.participant = participant
+        self.open_face = OpenFace(participant["participant_id"])
+        self.setup(participant)
+        # self.reset()
+        #TODO: reset queue & csv file & frame when experiment starts or start everything when experiment starts
 
     def __del__(self):
-        del self.file_writer, self.line_writer, self.publisher
+        del self.publisher, self.consumer, self.open_face
 
     @staticmethod
     def name(self) -> str:
@@ -54,11 +55,23 @@ class OpenFaceAUFilter(Filter):
             "groupFilter": False,
             "config": {},
         }
+    
+    def setup(self, participant: dict) -> None:
+        self.consumer = MQConsumer(f"{participant['participant_id']}.callback", participant["session_id"])
+        self.publisher = MQPublisher(participant["participant_id"], participant["participant_id"], f"{participant['participant_id']}.callback")
+    
+    def reset(self) -> None:
+        self.consumer.reset()
+        self.publisher.reset()
 
     async def process(
-        self, original: VideoFrame, ndarray: numpy.ndarray
+        self, original: VideoFrame, ndarray: numpy.ndarray, reset: bool = False
     ) -> numpy.ndarray:
         self.frame = self.frame + 1
+        if reset:
+            self.frame = 1
+            self.reset()
+            self.setup(self.participant)
 
         # If ROI is sent from the OpenFace, only send that region
         if "roi" in self.data.keys() and self.data["roi"]["width"] != 0:
@@ -77,8 +90,8 @@ class OpenFaceAUFilter(Filter):
         im_bytes = bytearray(image_enc.tobytes())
         im_64 = base64.b64encode(im_bytes)
 
-        #TODO: put frame on queue and run publisher as async thread get the frame from queue
-        self.publisher.publish(im_64, str(self.frame))
+        if self.publisher is not None:
+            self.publisher.publish(im_64, str(self.frame))
 
         return ndarray
 

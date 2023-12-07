@@ -292,6 +292,10 @@ class Connection(ConnectionInterface):
         await asyncio.gather(
             self._video_record_handler.stop(), self._raw_video_record_handler.stop(), self._audio_record_handler.stop()
         )
+    
+    async def reset_filter(self) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        self._incoming_video.emit("reset_filter", True)
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration

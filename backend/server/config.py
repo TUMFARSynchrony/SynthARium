@@ -29,6 +29,7 @@ class Config:
     participant_multiprocessing: bool
 
     rabbitmq: dict
+    openface_au: list
 
     def __init__(self):
         """Load config from `backend/config.json`.
@@ -57,6 +58,7 @@ class Config:
             "experimenter_multiprocessing": bool,
             "participant_multiprocessing": bool,
             "rabbitmq": dict,
+            "openface_au": list
         }
         for key in data_types:
             if key not in config:
@@ -92,6 +94,7 @@ class Config:
         self.experimenter_multiprocessing = config["experimenter_multiprocessing"]
         self.participant_multiprocessing = config["participant_multiprocessing"]
         self.rabbitmq = config["rabbitmq"]
+        self.openface_au = config["openface_au"]
 
         # Parse log_file
         self.log_file = config.get("log_file")
@@ -126,7 +129,8 @@ class Config:
             f"{self.ping_subprocesses}, experimenter_multiprocessing="
             f"{self.experimenter_multiprocessing}, participant_multiprocessing="
             f"{self.participant_multiprocessing}, rabbitmq="
-            f"{self.rabbitmq}."
+            f"{self.rabbitmq}, openface_au="
+            f"{self.openface_au}."
         )
 
     def __repr__(self) -> str:

@@ -181,6 +181,8 @@ class ConnectionRunner:
                 await self._connection.start_recording()
             case "STOP_RECORDING":
                 await self._connection.stop_recording()
+            case "RESET_FILTER":
+                await self._connection.reset_filter()
             case _:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 

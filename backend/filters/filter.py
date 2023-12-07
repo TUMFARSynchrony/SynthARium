@@ -116,6 +116,10 @@ class Filter(ABC):
         """
         return
 
+    async def reset(self) -> None:
+        """Reset filter when experiment starts."""
+        return
+
     @staticmethod
     @abstractmethod
     def name(self) -> str:

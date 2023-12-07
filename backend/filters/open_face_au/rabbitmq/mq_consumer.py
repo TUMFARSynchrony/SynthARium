@@ -1,9 +1,8 @@
-import asyncio
-import functools
 import json
 import logging
 import threading
 
+from server import Config
 from .mq_basic import MQBasic
 from ..open_face_data_parser import OpenFaceDataParser
 
@@ -13,24 +12,29 @@ from ..open_face_data_parser import OpenFaceDataParser
 #         return asyncio.new_event_loop().run_until_complete(f(*args, **kwargs))
 
 #     return wrapper
- 
+
 class MQConsumer(MQBasic):
 
-    queue: dict
+    queue_name: str
     channel_tag: any
     consumer_thread: threading.Thread
     file_writer: OpenFaceDataParser
+    result: dict
 
-    def __init__(self, queue_name: str, routing_key: str, exchange_name: str = "amq.direct"):
+    def __init__(self, queue_name: str, session_id: str, exchange_name: str = "amq.direct"):
         super().__init__()
         self.logger = logging.getLogger("MQConsumer")
-        self.file_writer = OpenFaceDataParser(routing_key, queue_name)
+        self.server_config = Config()
+        self.result = {}
+
+        filename = queue_name.split(".")[0]
+        self.file_writer = OpenFaceDataParser(session_id, filename, self.server_config.openface_au)
         self.declare_queue(queue_name=queue_name)
         self.bind_queue(
-            exchange_name=exchange_name, queue_name=queue_name, routing_key=routing_key
+            exchange_name=exchange_name, queue_name=queue_name, routing_key=queue_name
         )
         self.channel_tag = None
-        self.queue = {}
+        self.queue_name = queue_name
         self.consume_messages(queue=queue_name, callback=self.consume)
 
     def get_message(self, queue_name: str, auto_ack: bool = False):
@@ -55,14 +59,23 @@ class MQConsumer(MQBasic):
 
     def cancel_consumer(self):
         if self.channel_tag is not None:
+            self.channel.queue_purge(self.queue_name)
             self.channel.basic_cancel(self.channel_tag)
             self.channel_tag = None
         else:
             self.logger.error("Do not cancel a non-existing job")
 
-    # @sync
-    async def consume(self, channel, method, properties, body):
+    def consume(self, channel, method, properties, body):
         json_body = json.loads(body)
-        if (int(properties.correlation_id) % 30 == 0):
-            self.queue[properties.correlation_id] = json_body
-        self.file_writer.write(properties.correlation_id, json_body)
+        self.result[int(properties.correlation_id)] = json_body
+        self.result = dict(sorted(self.result.items()))
+        self.file_writer.write(int(properties.correlation_id), json_body)
+
+    def reset(self):
+        self.file_writer.save_file.close()
+        self.file_writer.reset()
+        self.cancel_consumer()
+
+    def __del__(self):
+        del self.file_writer
+        self.cancel_consumer()

@@ -217,6 +217,10 @@ class ConnectionSubprocess(ConnectionInterface):
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("STOP_RECORDING", None)
+    
+    async def reset_filter(self) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("RESET_FILTER", None)
 
     def _set_state(self, state: ConnectionState) -> None:
         """Set connection state and emit `state_change` event."""
