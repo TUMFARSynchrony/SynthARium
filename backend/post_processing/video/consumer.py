@@ -134,6 +134,7 @@ class PostVideoConsumer():
                 [
                     os.path.join(
                         self._root_dir,
+                        "experimental-hub-openface",
                         "build",
                         "bin",
                         "FeatureExtraction",
