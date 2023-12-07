@@ -30,6 +30,7 @@ import {
   selectSessions,
   setCurrentSession,
   setExperimentTimes,
+  updateFiltersData,
   updateSession
 } from "./redux/slices/sessionsListSlice";
 import { initialSnackbar } from "./utils/constants";
@@ -37,7 +38,7 @@ import { ExperimentTimes, Tabs } from "./utils/enums";
 import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
-import { faClipboardCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -98,6 +99,7 @@ function App() {
     connection.api.on("CHAT", handleChatMessages);
     connection.api.on("RECORDING_LIST", handleRecordingList);
     connection.api.on("CHECK_POST_PROCESSING", handleCheckPostProcessing);
+    connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
@@ -116,6 +118,7 @@ function App() {
       connection.api.off("CHAT", handleChatMessages);
       connection.api.off("RECORDING_LIST", handleRecordingList);
       connection.api.off("CHECK_POST_PROCESSING", handleCheckPostProcessing);
+      connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
 
@@ -326,6 +329,10 @@ function App() {
     setPostProcessingStatus(data);
   };
 
+  const handleFiltersData = (data) => {
+    dispatch(updateFiltersData(data));
+  };
+
   /**
    * Get a specific session information
    * Used in participant's view
@@ -338,6 +345,14 @@ function App() {
   const onCreateExperiment = (sessionId) => {
     connection.sendMessage("CREATE_EXPERIMENT", { session_id: sessionId });
     dispatch(createExperiment(sessionId)); // Initialize ongoingExperiment redux slice
+  };
+
+  const onGetFiltersData = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA", data);
+  };
+
+  const onGetFiltersDataSendToParticipant = (data) => {
+    connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
   };
 
   const onDeleteSession = (sessionId) => {
@@ -529,6 +544,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
                         icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
                       }
                     ]}
                   />
@@ -544,6 +563,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    onGetFiltersData={onGetFiltersData}
                   />
                 }
               />
@@ -569,6 +589,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
                         icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
                       }
                     ]}
                   />
@@ -584,6 +608,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    onGetFiltersData={onGetFiltersData}
                   />
                 }
                 centerContentOnYAxis={true}

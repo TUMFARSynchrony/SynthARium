@@ -218,6 +218,10 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         console.log("Ping RTT:", rtt, "ms");
       }
     };
+    const handleGetFiltersData = (data: any) => saveGenericApiResponse("GET_FILTERS_DATA", data);
+    const handleGetFiltersDataSendToParticipant = (data: any) =>
+      saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
+    const handleFiltersData = (data: any) => saveGenericApiResponse("FILTERS_DATA", data);
 
     // Add listeners to connection
     props.connection.api.on("TEST", handleTest);
@@ -231,6 +235,12 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
     props.connection.api.on("RECORDING_LIST", handleRecordingList);
+    props.connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
+    props.connection.api.on(
+      "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+      handleGetFiltersDataSendToParticipant
+    );
+    props.connection.api.on("FILTERS_DATA", handleFiltersData);
 
     return () => {
       // Remove listeners from connection
@@ -245,6 +255,12 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
       props.connection.api.off("PONG", handlePong);
       props.connection.api.off("RECORDING_LIST", handleRecordingList);
+      props.connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
+      props.connection.api.off(
+        "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+        handleGetFiltersDataSendToParticipant
+      );
+      props.connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [props.connection.api, responses]);
 
@@ -265,6 +281,31 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           GET_SESSION_LIST
         </button>
         <button
+          onClick={() =>
+            props.connection.sendMessage("GET_FILTERS_DATA", {
+              filter_id: "simple-glasses-detection",
+              filter_channel: "video",
+              filter_name: "SIMPLE_GLASSES_DETECTION"
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_DATA
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", {
+              participant_id: "all",
+              filter_id: "simple-glasses-detection",
+              filter_channel: "video",
+              filter_name: "SIMPLE_GLASSES_DETECTION"
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_DATA_SEND_TO_PARTICIPANT
+        </button>
+        <button
           onClick={() => props.connection.sendMessage("START_EXPERIMENT", {})}
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
@@ -279,14 +320,14 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         <div className="inputBtnBox">
           <input
             type="text"
-            placeholder="Session ID"
+            placeholder="bbbef1d7d0"
             onChange={(e) => setSessionId(e.target.value)}
-            value={sessionId}
+            value="bbbef1d7d0"
           />
           <button
             onClick={() =>
               props.connection.sendMessage("CREATE_EXPERIMENT", {
-                session_id: sessionId
+                session_id: "bbbef1d7d0"
               })
             }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -798,7 +839,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           }
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
-          Glasses Detection
+          Simple Glasses Detection
         </button>
         <button
           onClick={() =>
@@ -929,7 +970,12 @@ function ReplaceConnection(props: {
           <>
             <label>
               Session ID:&nbsp;&nbsp;
-              <input type="text" onChange={handleSessionId} defaultValue={sessionId} />
+              <input
+                type="text"
+                onChange={handleSessionId}
+                placeholder="bbbef1d7d0"
+                defaultValue={sessionId}
+              />
             </label>
             <label>
               ParticipantID:&nbsp;&nbsp;
