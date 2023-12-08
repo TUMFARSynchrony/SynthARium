@@ -134,7 +134,7 @@ def is_valid_get_filters_data_dict(data) -> TypeGuard[GetFiltersDataRequestDict]
         return False
 
     for concrete_filter in Filter.__subclasses__():
-        filter_name = concrete_filter.name(concrete_filter)
+        filter_name = concrete_filter.name()
         if filter_name == data["filter_name"]:
             return True
 

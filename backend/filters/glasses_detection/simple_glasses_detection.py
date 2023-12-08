@@ -56,7 +56,8 @@ class SimpleGlassesDetection(Filter):
 
     async def get_filter_data(self) -> FilterDataDict:
         return FilterDataDict(
-            id=self.id, data={"Glasses Detected": self._glasses_detected}
+            id=self.id,
+            data={"Glasses Detected": self._glasses_detected}
         )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
