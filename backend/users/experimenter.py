@@ -924,6 +924,12 @@ class Experimenter(User):
         answer = MessageDict(type="FILTERS_DATA", data=res)
         await self._experiment.send(participant_id, answer)
 
+        success = SuccessDict(
+            type="SEND_TO_PARTICIPANT",
+            description="Successfully sent GET_FILTERS_DATA to participant.",
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
     async def _handle_get_session(self, data: Any) -> MessageDict:
         """Handle requests with type `GET_SESSION`.
 
