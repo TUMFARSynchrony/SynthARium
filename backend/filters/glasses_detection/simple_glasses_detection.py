@@ -9,6 +9,7 @@ from hub import BACKEND_DIR
 
 from filters.filter import Filter
 from filters import FilterDict
+from filters import FilterDataDict
 
 
 class SimpleGlassesDetection(Filter):
@@ -16,6 +17,7 @@ class SimpleGlassesDetection(Filter):
 
     counter: int
     text: str
+    _glasses_detected: bool
     predictor_path: str
     detector: Any
     predictor: Any
@@ -31,6 +33,7 @@ class SimpleGlassesDetection(Filter):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.counter = 0
         self.text = "Processing ..."
+        self._glasses_detected = False
 
         self.predictor_path = join(
             BACKEND_DIR,
@@ -50,6 +53,11 @@ class SimpleGlassesDetection(Filter):
     @staticmethod
     def channel() -> str:
         return "video"
+
+    async def get_filter_data(self) -> FilterDataDict:
+        return FilterDataDict(
+            id=self.id, data={"Glasses Detected": self._glasses_detected}
+        )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         height, _, _ = ndarray.shape
@@ -86,9 +94,11 @@ class SimpleGlassesDetection(Filter):
                 nose_bridge_x.append(landmarks[i][0])
                 nose_bridge_y.append(landmarks[i][1])
 
+            # x_min and x_max
             x_min = min(nose_bridge_x)
             x_max = max(nose_bridge_x)
 
+            # ymin (from top eyebrow coordinate),  ymax
             y_min = landmarks[20][1]
             y_max = landmarks[30][1]
 
@@ -103,8 +113,10 @@ class SimpleGlassesDetection(Filter):
             self.counter += 1
 
             if 255 in edges_center:
+                self._glasses_detected = True
                 return "Glasses detected"
             else:
+                self._glasses_detected = False
                 return "No glasses detected"
 
         else:

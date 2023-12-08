@@ -13,6 +13,7 @@ from typing import Any, Coroutine
 
 from filters import filter_utils
 from group_filters import group_filter_utils
+from filters.filters_data_dict import FiltersDataDict
 from session.data.session import is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
@@ -25,6 +26,7 @@ from custom_types.session_id_request import is_valid_session_id_request
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
 from users.user import User
+from users.participant import Participant
 import experiment.experiment as _exp
 import hub.hub as _h
 
@@ -80,6 +82,11 @@ class Experimenter(User):
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
         self.on_message("SET_GROUP_FILTERS", self._handle_set_group_filters)
+        self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
+        self.on_message(
+            "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+            self._handle_get_filters_data_send_to_participant,
+        )
         self.on_message("GET_SESSION", self._handle_get_session)
         self.on_message("GET_FILTERS_CONFIG", self._handle_get_filters_config)
 
@@ -809,6 +816,113 @@ class Experimenter(User):
             type="SET_GROUP_FILTERS", description="Successfully changed group filters."
         )
         return MessageDict(type="SUCCESS", data=success)
+
+    async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA`.
+
+        Check if data is a valid GetFiltersDataRequestDict and return filter data for
+        all participants.
+
+        Parameters
+        ----------
+        data : any or filters.GetFiltersDataRequestDict
+            Message data.  Checks if data is a valid GetFiltersDataRequestDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `FILTERS_DATA`, data: dict[str, FiltersDataDict]
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.GetFiltersDataRequestDict.
+            Or if values of data are incorrect.
+        """
+        if not filter_utils.is_valid_get_filters_data_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GetFiltersData.",
+            )
+
+        res = await self.get_filters_data_for_all_participants(data)
+        return MessageDict(type="FILTERS_DATA", data=res)
+
+    def get_participant_or_raise(self, participant_id: str) -> Participant:
+        """Get Participant with ID `participant_id` or raise ErrorDictException.
+
+        Use to check if a Participant with `participant_id` exists.
+
+        Parameters
+        ----------
+        participant_id : str
+            ID of the participant to get.
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None or if `participant_id` is not in
+            `self._experiment.participants`.
+        """
+        experiment = self.get_experiment_or_raise("Failed to get filters data.")
+        if participant_id not in experiment.participants:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=f'Participant with id "{participant_id}" not found.',
+            )
+        return experiment.participants[participant_id]
+
+    async def _handle_get_filters_data_send_to_participant(
+        self, data: Any
+    ) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA_SEND_TO_PARTICIPANT`.
+
+        Check if data is a valid GetFiltersDataSendToParticipantRequestDict and return filter test
+        statuses for all participants or specific participant.
+
+        Parameters
+        ----------
+        data : any or filters.GetFiltersDataSendToParticipantRequestDict
+            Message data.  Checks if data is a valid GetFiltersDataSendToParticipantRequestDict and
+            raises an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `FILTERS_DATA`, data: dict[str, FiltersDataDict]
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.GetFiltersDataSendToParticipantRequestDict.
+            Or if values of data are incorrect.
+        """
+        if not filter_utils.is_valid_get_filters_data_send_to_participant_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GET_FILTERS_DATA_SEND_TO_PARTICIPANT.",
+            )
+
+        participant_id = data.pop("participant_id")
+
+        if participant_id == "all":
+            res = await self.get_filters_data_for_all_participants(data)
+            # send message to all participants
+            participant_id = "participants"
+        else:
+            participant = self.get_participant_or_raise(participant_id)
+            res: dict[str, FiltersDataDict] = {}
+
+            res[
+                participant_id
+            ] = await participant.get_filters_data_for_one_participant(data)
+
+        answer = MessageDict(type="FILTERS_DATA", data=res)
+        await self._experiment.send(participant_id, answer)
 
     async def _handle_get_session(self, data: Any) -> MessageDict:
         """Handle requests with type `GET_SESSION`.
