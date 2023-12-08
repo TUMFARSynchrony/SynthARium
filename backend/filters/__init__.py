@@ -1,5 +1,6 @@
 # __all__ = []
 from .filter_dict import FilterDict
+from .filter_config_dict import FilterConfigDict
 from .filter_data_dict import FilterDataDict
 from .filters_data_dict import FiltersDataDict
 from .set_filters_request_dict import SetFiltersRequestDict

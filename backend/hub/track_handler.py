@@ -334,7 +334,7 @@ class TrackHandler(MediaStreamTrack):
         """Internal version of `get_filters_data`, without lock."""
         filters_data: list[FilterDataDict] = []
         for filter in self._filters.values():
-            if filter.name(filter) == name:
+            if filter.name() == name:
                 if id == "all":
                     filters_data.append(await filter.get_filter_data())
                 elif id == filter.id:

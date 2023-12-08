@@ -216,6 +216,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         console.log("Ping RTT:", rtt, "ms");
       }
     };
+    const handleFiltersConfig = (data: any) => saveGenericApiResponse("FILTERS_CONFIG", data);
     const handleGetFiltersData = (data: any) => saveGenericApiResponse("GET_FILTERS_DATA", data);
     const handleGetFiltersDataSendToParticipant = (data: any) =>
       saveGenericApiResponse("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
@@ -232,6 +233,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
     props.connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     props.connection.api.on("KICK_NOTIFICATION", handleKickNotification);
     props.connection.api.on("PONG", handlePong);
+    props.connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
     props.connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
     props.connection.api.on(
       "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
@@ -251,6 +253,7 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
       props.connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       props.connection.api.off("KICK_NOTIFICATION", handleKickNotification);
       props.connection.api.off("PONG", handlePong);
+      props.connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
       props.connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
       props.connection.api.off(
         "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
@@ -275,6 +278,12 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           GET_SESSION_LIST
+        </button>
+        <button
+          onClick={() => props.connection.sendMessage("GET_FILTERS_CONFIG", {})}
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          GET_FILTERS_CONFIG
         </button>
         <button
           onClick={() =>
@@ -490,7 +499,7 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
                 {
                   name: "EDGE_OUTLINE",
                   id: "edge",
-                  channel: "both",
+                  channel: "video",
                   groupFilter: false,
                   config: {}
                 }
