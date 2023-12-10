@@ -227,6 +227,7 @@ class Participant(User):
         elif state == ExperimentState.ENDED:
             if self.experiment.session.record:
                 await self.stop_recording()
+            await self.connection.get_connection_stats(self.experiment.session.id, self.id)
         else:
             return
             

@@ -11,7 +11,7 @@ from aiortc import RTCSessionDescription
 
 from connection.connection import Connection, connection_factory
 from connection.connection_state import ConnectionState
-from connection.messages import ConnectionAnswerDict, ConnectionProposalDict
+from connection.messages import ConnectionAnswerDict, ConnectionProposalDict, ConnectionStatsDict
 from custom_types.message import MessageDict
 from filters import FilterDict
 from hub.exceptions import ErrorDictException
@@ -183,6 +183,9 @@ class ConnectionRunner:
                 await self._connection.stop_recording()
             case "RESET_FILTER":
                 await self._connection.reset_filter()
+            case "CONNECTION_STATS":
+                await self._connection.get_connection_stats(data[0], data[1])
+                
             case _:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 
@@ -210,7 +213,8 @@ class ConnectionRunner:
         | dict
         | MessageDict
         | ConnectionProposalDict
-        | ConnectionAnswerDict,
+        | ConnectionAnswerDict
+        | ConnectionStatsDict,
         command_nr: int = -1,
     ) -> None:
         """Send command to main / parent process via stdout.

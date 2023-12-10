@@ -13,13 +13,15 @@ import shortuuid
 import asyncio
 import logging
 import json
+import os
 
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
-    ConnectionProposalDict,
+    ConnectionProposalDict
 )
 from connection.sub_connection import SubConnection
+from hub.stats import Stats
 from hub.track_handler import TrackHandler
 from hub.exceptions import ErrorDictException
 from connection.connection_interface import ConnectionInterface
@@ -292,10 +294,22 @@ class Connection(ConnectionInterface):
         await asyncio.gather(
             self._video_record_handler.stop(), self._raw_video_record_handler.stop(), self._audio_record_handler.stop()
         )
+        # Can not send any data since it is disconnected
+        # 2023-12-09 19:17:04,166:DEBUG:ConnectionSubprocess-32362: {"command": "CONNECTION_STATS", "data": ["bbbef1d7d0", "b"], "command_nr": -1}
+        # 2023-12-09 19:17:04,169:WARNING:Connection-P-b[32362]: Can not send data because datachannel is not open
+        if self._participant is not None:
+            self.stats = Stats(self._participant["session_id"])
+            self.stats.write_fps_data(self._incoming_video.avg_fps_list, self._participant["participant_id"])
     
     async def reset_filter(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         self._incoming_video.emit("reset_filter", True)
+
+    async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        #TODO: move this to util to get session directory
+        self.stats = Stats(session_id)
+        self.stats.write_fps_data(self._incoming_video.avg_fps_list, participant_id)
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration

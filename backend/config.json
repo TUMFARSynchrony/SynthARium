@@ -20,5 +20,6 @@
     "password": "guest",
     "protocol": "amqp"
   },
-  "openface_au": ["AU06", "AU12"]
+  "openface_au": ["AU06", "AU12"],
+  "enable_stats": true
 }

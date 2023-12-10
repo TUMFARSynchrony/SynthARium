@@ -14,6 +14,7 @@ from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     RTCSessionDescriptionDict,
+    ConnectionStatsDict
 )
 from hub import BACKEND_DIR
 from server import Config
@@ -221,6 +222,13 @@ class ConnectionSubprocess(ConnectionInterface):
     async def reset_filter(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("RESET_FILTER", None)
+    
+    async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        # Send command and wait for response.
+        await self._send_command(
+            "CONNECTION_STATS", (session_id, participant_id)
+        )
 
     def _set_state(self, state: ConnectionState) -> None:
         """Set connection state and emit `state_change` event."""
@@ -383,7 +391,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._set_state(ConnectionState(data))
             case "API":
                 await self._message_handler(data)
-            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER":
+            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER" | "CONNECTION_STATS_ANSWER":
                 await self._set_answer(command_nr, data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)

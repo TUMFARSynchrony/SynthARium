@@ -9,6 +9,7 @@ from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     ConnectionProposalDict,
+    ConnectionStatsDict
 )
 
 from filters import FilterDict
@@ -220,5 +221,11 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
     @abstractmethod
     async def reset_filter(self) -> None:
         """Reset filter for this connection.
+        """
+        pass
+
+    @abstractmethod
+    async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
+        """Get connection statistics.
         """
         pass

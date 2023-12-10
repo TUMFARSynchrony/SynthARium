@@ -18,3 +18,4 @@ pika~=1.3.2
 NamedAtomicLock~=1.1.3
 
 pyts~=0.13.0
+psutil~=5.9.6
