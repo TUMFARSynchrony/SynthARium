@@ -23,7 +23,7 @@ import {
   joinExperiment,
   selectOngoingExperiment
 } from "./redux/slices/ongoingExperimentSlice";
-import { saveSession } from "./redux/slices/openSessionSlice";
+import { initializeFiltersData, saveSession } from "./redux/slices/openSessionSlice";
 import {
   addMessageToCurrentSession,
   addNote,
@@ -33,6 +33,7 @@ import {
   selectSessions,
   setCurrentSession,
   setExperimentTimes,
+  updateFiltersData,
   updateSession
 } from "./redux/slices/sessionsListSlice";
 import { initialSnackbar } from "./utils/constants";
@@ -40,7 +41,7 @@ import { ExperimentTimes, Tabs } from "./utils/enums";
 import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
-import { faClipboardCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -98,6 +99,7 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
     connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
@@ -115,6 +117,7 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
       connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
@@ -320,6 +323,14 @@ function App() {
     );
   };
 
+  const handleFiltersConfig = (data) => {
+    dispatch(initializeFiltersData(data));
+  };
+
+  const handleFiltersData = (data) => {
+    dispatch(updateFiltersData(data));
+  };
+
   /**
    * Get a specific session information
    * Used in participant's view
@@ -340,10 +351,6 @@ function App() {
 
   const onGetFiltersDataSendToParticipant = (data) => {
     connection.sendMessage("GET_FILTERS_DATA_SEND_TO_PARTICIPANT", data);
-  };
-
-  const handleFiltersData = (data) => {
-    console.log(data);
   };
 
   const onDeleteSession = (sessionId) => {
@@ -404,6 +411,10 @@ function App() {
     dispatch(toggleSingleTab(modal));
   };
 
+  const onGetFiltersConfig = () => {
+    connection.sendMessage("GET_FILTERS_CONFIG", {});
+  };
+
   return (
     <div className="App">
       {sessionsList ? (
@@ -419,6 +430,36 @@ function App() {
                     onDeleteSession={onDeleteSession}
                     onCreateExperiment={onCreateExperiment}
                     onJoinExperiment={onJoinExperiment}
+                  />
+                }
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/postProcessingRoom"),
+                        label: "Post-Processing Room"
+                      }
+                    ]}
+                  />
+                }
+              />
+            }
+          />
+          <Route
+            exact
+            path="/postProcessingRoom"
+            element={
+              <PageTemplate
+                title={"Post-Processing Room"}
+                customComponent={<PostProcessing />}
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/"),
+                        label: "Back to Session Overview"
+                      }
+                    ]}
                   />
                 }
               />
@@ -517,6 +558,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
                         icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
                       }
                     ]}
                   />
@@ -532,6 +577,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    onGetFiltersData={onGetFiltersData}
                   />
                 }
               />
@@ -557,6 +603,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
                         icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
                       }
                     ]}
                   />
@@ -572,6 +622,7 @@ function App() {
                     onMuteParticipant={onMuteParticipant}
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
+                    onGetFiltersData={onGetFiltersData}
                   />
                 }
                 centerContentOnYAxis={true}
@@ -584,7 +635,12 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
+                customComponent={
+                  <SessionForm
+                    onSendSessionToBackend={onSendSessionToBackend}
+                    onGetFiltersConfig={onGetFiltersConfig}
+                  />
+                }
                 centerContentOnYAxis={true}
               />
             }

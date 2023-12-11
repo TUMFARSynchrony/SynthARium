@@ -1,9 +1,10 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
-import { Participant, Session } from "../../types";
+import { Filter, Participant, Session } from "../../types";
 
 type OpenSessionState = {
   session: Session;
+  filtersData: { TEST: Filter[]; SESSION: Filter[] };
 };
 
 const initialState: OpenSessionState = {
@@ -20,7 +21,8 @@ const initialState: OpenSessionState = {
     creation_time: 0,
     notes: [],
     log: []
-  }
+  },
+  filtersData: { TEST: [], SESSION: [] }
 };
 
 export const openSessionSlice = createSlice({
@@ -29,6 +31,10 @@ export const openSessionSlice = createSlice({
   reducers: {
     initializeSession: (state, { payload }) => {
       state.session = payload;
+    },
+
+    initializeFiltersData: (state, { payload }) => {
+      state.filtersData = payload;
     },
 
     saveSession: (state, { payload }) => {
@@ -73,9 +79,14 @@ export const openSessionSlice = createSlice({
         ...payload,
         id: "",
         creation_time: 0,
+        end_time: 0,
+        start_time: 0,
+        notes: [],
+        log: [],
         participants: payload.participants.map((p) => ({
           ...p,
-          id: ""
+          id: "",
+          chat: []
         }))
       };
     }
@@ -84,6 +95,7 @@ export const openSessionSlice = createSlice({
 
 export const {
   initializeSession,
+  initializeFiltersData,
   saveSession,
   changeValue,
   addParticipant,
@@ -96,6 +108,12 @@ export const {
 export default openSessionSlice.reducer;
 
 export const selectOpenSession = (state: RootState): Session => state.openSession.session;
+
+export const selectFiltersDataSession = (state: RootState): Filter[] =>
+  state.openSession.filtersData.SESSION;
+
+export const selectFiltersDataTest = (state: RootState): Filter[] =>
+  state.openSession.filtersData.TEST;
 
 export const selectNumberOfParticipants = (state: RootState): number =>
   state.openSession.session.participants.length;
