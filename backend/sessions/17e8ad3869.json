@@ -1,0 +1,82 @@
+{
+    "id": "17e8ad3869",
+    "title": "FacesMix",
+    "date": 1704012360000,
+    "record": true,
+    "time_limit": 0,
+    "description": "user study prep",
+    "creation_time": 0,
+    "end_time": 1702362636457,
+    "start_time": 1702362636457,
+    "notes": [],
+    "participants": [
+        {
+            "id": "a",
+            "participant_name": "a",
+            "banned": false,
+            "size": {
+                "width": 250,
+                "height": 250
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "asymmetric_view": false,
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [
+                {
+                    "name": "SPOUT_SENDER_RECEIVER",
+                    "id": "e98ac488-0498-4347-974b-0813feb80e18",
+                    "channel": "video",
+                    "groupFilter": false,
+                    "config": {}
+                }
+            ],
+            "audio_group_filters": [],
+            "video_group_filters": []
+        },
+        {
+            "id": "b",
+            "participant_name": "b",
+            "banned": false,
+            "size": {
+                "width": 250,
+                "height": 250
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "asymmetric_view": false,
+            "position": {
+                "x": 262,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [
+                {
+                    "name": "SPOUT_SENDER",
+                    "id": "f4b7cff7-efad-435c-85e2-ed60e4bd38d6",
+                    "channel": "video",
+                    "groupFilter": false,
+                    "config": {}
+                },
+                {
+                    "name": "SPOUT_RECEIVER",
+                    "id": "1b60d9de-fe57-455b-a998-cf143c6c6078",
+                    "channel": "video",
+                    "groupFilter": false,
+                    "config": {}
+                }
+            ],
+            "audio_group_filters": [],
+            "video_group_filters": []
+        }
+    ],
+    "log": []
+}

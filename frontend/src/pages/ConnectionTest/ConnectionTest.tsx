@@ -275,14 +275,14 @@ function ApiTests(props: { connection: Connection }): JSX.Element {
         <div className="inputBtnBox">
           <input
             type="text"
-            placeholder="bbbef1d7d0"
+            placeholder="73b851eb40"
             onChange={(e) => setSessionId(e.target.value)}
-            value="bbbef1d7d0"
+            value="73b851eb40"
           />
           <button
             onClick={() =>
               props.connection.sendMessage("CREATE_EXPERIMENT", {
-                session_id: "bbbef1d7d0"
+                session_id: "73b851eb40"
               })
             }
             disabled={props.connection.state !== ConnectionState.CONNECTED}
@@ -459,6 +459,26 @@ function SetFilterPresets(props: { connection: Connection }): JSX.Element {
           disabled={props.connection.state !== ConnectionState.CONNECTED}
         >
           SPOUT SENDER RECEIVER
+        </button>
+        <button
+          onClick={() =>
+            props.connection.sendMessage("SET_FILTERS", {
+              participant_id: "all",
+              audio_filters: [],
+              video_filters: [
+                {
+                  name: "SPOUT_SENDER_RECEIVER2",
+                  id: "spout-sender-receiver2",
+                  channel: "video",
+                  groupFilter: false,
+                  config: {}
+                }
+              ]
+            })
+          }
+          disabled={props.connection.state !== ConnectionState.CONNECTED}
+        >
+          SPOUT SENDER RECEIVER 2
         </button>
         <button
           onClick={() =>
@@ -955,7 +975,7 @@ function ReplaceConnection(props: {
               <input
                 type="text"
                 onChange={handleSessionId}
-                placeholder="bbbef1d7d0"
+                placeholder="73b851eb40"
                 defaultValue={sessionId}
               />
             </label>

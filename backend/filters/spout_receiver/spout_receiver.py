@@ -27,7 +27,7 @@ class SpoutReceiver(Filter):
         #TODO assign getReceiverName from filter config
         self._logger = logging.getLogger("SpoutReceiver")
         self.receiver = SpoutGL.SpoutReceiver()
-        self.receiver.setReceiverName("TDSyphonSpoutOut")
+        self.receiver.setReceiverName("ToExpHub2")
         self.name = self.receiver.getSenderName()
         self.format = self.receiver.getSenderFormat()
         self.buffer = None

@@ -94,7 +94,7 @@ class SpoutSender(Filter):
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # change this to implement filter
-        self.line_writer.write_line(ndarray, "Hello")
+        # self.line_writer.write_line(ndarray, "Hello")
 
         image = Image.fromarray(ndarray, 'RGB')
         pixels = image.tobytes()
