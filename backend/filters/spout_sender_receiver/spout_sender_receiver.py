@@ -36,7 +36,7 @@ class SpoutSenderReceiver(Filter):
         #TODO assign getReceiverName from filter config
         # Receiver Initalize
         self.receiver = SpoutGL.SpoutReceiver()
-        self.receiver.setReceiverName("ToExpHub2")
+        self.receiver.setReceiverName("ToExpHub1")
         self.name = self.receiver.getSenderName()
         self.format = self.receiver.getSenderFormat()
         self.buffer = None

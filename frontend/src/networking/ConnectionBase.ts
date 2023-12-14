@@ -121,7 +121,8 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     await this.pc.setLocalDescription(offer);
 
     // Wait for iceGatheringState to be "complete".
-    await new Promise((resolve) => {
+    const waitGathering = new Promise((resolve) => {
+      // await new Promise((resolve) => {
       if (this.pc?.iceGatheringState === "complete") {
         resolve(undefined);
       } else {
@@ -134,6 +135,8 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
         this.pc?.addEventListener("icegatheringstatechange", checkState);
       }
     });
+    const waitTimeout = new Promise((resolve) => setTimeout(resolve, 3000));
+    await Promise.race([waitGathering, waitTimeout]);
 
     return this.pc.localDescription;
   }
