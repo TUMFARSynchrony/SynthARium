@@ -31,12 +31,12 @@ class SpoutSenderReceiver(Filter):
         # Sender Initialize
         #TODO get sendername from filter config
         self.sender = SpoutGL.SpoutSender()
-        self.sender.setSenderName("exp-hub-sender")
+        self.sender.setSenderName("FromExpHub1")
 
         #TODO assign getReceiverName from filter config
         # Receiver Initalize
         self.receiver = SpoutGL.SpoutReceiver()
-        self.receiver.setReceiverName("TDSyphonSpoutOut")
+        self.receiver.setReceiverName("ToExpHub2")
         self.name = self.receiver.getSenderName()
         self.format = self.receiver.getSenderFormat()
         self.buffer = None
