@@ -80,6 +80,7 @@ class Server:
                 "/watchingRoom",
                 "/sessionForm",
                 "/connectionTest",
+                "/connectionTest2",
                 "/connectionLatencyTest",
             ]
             for page in pages:
