@@ -101,9 +101,21 @@ export const PARTICIPANT_HOST = "http://localhost:3000/lobby/";
 
 // Displays the same set of instructions in both the /lobby and in the /watchingRoom.
 export const instructionsList = [
-  "Please remove any glasses, caps or other such articles if you are wearing any.",
-  "Ensure that your surrounding lighting is good.",
-  "We would like to know about your experience, so please take 5  minutes at the end to do the Feedback Survey."
+  "[MIRROR] A shaving mirror",
+  "[NET] A quantity of mosquito netting",
+  "[RATIONS] A case of army rations",
+  "[WATER] A 25 liter container of water",
+  "[CUSHION] A floating seat cushion",
+  "[MAP] Maps of the Atlantic Ocean",
+  "[RADIO] Small transistor radio",
+  "[OIL] A 10 liter can of oil/petrol mixture",
+  "[REPELANT] A can of shark repellant",
+  "[SHEET] 20 square feet of opaque plastic sheeting",
+  "[RUM] One bottle of 160 proof rum",
+  "[ROPE] 15 feet of nylon rope",
+  "[CHOCOLATE] 2 boxes of chocolate bars",
+  "[FISHING] An ocean fishing kit & pole"
+  // "We would like to know about your experience, so please take 5  minutes at the end to do the Feedback Survey."
 ];
 
 // Initialising the notification snackbar used in many components.

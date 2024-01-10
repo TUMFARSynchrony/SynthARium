@@ -1,0 +1,115 @@
+{
+    "id": "dac50a07a2",
+    "title": "Ranking Task Lost at Sea",
+    "date": 1706097480000,
+    "record": true,
+    "time_limit": 0,
+    "description": "Rank the following items. ",
+    "creation_time": 0,
+    "end_time": 0,
+    "start_time": 0,
+    "notes": [],
+    "participants": [
+        {
+            "id": "12f0b39ec6",
+            "participant_name": "1",
+            "banned": false,
+            "size": {
+                "width": 322.7421571471567,
+                "height": 322.7421571471567
+            },
+            "muted_video": true,
+            "muted_audio": true,
+            "position": {
+                "x": 199.99999999999994,
+                "y": 99.99999999999994,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "view": [
+                {
+                    "id": "006ceb92-7e44-4632-a1ae-76b490e08773",
+                    "participant_name": "1",
+                    "size": {
+                        "width": 150.1429434473923,
+                        "height": 150.1429434473922
+                    },
+                    "position": {
+                        "x": 785.0703382680853,
+                        "y": 461.070338268083,
+                        "z": 0
+                    }
+                },
+                {
+                    "id": "5ca01174-106b-4f6f-bb57-b9442ff60616",
+                    "participant_name": "2",
+                    "size": {
+                        "width": 594.4717554619061,
+                        "height": 594.471755461906
+                    },
+                    "position": {
+                        "x": 173,
+                        "y": 21.180092167939847,
+                        "z": 0
+                    }
+                }
+            ],
+            "canvas_id": "006ceb92-7e44-4632-a1ae-76b490e08773"
+        },
+        {
+            "id": "d3d005d79e",
+            "participant_name": "2",
+            "banned": false,
+            "size": {
+                "width": 311.0257224089351,
+                "height": 311.0257224089351
+            },
+            "muted_video": true,
+            "muted_audio": true,
+            "position": {
+                "x": 551.9999999999999,
+                "y": 103.00000000000006,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "view": [
+                {
+                    "id": "006ceb92-7e44-4632-a1ae-76b490e08773",
+                    "participant_name": "1",
+                    "size": {
+                        "width": 605.379810355584,
+                        "height": 605.379810355584
+                    },
+                    "position": {
+                        "x": 142.9999999999999,
+                        "y": 19.999999999999886,
+                        "z": 0
+                    }
+                },
+                {
+                    "id": "5ca01174-106b-4f6f-bb57-b9442ff60616",
+                    "participant_name": "2",
+                    "size": {
+                        "width": 128.36460656987992,
+                        "height": 128.36460656987998
+                    },
+                    "position": {
+                        "x": 764.7752525570651,
+                        "y": 493.63539343012053,
+                        "z": 0
+                    }
+                }
+            ],
+            "canvas_id": "5ca01174-106b-4f6f-bb57-b9442ff60616"
+        }
+    ],
+    "log": []
+}

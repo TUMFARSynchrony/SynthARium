@@ -19,33 +19,20 @@ function ConsentModal({ onConsentGiven }: ConsentModalProps) {
   const [checkParticipation, setCheckParticipation] = useState(false);
   const [checkRecording, setCheckRecording] = useState(false);
   const consentTextParticipation =
-    "I understand that I may terminate my participation in the study at any time.";
-  const consentTextRecording =
-    "I accept the recording of my audio and video and am also aware that the data will be kept anonymous and maybe used for research purposes.";
+    "I understand that I may terminate my participation in the study at any time whereupon my data will be deleted.";
+  const consentTextRecording = "I accept the recording of my audio and video.";
 
   return (
     <Dialog open={openConsentDialog} PaperProps={{ sx: { width: "50%" } }}>
       <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
-        Welcome to the Synchrony Hub!
+        Welcome to the Ranking Task Study!
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1" align="justify" sx={{ mb: 3 }}>
-          Study description... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-          nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
+          By proceeding, you confirm that you have have been informed about the study purpose
+          involved. You agree to the terms of consent and any questions you may have had about about
+          the study have been answered until now.
         </Typography>
-        <FormControlLabel
-          control={<Checkbox />}
-          label={consentTextParticipation}
-          checked={checkParticipation}
-          sx={{ alignItems: "flex-start" }}
-          onChange={() => {
-            setCheckParticipation(!checkParticipation);
-          }}
-        />
         <FormControlLabel
           control={<Checkbox />}
           label={consentTextRecording}
@@ -53,6 +40,15 @@ function ConsentModal({ onConsentGiven }: ConsentModalProps) {
           sx={{ alignItems: "flex-start" }}
           onChange={() => {
             setCheckRecording(!checkRecording);
+          }}
+        />
+        <FormControlLabel
+          control={<Checkbox />}
+          label={consentTextParticipation}
+          checked={checkParticipation}
+          sx={{ alignItems: "flex-start" }}
+          onChange={() => {
+            setCheckParticipation(!checkParticipation);
           }}
         />
       </DialogContent>
