@@ -1,11 +1,12 @@
 import csv
+import datetime
 import os
 import time
 
 class OpenFaceDataParser:
 
     # TODO: get the action units based on what user needs
-    HEADER = ["frame"]
+    HEADER = ["timestamp", "frame"]
 
     def __init__(self, session_id: str, participant_id: str, action_units: list):
         path = os.path.join(
@@ -40,12 +41,13 @@ class OpenFaceDataParser:
         self.save_file.close()
 
     def write(self, frame: int, data: dict):
-        row = [frame]
+        timestamp = datetime.datetime.now()
+        row = [timestamp, frame]
         for key in self.action_units:
             if key in data["intensity"]:
                 row.append(data["intensity"][key])
             else:
-                row.append("-")
+                row.append(-1)
 
         self.writer.writerow(row)
         self.save_file.flush()
