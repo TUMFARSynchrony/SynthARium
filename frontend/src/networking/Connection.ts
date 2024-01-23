@@ -162,6 +162,31 @@ export default class Connection extends ConnectionBase<
       this.pc.addTrack(track, this.localStream);
     });
 
+    // We need to set codec to H.264
+    this.pc.getTransceivers().forEach((transceiver) => {
+      if (transceiver.receiver.track.kind !== "video") {
+        return;
+      }
+      let { codecs } = RTCRtpReceiver.getCapabilities("video");
+      this.log("Available codecs", codecs);
+      codecs = codecs.filter((c) => c.mimeType === "video/H264");
+      this.log("Setting codec preferences", codecs);
+      transceiver.setCodecPreferences(codecs);
+    });
+
+    this.pc.getSenders().forEach((sender) => {
+      const senderStreams = sender.createEncodedStreams();
+      const { readable, writable } = senderStreams;
+      this.worker.postMessage(
+        {
+          operation: "encode",
+          readable,
+          writable
+        },
+        [readable, writable]
+      );
+    });
+
     await this.negotiate();
   }
 
@@ -407,5 +432,22 @@ export default class Connection extends ConnectionBase<
       return;
     }
     subConnection.handleAnswer(data);
+  }
+
+  public setEncodedVideo(video: File) {
+    this.log("File", video.name);
+    const fr = new FileReader();
+    fr.onload = () => {
+      if (!this.worker) {
+        console.log("Worker not initialized");
+        return;
+      }
+
+      this.worker.postMessage({
+        operation: "setVideoStream",
+        frame: fr.result
+      });
+    };
+    fr.readAsArrayBuffer(video);
   }
 }

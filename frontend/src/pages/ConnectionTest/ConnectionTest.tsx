@@ -924,6 +924,12 @@ function ReplaceConnection(props: {
     updateConnection(userType, sessionId, participantId, e.target.value);
   };
 
+  const handleEncodedVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("handleEncodedVideo", e.target.files.length);
+    if (e.target.files.length === 0) return;
+    props.connection.setEncodedVideo(e.target.files[0]);
+  };
+
   const info =
     "Replace connection before connecting to change the user type, session id or participant id";
 
@@ -952,6 +958,10 @@ function ReplaceConnection(props: {
             <label>
               ParticipantID:&nbsp;&nbsp;
               <input type="text" onChange={handleParticipantId} defaultValue={participantId} />
+            </label>
+            <label>
+              Encoded video file:&nbsp;&nbsp;
+              <input type="file" onChange={handleEncodedVideo} />
             </label>
           </>
         ) : (

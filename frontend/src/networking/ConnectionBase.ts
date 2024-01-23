@@ -16,6 +16,11 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
   private name: string;
 
   /**
+   * Worker to handle encoding injection
+   */
+  private worker: Worker;
+
+  /**
    * Initiate ConnectionBase class instance.
    * @param warnNoHandler If true, the EventHandler will log a warning if there are no handlers for an emitted event.
    * @param name name used for logging and the event handler. EventHandler's name is set to: "<name>#Event"
@@ -28,7 +33,8 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     this._participantSummary = null;
 
     const config: any = {
-      sdpSemantics: "unified-plan"
+      sdpSemantics: "unified-plan",
+      encodedInsertableStreams: true
     };
     if (ICE_SERVERS) {
       config.iceServers = ICE_SERVERS;
@@ -37,6 +43,8 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     this.pc = new RTCPeerConnection(config);
     this._remoteStream = new MediaStream();
     this.addPcEventHandlers();
+
+    this.worker = new Worker("./EncodingWorker.js");
   }
 
   /**
@@ -165,6 +173,19 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
         this.logError(`Received track with unknown kind: ${e.track.kind}`);
         return;
       }
+
+      // we need to created encoded stream to the reciever otherwise it does not work
+      const recieverStreams = e.receiver.createEncodedStreams();
+      const { readable, writable } = recieverStreams;
+      this.worker.postMessage(
+        {
+          operation: "decode",
+          readable,
+          writable
+        },
+        [readable, writable]
+      );
+
       this._remoteStream.addTrack(e.track);
       this.emit("remoteStreamChange", this.remoteStream);
 
