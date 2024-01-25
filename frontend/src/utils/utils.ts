@@ -72,8 +72,13 @@ export const getTotalBox = (boxes: Box[]): Box => {
 export const getLocalStream = async () => {
   // TODO: allow the user to select a specific camera / audio device?
   const constraints = {
-    video: true,
-    audio: true
+    audio: true,
+    // video: true
+    video: {
+      frameRate: {
+        exact: 25
+      }
+    }
   };
   try {
     return await navigator.mediaDevices.getUserMedia(constraints);
