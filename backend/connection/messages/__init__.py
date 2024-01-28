@@ -13,3 +13,4 @@ from .connection_answer_dict import (
     is_valid_connection_answer_dict,
 )
 from .connection_offer_dict import ConnectionOfferDict, is_valid_connection_offer_dict
+from .connection_stats_dict import ConnectionStatsDict

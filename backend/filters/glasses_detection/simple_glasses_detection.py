@@ -1,7 +1,7 @@
 from typing import Any
 import cv2
 import numpy
-import dlib
+#import dlib
 from PIL import Image
 from os.path import join
 from hub import BACKEND_DIR
@@ -39,8 +39,8 @@ class SimpleGlassesDetection(Filter):
             BACKEND_DIR,
             "filters/glasses_detection/shape_predictor_68_face_landmarks.dat",
         )
-        self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(self.predictor_path)
+        #self.detector = dlib.get_frontal_face_detector()
+        #self.predictor = dlib.shape_predictor(self.predictor_path)
 
     @staticmethod
     def name() -> str:

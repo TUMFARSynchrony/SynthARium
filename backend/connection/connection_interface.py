@@ -9,6 +9,7 @@ from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     ConnectionProposalDict,
+    ConnectionStatsDict
 )
 
 from filters import FilterDict
@@ -217,7 +218,7 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Both audio and video recorder will stop.
         """
         pass
-
+    
     @abstractmethod
     async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
         """Get Data from a specific video filter
@@ -229,6 +230,12 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         id : id of the filter
             Can be either 'all' for all filters with the name
             or specific id for just one filter
+        """
+        pass
+
+    @abstractmethod
+    async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
+        """Get connection statistics.
         """
         pass
 

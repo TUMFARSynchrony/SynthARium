@@ -134,7 +134,7 @@ class Filter(ABC):
         overriding this function.
         """
         return
-
+    
     async def get_filter_data(self) -> None | FilterDataDict:
         """Get the data of a filter"""
         return

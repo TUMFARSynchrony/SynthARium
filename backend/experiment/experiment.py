@@ -1,14 +1,19 @@
 """Provide the `Experiment` class."""
 from __future__ import annotations
 
+import datetime
 import logging
+import psutil
+import threading
+import time
 from typing import Any, TYPE_CHECKING
 from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
-
 from hub.util import timestamp
+from hub.stats import Stats
+from server import Config
 from experiment.experiment_state import ExperimentState
 from hub.exceptions import ErrorDictException
 from session.data.session import SessionData
@@ -37,6 +42,8 @@ class Experiment(AsyncIOEventEmitter):
     _participants: dict[str, Participant]
     _audio_group_filter_aggregators: dict[str, GroupFilterAggregator]
     _video_group_filter_aggregators: dict[str, GroupFilterAggregator]
+    stats: Stats
+    config: Config
 
     def __init__(self, session: SessionData):
         """Start a new Experiment.
@@ -57,6 +64,12 @@ class Experiment(AsyncIOEventEmitter):
         self.session.creation_time = timestamp()
         self._audio_group_filter_aggregators = {}
         self._video_group_filter_aggregators = {}
+        self.config = Config()
+        self.stats = None
+        if self.config.enable_stats:
+            self.stats = Stats(session.id)
+            self.usage_stats = []
+            self.connected_participant_stats = []
 
     def __str__(self) -> str:
         """Get string representation of this Experiment."""
@@ -107,6 +120,9 @@ class Experiment(AsyncIOEventEmitter):
         self._logger.info(f"Experiment started. Start time: {time}")
         self.session.start_time = time
 
+        if self.stats is not None:
+            self.run_stats()
+
         # Notify all users
         end_message = MessageDict(type="EXPERIMENT_STARTED", data={"start_time": time})
         await self.send("all", end_message, secure_origin=True)
@@ -128,6 +144,10 @@ class Experiment(AsyncIOEventEmitter):
                 type="INVALID_REQUEST",
                 description="Experiment is already stopped.",
             )
+
+        if self.stats is not None:
+            self.stats.write_connected_participant_data(self.connected_participant_stats)
+            self.stats.write_usage_data(self.usage_stats)
 
         self._set_state(ExperimentState.ENDED)
         time = timestamp()
@@ -528,3 +548,35 @@ class Experiment(AsyncIOEventEmitter):
             coroutines.append(task)
 
         await asyncio.gather(*coroutines)
+
+    def run_stats(self):
+        stats_thread = threading.Thread(target=self.measure_stats)
+        stats_thread.start()
+        stats_thread.join(0)
+
+    def measure_stats(self):
+        self.start_time = datetime.datetime.now()
+        while self._state is ExperimentState.RUNNING:
+            cpu_percentage = psutil.cpu_percent(0.5)
+            ram_percentage = psutil.virtual_memory()[2]
+            ram_usage_in_GB = psutil.virtual_memory()[3]/1000000000
+            timestamp = datetime.datetime.now()
+            time_diff = timestamp - self.start_time
+            usage = {
+                "timestamp": timestamp,
+                "elapsed_time_in_seconds": time_diff.seconds,
+                "cpu_percentage": cpu_percentage,
+                "ram_percentage": ram_percentage,
+                "ram_usage_in_GB": ram_usage_in_GB
+            }
+            self.usage_stats.append(usage)
+
+            connected_participant_data = {
+                "timestamp": timestamp,
+                "elapsed_time_in_seconds": time_diff.seconds,
+                "number_of_participants": len(self.participants)
+            }
+            self.connected_participant_stats.append(connected_participant_data)
+            time.sleep(0.5)
+
+        return

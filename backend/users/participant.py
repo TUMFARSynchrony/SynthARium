@@ -225,13 +225,16 @@ class Participant(User):
         Uses event handlers for the connection `state` event and user (self)
         `disconnected` event. The latter is used to remove the connection event handler.
         """
-        if self.experiment.session.record:
-            if state == ExperimentState.RUNNING:
+        if state == ExperimentState.RUNNING:  
+            if self.experiment.session.record:
                 await self.start_recording()
-            elif state == ExperimentState.ENDED:
+        elif state == ExperimentState.ENDED:
+            if self.experiment.session.record:
                 await self.stop_recording()
-            else:
-                return
+            await self.connection.get_connection_stats(self.experiment.session.id, self.id)
+        else:
+            return
+            
 
     async def _handle_chat(self, data: Any) -> MessageDict:
         """Handle requests with type `CHAT`.

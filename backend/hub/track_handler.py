@@ -1,7 +1,6 @@
 """Provide TrackHandler for handing and distributing tracks."""
-
 from __future__ import annotations
-from hub.exceptions import ErrorDictException
+import datetime
 import numpy
 import asyncio
 import logging
@@ -23,6 +22,7 @@ from filters import (
     MuteVideoFilter,
     FilterDataDict,
 )
+from hub.exceptions import ErrorDictException
 from group_filters import GroupFilter, group_filter_factory, group_filter_utils
 from time import time_ns
 
@@ -48,6 +48,7 @@ class TrackHandler(MediaStreamTrack):
     _execute_group_filters: bool
     _logger: logging.Logger
     __lock: asyncio.Lock
+    avg_fps_list = []
 
     def __init__(
         self,
@@ -106,6 +107,8 @@ class TrackHandler(MediaStreamTrack):
         self._filters = {}
         self._execute_group_filters = True
         self._group_filters = {}
+        self.fps_start_time = datetime.datetime.now()
+        self.total_frames = 0
 
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
@@ -250,11 +253,16 @@ class TrackHandler(MediaStreamTrack):
                 self._filters[filter_id] = old_filters[filter_id]
                 self._filters[filter_id].set_config(config)
                 continue
-
+            
             # Create a new filter for configs with empty id.
-            self._filters[filter_id] = filter_factory.create_filter(
-                config, self.connection.incoming_audio, self.connection.incoming_video
-            )
+            if self.connection._participant is not None:
+                self._filters[filter_id] = filter_factory.create_filter(
+                    config, self.connection.incoming_audio, self.connection.incoming_video, self.connection._participant
+                )
+            else:
+                self._filters[filter_id] = filter_factory.create_filter(
+                    config, self.connection.incoming_audio, self.connection.incoming_video
+                )
 
         coroutines: list[Coroutine] = []
         # Cleanup old filters
@@ -384,8 +392,29 @@ class TrackHandler(MediaStreamTrack):
         if self._muted:
             muted_frame = await self._mute_filter.process(frame)
             return muted_frame
-
+        
+        if self.kind == "video":
+            self.compute_fps()
+        
         return frame
+    
+    def compute_fps(self):
+        #TODO: enable this if config is true & experiment is running
+        #----------------------------------------------------------------------------
+        self.total_frames = self.total_frames + 1  #collect the total number of frames
+        fps_end_time = datetime.datetime.now() #stop timer
+        time_diff = fps_end_time - self.fps_start_time
+        if time_diff.seconds == 0: 
+            FBs = 0.0
+        else:
+            FBs = (self.total_frames / time_diff.seconds) #estimate the frame per second
+        ## New - Update our lists
+        avg_fps_data = {
+            "timestamp": fps_end_time,
+            "elapsed_time_in_seconds": time_diff.seconds,
+            "fps": FBs
+        }
+        self.avg_fps_list.append(avg_fps_data)
 
     async def _apply_video_filters(self, frame: VideoFrame):
         """Parse video frame and pass it to `_apply_filters`."""

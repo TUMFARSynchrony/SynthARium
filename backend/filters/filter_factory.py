@@ -15,6 +15,7 @@ def create_filter(
     filter_config: FilterDict,
     audio_track_handler: TrackHandler,
     video_track_handler: TrackHandler,
+    participant: dict | None = None
 ) -> Filter:
     """Create a filter based on `type` of `filter_config`.
 
@@ -43,7 +44,11 @@ def create_filter(
             description=f'Unknown filter type "{filter_name}".',
         )
 
-    return filters[filter_name](filter_config, audio_track_handler, video_track_handler)
+    match filter_name:
+        case "OPENFACE_AU":
+            return filters[filter_name](filter_config, audio_track_handler, video_track_handler, participant)
+        case _:
+            return filters[filter_name](filter_config, audio_track_handler, video_track_handler)
 
 
 def init_mute_filter(

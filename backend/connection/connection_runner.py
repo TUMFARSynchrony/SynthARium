@@ -11,7 +11,7 @@ from aiortc import RTCSessionDescription
 
 from connection.connection import Connection, connection_factory
 from connection.connection_state import ConnectionState
-from connection.messages import ConnectionAnswerDict, ConnectionProposalDict
+from connection.messages import ConnectionAnswerDict, ConnectionProposalDict, ConnectionStatsDict
 from custom_types.message import MessageDict
 from filters import FilterDict
 from hub.exceptions import ErrorDictException
@@ -69,6 +69,7 @@ class ConnectionRunner:
         audio_group_filters: list[FilterDict],
         video_group_filters: list[FilterDict],
         record_data: list,
+        participant: dict | None = None
     ) -> None:
         """Run the ConnectionRunner.  Returns after the ConnectionRunner finished.
 
@@ -91,6 +92,7 @@ class ConnectionRunner:
             video_group_filters,
             filter_api,
             record_data,
+            participant
         )
         self._connection.add_listener("state_change", self._handle_state_change)
         self._send_command(
@@ -189,6 +191,9 @@ class ConnectionRunner:
                 await self._connection.start_recording()
             case "STOP_RECORDING":
                 await self._connection.stop_recording()
+            case "CONNECTION_STATS":
+                await self._connection.get_connection_stats(data[0], data[1])
+                
             case _:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 
@@ -216,7 +221,8 @@ class ConnectionRunner:
         | dict
         | MessageDict
         | ConnectionProposalDict
-        | ConnectionAnswerDict,
+        | ConnectionAnswerDict
+        | ConnectionStatsDict,
         command_nr: int = -1,
     ) -> None:
         """Send command to main / parent process via stdout.

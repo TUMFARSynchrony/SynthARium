@@ -14,6 +14,7 @@ from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     RTCSessionDescriptionDict,
+    ConnectionStatsDict
 )
 from hub import BACKEND_DIR
 from server import Config
@@ -28,7 +29,6 @@ from filters import FilterDict
 from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-
 
 class ConnectionSubprocess(ConnectionInterface):
     """Wrapper executing a hub.connection.Connection on a dedicated subprocess.
@@ -52,6 +52,7 @@ class ConnectionSubprocess(ConnectionInterface):
     _initial_video_group_filters: list[FilterDict]
     _filter_receiver: FilterSubprocessReceiver
     _record_data: tuple
+    _participant: dict | None
 
     __lock: asyncio.Lock
     _running: bool
@@ -77,6 +78,7 @@ class ConnectionSubprocess(ConnectionInterface):
         video_group_filters: list[FilterDict],
         filter_api: FilterAPI,
         record_data: tuple,
+        participant: dict | None = None
     ):
         """Create new ConnectionSubprocess.
 
@@ -114,6 +116,7 @@ class ConnectionSubprocess(ConnectionInterface):
         self._initial_audio_group_filters = audio_group_filters
         self._initial_video_group_filters = video_group_filters
         self._record_data = record_data
+        self._participant = participant
 
         self.__lock = asyncio.Lock()
         self._running = True
@@ -216,6 +219,13 @@ class ConnectionSubprocess(ConnectionInterface):
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("STOP_RECORDING", None)
+    
+    async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        # Send command and wait for response.
+        await self._send_command(
+            "CONNECTION_STATS", (session_id, participant_id)
+        )
 
     async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
         answer = await self._send_command_wait_for_response(
@@ -263,6 +273,8 @@ class ConnectionSubprocess(ConnectionInterface):
             json.dumps(self._initial_video_group_filters),
             "--record-data",
             json.dumps(self._record_data),
+            "--participant-data",
+            json.dumps(self._participant),
         ]
         program_summary = program[:5] + [
             program[5][:10] + ("..." if len(program[5]) >= 10 else "")
@@ -552,6 +564,7 @@ async def connection_subprocess_factory(
     video_group_filters: list[FilterDict],
     filter_api: FilterAPI,
     record_data: tuple,
+    participant: dict | None = None
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 
@@ -593,6 +606,7 @@ async def connection_subprocess_factory(
         video_group_filters,
         filter_api,
         record_data,
+        participant
     )
 
     local_description = await connection.get_local_description()

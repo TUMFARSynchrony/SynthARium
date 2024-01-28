@@ -13,13 +13,15 @@ import shortuuid
 import asyncio
 import logging
 import json
+import os
 
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
-    ConnectionProposalDict,
+    ConnectionProposalDict
 )
 from connection.sub_connection import SubConnection
+from hub.stats import Stats
 from hub.track_handler import TrackHandler
 from hub.exceptions import ErrorDictException
 from connection.connection_interface import ConnectionInterface
@@ -32,7 +34,6 @@ from filters.filter_data_dict import FilterDataDict
 from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-
 
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
@@ -72,6 +73,7 @@ class Connection(ConnectionInterface):
     _audio_record_handler: RecordHandler
     _video_record_handler: RecordHandler
     _raw_video_record_handler: RecordHandler
+    _participant: dict | None
 
     def __init__(
         self,
@@ -80,6 +82,7 @@ class Connection(ConnectionInterface):
         log_name_suffix: str,
         filter_api: FilterAPIInterface,
         record_data: tuple,
+        participant: dict | None = None
     ) -> None:
         """Create new Connection based on a aiortc.RTCPeerConnection.
 
@@ -115,6 +118,7 @@ class Connection(ConnectionInterface):
         self._message_handler = message_handler
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
+        self._participant = participant
 
         (record, record_to) = record_data
         self._audio_record_handler = RecordHandler(
@@ -291,6 +295,18 @@ class Connection(ConnectionInterface):
         await asyncio.gather(
             self._video_record_handler.stop(), self._raw_video_record_handler.stop(), self._audio_record_handler.stop()
         )
+        # Can not send any data since it is disconnected
+        # 2023-12-09 19:17:04,166:DEBUG:ConnectionSubprocess-32362: {"command": "CONNECTION_STATS", "data": ["bbbef1d7d0", "b"], "command_nr": -1}
+        # 2023-12-09 19:17:04,169:WARNING:Connection-P-b[32362]: Can not send data because datachannel is not open
+        if self._participant is not None:
+            self.stats = Stats(self._participant["session_id"])
+            self.stats.write_fps_data(self._incoming_video.avg_fps_list, self._participant["participant_id"])
+
+    async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
+        # For docstring see ConnectionInterface or hover over function declaration
+        #TODO: move this to util to get session directory
+        self.stats = Stats(session_id)
+        self.stats.write_fps_data(self._incoming_video.avg_fps_list, participant_id)
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -496,6 +512,7 @@ async def connection_factory(
     video_group_filters: list[FilterDict],
     filter_api: FilterAPIInterface,
     record_data: list,
+    participant: dict | None = None,
 ) -> Tuple[RTCSessionDescription, Connection]:
     """Instantiate Connection.
 
@@ -521,7 +538,7 @@ async def connection_factory(
     pc = RTCPeerConnection()
     record_data = (record_data[0], record_data[1])
     connection = Connection(
-        pc, message_handler, log_name_suffix, filter_api, record_data
+        pc, message_handler, log_name_suffix, filter_api, record_data, participant
     )
     await connection.complete_setup(
         audio_filters, video_filters, audio_group_filters, video_group_filters
