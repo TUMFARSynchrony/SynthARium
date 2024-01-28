@@ -5,7 +5,6 @@ import time
 
 class OpenFaceDataParser:
 
-    # TODO: get the action units based on what user needs
     HEADER = ["timestamp", "frame"]
 
     def __init__(self, session_id: str, participant_id: str, action_units: list):
@@ -33,9 +32,6 @@ class OpenFaceDataParser:
             self.HEADER.append(au)
 
         self.writer.writerow(self.HEADER)
-    
-    def reset(self):
-        os.remove(self.filepath)
 
     def __del__(self):
         self.save_file.close()

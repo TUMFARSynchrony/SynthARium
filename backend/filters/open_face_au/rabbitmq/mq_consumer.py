@@ -6,13 +6,6 @@ from server import Config
 from .mq_basic import MQBasic
 from ..open_face_data_parser import OpenFaceDataParser
 
-# def sync(f):
-#     @functools.wraps(f)
-#     def wrapper(*args, **kwargs):
-#         return asyncio.new_event_loop().run_until_complete(f(*args, **kwargs))
-
-#     return wrapper
-
 class MQConsumer(MQBasic):
 
     queue_name: str
@@ -70,11 +63,6 @@ class MQConsumer(MQBasic):
         self.result[int(properties.correlation_id)] = json_body
         self.result = dict(sorted(self.result.items()))
         self.file_writer.write(int(properties.correlation_id), json_body)
-
-    def reset(self):
-        self.file_writer.save_file.close()
-        self.file_writer.reset()
-        self.cancel_consumer()
 
     def __del__(self):
         del self.file_writer

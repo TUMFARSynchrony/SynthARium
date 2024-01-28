@@ -1,12 +1,11 @@
 import logging
 import subprocess
-import threading
 import os
 
 
-class OpenFace():
+class OpenFaceMQ():
     def __init__(self, participant_id: str):
-        self.logger = logging.getLogger("OpenFace")
+        self.logger = logging.getLogger("OpenFaceMQ")
         self.participant_id = participant_id
 
         try:
@@ -22,7 +21,9 @@ class OpenFace():
                             os.path.dirname(
                                 os.path.dirname(
                                     os.path.dirname(
-                                        os.path.dirname(os.path.abspath(__file__))
+                                        os.path.dirname(
+                                            os.path.dirname(os.path.abspath(__file__))
+                                        )
                                     )
                                 )
                             )
@@ -30,7 +31,7 @@ class OpenFace():
                         "experimental-hub-openface",
                         "build",
                         "bin",
-                        "AUExtractor",
+                        "MQAUExtractor",
                     ),
                     self.participant_id,
                 ],
@@ -40,8 +41,8 @@ class OpenFace():
             )
 
             self.logger.debug(f"PID OpenFace: {self._openface_process.pid}")
-        except Exception:
-            pass
+        except Exception as error:
+            self.logger.error(f"Got error: {error}")
 
     def __del__(self):
         try:

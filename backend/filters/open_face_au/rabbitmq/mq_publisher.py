@@ -37,8 +37,5 @@ class MQPublisher(MQBasic):
             properties=properties,
         )
     
-    def reset(self):
-        self.channel.queue_purge(self.queue_name)
-    
     def __del__(self):
         self.channel.queue_purge(self.queue_name)

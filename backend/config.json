@@ -13,6 +13,7 @@
   "ping_subprocesses": 0.0,
   "experimenter_multiprocessing": false,
   "participant_multiprocessing": true,
+  "enable_rabbitmq": false,
   "rabbitmq": {
     "host": "127.0.0.1",
     "port": 5672,
@@ -21,5 +22,5 @@
     "protocol": "amqp"
   },
   "openface_au": ["AU06", "AU12"],
-  "enable_stats": true
+  "enable_stats": false
 }
