@@ -1,5 +1,4 @@
 """Provide TrackHandler for handing and distributing tracks."""
-
 from __future__ import annotations
 import datetime
 import numpy
@@ -15,7 +14,15 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
+from filters import (
+    filter_factory,
+    FilterDict,
+    Filter,
+    MuteAudioFilter,
+    MuteVideoFilter,
+    FilterDataDict,
+)
+from hub.exceptions import ErrorDictException
 from group_filters import GroupFilter, group_filter_factory, group_filter_utils
 from time import time_ns
 
@@ -104,7 +111,6 @@ class TrackHandler(MediaStreamTrack):
         self.total_frames = 0
 
         # Forward the ended event to this handler.
-        self._track.add_listener("reset_filter", self.reset_filter)
         self._track.add_listener("ended", self.stop)
 
     async def complete_setup(
@@ -327,6 +333,29 @@ class TrackHandler(MediaStreamTrack):
     def reset_execute_group_filters(self):
         self._execute_group_filters = len(self._group_filters) > 0
 
+    async def get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get data for filters."""
+        async with self.__lock:
+            return await self._get_filters_data(id, name)
+
+    async def _get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Internal version of `get_filters_data`, without lock."""
+        filters_data: list[FilterDataDict] = []
+        for filter in self._filters.values():
+            if filter.name() == name:
+                if id == "all":
+                    filters_data.append(await filter.get_filter_data())
+                elif id == filter.id:
+                    filters_data.append(await filter.get_filter_data())
+                    break
+                else:
+                    raise ErrorDictException(
+                        code=404,
+                        type="UNKNOWN_FILTER_ID",
+                        description=f'Unknown filter ID: "{id}".',
+                    )
+        return filters_data
+
     async def recv(self) -> AudioFrame | VideoFrame:
         """Receive the next av.AudioFrame from this track and apply filter pipeline.
 
@@ -425,14 +454,6 @@ class TrackHandler(MediaStreamTrack):
                     ndarray = await active_filter.process(original, ndarray)
 
         return ndarray
-
-    def reset_filter(self, reset: bool):
-        #TODO: reset total_frames fps too
-        self._logger.debug(f"{reset} reset value")
-        if reset:
-            for active_filter in self._filters.values():
-                if active_filter.name == "OPENFACE_AU":
-                    active_filter.reset()
 
     async def _run_video_group_filters(self, frame: VideoFrame) -> None:
         ndarray = frame.to_ndarray(format="bgr24")

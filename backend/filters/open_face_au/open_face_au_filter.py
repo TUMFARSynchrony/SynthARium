@@ -45,11 +45,11 @@ class OpenFaceAUFilter(Filter):
         del self.publisher, self.consumer, self.open_face
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "OPENFACE_AU"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
@@ -69,10 +69,9 @@ class OpenFaceAUFilter(Filter):
     def setup(self, participant: dict) -> None:
         self.consumer = MQConsumer(f"{participant['participant_id']}.callback", participant["session_id"])
         self.publisher = MQPublisher(participant["participant_id"], participant["participant_id"], f"{participant['participant_id']}.callback")
-    
-    def reset(self) -> None:
-        self.consumer.reset()
-        self.publisher.reset()
+
+    def channel() -> str:
+        return "video"
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray, reset: bool = False
