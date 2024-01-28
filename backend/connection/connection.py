@@ -301,10 +301,6 @@ class Connection(ConnectionInterface):
         if self._participant is not None:
             self.stats = Stats(self._participant["session_id"])
             self.stats.write_fps_data(self._incoming_video.avg_fps_list, self._participant["participant_id"])
-    
-    async def reset_filter(self) -> None:
-        # For docstring see ConnectionInterface or hover over function declaration
-        self._incoming_video.emit("reset_filter", True)
 
     async def get_connection_stats(self, session_id: str, participant_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration

@@ -11,7 +11,6 @@ from pyee.asyncio import AsyncIOEventEmitter
 
 from custom_types.message import MessageDict
 from custom_types.chat_message import ChatMessageDict
-
 from hub.util import timestamp
 from hub.stats import Stats
 from server import Config
@@ -66,6 +65,7 @@ class Experiment(AsyncIOEventEmitter):
         self._audio_group_filter_aggregators = {}
         self._video_group_filter_aggregators = {}
         self.config = Config()
+        self.stats = None
         if self.config.enable_stats:
             self.stats = Stats(session.id)
             self.usage_stats = []

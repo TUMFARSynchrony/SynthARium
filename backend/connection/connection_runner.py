@@ -191,8 +191,6 @@ class ConnectionRunner:
                 await self._connection.start_recording()
             case "STOP_RECORDING":
                 await self._connection.stop_recording()
-            case "RESET_FILTER":
-                await self._connection.reset_filter()
             case "CONNECTION_STATS":
                 await self._connection.get_connection_stats(data[0], data[1])
                 

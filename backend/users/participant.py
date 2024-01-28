@@ -228,7 +228,6 @@ class Participant(User):
         if state == ExperimentState.RUNNING:  
             if self.experiment.session.record:
                 await self.start_recording()
-            await self.reset_filter()
         elif state == ExperimentState.ENDED:
             if self.experiment.session.record:
                 await self.stop_recording()
