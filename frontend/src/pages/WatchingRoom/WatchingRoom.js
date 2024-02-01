@@ -9,14 +9,16 @@ import {
   selectChatGptTab,
   selectChatTab,
   selectInstructionsTab,
-  selectParticipantsTab
+  selectParticipantsTab,
+  selectFilterInformationTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./WatchingRoom.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
+import { FilterInformationTab } from "../../components/molecules/FilterInformationTab/FilterInformationTab";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
 function WatchingRoom({
@@ -28,6 +30,7 @@ function WatchingRoom({
   onMuteParticipant,
   onStartExperiment,
   onEndExperiment,
+  onGetFiltersData,
   onUpdateMessageReadTime
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
@@ -38,6 +41,7 @@ function WatchingRoom({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
+  const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
   const isChatGptModalActive = useAppSelector(selectChatGptTab);
 
   return (
@@ -120,6 +124,12 @@ function WatchingRoom({
               />
             )}
             {isInstructionsModalActive && <InstructionsTab />}
+            {isFilterInformationModalActive && (
+              <FilterInformationTab
+                onGetFiltersData={onGetFiltersData}
+                participants={sessionData["participants"]}
+              />
+            )}
             {isChatGptModalActive && <ChatGptTab />}
           </div>
         </div>

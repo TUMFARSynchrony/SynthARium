@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
-import { Participant, Session } from "../../types";
+import { FiltersData, Participant, Session } from "../../types";
 import {
   filterListById,
   getParticipantById,
@@ -12,11 +12,13 @@ import { BanMuteUnmuteParticipantPayload, ExperimentTypesPayload } from "../payl
 type SessionsListState = {
   sessions: Session[];
   currentSession: Session;
+  filtersData: FiltersData;
 };
 
 const initialState: SessionsListState = {
   sessions: [],
-  currentSession: null
+  currentSession: null,
+  filtersData: null
 };
 
 export const sessionsListSlice = createSlice({
@@ -104,6 +106,10 @@ export const sessionsListSlice = createSlice({
       const newSessionsList = filterListById(state.sessions, payload.sessionId);
       state.sessions = [...newSessionsList, session];
       state.sessions = sortSessions(state.sessions);
+    },
+
+    updateFiltersData: (state, { payload }) => {
+      state.filtersData = payload;
     }
   }
 });
@@ -118,7 +124,8 @@ export const {
   updateLastMessageReadTime,
   banMuteUnmuteParticipant,
   setCurrentSession,
-  setExperimentTimes
+  setExperimentTimes,
+  updateFiltersData
 } = sessionsListSlice.actions;
 
 export default sessionsListSlice.reducer;
@@ -129,3 +136,4 @@ export const selectMessagesCurrentSession = (state: RootState, participantId: st
   state.sessionsList.currentSession.participants.filter(
     (participant) => participant.id === participantId
   )[0].chat;
+export const selectFiltersData = (state: RootState) => state.sessionsList.filtersData;

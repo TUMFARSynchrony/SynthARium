@@ -33,7 +33,7 @@ import {
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
 
-function SessionForm({ onSendSessionToBackend }) {
+function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
   const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
@@ -95,6 +95,10 @@ function SessionForm({ onSendSessionToBackend }) {
       return;
     }
   }, [snackbarResponse]);
+
+  useEffect(() => {
+    onGetFiltersConfig();
+  }, []);
 
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
