@@ -7,10 +7,9 @@ from os.path import join
 from hub import BACKEND_DIR
 
 
+from filters.filter import Filter
 from filters import FilterDict
 from filters import FilterDataDict
-
-from filters.filter import Filter
 
 
 class SimpleGlassesDetection(Filter):
@@ -44,30 +43,21 @@ class SimpleGlassesDetection(Filter):
         self.predictor = dlib.shape_predictor(self.predictor_path)
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "SIMPLE_GLASSES_DETECTION"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "TEST"
 
     @staticmethod
-    def get_filter_json(self) -> dict[str, Any]:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {},
-        }
+    def channel() -> str:
+        return "video"
 
     async def get_filter_data(self) -> FilterDataDict:
         return FilterDataDict(
-            id=self.id, data={"Glasses Detected": self._glasses_detected}
+            id=self.id,
+            data={"Glasses Detected": self._glasses_detected}
         )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
