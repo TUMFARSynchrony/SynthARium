@@ -14,6 +14,7 @@ from connection.messages import (
 )
 
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -246,5 +247,33 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording tracks for this connection.
 
         Both audio and video recorder will stop.
+        """
+        pass
+
+    @abstractmethod
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get Data from a specific video filter
+
+        Parameters
+        ----------
+        name: name of the filter
+            This is the unique name with which the filter can be identified
+        id : id of the filter
+            Can be either 'all' for all filters with the name
+            or specific id for just one filter
+        """
+        pass
+
+    @abstractmethod
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get Data from a specific audio filter
+
+        Parameters
+        ----------
+        name: name of the filter
+            This is the unique name with which the filter can be identified
+        id : id of the filter
+            Can be either 'all' for all filters with the name
+            or specific id for just one filter
         """
         pass

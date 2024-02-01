@@ -1,6 +1,7 @@
 """Provide TrackHandler for handing and distributing tracks."""
 
 from __future__ import annotations
+from hub.exceptions import ErrorDictException
 import numpy
 import asyncio
 import logging
@@ -14,7 +15,14 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
+from filters import (
+    filter_factory,
+    FilterDict,
+    Filter,
+    MuteAudioFilter,
+    MuteVideoFilter,
+    FilterDataDict,
+)
 from group_filters import GroupFilter, group_filter_factory, group_filter_utils
 from time import time_ns
 
@@ -316,6 +324,29 @@ class TrackHandler(MediaStreamTrack):
 
     def reset_execute_group_filters(self):
         self._execute_group_filters = len(self._group_filters) > 0
+
+    async def get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get data for filters."""
+        async with self.__lock:
+            return await self._get_filters_data(id, name)
+
+    async def _get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Internal version of `get_filters_data`, without lock."""
+        filters_data: list[FilterDataDict] = []
+        for filter in self._filters.values():
+            if filter.name() == name:
+                if id == "all":
+                    filters_data.append(await filter.get_filter_data())
+                elif id == filter.id:
+                    filters_data.append(await filter.get_filter_data())
+                    break
+                else:
+                    raise ErrorDictException(
+                        code=404,
+                        type="UNKNOWN_FILTER_ID",
+                        description=f'Unknown filter ID: "{id}".',
+                    )
+        return filters_data
 
     async def recv(self) -> AudioFrame | VideoFrame:
         """Receive the next av.AudioFrame from this track and apply filter pipeline.
