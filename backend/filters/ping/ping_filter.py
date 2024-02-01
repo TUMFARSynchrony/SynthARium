@@ -1,7 +1,7 @@
 import numpy
 import cv2
 
-from filters import Filter
+from filters.filter import Filter
 from filter_api import FilterAPIInterface
 from filters.filter_data_dict import FilterDataDict
 from filters.filter_dict import FilterDict
@@ -35,41 +35,33 @@ class PingFilter(Filter):
         self.filter_api.stop_pinging()
 
     @staticmethod
-    def name(self) -> str:
-        # change this name
+    def name() -> str:
         return "PING"
 
     @staticmethod
-    def filter_type(self) -> str:
-        # change this according to your filter type (SESSION or TEST)
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
+    def channel() -> str:
+        return "video"
+
+    @staticmethod
+    def default_config() -> object:
         return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {
-                "period": {
-                    "min": 10,
-                    "max": 60000,
-                    "step": 1,
-                    "value": 1000,
-                    "defaultValue": 1000,
-                },
-                "bufferLength": {
-                    "min": 1,
-                    "max": 300,
-                    "step": 1,
-                    "value": 10,
-                    "defaultValue": 10,
-                },
+            "period": {
+                "min": 10,
+                "max": 60000,
+                "step": 1,
+                "value": 1000,
+                "defaultValue": 1000,
+            },
+            "bufferLength": {
+                "min": 1,
+                "max": 300,
+                "step": 1,
+                "value": 10,
+                "defaultValue": 10,
             },
         }
 

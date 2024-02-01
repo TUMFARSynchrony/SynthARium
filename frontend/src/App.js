@@ -20,7 +20,7 @@ import {
   joinExperiment,
   selectOngoingExperiment
 } from "./redux/slices/ongoingExperimentSlice";
-import { saveSession } from "./redux/slices/openSessionSlice";
+import { initializeFiltersData, saveSession } from "./redux/slices/openSessionSlice";
 import {
   addMessageToCurrentSession,
   addNote,
@@ -94,6 +94,7 @@ function App() {
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
     connection.api.on("PING", handlePing);
+    connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
     connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
@@ -112,6 +113,7 @@ function App() {
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
       connection.api.off("PING", handlePing);
+      connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
       connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
@@ -314,6 +316,10 @@ function App() {
     });
   };
 
+  const handleFiltersConfig = (data) => {
+    dispatch(initializeFiltersData(data));
+  };
+
   const handleFiltersData = (data) => {
     dispatch(updateFiltersData(data));
   };
@@ -396,6 +402,10 @@ function App() {
 
   const toggleModal = (modal) => {
     dispatch(toggleSingleTab(modal));
+  };
+
+  const onGetFiltersConfig = () => {
+    connection.sendMessage("GET_FILTERS_CONFIG", {});
   };
 
   return (
@@ -581,7 +591,12 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
+                customComponent={
+                  <SessionForm
+                    onSendSessionToBackend={onSendSessionToBackend}
+                    onGetFiltersConfig={onGetFiltersConfig}
+                  />
+                }
                 centerContentOnYAxis={true}
               />
             }

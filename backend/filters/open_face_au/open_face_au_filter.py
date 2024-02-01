@@ -29,26 +29,16 @@ class OpenFaceAUFilter(Filter):
         del self.file_writer, self.line_writer, self.au_extractor
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "OPENFACE_AU"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {},
-        }
+    def channel() -> str:
+        return "video"
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray

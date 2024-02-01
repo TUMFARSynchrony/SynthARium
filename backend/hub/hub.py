@@ -4,9 +4,6 @@ from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
 import logging
-import json
-from os.path import join
-from hub import FRONTEND_DIR
 
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
@@ -15,8 +12,6 @@ from experiment import Experiment
 from hub.util import generate_unique_id
 from hub.exceptions import ErrorDictException
 from hub.util import get_system_specs
-
-from filters.filter import Filter
 
 import experiment.experiment as _experiment
 import session.session_manager as _sm
@@ -71,9 +66,6 @@ class Hub:
         logging.getLogger("PIL").setLevel(dependencies_log_level)
 
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
-
-        self.get_filters_json()
-        self._logger.debug("Successfully created filters_data.json in frontend folder")
 
         self.experimenters = []
         self.experiments = {}
@@ -351,28 +343,3 @@ class Hub:
         for experimenter in self.experimenters:
             if experimenter is not exclude:
                 await experimenter.send(data)
-
-    def get_filters_json(self):
-        """Generate the filters_data.json file."""
-        filters_json = {"TEST": [], "SESSION": []}
-        for filter in Filter.__subclasses__():
-            filter_type = filter.filter_type(filter)
-            if filter_type == "NONE":
-                continue
-            elif filter_type == "TEST" or filter_type == "SESSION":
-                filter_json = filter.get_filter_json(filter)
-
-                if not filter.validate_filter_json(filter, filter_json):
-                    raise ValueError(
-                        f"{filter} has incorrect values in get_filter_json."
-                    )
-
-                filters_json[filter_type].append(filter_json)
-            else:
-                raise ValueError(
-                    f"{filter} has incorrect filter_type. Allowed types are: 'NONE', 'TEST', 'SESSION'"
-                )
-
-        path = join(FRONTEND_DIR, "src/filters_data.json")
-        with open(path, "w") as outfile:
-            json.dump(filters_json, outfile)

@@ -39,21 +39,6 @@ function WatchingRoom({
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
   const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
-  const [showInformationTab, setShowInformationTab] = useState(false);
-
-  useEffect(() => {
-    setShowInformationTab(true);
-    // const participants = sessionData["participants"];
-    // for (let participant in participants) {
-    //   const video_filters = participants[participant]["video_filters"];
-    //   for (let video_filter in video_filters) {
-    //     if (video_filters[video_filter]["name"] === "PING") {
-    //       setShowInformationTab(true);
-    //       return;
-    //     }
-    //   }
-    // }
-  }, []);
 
   return (
     <div className="h-[calc(100vh-84px)] w-full">
@@ -134,7 +119,7 @@ function WatchingRoom({
               />
             )}
             {isInstructionsModalActive && <InstructionsTab />}
-            {isFilterInformationModalActive && showInformationTab && (
+            {isFilterInformationModalActive && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
                 participants={sessionData["participants"]}
