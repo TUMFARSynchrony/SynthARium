@@ -34,11 +34,6 @@ import {
 import { v4 as uuid } from "uuid";
 import chatFiltersData from "../../chat_filters.json";
 
-// Loading filters data before the component renders, because the Select component needs value.
-const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
-  return filter;
-});
-
 const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
 });
@@ -56,14 +51,6 @@ const defaultChatFilter = {
   id: "",
   name: "Placeholder",
   config: {}
-};
-
-const getIndividualFilters = () => {
-  return testData.filter((filter) => filter.groupFilter !== true);
-};
-
-const getGroupFilters = () => {
-  return testData.filter((filter) => filter.groupFilter === true);
 };
 
 type Props = {
@@ -96,15 +83,6 @@ function ParticipantDataModal({
   setSnackbarResponse,
   handleCanvasPlacement
 }: Props) {
-  // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-  const defaultFilter = {
-    id: "",
-    name: "Placeholder",
-    channel: "",
-    groupFilter: false,
-    config: {}
-  };
-
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
   const [selectedChatFilter, setSelectedChatFilter] = useState<ChatFilter>(defaultChatFilter);

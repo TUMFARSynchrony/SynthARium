@@ -27,9 +27,8 @@ const HeaderActionArea = (props: HeaderActionAreaProps) => {
           {button.externalIcon ? (
             <img className="w-4 h-4" src={openAiLogo} />
           ) : (
-            <FontAwesomeIcon icon={button.icon} className="w-4 h-4 pr-2" />
+            <FontAwesomeIcon icon={button.icon} className="w-4 h-4" />
           )}
-          <FontAwesomeIcon icon={button.icon} className="w-4 h-4 pr-2" />
           {button.label}
         </button>
       ))}

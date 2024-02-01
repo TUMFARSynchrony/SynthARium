@@ -36,26 +36,29 @@ export const tabsSlice = createSlice({
           state.instructionsTabActive = !state.instructionsTabActive;
           state.participantsTabActive = false;
           state.filterInformationTabActive = false;
-          state.chatTabActive = false;
+          state.chatGptTabActive = false;
           break;
         case Tabs.PARTICIPANTS:
           state.chatTabActive = false;
           state.instructionsTabActive = false;
           state.participantsTabActive = !state.participantsTabActive;
           state.filterInformationTabActive = false;
-          state.chatTabActive = false;
+          state.chatGptTabActive = false;
           break;
         case Tabs.FILTER_INFORMATION:
           state.chatTabActive = false;
           state.instructionsTabActive = false;
           state.participantsTabActive = false;
           state.filterInformationTabActive = !state.filterInformationTabActive;
+          state.chatGptTabActive = false;
           break;
         case Tabs.CHATGPT:
           state.chatTabActive = false;
           state.instructionsTabActive = false;
           state.participantsTabActive = false;
           state.chatGptTabActive = !state.chatGptTabActive;
+          state.filterInformationTabActive = false;
+          break;
       }
     }
   }
