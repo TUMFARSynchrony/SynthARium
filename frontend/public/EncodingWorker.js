@@ -35,6 +35,17 @@ function encodeFunction(encodedFrame, controller) {
     const frameObject = storedFrames[frameIndex % storedFrames.length];
     const newData = frameObject.frame;
 
+    let metadata = encodedFrame.getMetadata();
+    // console.log("old metadata", JSON.parse(JSON.stringify(metadata)));
+    metadata.rtpTimestamp = (1000000 / 30.0) * frameIndex;
+    metadata.frameId = frameIndex;
+    if (frameObject.isKeyframe) {
+      metadata.dependencies = [];
+    } else {
+      metadata.dependencies = [frameIndex - 1];
+    }
+    // console.log("new metadata", metadata);
+
     encodedFrame.data = newData;
 
     frameIndex += 1;

@@ -76,7 +76,7 @@ export const getLocalStream = async () => {
     // video: true
     video: {
       frameRate: {
-        exact: 25
+        exact: 30
       }
     }
   };

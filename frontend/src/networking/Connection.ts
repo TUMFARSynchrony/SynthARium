@@ -97,6 +97,13 @@ export default class Connection extends ConnectionBase<
     this.api.on("CONNECTION_ANSWER", this.handleConnectionAnswer.bind(this));
 
     this.initDataChannel();
+
+    // Chrome RTCEncodedFrameSetMetadata origin trial
+    const otMeta = document.createElement("meta");
+    otMeta.httpEquiv = "origin-trial";
+    otMeta.content =
+      "AlL6FIMBsgEnhjiDEV2Q8mJdVkJokzUP5NiFrGCpA7KNlz6Ca1iAlwK4wHyB4k27ZcsZNfklugKaaYS/MtgnfgwAAABeeyJvcmlnaW4iOiJodHRwczovLzEyNy4wLjAuMTo4MDgwIiwiZmVhdHVyZSI6IlJUQ0VuY29kZWRGcmFtZVNldE1ldGFkYXRhIiwiZXhwaXJ5IjoxNzI1NDA3OTk5fQ==";
+    document.head.append(otMeta);
   }
 
   /**
