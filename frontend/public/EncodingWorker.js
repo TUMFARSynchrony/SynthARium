@@ -15,6 +15,7 @@
 
 let storedFrames = [];
 let frameIndex = 0;
+let startRtpTimestamp = 0;
 
 function encodeFunction(encodedFrame, controller) {
   // eslint-disable-next-line no-undef
@@ -31,20 +32,23 @@ function encodeFunction(encodedFrame, controller) {
   //   oldFrames.push(encodedFrame.data);
   // }
 
+  if (frameIndex === 0) {
+    startRtpTimestamp = encodedFrame.getMetadata().rtpTimestamp;
+  }
+
   if (storedFrames.length !== 0) {
     const frameObject = storedFrames[frameIndex % storedFrames.length];
     const newData = frameObject.frame;
 
     let metadata = encodedFrame.getMetadata();
-    // console.log("old metadata", JSON.parse(JSON.stringify(metadata)));
-    metadata.rtpTimestamp = (1000000 / 30.0) * frameIndex;
+    metadata.rtpTimestamp = startRtpTimestamp + (90000 / 30) * frameIndex; // clock is 90 khz
     metadata.frameId = frameIndex;
     if (frameObject.isKeyframe) {
       metadata.dependencies = [];
     } else {
       metadata.dependencies = [frameIndex - 1];
     }
-    // console.log("new metadata", metadata);
+    encodedFrame.setMetadata(metadata);
 
     encodedFrame.data = newData;
 
