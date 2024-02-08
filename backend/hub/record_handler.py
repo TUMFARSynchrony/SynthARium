@@ -80,6 +80,12 @@ class RecordHandler:
             self._recorder.addTrack(track)
             self._logger.debug(f"Add track: {self._record_to}")
 
+            # very hacky way to set qp to 0 for video tracks
+            if self._track.kind == "video" and "raw" in self._record_to:
+                self._recorder._MediaRecorder__tracks[track].stream.options = {
+                    'qp': '0'
+                }
+
     async def stop(self):
         """Stop RecordHandler."""
 
@@ -101,6 +107,7 @@ class RecordHandler:
                     time.sleep(1)
 
     def trim(self, duration: float):
+        return;
         try:
             duration_str = str(math.ceil(duration) * -1)
             output = f"{self._record_to}_trimmed.{self._track_format}"
