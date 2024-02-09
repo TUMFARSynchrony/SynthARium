@@ -122,7 +122,10 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
-        self._filter_receiver = FilterSubprocessReceiver(filter_api)
+        self._filter_receiver = FilterSubprocessReceiver(
+            filter_api,
+            self._send_command
+        )
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
@@ -381,7 +384,14 @@ class ConnectionSubprocess(ConnectionInterface):
         match command:
             case "FILTER_API":
                 # Forward FILTER_API requests to FilterSubprocessReceiver
-                await self._filter_receiver.handle(data)
+                # and send possible answer back to FilterSubprocessAPI
+                answer = await self._filter_receiver.handle(data)
+                if answer is not None:
+                    await self._send_command(
+                        "FILTER_API_ANSWER",
+                        answer,
+                        command_nr
+                    )
             case "SET_LOCAL_DESCRIPTION":
                 self._local_description = RTCSessionDescription(
                     data["sdp"], data["type"]
