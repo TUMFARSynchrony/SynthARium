@@ -77,6 +77,12 @@ export const getLocalStream = async () => {
     video: {
       frameRate: {
         exact: 30
+      },
+      width: {
+        exact: 1280
+      },
+      height: {
+        exact: 720
       }
     }
   };

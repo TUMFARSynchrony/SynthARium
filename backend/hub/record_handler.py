@@ -81,7 +81,7 @@ class RecordHandler:
             self._logger.debug(f"Add track: {self._record_to}")
 
             # very hacky way to set qp to 0 for video tracks
-            if self._track.kind == "video" and "raw" in self._record_to:
+            if type(self._recorder) is MediaRecorder and self._track.kind == "video" and "raw" in self._record_to:
                 self._recorder._MediaRecorder__tracks[track].stream.options = {
                     'qp': '0'
                 }
