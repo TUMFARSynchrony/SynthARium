@@ -34,6 +34,9 @@ class Stats:
         self._logger = logging.getLogger(f"{session_id}-Stats")
         self.session_id = session_id
         self.stats_dir = os.path.join(get_sessions_path(), self.session_id, "stats")
+        session_dir = os.path.join(get_sessions_path(), self.session_id)
+        if not os.path.isdir(session_dir):
+            os.mkdir(session_dir)
         if not os.path.isdir(self.stats_dir):
             os.mkdir(self.stats_dir)
         #TODO: refactor write method into switch case
