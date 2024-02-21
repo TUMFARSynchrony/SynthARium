@@ -10,7 +10,8 @@ TODO: What was changed? How was the issue solved/feature implemented?
 TODO: How can reviewers test the PR?
 
 # Checklist
-- [ ] Development was merged into this branch and potential conflicts resolved
+- [ ] Correct base branch was selected (usually `development`)
+- [ ] `development` was merged into this branch and potential conflicts resolved
 - [ ] [Issues](https://github.com/TUMFARSynchrony/experimental-hub/issues) which were solved are referenced
 - [ ] Terminology is consistent with the rest of the codebase
 - [ ] Reviewers are assigned
