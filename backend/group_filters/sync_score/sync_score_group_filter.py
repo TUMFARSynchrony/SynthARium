@@ -12,7 +12,9 @@ from group_filters.sync_score.oasis import oasis
 
 bow_window_size = 8  # how many frames each window contains
 bow_word_size = 4  # how many symbols each window is mapped to (window_length / word_length is a prositive integer)
-bow_n_bins = 3  # the size of the alphabet or the number of symbols used to represent the time series signal
+bow_n_bins = (
+    3  # the size of the alphabet or the number of symbols used to represent the time series signal
+)
 bow_strategy = "uniform"  # the strategy used by the Bag-of-Words (BoW) algorithm
 oasis_energy_threshold = 0.1  # min signal energy required for the OASIS algorithm
 oasis_min_required_data = (
@@ -45,13 +47,19 @@ class SyncScoreGroupFilter(GroupFilter):
     def name() -> str:
         return "SYNC_SCORE_GF"
 
+    @staticmethod
+    def type() -> str:
+        return "SESSION"
+
+    @staticmethod
+    def channel() -> str:
+        return "video"
+
     async def process_individual_frame(
         self, original: VideoFrame | AudioFrame, ndarray: np.ndarray
     ) -> Any:
         # Extract AU from the frame
-        exit_code, _, result = self.au_extractor.extract(
-            ndarray, self.au_data.get("roi", None)
-        )
+        exit_code, _, result = self.au_extractor.extract(ndarray, self.au_data.get("roi", None))
 
         if exit_code != 0:
             return None
@@ -69,10 +77,12 @@ class SyncScoreGroupFilter(GroupFilter):
 
         return smile
 
+    @staticmethod
     def align_data(x: list, y: list, base_timeline: list) -> list:
         interpolator = interp1d(x, y, kind="linear")
         return list(interpolator(base_timeline))
 
+    @staticmethod
     def aggregate(data: list[list[Any]]) -> Any:
         def normalize_data(data: np.ndarray) -> np.ndarray:
             min_val = np.min(data)
@@ -99,9 +109,7 @@ class SyncScoreGroupFilter(GroupFilter):
             strategy=bow_strategy,
         )
 
-        bow1, bow2 = bow.apply_bow_for_2_participants(
-            normalized_data1, normalized_data2
-        )
+        bow1, bow2 = bow.apply_bow_for_2_participants(normalized_data1, normalized_data2)
 
         # Apply OASIS algorithm for user1->user2 and user2->user1 and take the average
         sync_score_u1u2 = oasis(
