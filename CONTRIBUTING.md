@@ -10,6 +10,7 @@ To contribute code to this project, see the following steps:
 2. Make sure your code works with the latest version of `development` (i.e. merge `development` into your branch and fix conflicts), then create a pull request.
    - Choose `development` as base branch. If your branch is based on another branch, choose the other branch as base. Once the other branch is merged, your PR will automatically change its base to `development`. 
    - Name the PR using a short and descriptive name
+   - Fill out the neccessary details in the pull request template
    - Assign the person who will perform the merge as _Assignee_ (usually yourself).
    - Assign specific people who should review the code as _Reviewers_. If you don't know who to assign, put NCEghtebas there as a default. At least one approval is required for the merge.
 3. (External) An appropriate reviewer will be assigned and review the code contribution like with the steps below.
