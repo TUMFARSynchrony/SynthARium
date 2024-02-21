@@ -1,10 +1,8 @@
 import HeroText from "../../components/atoms/HeroText/HeroText";
-import NavigationBar from "../../components/molecules/NavigationBar/NavigationBar";
 
 function PostProcessing() {
   return (
     <>
-      <NavigationBar />
       <HeroText text={"Post-Processing Room"} />
       <HeroText
         text={

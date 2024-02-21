@@ -3,9 +3,9 @@
 import cv2
 import numpy
 from av import VideoFrame
-from filters.filter_dict import FilterDict
 
 from filters.filter import Filter
+from filters import FilterDict
 
 
 class RotationFilter(Filter):
@@ -24,37 +24,31 @@ class RotationFilter(Filter):
         self.rotation = angle * direction
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "ROTATION"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
+    def channel() -> str:
+        return "video"
+
+    @staticmethod
+    def default_config() -> dict:
         return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {
-                "direction": {
-                    "defaultValue": ["clockwise", "anti-clockwise"],
-                    "value": "clockwise",
-                    "requiresOtherFilter": False,
-                },
-                "angle": {
-                    "min": 1,
-                    "max": 180,
-                    "step": 1,
-                    "value": 45,
-                    "defaultValue": 45,
-                },
+            "direction": {
+                "defaultValue": ["clockwise", "anti-clockwise"],
+                "value": "clockwise",
+                "requiresOtherFilter": False,
+            },
+            "angle": {
+                "min": 1,
+                "max": 180,
+                "step": 1,
+                "value": 45,
+                "defaultValue": 45,
             },
         }
 

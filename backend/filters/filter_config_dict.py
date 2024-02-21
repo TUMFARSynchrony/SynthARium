@@ -1,8 +1,10 @@
 from typing import TypedDict
 
+from .filter_dict import FilterDict
 
-class FilterDict(TypedDict):
-    """TypedDict for filters.
+
+class FilterConfigDict(TypedDict):
+    """TypedDict for basic filters with only basic attributes.
 
     Attributes
     ----------
@@ -21,11 +23,8 @@ class FilterDict(TypedDict):
     See Also
     --------
     Data Types Wiki :
-        https://github.com/TUMFARSynchorny/experimental-hub/wiki/Data-Types#filter
+        https://github.com/TUMFARSynchrony/experimental-hub/wiki/Data-Types#filterconfig
     """
 
-    name: str
-    id: str
-    channel: str
-    groupFilter: bool
-    config: dict
+    TEST: list[FilterDict]
+    SESSION: list[FilterDict]
