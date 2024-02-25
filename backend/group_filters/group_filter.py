@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy
 import zmq
 import zmq.asyncio
+import pickle
 from typing import TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
@@ -39,7 +40,7 @@ class GroupFilter(ABC):
     _result_socket: zmq.Socket | None
     is_result_socket_connected: bool
 
-    __aggregation_result: Any
+    __aggregation_results: dict[str, Any]
 
     __line_writer: SimpleLineWriter
 
@@ -74,7 +75,7 @@ class GroupFilter(ABC):
         self._result_socket = None
         self.is_result_socket_connected = False
 
-        self.__aggregation_result = None
+        self.__aggregation_results = {}
 
         self.__line_writer = SimpleLineWriter()
 
@@ -105,7 +106,9 @@ class GroupFilter(ABC):
             self._logger.error(f"ZMQ Error: {e}")
 
         self._result_socket = self._context.socket(zmq.SUB)
-        self._result_socket.setsockopt_string(zmq.SUBSCRIBE, AGGREGRATION_RESULT_ZMQ_TOPIC)
+        self._result_socket.setsockopt_string(
+            zmq.SUBSCRIBE, f"{AGGREGRATION_RESULT_ZMQ_TOPIC}-{self.participant_id}"
+        )
         try:
             self._result_socket.connect(f"ipc://127.0.0.1:{result_port}")
             self.is_result_socket_connected = True
@@ -169,12 +172,18 @@ class GroupFilter(ABC):
             # Get the current aggregation result from the aggreagator
             if self.is_result_socket_connected:
                 try:
-                    message = await self._result_socket.recv_string(flags=zmq.NOBLOCK)
-                    _, aggregation_result = message.split(" ", 1)
+                    [topic, aggregation_results] = await self._result_socket.recv_multipart(
+                        flags=zmq.NOBLOCK
+                    )
+                    aggregation_results = pickle.loads(aggregation_results)
+                    self.__aggregation_results.update(aggregation_results)
+                    for comb in self.__aggregation_results.keys():
+                        if len(comb) != len(list(aggregation_results.keys())[0]):
+                            del self.__aggregation_results[comb]
 
-                    self.__aggregation_result = aggregation_result
-
-                    self._logger.debug(f"Aggregation result received: {aggregation_result}")
+                    self._logger.debug(
+                        f"Aggregation result received for {self.participant_id} with topic {topic.decode()}: {self.__aggregation_results}"
+                    )
                 except zmq.Again:
                     pass
                 except Exception as e:
@@ -182,13 +191,18 @@ class GroupFilter(ABC):
                         f"Exception: {e} | Aggregation result cannot be retrieved for {self.participant_id}"
                     )
 
-            ndarray = self.__line_writer.write_lines(
-                ndarray,
-                [
-                    f"Individual data: {round(float(data or 0), 2)}",
-                    f"Aggregation result: {round(float(self.__aggregation_result or 0), 2)}",
-                ],
-            )
+            # Print the data and aggregation results on the frame
+            lines = [f"Individual data: {round(float(data or 0), 2)}"]
+            if self.__aggregation_results:
+                lines += ["Aggregation results:"]
+                lines += [
+                    f"- {'&'.join(sorted(comb))}: {round(float(agg_result or 0), 2)}"
+                    for comb, agg_result in sorted(
+                        self.__aggregation_results.items(), key=lambda x: x[0]
+                    )
+                ]
+            ndarray = self.__line_writer.write_lines(ndarray, lines)
+
         return ndarray
 
     @staticmethod

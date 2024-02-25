@@ -10,6 +10,7 @@ from queue import Queue
 from itertools import combinations
 from typing import Any
 import numpy as np
+import pickle
 from time import perf_counter, time
 from group_filters.group_filter import AGGREGRATION_RESULT_ZMQ_TOPIC
 
@@ -109,12 +110,13 @@ class GroupFilterAggregator(object):
                     self.add_data(message["participant_id"], message["time"], message["data"])
 
                     num_participants_in_aggregation = (
-                        self._group_filter.num_participants_in_aggregation
+                        len(self._data)
+                        if self._group_filter.num_participants_in_aggregation == "all"
+                        else self._group_filter.num_participants_in_aggregation
                     )
-                    if num_participants_in_aggregation == "all":
-                        num_participants_in_aggregation = len(self._data)
 
                     if len(self._data) >= num_participants_in_aggregation:
+                        aggregation_result_dict = dict()
                         for c in combinations(self._data.keys(), num_participants_in_aggregation):
                             # Check if all participants have enough data
                             participants_have_enough_data = True
@@ -160,34 +162,56 @@ class GroupFilterAggregator(object):
                             # Update aggregation history
                             aggregation_history[c] = c_data
 
-                            # Send the aggregation result to each participant
-                            if self.is_result_socket_connected:
-                                aggregation_result_message = (
-                                    f"{AGGREGRATION_RESULT_ZMQ_TOPIC} {aggregation_result}"
-                                )
-
-                                try:
-                                    self._result_socket.send_string(
-                                        aggregation_result_message, flags=zmq.NOBLOCK
-                                    )
-                                    self._logger.debug(
-                                        f"Aggregation result sent: {aggregation_result_message}"
-                                    )
-                                except Exception as e:
-                                    self._logger.debug(
-                                        f"Exception: {e} | Aggregation result cannot be sent."
-                                    )
+                            # Add the aggregation result to the aggregation result messages
+                            aggregation_result_dict[c] = aggregation_result
 
                             end_time = perf_counter()
                             self._logger.debug(
                                 alignment_debug_str
                                 + "\n"
-                                + "\n\tData aggregation performed."
+                                + f"\n\tData aggregation performed for {c}."
                                 + f"\n\tTime: {time()}"
                                 + f"\n\tRuntime: {end_time - start_time}"
                                 + f"\n\tData: {data}"
                                 + f"\n\tResult: {aggregation_result}"
                             )
+
+                        # Send the aggregation result to each participant
+                        if self.is_result_socket_connected and aggregation_result_dict:
+                            for pid in self._data:
+                                aggregation_results = dict()
+                                for comb, agg_result in aggregation_result_dict.items():
+                                    if pid in comb:
+                                        i = comb.index(pid)
+                                        others = tuple(comb[:i] + comb[i + 1 :])
+                                        aggregation_results[others] = agg_result
+
+                                self._logger.debug(
+                                    f"Aggregation results for {pid}: {num_participants_in_aggregation} {aggregation_result_dict} {aggregation_results}"
+                                )
+
+                                if not aggregation_results:
+                                    continue
+
+                                aggregation_result_message_topic = (
+                                    f"{AGGREGRATION_RESULT_ZMQ_TOPIC}-{pid}"
+                                )
+
+                                try:
+                                    self._result_socket.send_multipart(
+                                        [
+                                            aggregation_result_message_topic.encode(),
+                                            pickle.dumps(aggregation_results),
+                                        ],
+                                        flags=zmq.NOBLOCK,
+                                    )
+                                    self._logger.debug(
+                                        f"Aggregation result sent for {pid} with topic {aggregation_result_message_topic}: {aggregation_results}"
+                                    )
+                                except Exception as e:
+                                    self._logger.debug(
+                                        f"Exception: {e} | Aggregation result cannot be sent for {pid}."
+                                    )
                 except asyncio.CancelledError:
                     # If the task is cancelled, break the loop and stop execution
                     break
@@ -252,7 +276,7 @@ class GroupFilterAggregator(object):
 
         end_time = perf_counter()
         debug_str = (
-            "\n\tData alignment performed."
+            f"\n\tData alignment performed for {participant_ids}."
             + f"\n\tTime: {time()}"
             + f"\n\tRuntime: {end_time - start_time}"
             + f"\n\tBase time horizon: {base_time_horizon}"
