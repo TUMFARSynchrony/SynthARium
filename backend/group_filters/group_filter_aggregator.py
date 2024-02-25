@@ -186,10 +186,6 @@ class GroupFilterAggregator(object):
                                         others = tuple(comb[:i] + comb[i + 1 :])
                                         aggregation_results[others] = agg_result
 
-                                self._logger.debug(
-                                    f"Aggregation results for {pid}: {num_participants_in_aggregation} {aggregation_result_dict} {aggregation_results}"
-                                )
-
                                 if not aggregation_results:
                                     continue
 
