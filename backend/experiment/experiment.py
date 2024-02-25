@@ -432,13 +432,13 @@ class Experiment(AsyncIOEventEmitter):
         self.emit("state", self._state)
 
     async def set_video_group_filter_aggregators(
-        self, group_filter_configs: list[FilterDict], ports: list[int]
+        self, group_filter_configs: list[FilterDict], ports: list[tuple[int, int]]
     ) -> None:
         old_group_filter_aggregators = self._video_group_filter_aggregators
 
         self._video_group_filter_aggregators = {}
         coroutines = []
-        for config, port in zip(group_filter_configs, ports):
+        for config, port_tuple in zip(group_filter_configs, ports):
             filter_id = config["id"]
             # Reuse existing filter for matching id and name.
             if (
@@ -453,10 +453,10 @@ class Experiment(AsyncIOEventEmitter):
                 self._video_group_filter_aggregators[filter_id].delete_data()
             else:
                 # Create a new filter for configs with empty id.
-                self._video_group_filter_aggregators[
-                    filter_id
-                ] = group_filter_aggregator_factory.create_group_filter_aggregator(
-                    "video", config, port
+                self._video_group_filter_aggregators[filter_id] = (
+                    group_filter_aggregator_factory.create_group_filter_aggregator(
+                        "video", config, port_tuple
+                    )
                 )
 
         # Cleanup old group filter aggregators
@@ -478,13 +478,13 @@ class Experiment(AsyncIOEventEmitter):
         await asyncio.gather(*coroutines)
 
     async def set_audio_group_filter_aggregators(
-        self, group_filter_configs: list[FilterDict], ports: list[int]
+        self, group_filter_configs: list[FilterDict], ports: list[tuple[int, int]]
     ) -> None:
         old_group_filter_aggregators = self._audio_group_filter_aggregators
 
         self._audio_group_filter_aggregators = {}
         coroutines = []
-        for config, port in zip(group_filter_configs, ports):
+        for config, port_tuple in zip(group_filter_configs, ports):
             filter_id = config["id"]
             # Reuse existing filter for matching id and name.
             if (
@@ -499,10 +499,10 @@ class Experiment(AsyncIOEventEmitter):
                 self._audio_group_filter_aggregators[filter_id].delete_data()
             else:
                 # Create a new filter for configs with empty id.
-                self._audio_group_filter_aggregators[
-                    filter_id
-                ] = group_filter_aggregator_factory.create_group_filter_aggregator(
-                    "audio", config, port
+                self._audio_group_filter_aggregators[filter_id] = (
+                    group_filter_aggregator_factory.create_group_filter_aggregator(
+                        "audio", config, port_tuple
+                    )
                 )
 
         # Cleanup old group filter aggregators

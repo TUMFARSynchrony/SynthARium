@@ -11,6 +11,7 @@ from itertools import combinations
 from typing import Any
 import numpy as np
 from time import perf_counter, time
+from group_filters.group_filter import AGGREGRATION_RESULT_ZMQ_TOPIC
 
 
 class GroupFilterAggregator(object):
@@ -21,28 +22,43 @@ class GroupFilterAggregator(object):
     _context: zmq.Context
     _socket: zmq.Socket
     is_socket_connected: bool
+    _result_socket: zmq.Socket
+    is_result_socket_connected: bool
     _kind: Literal["video", "audio"]
     _group_filter: GroupFilter
     _data: dict[str, Queue[tuple[float, Any]]]
 
     def __init__(
-        self, kind: Literal["video", "audio"], group_filter: GroupFilter, port: int
+        self,
+        kind: Literal["video", "audio"],
+        group_filter: GroupFilter,
+        data_port: int,
+        result_port: int,
     ) -> None:
         super().__init__()
         self._logger = logging.getLogger(
-            f"{group_filter.name()}-GroupFilterAggregator-Port-{port}"
+            f"{group_filter.name()}-GroupFilterAggregator-Port-{data_port}-{result_port}"
         )
-        self._context = zmq.asyncio.Context.instance()
-        self._socket = self._context.socket(zmq.PULL)
         self._kind = kind
         self._group_filter = group_filter
         self._data = {}
 
+        self._context = zmq.asyncio.Context.instance()
+
+        self._socket = self._context.socket(zmq.PULL)
         try:
-            self._socket.bind(f"ipc://127.0.0.1:{port}")
+            self._socket.bind(f"ipc://127.0.0.1:{data_port}")
             self.is_socket_connected = True
         except zmq.ZMQError as e:
             self.is_socket_connected = False
+            self._logger.error(f"ZMQ Error: {e}")
+
+        self._result_socket = self._context.socket(zmq.PUB)
+        try:
+            self._result_socket.bind(f"ipc://127.0.0.1:{result_port}")
+            self.is_result_socket_connected = True
+        except zmq.ZMQError as e:
+            self.is_result_socket_connected = False
             self._logger.error(f"ZMQ Error: {e}")
 
     def __repr__(self) -> str:
@@ -53,6 +69,7 @@ class GroupFilterAggregator(object):
 
     async def cleanup(self) -> None:
         self.is_socket_connected = False
+        self.is_result_socket_connected = False
         self.delete_data()
         self._context.destroy()
         self._task.cancel()
@@ -89,9 +106,7 @@ class GroupFilterAggregator(object):
                         f"Message waited for {start_time - message['timestamp']} seconds"
                     )
 
-                    self.add_data(
-                        message["participant_id"], message["time"], message["data"]
-                    )
+                    self.add_data(message["participant_id"], message["time"], message["data"])
 
                     num_participants_in_aggregation = (
                         self._group_filter.num_participants_in_aggregation
@@ -100,9 +115,7 @@ class GroupFilterAggregator(object):
                         num_participants_in_aggregation = len(self._data)
 
                     if len(self._data) >= num_participants_in_aggregation:
-                        for c in combinations(
-                            self._data.keys(), num_participants_in_aggregation
-                        ):
+                        for c in combinations(self._data.keys(), num_participants_in_aggregation):
                             # Check if all participants have enough data
                             participants_have_enough_data = True
                             if self._group_filter.data_len_per_participant != 0:
@@ -127,9 +140,7 @@ class GroupFilterAggregator(object):
                             latest_aggregated_data = aggregation_history.get(c, None)
                             if latest_aggregated_data is not None:
                                 for pid in c:
-                                    if np.array_equal(
-                                        latest_aggregated_data[pid], c_data[pid]
-                                    ):
+                                    if np.array_equal(latest_aggregated_data[pid], c_data[pid]):
                                         participants_data_updated_recently = False
                                         break
 
@@ -137,39 +148,57 @@ class GroupFilterAggregator(object):
                                 continue
 
                             # Align data
-                            data, debug_str = self.align_data(c, c_data)
+                            data, alignment_debug_str = self.align_data(c, c_data)
 
                             # Skip if the alignment cannot be performed because there is no overlapping time horizon among participants
                             if data is None:
                                 continue
 
                             # Aggregate data
-                            aggregated_data = self._group_filter.aggregate(data)
+                            aggregation_result = self._group_filter.aggregate(data)
 
                             # Update aggregation history
                             aggregation_history[c] = c_data
 
+                            # Send the aggregation result to each participant
+                            if self.is_result_socket_connected:
+                                aggregation_result_message = (
+                                    f"{AGGREGRATION_RESULT_ZMQ_TOPIC} {aggregation_result}"
+                                )
+
+                                try:
+                                    self._result_socket.send_string(
+                                        aggregation_result_message, flags=zmq.NOBLOCK
+                                    )
+                                    self._logger.debug(
+                                        f"Aggregation result sent: {aggregation_result_message}"
+                                    )
+                                except Exception as e:
+                                    self._logger.debug(
+                                        f"Exception: {e} | Aggregation result cannot be sent."
+                                    )
+
                             end_time = perf_counter()
                             self._logger.debug(
-                                debug_str
+                                alignment_debug_str
                                 + "\n"
                                 + "\n\tData aggregation performed."
                                 + f"\n\tTime: {time()}"
                                 + f"\n\tRuntime: {end_time - start_time}"
                                 + f"\n\tData: {data}"
-                                + f"\n\tResult: {aggregated_data}"
+                                + f"\n\tResult: {aggregation_result}"
                             )
                 except asyncio.CancelledError:
                     # If the task is cancelled, break the loop and stop execution
                     break
                 except Exception as e:
-                    self._logger.debug(
-                        f"Exception: {e} | Data aggregation cannot be performed."
-                    )
+                    self._logger.debug(f"Exception: {e} | Data aggregation cannot be performed.")
 
     def align_data(
         self, participant_ids: tuple[str], data: dict[str, list[tuple[float, Any]]]
     ) -> list[list[Any]] | None:
+        start_time = perf_counter()
+
         if self._group_filter.data_len_per_participant == 1:
             # Align the data based on average time points
             total = 0
@@ -202,12 +231,9 @@ class GroupFilterAggregator(object):
                 )
             )
 
-        debug_str = (
-            f"Data alignment performed with base time horizon: {base_time_horizon}"
-        )
-
         # Align the data for other participants
         aligned_data = []
+        participant_debug_str_list = []
         for pid in participant_ids:
             x, y = map(list, zip(*data[pid]))
 
@@ -217,12 +243,20 @@ class GroupFilterAggregator(object):
             # Store the aligned data
             aligned_data.append(y_aligned)
 
-            debug_str += (
-                "\n"
-                + f"\n\tParticipant: {pid}"
-                + f"\n\tTime Horizon: {x}"
-                + f"\n\tData: {y}"
-                + f"\n\tAligned Data: {y_aligned}"
+            participant_debug_str_list.append(
+                f"\n\tParticipant: {pid}"
+                + f"\n\t\tTime Horizon: {x}"
+                + f"\n\t\tData: {y}"
+                + f"\n\t\tAligned Data: {y_aligned}"
             )
+
+        end_time = perf_counter()
+        debug_str = (
+            "\n\tData alignment performed."
+            + f"\n\tTime: {time()}"
+            + f"\n\tRuntime: {end_time - start_time}"
+            + f"\n\tBase time horizon: {base_time_horizon}"
+            + "".join(participant_debug_str_list)
+        )
 
         return aligned_data, debug_str

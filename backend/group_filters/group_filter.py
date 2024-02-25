@@ -11,9 +11,13 @@ from av import VideoFrame, AudioFrame
 
 from custom_types import util
 from filters.filter_dict import FilterDict
+from filters.simple_line_writer import SimpleLineWriter
 import logging
 from typing import Any
 from time import perf_counter
+
+
+AGGREGRATION_RESULT_ZMQ_TOPIC = "aggregation_result"
 
 
 class GroupFilter(ABC):
@@ -26,9 +30,18 @@ class GroupFilter(ABC):
 
     _config: FilterDict
     _logger: logging.Logger
-    is_socket_connected: bool
+
     _context: zmq.Context | None
+
     _socket: zmq.Socket | None
+    is_socket_connected: bool
+
+    _result_socket: zmq.Socket | None
+    is_result_socket_connected: bool
+
+    __aggregation_result: Any
+
+    __line_writer: SimpleLineWriter
 
     data_len_per_participant: int = 0
     num_participants_in_aggregation: int = 2
@@ -49,14 +62,21 @@ class GroupFilter(ABC):
         __init__ is called. However, filters must be ready to be accessed by other
         filters after __init__ (if they are designed to be).
         """
-        self._logger = logging.getLogger(
-            f"{config['name']}-GroupFilter-P-{participant_id}"
-        )
+        self._logger = logging.getLogger(f"{config['name']}-GroupFilter-P-{participant_id}")
         self._config = config
         self.participant_id = participant_id
-        self.is_socket_connected = False
+
         self._context = None
+
         self._socket = None
+        self.is_socket_connected = False
+
+        self._result_socket = None
+        self.is_result_socket_connected = False
+
+        self.__aggregation_result = None
+
+        self.__line_writer = SimpleLineWriter()
 
     @property
     def config(self) -> FilterDict:
@@ -73,13 +93,24 @@ class GroupFilter(ABC):
         """
         self._config = config
 
-    def connect_aggregator(self, port: int) -> None:
+    def connect_aggregator(self, data_port: int, result_port: int) -> None:
         self._context = zmq.asyncio.Context.instance()
+
         self._socket = self._context.socket(zmq.PUSH)
         try:
-            self._socket.connect(f"ipc://127.0.0.1:{port}")
+            self._socket.connect(f"ipc://127.0.0.1:{data_port}")
             self.is_socket_connected = True
         except zmq.ZMQError as e:
+            self.is_socket_connected = False
+            self._logger.error(f"ZMQ Error: {e}")
+
+        self._result_socket = self._context.socket(zmq.SUB)
+        self._result_socket.setsockopt_string(zmq.SUBSCRIBE, AGGREGRATION_RESULT_ZMQ_TOPIC)
+        try:
+            self._result_socket.connect(f"ipc://127.0.0.1:{result_port}")
+            self.is_result_socket_connected = True
+        except zmq.ZMQError as e:
+            self.is_result_socket_connected = False
             self._logger.error(f"ZMQ Error: {e}")
 
     async def complete_setup(self) -> None:
@@ -101,6 +132,7 @@ class GroupFilter(ABC):
         overriding this function.
         """
         self.is_socket_connected = False
+        self.is_result_socket_connected = False
         self._context.destroy()
 
     @staticmethod
@@ -113,7 +145,7 @@ class GroupFilter(ABC):
 
     async def process_individual_frame_and_send_data_to_aggregator(
         self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray, ts: float
-    ) -> None:
+    ) -> numpy.ndarray:
         if self.is_socket_connected:
             data = await self.process_individual_frame(original, ndarray)
             if data is not None:
@@ -134,6 +166,31 @@ class GroupFilter(ABC):
                         f"Exception: {e} | Data cannot be sent for {self.participant_id}: {message}"
                     )
 
+            # Get the current aggregation result from the aggreagator
+            if self.is_result_socket_connected:
+                try:
+                    message = await self._result_socket.recv_string(flags=zmq.NOBLOCK)
+                    _, aggregation_result = message.split(" ", 1)
+
+                    self.__aggregation_result = aggregation_result
+
+                    self._logger.debug(f"Aggregation result received: {aggregation_result}")
+                except zmq.Again:
+                    pass
+                except Exception as e:
+                    self._logger.debug(
+                        f"Exception: {e} | Aggregation result cannot be retrieved for {self.participant_id}"
+                    )
+
+            ndarray = self.__line_writer.write_lines(
+                ndarray,
+                [
+                    f"Individual data: {round(float(data or 0), 2)}",
+                    f"Aggregation result: {round(float(self.__aggregation_result or 0), 2)}",
+                ],
+            )
+        return ndarray
+
     @staticmethod
     @abstractmethod
     def name() -> str:
@@ -144,8 +201,7 @@ class GroupFilter(ABC):
         between frontend and backend.
         """
         raise NotImplementedError(
-            f"{__name__} is missing it's implementation of the static abstract name()"
-            " method."
+            f"{__name__} is missing it's implementation of the static abstract name()" " method."
         )
 
     @staticmethod
@@ -171,8 +227,7 @@ class GroupFilter(ABC):
         This is used to build the filters_data JSON object
         """
         raise NotImplementedError(
-            f"{__name__} is missing it's implementation of the static abstract channel()"
-            " method."
+            f"{__name__} is missing it's implementation of the static abstract channel()" " method."
         )
 
     @staticmethod
