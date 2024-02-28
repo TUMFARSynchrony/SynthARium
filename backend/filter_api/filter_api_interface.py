@@ -50,3 +50,32 @@ class FilterAPIInterface(ABC):
             FilterSubprocessAPI currently only logs the error).
         """
         pass
+
+    @abstractmethod
+    async def get_current_ping(self) -> int:
+        """Get the current API ping in milliseconds.
+        """
+        pass
+
+    @abstractmethod
+    async def start_pinging(
+        self,
+        period: int,
+        buffer_length: int
+    ) -> None:
+        """Start sending ping messages to the frontend.
+
+        Parameters
+        ----------
+        period : int, optional
+            The period at which to send ping messages, in milliseconds.
+        buffer_length : int, optional
+            The length of the ping buffer, in seconds.
+        """
+        pass
+
+    @abstractmethod
+    def stop_pinging(self) -> None:
+        """Stop sending ping messages to the frontend.
+        """
+        pass
