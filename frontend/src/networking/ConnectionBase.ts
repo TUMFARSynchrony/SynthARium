@@ -1,6 +1,8 @@
 import { ICE_SERVERS } from "../utils/constants";
 import { EventHandler } from "./EventHandler";
 import { ParticipantSummary } from "./typing";
+import worker from "./EncodingWorker.js";
+import WebWorker from "../WebWorker";
 
 /**
  * Base class for Connection and SubConnection. Shared functionality is implemented here.
@@ -18,7 +20,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
   /**
    * Worker to handle encoding injection
    */
-  private worker: Worker;
+  private worker: WebWorker;
 
   /**
    * Initiate ConnectionBase class instance.
@@ -44,7 +46,7 @@ export default abstract class ConnectionBase<T> extends EventHandler<T> {
     this._remoteStream = new MediaStream();
     this.addPcEventHandlers();
 
-    this.worker = new Worker("./EncodingWorker.js");
+    this.worker = new WebWorker(worker);
   }
 
   /**
