@@ -33,6 +33,7 @@ from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
+from aiortc.contrib.media import MediaRelay
 
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
@@ -445,10 +446,12 @@ class Connection(ConnectionInterface):
             self._audio_record_handler.add_track(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
-            task = asyncio.create_task(self._incoming_video.set_track(track))
+            relay = MediaRelay()
+
+            task = asyncio.create_task(self._incoming_video.set_track(relay.subscribe(track, False)))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._video_record_handler.add_track(self._incoming_video.subscribe())
-            self._raw_video_record_handler.add_track(track)
+            self._raw_video_record_handler.add_track(relay.subscribe(track, False))
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
