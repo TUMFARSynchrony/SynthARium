@@ -2,9 +2,8 @@
 
 Use for type hints and static type checking without any overhead during runtime.
 """
-
-from typing import Any, Optional, TypeGuard, TypedDict
-from typing_extensions import NotRequired
+from typing import Any, TypeGuard
+from typing_extensions import NotRequired, TypedDict
 import custom_types.util as util
 
 
