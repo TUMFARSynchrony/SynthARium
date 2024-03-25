@@ -114,3 +114,17 @@ export type Snackbar = {
   autoHideDuration?: number;
   anchorOrigin?: SnackbarOrigin;
 };
+
+export type FiltersData = {
+  [key: string]: {
+    video: FilterData[];
+    audio: FilterData[];
+  };
+};
+
+export type FilterData = {
+  id: string;
+  data: {
+    [key: string]: any;
+  };
+};
