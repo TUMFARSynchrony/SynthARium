@@ -72,21 +72,22 @@ class PingFilter(Filter):
         )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
-        # fetch current ping and display it on the video frame
-        height, _, _ = ndarray.shape
-        origin = (10, height - 10)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_size = 1
-        thickness = 3
-        color = (0, 255, 0)
-
+        
+        # Fetch current PING 
         if not self.counter % 30:
             self.ping = await self.filter_api.get_current_ping()
 
-        text = "{:.0f} ms".format(self.ping)
-        ndarray = cv2.putText(
-            ndarray, text, origin, font, font_size, color, thickness
-        )
+        ## Uncomment to display PING on the video frame
+        # height, _, _ = ndarray.shape
+        # origin = (10, height - 10)
+        # font = cv2.FONT_HERSHEY_SIMPLEX
+        # font_size = 1
+        # thickness = 3
+        # color = (0, 255, 0)
+        # text = "{:.0f} ms".format(self.ping)
+        # ndarray = cv2.putText(
+        #     ndarray, text, origin, font, font_size, color, thickness
+        # )
 
         self.counter += 1
 
