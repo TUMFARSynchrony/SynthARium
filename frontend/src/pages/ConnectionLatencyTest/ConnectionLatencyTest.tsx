@@ -106,7 +106,7 @@ const ConnectionLatencyTest = (props: {
     const handlePong = async (msg: any) => {
       const timeNow = performance.now();
       const sent = msg.ping_data.sent;
-      const serverTime = msg.server_time - performance.timing.navigationStart;
+      const serverTime = msg.handled_time - performance.timing.navigationStart;
 
       const entry: PingData = {
         sent: sent,

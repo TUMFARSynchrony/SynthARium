@@ -25,6 +25,7 @@ from filter_api import FilterAPI, FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -119,7 +120,10 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
-        self._filter_receiver = FilterSubprocessReceiver(filter_api)
+        self._filter_receiver = FilterSubprocessReceiver(
+            filter_api,
+            self._send_command
+        )
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
@@ -215,6 +219,18 @@ class ConnectionSubprocess(ConnectionInterface):
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("STOP_RECORDING", None)
+
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
+        answer = await self._send_command_wait_for_response(
+            "GET_VIDEO_FILTERS", {"id": id, "name": name}
+        )
+        return answer
+
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
+        answer = await self._send_command_wait_for_response(
+            "GET_AUDIO_FILTERS", {"id": id, "name": name}
+        )
+        return answer
 
     def _set_state(self, state: ConnectionState) -> None:
         """Set connection state and emit `state_change` event."""
@@ -350,13 +366,20 @@ class ConnectionSubprocess(ConnectionInterface):
         command_nr = msg["command_nr"]
 
         # self._logger.debug(
-        #     f"Received {command} command from subprocess, nr: {command_nr}"
+        #     f"Received {command} command from subprocess, nr: {command_nr}, data: {data}"
         # )
 
         match command:
             case "FILTER_API":
                 # Forward FILTER_API requests to FilterSubprocessReceiver
-                await self._filter_receiver.handle(data)
+                # and send possible answer back to FilterSubprocessAPI
+                answer = await self._filter_receiver.handle(data)
+                if answer is not None:
+                    await self._send_command(
+                        "FILTER_API_ANSWER",
+                        answer,
+                        command_nr
+                    )
             case "SET_LOCAL_DESCRIPTION":
                 self._local_description = RTCSessionDescription(
                     data["sdp"], data["type"]
@@ -375,7 +398,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._set_state(ConnectionState(data))
             case "API":
                 await self._message_handler(data)
-            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER":
+            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER" | "ACTIVE_VIDEO_FILTERS" | "ACTIVE_AUDIO_FILTERS":
                 await self._set_answer(command_nr, data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)
