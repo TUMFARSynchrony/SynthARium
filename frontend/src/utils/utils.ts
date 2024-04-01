@@ -93,7 +93,7 @@ export const getParticipantDimensions = (
       shapes: {
         x: 0,
         y: 0,
-        fill: getRandomColor(),
+        fill: generateRandomColor(participant.canvas_id),
         participant_name: participant.participant_name
       },
       groups: {
@@ -118,7 +118,7 @@ export const getAsymmetricParticipantDimensions = (
       shapes: {
         x: 0,
         y: 0,
-        fill: getRandomColor(),
+        fill: generateRandomColor(canvasElement.id),
         participant_name: canvasElement.participant_name
       },
       groups: {
@@ -223,4 +223,30 @@ export const getVideoTitle = (peer: any, index: number) => {
 // Generating the dynamic participant invite link based on the host domain.
 export const getParticipantInviteLink = (participantId: string, sessionId: string) => {
   return `${window.location.origin}/lobby?participantId=${participantId}&sessionId=${sessionId}`;
+};
+
+export const generateRandomColor = (canvasId: string): string => {
+  const hash = hashCode(canvasId);
+
+  // Convert the hash into a hexadecimal color code
+  const color = "#" + ((hash & 0xffffff) | 0x1000000).toString(16).slice(1);
+
+  return color;
+};
+
+// Generate a numeric hash based on a string
+const hashCode = (str: string): number => {
+  let hash = 0;
+
+  if (str.length === 0) {
+    return hash;
+  }
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+
+  return hash;
 };
