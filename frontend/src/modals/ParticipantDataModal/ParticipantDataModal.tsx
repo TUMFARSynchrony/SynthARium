@@ -563,7 +563,11 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteAudioFilter(audioFilter, audioFilterIndex);
+                              handleDeleteAudioFilter(
+                                audioFilter,
+                                audioFilterIndex,
+                                audioFilter.groupFilter
+                              );
                             }}
                           />
                         </Box>
@@ -682,7 +686,11 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteVideoFilter(videoFilter, videoFilterIndex);
+                              handleDeleteVideoFilter(
+                                videoFilter,
+                                videoFilterIndex,
+                                videoFilter.groupFilter
+                              );
                             }}
                           />
                         </Box>
