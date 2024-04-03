@@ -27,7 +27,7 @@ export const ParticipantChatTab = (props: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentSession = useAppSelector(selectCurrentSession);
   const sessionId = currentSession?.id ?? searchParams.get("sessionId");
-  const [messageTarget, setMessageTarget] = useState("participants");
+  const [messageTarget, setMessageTarget] = useState("experimenter");
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
