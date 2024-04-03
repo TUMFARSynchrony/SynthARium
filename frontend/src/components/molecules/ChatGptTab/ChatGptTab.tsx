@@ -35,8 +35,7 @@ export const ChatGptTab = () => {
 
     const params: OpenAI.Chat.ChatCompletionCreateParams = {
       messages: [...messageHistory, { role: "user", content: message }],
-      model: "gpt-3.5-turbo",
-      max_tokens: 256
+      model: "gpt-3.5-turbo"
     };
     setIsTyping(true);
     const response: OpenAI.Chat.ChatCompletion = await openai.chat.completions.create(params);
