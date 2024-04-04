@@ -5,6 +5,7 @@ import {
   checkValidSession,
   filterListByIndex,
   formatDate,
+  generateRandomColor,
   getParticipantDimensions,
   getRandomColor
 } from "../../utils/utils";
@@ -132,7 +133,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
           x: 0,
           y: 0,
           z: 0,
-          fill: getRandomColor()
+          fill: generateRandomColor(canvasId)
         },
         groups: {
           x: xAxis,
