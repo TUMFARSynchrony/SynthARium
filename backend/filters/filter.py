@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy
-from typing import TYPE_CHECKING, Any, TypeGuard
+from typing import TYPE_CHECKING, TypeGuard
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 

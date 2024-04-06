@@ -100,7 +100,7 @@ function ParticipantDataModal({
   const groupFilters = filtersData.filter((filter) => filter.groupFilter === true);
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [requiredFilters, setRequiredFilters] = useState(new Map<string, string>());
-  const originalDimensions = structuredClone(participantDimensions);
+  const originalDimensions: any = structuredClone(participantDimensions);
   const originalAsymmetricView = structuredClone(originalParticipant.view);
   const [asymmetricView, setAsymmetricView] = useState(
     originalParticipant.view ? getAsymmetricParticipantDimensions(originalParticipant.view) : []
