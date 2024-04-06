@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
+      - development
   pull_request:
     branches:
       - main
-
+      - development
 jobs:
   static-code-analysis:
     runs-on: ubuntu-latest
