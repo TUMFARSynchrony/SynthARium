@@ -1,5 +1,5 @@
 import * as moment from "moment";
-import { Box, Group, Participant, Session, Shape } from "../types";
+import { Box, Group, Participant, Session, Shape, CanvasElement } from "../types";
 
 export const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
@@ -84,15 +84,16 @@ export const getLocalStream = async () => {
 
 export const getParticipantDimensions = (
   participants: Participant[]
-): Array<{ shapes: Shape; groups: Group }> => {
-  const dimensions: Array<{ shapes: Shape; groups: Group }> = [];
+): Array<{ shapes: Shape; groups: Group; id: string }> => {
+  const dimensions: Array<{ shapes: Shape; groups: Group; id: string }> = [];
 
   participants.forEach((participant: Participant) => {
     dimensions.push({
+      id: participant.canvas_id,
       shapes: {
         x: 0,
         y: 0,
-        fill: getRandomColor(),
+        fill: generateRandomColor(participant.canvas_id),
         participant_name: participant.participant_name
       },
       groups: {
@@ -105,6 +106,60 @@ export const getParticipantDimensions = (
   });
 
   return dimensions;
+};
+
+export const getAsymmetricParticipantDimensions = (
+  view: CanvasElement[]
+): Array<{ shapes: Shape; groups: Group; id: string }> => {
+  const dimensions: Array<{ shapes: Shape; groups: Group; id: string }> = [];
+
+  view.forEach((canvasElement: CanvasElement) => {
+    dimensions.push({
+      shapes: {
+        x: 0,
+        y: 0,
+        fill: generateRandomColor(canvasElement.id),
+        participant_name: canvasElement.participant_name
+      },
+      groups: {
+        x: canvasElement.position.x,
+        y: canvasElement.position.y,
+        width: canvasElement.size.width,
+        height: canvasElement.size.height
+      },
+      id: canvasElement.id
+    });
+  });
+
+  return dimensions;
+};
+
+export const getAsymmetricViewArray = (
+  asymmetricParticipantDimensions: Array<{ shapes: Shape; groups: Group; id: string }>
+): CanvasElement[] => {
+  const view: CanvasElement[] = [];
+
+  asymmetricParticipantDimensions.forEach(
+    (dimension: { shapes: Shape; groups: Group; id: string }) => {
+      const { shapes, groups, id } = dimension;
+
+      view.push({
+        id,
+        participant_name: shapes.participant_name,
+        size: {
+          width: groups.width,
+          height: groups.height
+        },
+        position: {
+          x: groups.x,
+          y: groups.y,
+          z: 0
+        }
+      });
+    }
+  );
+
+  return view;
 };
 
 /*
@@ -175,4 +230,30 @@ export const getParticipantName = (participantId: string, participants: Array<Pa
     return;
   }
   return participants.find((p, i) => p.id === participantId).participant_name;
+};
+
+export const generateRandomColor = (canvasId: string): string => {
+  const hash = hashCode(canvasId);
+
+  // Convert the hash into a hexadecimal color code
+  const color = "#" + ((hash & 0xffffff) | 0x1000000).toString(16).slice(1);
+
+  return color;
+};
+
+// Generate a numeric hash based on a string
+const hashCode = (str: string): number => {
+  let hash = 0;
+
+  if (str.length === 0) {
+    return hash;
+  }
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+
+  return hash;
 };

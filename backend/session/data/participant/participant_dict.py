@@ -5,6 +5,7 @@ Use for type hints and static type checking without any overhead during runtime.
 from typing import TypedDict
 
 from custom_types.chat_message import ChatMessageDict
+from custom_types.canvas_element import CanvasElementDict
 from filters import FilterDict
 from chat_filters import ChatFilterDict
 from session.data.position import PositionDict
@@ -49,6 +50,11 @@ class ParticipantDict(TypedDict):
         Last message sent time.
     lastMessageReadTime: int
         Last message read time by experimenter.
+    view : list of custom_types.canvas_element.CanvasElementDict
+        Asymmetric view of the participant
+    canvas_id: str
+        Unique id for the placement of the participant stream
+
     See Also
     --------
     ParticipantSummaryDict :
@@ -73,3 +79,5 @@ class ParticipantDict(TypedDict):
     banned: bool
     lastMessageSentTime: int
     lastMessageReadTime: int
+    view: list[CanvasElementDict]
+    canvas_id: str
