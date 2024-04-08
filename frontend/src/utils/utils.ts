@@ -225,6 +225,13 @@ export const getParticipantInviteLink = (participantId: string, sessionId: strin
   return `${window.location.origin}/lobby?participantId=${participantId}&sessionId=${sessionId}`;
 };
 
+export const getParticipantName = (participantId: string, participants: Array<Participant>) => {
+  if (participantId === "experimenter" || participantId === "participants") {
+    return;
+  }
+  return participants.find((p, i) => p.id === participantId).participant_name;
+};
+
 export const generateRandomColor = (canvasId: string): string => {
   const hash = hashCode(canvasId);
 
