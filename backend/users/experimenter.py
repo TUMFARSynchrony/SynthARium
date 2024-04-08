@@ -95,6 +95,8 @@ class Experimenter(User):
             self._handle_get_filters_data_send_to_participant,
         )
         self.on_message("GET_SESSION", self._handle_get_session)
+        self.on_message("UPDATE_READ_MESSAGE_TIME", self._handle_message_read_time)
+        self.on_message("GET_FILTERS_CONFIG", self._handle_get_filters_config)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -1129,6 +1131,12 @@ class Experimenter(User):
         answer = MessageDict(type="FILTERS_DATA", data=res)
         await self._experiment.send(participant_id, answer)
 
+        success = SuccessDict(
+            type="SEND_TO_PARTICIPANT",
+            description="Successfully sent GET_FILTERS_DATA to participant.",
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
     async def _handle_get_session(self, data: Any) -> MessageDict:
         """Handle requests with type `GET_SESSION`.
 
@@ -1153,3 +1161,29 @@ class Experimenter(User):
             )
         session_dict = session.asdict()
         return MessageDict(type="SESSION", data=session_dict)
+
+    async def _handle_get_filters_config(self, _) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_CONFIG`.
+
+        Responds with type: `FILTERS_CONFIG`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict with type: `FILTERS_CONFIG` and data:
+         custom_types.filter_config.FilterConfigDict.
+        """
+        return MessageDict(
+            type="FILTERS_CONFIG", data=filter_utils.get_filters_config()
+        )
+
+    async def _handle_message_read_time(self, data: Any) -> None:
+        experiment = self.get_experiment_or_raise("Failed to mute participant.")
+        await experiment.set_message_read_time(
+            data["participant_id"], data["lastMessageReadTime"]
+        )
+

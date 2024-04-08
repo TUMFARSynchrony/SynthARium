@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from chat_filters import ChatFilterDict
 
 if TYPE_CHECKING:
     from session.data.participant import ParticipantDict, ParticipantSummaryDict
@@ -9,6 +10,7 @@ if TYPE_CHECKING:
 from dataclasses import dataclass, field
 
 from custom_types.chat_message import ChatMessageDict
+from custom_types.canvas_element import CanvasElementDict
 from filters import FilterDict
 from session.data.base_data import BaseData
 
@@ -34,6 +36,8 @@ class ParticipantData(BaseData):
     position : PositionData
     chat : list or custom_types.chat_message.ChatMessageDict
     filters : list or filters.FilterDict
+    view : list or custom_types.chat_message.CanvasElementDict
+    canvas_id : str
 
     Methods
     -------
@@ -97,11 +101,26 @@ class ParticipantData(BaseData):
     video_filters: list[FilterDict] = field(repr=False)
     """Active video filters for participant."""
 
+    chat_filters: list[ChatFilterDict] = field(repr=False)
+    """Active chat filters for participant"""
+
     audio_group_filters: list[FilterDict] = field(repr=False)
     """Active audio group filters for participant."""
 
     video_group_filters: list[FilterDict] = field(repr=False)
     """Active video group filters for participant."""
+
+    lastMessageSentTime: int = field(repr=False)
+    """Last message sent time"""
+
+    lastMessageReadTime: int = field(repr=False)
+    """Last message read time"""
+
+    view: list[CanvasElementDict] = field(repr=False)
+    """Asymmetric view of the participant."""
+
+    canvas_id: str = field(repr=False)
+    """Unique id for the placement of the participant stream"""
 
     def __post_init__(self) -> None:
         """Add event listener to size and position."""
@@ -128,8 +147,13 @@ class ParticipantData(BaseData):
             "chat": self.chat,
             "audio_filters": self.audio_filters,
             "video_filters": self.video_filters,
+            "chat_filters": self.chat_filters,
             "audio_group_filters": self.audio_group_filters,
             "video_group_filters": self.video_group_filters,
+            "lastMessageSentTime": self.lastMessageSentTime,
+            "lastMessageReadTime": self.lastMessageReadTime,
+            "view": self.view,
+            "canvas_id": self.canvas_id,
         }
 
     def as_summary_dict(self) -> ParticipantSummaryDict:
@@ -145,4 +169,6 @@ class ParticipantData(BaseData):
             "size": self.size.asdict(),
             "position": self.position.asdict(),
             "chat": self.chat,
+            "view": self.view,
+            "canvas_id": self.canvas_id,
         }

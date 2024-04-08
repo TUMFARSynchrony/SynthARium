@@ -6,6 +6,7 @@ The current list of filters currently offered within the main project are:
 |v delay | delays the video feed by X seconds. | manipulation| included | Alexander Liebald|
 |a delay| delays the audio feed by X seconds. | manipulation | included |Alexander Liebald|
 | openfaceAU12 | reads and displays AU12 to video stream | analysis | included | Julian Geheeb |
+| ping | Calculates ping between participant and backend. This is done by initiating a pinging process through the FilterAPI which periodicaly sends messages to estimate currrent ping. | analysis | included | Jonas Goos
 
 **Filter Name** is the name of the filter as you will find in the front end drop down selection.
 

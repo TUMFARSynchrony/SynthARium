@@ -36,9 +36,11 @@ class OpenFace:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
+                env=env,
             )
-        except Exception as error:
-            self._logger.error(f"Error running OwnExtractor. Port: {port}. Exception: {error}")
+            
+        except Exception as e:
+            print(f"OpenFace Error: {e}")
 
     def __del__(self):
         try:

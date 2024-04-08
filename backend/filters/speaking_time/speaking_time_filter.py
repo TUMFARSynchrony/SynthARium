@@ -19,25 +19,16 @@ class SpeakingTimeFilter(Filter):
         self.seconds = float(0)
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "SPEAKING_TIME"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "audio",
-            "groupFilter": False,
-            "config": {},
-        }
+    def channel() -> str:
+        return "audio"
 
     async def get_filter_data(self) -> None | FilterDataDict:
         return FilterDataDict(

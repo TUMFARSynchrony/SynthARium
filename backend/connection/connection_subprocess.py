@@ -9,11 +9,13 @@ from os.path import join
 from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
 
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     RTCSessionDescriptionDict,
+    AddIceCandidateDict,
 )
 from hub import BACKEND_DIR
 from server import Config
@@ -120,7 +122,10 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
-        self._filter_receiver = FilterSubprocessReceiver(filter_api)
+        self._filter_receiver = FilterSubprocessReceiver(
+            filter_api,
+            self._send_command
+        )
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
@@ -147,6 +152,10 @@ class ConnectionSubprocess(ConnectionInterface):
         )
         return offer
 
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("ADD_ICE_CANDIDATE", candidate)
+
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
@@ -154,6 +163,12 @@ class ConnectionSubprocess(ConnectionInterface):
         # Send command and wait for response.
         answer = await self._send_command_wait_for_response("HANDLE_OFFER", offer)
         return answer
+    
+    async def handle_subscriber_add_ice_candidate(
+        self, candidate: AddIceCandidateDict
+    ):
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("ADD_SUBSCRIBER_ICE_CANDIDATE", candidate)
 
     async def get_local_description(self) -> RTCSessionDescription:
         """Get localdescription.  Blocks until subprocess sends localdescription."""
@@ -369,7 +384,14 @@ class ConnectionSubprocess(ConnectionInterface):
         match command:
             case "FILTER_API":
                 # Forward FILTER_API requests to FilterSubprocessReceiver
-                await self._filter_receiver.handle(data)
+                # and send possible answer back to FilterSubprocessAPI
+                answer = await self._filter_receiver.handle(data)
+                if answer is not None:
+                    await self._send_command(
+                        "FILTER_API_ANSWER",
+                        answer,
+                        command_nr
+                    )
             case "SET_LOCAL_DESCRIPTION":
                 self._local_description = RTCSessionDescription(
                     data["sdp"], data["type"]

@@ -20,7 +20,7 @@ import {
   joinExperiment,
   selectOngoingExperiment
 } from "./redux/slices/ongoingExperimentSlice";
-import { saveSession } from "./redux/slices/openSessionSlice";
+import { initializeFiltersData, saveSession } from "./redux/slices/openSessionSlice";
 import {
   addMessageToCurrentSession,
   addNote,
@@ -99,6 +99,8 @@ function App() {
     connection.api.on("CHAT", handleChatMessages);
     connection.api.on("RECORDING_LIST", handleRecordingList);
     connection.api.on("CHECK_POST_PROCESSING", handleCheckPostProcessing);
+    connection.api.on("PING", handlePing);
+    connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
     connection.api.on("FILTERS_DATA", handleFiltersData);
     return () => {
       connection.off("remoteStreamChange", streamChangeHandler);
@@ -118,6 +120,8 @@ function App() {
       connection.api.off("CHAT", handleChatMessages);
       connection.api.off("RECORDING_LIST", handleRecordingList);
       connection.api.off("CHECK_POST_PROCESSING", handleCheckPostProcessing);
+      connection.api.off("PING", handlePing);
+      connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
       connection.api.off("FILTERS_DATA", handleFiltersData);
     };
   }, [connection]);
@@ -202,11 +206,9 @@ function App() {
   };
 
   const handleChatMessages = (data) => {
-    // this is logged on participant's view
     dispatch(
       addMessageToCurrentSession({
         message: data,
-        sessionId: data.session,
         author: data.author,
         target: data.target
       })
@@ -218,6 +220,11 @@ function App() {
         severity: "info",
         autoHideDuration: 10000,
         anchorOrigin: { vertical: "top", horizontal: "center" }
+      });
+    }
+    if (data.target === "experimenter") {
+      connection.sendMessage("GET_SESSION", {
+        session_id: ongoingExperimentRef.current.sessionId
       });
     }
   };
@@ -321,12 +328,26 @@ function App() {
     );
   };
 
+
   const handleRecordingList = (data) => {
     setRecordings(data);
   };
 
   const handleCheckPostProcessing = (data) => {
     setPostProcessingStatus(data);
+  };
+  
+  const handlePing = (data) => {
+    const timestamp = window.performance.now();
+
+    connection.sendMessage("PONG", {
+      handled_time: timestamp,
+      ping_data: data
+    });
+  };
+
+  const handleFiltersConfig = (data) => {
+    dispatch(initializeFiltersData(data));
   };
 
   const handleFiltersData = (data) => {
@@ -420,9 +441,21 @@ function App() {
   const onCheckPostProcessing = () => {
     connection.sendMessage("CHECK_POST_PROCESSING", {});
   };
+  
+  const onUpdateMessageReadTime = (participantId, lastMessageReadTime) => {
+    connection.sendMessage("UPDATE_READ_MESSAGE_TIME", {
+      participant_id: participantId,
+      lastMessageReadTime: lastMessageReadTime
+    });
+
+  };
 
   const toggleModal = (modal) => {
     dispatch(toggleSingleTab(modal));
+  };
+
+  const onGetFiltersConfig = () => {
+    connection.sendMessage("GET_FILTERS_CONFIG", {});
   };
 
   return (
@@ -505,6 +538,10 @@ function App() {
                         {
                           onClick: () => toggleModal(Tabs.INSTRUCTIONS),
                           icon: faClipboardCheck
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.CHATGPT),
+                          externalIcon: true
                         }
                       ]}
                     />
@@ -548,6 +585,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
                         icon: faClipboardList
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.CHATGPT),
+                        externalIcon: true
                       }
                     ]}
                   />
@@ -593,6 +634,10 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
                         icon: faClipboardList
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.CHATGPT),
+                        externalIcon: true
                       }
                     ]}
                   />
@@ -609,6 +654,7 @@ function App() {
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
                     onGetFiltersData={onGetFiltersData}
+                    onUpdateMessageReadTime={onUpdateMessageReadTime}
                   />
                 }
                 centerContentOnYAxis={true}
@@ -621,7 +667,12 @@ function App() {
             element={
               <PageTemplate
                 title={"Session Form"}
-                customComponent={<SessionForm onSendSessionToBackend={onSendSessionToBackend} />}
+                customComponent={
+                  <SessionForm
+                    onSendSessionToBackend={onSendSessionToBackend}
+                    onGetFiltersConfig={onGetFiltersConfig}
+                  />
+                }
                 centerContentOnYAxis={true}
               />
             }
