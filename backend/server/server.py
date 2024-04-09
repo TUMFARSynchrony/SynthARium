@@ -243,7 +243,7 @@ class Server:
 
         # Successfully parsed parameters
         return params
-    
+
     async def _parse_ice_candidate_request(self, request: web.Request) -> AddIceCandidateDict:
         """Parse a request made to the `/addIceCandidate` endpoint.
 
