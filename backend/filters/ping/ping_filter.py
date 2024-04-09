@@ -1,5 +1,5 @@
 import numpy
-import cv2
+import cv2  # noqa: F401
 
 from filters.filter import Filter
 from filter_api import FilterAPIInterface
@@ -72,12 +72,11 @@ class PingFilter(Filter):
         )
 
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
-        
-        # Fetch current PING 
+        # Fetch current PING
         if not self.counter % 30:
             self.ping = await self.filter_api.get_current_ping()
 
-        ## Uncomment to display PING on the video frame
+        # Uncomment to display PING on the video frame
         # height, _, _ = ndarray.shape
         # origin = (10, height - 10)
         # font = cv2.FONT_HERSHEY_SIMPLEX
