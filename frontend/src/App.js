@@ -328,7 +328,6 @@ function App() {
     );
   };
 
-
   const handleRecordingList = (data) => {
     setRecordings(data);
   };
@@ -336,7 +335,7 @@ function App() {
   const handleCheckPostProcessing = (data) => {
     setPostProcessingStatus(data);
   };
-  
+
   const handlePing = (data) => {
     const timestamp = window.performance.now();
 
@@ -441,13 +440,12 @@ function App() {
   const onCheckPostProcessing = () => {
     connection.sendMessage("CHECK_POST_PROCESSING", {});
   };
-  
+
   const onUpdateMessageReadTime = (participantId, lastMessageReadTime) => {
     connection.sendMessage("UPDATE_READ_MESSAGE_TIME", {
       participant_id: participantId,
       lastMessageReadTime: lastMessageReadTime
     });
-
   };
 
   const toggleModal = (modal) => {
