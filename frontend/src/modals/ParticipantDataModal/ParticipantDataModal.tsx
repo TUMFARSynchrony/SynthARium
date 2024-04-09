@@ -19,22 +19,26 @@ import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar
 import { initialSnackbar } from "../../utils/constants";
 import { getParticipantInviteLink } from "../../utils/utils";
 import { useAppSelector } from "../../redux/hooks";
-import { selectNumberOfParticipants } from "../../redux/slices/openSessionSlice";
 import {
   Filter,
+  ChatFilter,
   FilterConfigArray,
   FilterConfigNumber,
   Participant,
   Shape,
   Group
 } from "../../types";
+import {
+  selectFiltersDataSession,
+  selectNumberOfParticipants
+} from "../../redux/slices/openSessionSlice";
 import { v4 as uuid } from "uuid";
 import filtersData from "../../filters_data.json";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { getAsymmetricParticipantDimensions, getAsymmetricViewArray } from "../../utils/utils";
+import chatFiltersData from "../../chat_filters.json";
 
-// Loading filters data before the component renders, because the Select component needs value.
-const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
+const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
 });
 
@@ -47,12 +51,10 @@ const defaultFilter = {
   config: {}
 };
 
-const getIndividualFilters = () => {
-  return testData.filter((filter) => filter.groupFilter !== true);
-};
-
-const getGroupFilters = () => {
-  return testData.filter((filter) => filter.groupFilter === true);
+const defaultChatFilter = {
+  id: "",
+  name: "Placeholder",
+  config: {}
 };
 
 type Props = {
@@ -92,11 +94,13 @@ function ParticipantDataModal({
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
-  const individualFilters = getIndividualFilters();
-  const groupFilters = getGroupFilters();
+  const [selectedChatFilter, setSelectedChatFilter] = useState<ChatFilter>(defaultChatFilter);
+  const filtersData = useAppSelector(selectFiltersDataSession);
+  const individualFilters = filtersData.filter((filter) => filter.groupFilter !== true);
+  const groupFilters = filtersData.filter((filter) => filter.groupFilter === true);
   const [snackbar, setSnackbar] = useState(initialSnackbar);
   const [requiredFilters, setRequiredFilters] = useState(new Map<string, string>());
-  const originalDimensions = structuredClone(participantDimensions);
+  const originalDimensions: any = structuredClone(participantDimensions);
   const originalAsymmetricView = structuredClone(originalParticipant.view);
   const [asymmetricView, setAsymmetricView] = useState(
     originalParticipant.view ? getAsymmetricParticipantDimensions(originalParticipant.view) : []
@@ -137,6 +141,16 @@ function ParticipantDataModal({
     const filtersCopy: any = structuredClone(participantCopy[keyParticipantData]);
     filtersCopy[index]["config"][key]["value"] = value;
     handleChange(keyParticipantData, filtersCopy);
+  };
+
+  const handleChatChange = <T extends keyof Participant>(
+    index: number,
+    key: string,
+    value: number | string
+  ) => {
+    const chatFilters: ChatFilter[] = structuredClone(participantCopy.chat_filters);
+    chatFilters[index]["config"][key]["value"] = value;
+    handleChange("chat_filters", chatFilters);
   };
 
   // On closing the edit participant dialog, the entered data is checked (if data is not saved,
@@ -259,6 +273,26 @@ function ParticipantDataModal({
     setParticipantCopy(newParticipantData);
   };
 
+  const handleSelectChatFilter = (chatFilter: ChatFilter) => {
+    setSelectedChatFilter(chatFilter);
+    const newParticipantData = structuredClone(participantCopy);
+    const newFilter = structuredClone(chatFilter);
+    newFilter.id = uuid();
+    newParticipantData.chat_filters.push(newFilter);
+    setParticipantCopy(newParticipantData);
+  };
+
+  /**
+   * This function deletes the required filters in each filter array.
+   * @param filterId - The id of the filter to be deleted.
+   * @param otherFilterId - The id of the other filter to be deleted.
+   * @param newParticipantData - The participant data to be updated.
+   * @returns The updated participant data.
+   * @remarks
+   * This function is called when a filter should be deleted in each filter array.
+   * It looks in all filter arrays and deletes the filters with id.
+   * If the id is not found, then the filter is not deleted in the specific filter array.
+   * */
   const deleteRequiredFiltersInEachFilterArray = (
     filterId: string,
     otherFilterId: string,
@@ -314,6 +348,13 @@ function ParticipantDataModal({
     newParticipantData.audio_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(audioFilter, newParticipantData));
+  };
+
+  const handleDeleteChatFilter = (chatFilter: ChatFilter, filterCopyIndex: number) => {
+    const newParticipantData = structuredClone(participantCopy);
+    newParticipantData.chat_filters.splice(filterCopyIndex, 1);
+
+    setParticipantCopy(newParticipantData);
   };
 
   return (
@@ -409,60 +450,131 @@ function ParticipantDataModal({
                   }}
                 />
               </Box>
+            </Box>
+            {/* Displays the list of filters available in the backend in a dropdown */}
+            <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+              <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
+                <InputLabel id="filters-select">Filters</InputLabel>
+                {
+                  <Select
+                    value={selectedFilter.name}
+                    id="filters-select"
+                    label="Filters"
+                    displayEmpty={true}
+                    renderValue={(selected) => {
+                      if (selected === "Placeholder") {
+                        return <em>Select a Filter</em>;
+                      }
+                      return selected;
+                    }}
+                  >
+                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
+                      Individual Filters
+                    </ListSubheader>
+                    {/* Uncomment the below block to use new filters. */}
+                    {individualFilters.map((individualFilter: Filter) => {
+                      return (
+                        <MenuItem
+                          key={individualFilter.id}
+                          value={individualFilter.name}
+                          onClick={() =>
+                            handleFilterSelect(individualFilter, individualFilter.groupFilter)
+                          }
+                        >
+                          {individualFilter.name}
+                        </MenuItem>
+                      );
+                    })}
+                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
+                      Group Filters
+                    </ListSubheader>
+                    {groupFilters.map((groupFilter: Filter) => {
+                      return (
+                        <MenuItem
+                          key={groupFilter.id}
+                          value={groupFilter.name}
+                          onClick={() => handleFilterSelect(groupFilter, groupFilter.groupFilter)}
+                        >
+                          {groupFilter.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                }
+              </FormControl>
+              <Typography variant="caption" sx={{ mt: 4 }}>
+                (NOTE: You can select each filter multiple times)
+              </Typography>
+            </Box>
 
-              {/* Displays the list of filters available in the backend in a dropdown */}
+            {chatFilters && (
               <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
                 <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
-                  <InputLabel id="filters-select">Filters</InputLabel>
-                  {
-                    <Select
-                      value={selectedFilter.name}
-                      id="filters-select"
-                      label="Filters"
-                      displayEmpty={true}
-                      renderValue={(selected) => {
-                        if (selected === "Placeholder") {
-                          return <em>Select a Filter</em>;
-                        }
-                        return selected;
-                      }}
-                    >
-                      <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
-                        Individual Filters
-                      </ListSubheader>
-                      {/* Uncomment the below block to use new filters. */}
-                      {individualFilters.map((individualFilter: Filter) => {
-                        return (
-                          <MenuItem
-                            key={individualFilter.id}
-                            value={individualFilter.name}
-                            onClick={() => handleFilterSelect(individualFilter)}
-                          >
-                            {individualFilter.name}
-                          </MenuItem>
-                        );
-                      })}
-                      <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
-                        Group Filters
-                      </ListSubheader>
-                      {groupFilters.map((groupFilter: Filter) => {
-                        return (
-                          <MenuItem
-                            key={groupFilter.id}
-                            value={groupFilter.name}
-                            onClick={() => handleFilterSelect(groupFilter)}
-                          >
-                            {groupFilter.name}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  }
+                  <InputLabel id="filters-select">Chat Filters (BETA)</InputLabel>
+
+                  <Select
+                    value={selectedChatFilter.name}
+                    id="filters-select"
+                    label="Chat Filters (BETA)"
+                    displayEmpty={true}
+                    renderValue={(selected) => {
+                      if (selected === "Placeholder") {
+                        return <em>Select a Chat Filter</em>;
+                      }
+                      return selected;
+                    }}
+                  >
+                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
+                      Individual Filters
+                    </ListSubheader>
+                    {chatFilters.map((chatFilter: ChatFilter) => {
+                      return (
+                        <MenuItem
+                          key={chatFilter.id}
+                          value={chatFilter.name}
+                          onClick={() => handleSelectChatFilter(chatFilter)}
+                        >
+                          {chatFilter.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
                 </FormControl>
-                <Typography variant="caption" sx={{ mt: 4 }}>
-                  (NOTE: You can select each filter multiple times)
-                </Typography>
               </Box>
+            )}
+
+            {/* Displays applied audio filters */}
+            <Box>
+              <Typography variant="overline" display="block">
+                Audio Filters
+              </Typography>
+              {participantCopy.audio_filters.map(
+                (audioFilter: Filter, audioFilterIndex: number) => {
+                  return (
+                    <Box
+                      key={audioFilterIndex}
+                      sx={{ display: "flex", justifyContent: "flex-start" }}
+                    >
+                      <Box sx={{ minWidth: 140 }}>
+                        <Chip
+                          key={audioFilterIndex}
+                          label={audioFilter.name}
+                          variant="outlined"
+                          size="medium"
+                          color="secondary"
+                          onDelete={() => {
+                            handleDeleteAudioFilter(
+                              audioFilter,
+                              audioFilterIndex,
+                              audioFilter.groupFilter
+                            );
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  );
+                }
+              )}
 
               {/* Displays applied audio filters */}
               <Box>
@@ -484,7 +596,11 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteAudioFilter(audioFilter, audioFilterIndex);
+                              handleDeleteAudioFilter(
+                                audioFilter,
+                                audioFilterIndex,
+                                audioFilter.groupFilter
+                              );
                             }}
                           />
                         </Box>
@@ -584,7 +700,6 @@ function ParticipantDataModal({
                     );
                   }
                 )}
-
                 {/* Displays applied video filters */}
                 <Typography variant="overline" display="block">
                   Video Filters
@@ -604,7 +719,11 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteVideoFilter(videoFilter, videoFilterIndex);
+                              handleDeleteVideoFilter(
+                                videoFilter,
+                                videoFilterIndex,
+                                videoFilter.groupFilter
+                              );
                             }}
                           />
                         </Box>
@@ -704,17 +823,306 @@ function ParticipantDataModal({
                     );
                   }
                 )}
-                <FormControlLabel
-                  control={<Checkbox />}
-                  label="Asymmetric View"
-                  checked={asymmetricView.length > 0}
-                  onChange={(event) => {
-                    const isChecked = (event.target as HTMLInputElement).checked;
-
-                    isChecked ? setAsymmetricView(originalDimensions) : setAsymmetricView([]);
-                  }}
-                />
               </Box>
+              {/* Displays applied group filters */}
+              <Typography variant="overline" display="block">
+                Group Filters
+              </Typography>
+              {participantCopy.audio_group_filters.map(
+                (audioFilter: Filter, audioFilterIndex: number) => {
+                  return (
+                    <Box
+                      key={audioFilterIndex}
+                      sx={{ display: "flex", justifyContent: "flex-start" }}
+                    >
+                      <Box sx={{ minWidth: 140 }}>
+                        <Chip
+                          key={audioFilterIndex}
+                          label={audioFilter.name}
+                          variant="outlined"
+                          size="medium"
+                          color="secondary"
+                          onDelete={() => {
+                            handleDeleteAudioFilter(
+                              audioFilter,
+                              audioFilterIndex,
+                              audioFilter.groupFilter
+                            );
+                          }}
+                        />
+                      </Box>
+
+                      {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          flexWrap: "wrap"
+                        }}
+                      >
+                        {Object.keys(audioFilter.config).map((configType, configIndex) => {
+                          if (Array.isArray(audioFilter["config"][configType]["defaultValue"])) {
+                            return (
+                              <FormControl
+                                key={configIndex}
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                size="small"
+                              >
+                                <InputLabel htmlFor="grouped-select">
+                                  {configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                </InputLabel>
+                                <Select
+                                  key={configIndex}
+                                  value={
+                                    (audioFilter["config"][configType] as FilterConfigArray)[
+                                      "requiresOtherFilter"
+                                    ]
+                                      ? (
+                                          audioFilter["config"][configType][
+                                            "defaultValue"
+                                          ] as string[]
+                                        )[0]
+                                      : audioFilter["config"][configType]["value"]
+                                  }
+                                  id="grouped-select"
+                                  onChange={(e) => {
+                                    handleFilterChange(
+                                      audioFilterIndex,
+                                      configType,
+                                      e.target.value,
+                                      "audio_filters"
+                                    );
+                                  }}
+                                >
+                                  {(
+                                    audioFilter["config"][configType]["defaultValue"] as string[]
+                                  ).map((value: string) => {
+                                    return (
+                                      <MenuItem key={value} value={value}>
+                                        {value}
+                                      </MenuItem>
+                                    );
+                                  })}
+                                </Select>
+                              </FormControl>
+                            );
+                          } else if (
+                            typeof audioFilter["config"][configType]["defaultValue"] == "number"
+                          ) {
+                            return (
+                              <TextField
+                                key={configIndex}
+                                label={configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                defaultValue={audioFilter["config"][configType]["value"]}
+                                InputProps={{
+                                  inputProps: {
+                                    min: (audioFilter["config"][configType] as FilterConfigNumber)[
+                                      "min"
+                                    ],
+                                    max: (audioFilter["config"][configType] as FilterConfigNumber)[
+                                      "max"
+                                    ],
+                                    step: (audioFilter["config"][configType] as FilterConfigNumber)[
+                                      "step"
+                                    ]
+                                  }
+                                }}
+                                type="number"
+                                size="small"
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                onChange={(e) => {
+                                  handleFilterChange(
+                                    audioFilterIndex,
+                                    configType,
+                                    parseInt(e.target.value),
+                                    "audio_filters"
+                                  );
+                                }}
+                              />
+                            );
+                          }
+                        })}
+                      </Box>
+                    </Box>
+                  );
+                }
+              )}
+              {participantCopy.video_group_filters.map(
+                (videoFilter: Filter, videoFilterIndex: number) => {
+                  console.log(videoFilter);
+                  return (
+                    <Box
+                      key={videoFilterIndex}
+                      sx={{ display: "flex", justifyContent: "flex-start" }}
+                    >
+                      <Box sx={{ minWidth: 140 }}>
+                        <Chip
+                          key={videoFilterIndex}
+                          label={videoFilter.name}
+                          variant="outlined"
+                          size="medium"
+                          color="secondary"
+                          onDelete={() => {
+                            handleDeleteVideoFilter(
+                              videoFilter,
+                              videoFilterIndex,
+                              videoFilter.groupFilter
+                            );
+                          }}
+                        />
+                      </Box>
+
+                      {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          flexWrap: "wrap"
+                        }}
+                      >
+                        {Object.keys(videoFilter.config).map((configType, configIndex) => {
+                          if (Array.isArray(videoFilter["config"][configType]["defaultValue"])) {
+                            return (
+                              <FormControl
+                                key={configIndex}
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                size="small"
+                              >
+                                <InputLabel htmlFor="grouped-select">
+                                  {configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                </InputLabel>
+                                <Select
+                                  key={configIndex}
+                                  value={
+                                    (videoFilter["config"][configType] as FilterConfigArray)[
+                                      "requiresOtherFilter"
+                                    ]
+                                      ? (
+                                          videoFilter["config"][configType][
+                                            "defaultValue"
+                                          ] as string[]
+                                        )[0]
+                                      : videoFilter["config"][configType]["value"]
+                                  }
+                                  id="grouped-select"
+                                  onChange={(e) => {
+                                    handleFilterChange(
+                                      videoFilterIndex,
+                                      configType,
+                                      e.target.value,
+                                      "video_filters"
+                                    );
+                                  }}
+                                >
+                                  {(
+                                    videoFilter["config"][configType]["defaultValue"] as string[]
+                                  ).map((value: string) => {
+                                    return (
+                                      <MenuItem key={value} value={value}>
+                                        {value}
+                                      </MenuItem>
+                                    );
+                                  })}
+                                </Select>
+                              </FormControl>
+                            );
+                          } else if (
+                            typeof videoFilter["config"][configType]["defaultValue"] == "number"
+                          ) {
+                            return (
+                              <TextField
+                                key={configIndex}
+                                label={configType.charAt(0).toUpperCase() + configType.slice(1)}
+                                defaultValue={videoFilter["config"][configType]["value"]}
+                                InputProps={{
+                                  inputProps: {
+                                    min: (videoFilter["config"][configType] as FilterConfigNumber)[
+                                      "min"
+                                    ],
+                                    max: (videoFilter["config"][configType] as FilterConfigNumber)[
+                                      "max"
+                                    ],
+                                    step: (videoFilter["config"][configType] as FilterConfigNumber)[
+                                      "step"
+                                    ]
+                                  }
+                                }}
+                                type="number"
+                                size="small"
+                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                                onChange={(e) => {
+                                  handleFilterChange(
+                                    videoFilterIndex,
+                                    configType,
+                                    parseInt(e.target.value),
+                                    "video_filters"
+                                  );
+                                }}
+                              />
+                            );
+                          }
+                        })}
+                      </Box>
+                    </Box>
+                  );
+                }
+              )}
+              <Typography variant="overline" display="block">
+                Chat Filters
+              </Typography>
+              {participantCopy.chat_filters.map((chatFilter: ChatFilter, index: number) => {
+                return (
+                  <Box key={index} sx={{ display: "flex", justifyContent: "flex-start" }}>
+                    <Box sx={{ minWidth: 140 }}>
+                      <Chip
+                        key={index}
+                        label={chatFilter.name}
+                        variant="outlined"
+                        size="medium"
+                        color="secondary"
+                        onDelete={() => {
+                          handleDeleteChatFilter(chatFilter, index);
+                        }}
+                      />
+                    </Box>
+
+                    {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      {Object.keys(chatFilter.config).map((configType, configIndex) => {
+                        if (chatFilter["config"][configType]["excludeExperimenter"]) {
+                          return (
+                            <FormControl
+                              key={configIndex}
+                              sx={{ m: 1, width: "10vw", minWidth: 130 }}
+                              size="small"
+                            >
+                              <InputLabel htmlFor="grouped-select">
+                                {configType.charAt(0).toUpperCase() + configType.slice(1)}
+                              </InputLabel>
+                            </FormControl>
+                          );
+                        }
+                      })}
+                    </Box>
+                  </Box>
+                );
+              })}
+              <FormControlLabel
+                control={<Checkbox />}
+                label="Asymmetric View"
+                checked={asymmetricView.length > 0}
+                onChange={(event) => {
+                  const isChecked = (event.target as HTMLInputElement).checked;
+
+                  isChecked ? setAsymmetricView(originalDimensions) : setAsymmetricView([]);
+                }}
+              />
             </Box>
             {asymmetricView.length > 0 && (
               <div className="pl-5">

@@ -7,19 +7,23 @@ To contribute code to this project, see the following steps:
 0. Checkout our current open [Issues](https://github.com/TUMFARSynchrony/experimental-hub/issues) and add your contribution idea to our [discussion board](https://github.com/TUMFARSynchrony/experimental-hub/discussions/categories/ideas).
 1. Create a new branch in which changes are made. Branches should be named using the following convention: `[<frontend/backend>-]<initials>-<topic>`.  
    Branch names are in lowercase. If the change regards the frontend or backend start the name with `frontend` or `backend` respectively. If it's a general change this part is omitted. The topic can be multiple words which should be sperated by hyphens (`-`).
-2. Make sure your code works with the latest version of `main`, then create a pull request.
+2. Make sure your code works with the latest version of `development` (i.e. merge `development` into your branch and fix conflicts), then create a pull request.
+   - Choose `development` as base branch. If your branch is based on another branch, choose the other branch as base. Once the other branch is merged, your PR will automatically change its base to `development`. 
+   - Name the PR using a short and descriptive name
+   - Fill out the neccessary details in the pull request template
    - Assign the person who will perform the merge as _Assignee_ (usually yourself).
    - Assign specific people who should review the code as _Reviewers_. If you don't know who to assign, put NCEghtebas there as a default. At least one approval is required for the merge.
 3. (External) An appropriate reviewer will be assigned and review the code contribution like with the steps below.
    (Internal) Person reviewing replies on Discord that they will take the request and:
    1. Add themselves as _Reviewer_ (if not already)
-   1. Try running the code
-   1. Review the code (errors, style, comments, etc.)
+   2. Try running the code
+   3. Review the code (errors, style, comments, etc.)
 4. If
    - **Major changes** are needed then repeat the process after addressing changes which were requested by the reviewer.
    - **Minor changes** are needed then the reviewer can approve the request and let the code contributor know that they are free to merge after addressing the minor changes.
-5. Delete branch(es) after merging into `main`
+5. Delete branch(es) after merging
 
+Once `development` contains a stable, working version, it can be merged into `main` using a PR. This ensures that `main` is always stable.
 ## Conventions
 
 The following conventions should be followed when working on experimental-hub.

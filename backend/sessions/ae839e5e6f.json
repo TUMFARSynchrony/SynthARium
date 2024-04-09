@@ -43,6 +43,10 @@
       "video_filters": [],
       "audio_group_filters": [],
       "video_group_filters": [],
+      "chat_filters": [],
+      "lastMessageSentTime": 0,
+      "lastMessageReadTime": 0,
+      "video_group_filters": [],
       "view": [
         {
           "id": "67890",
@@ -112,6 +116,9 @@
       "video_filters": [],
       "audio_group_filters": [],
       "video_group_filters": [],
+      "chat_filters": [],
+      "lastMessageSentTime": 0,
+      "lastMessageReadTime": 0,
       "view": [
         {
           "id": "12345",

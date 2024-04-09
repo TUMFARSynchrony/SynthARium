@@ -7,6 +7,7 @@ from typing import TypedDict
 from custom_types.chat_message import ChatMessageDict
 from custom_types.canvas_element import CanvasElementDict
 from filters import FilterDict
+from chat_filters import ChatFilterDict
 from session.data.position import PositionDict
 from session.data.size import SizeDict
 
@@ -31,6 +32,8 @@ class ParticipantDict(TypedDict):
         Active audio filters for this participant.
     video_filters : list of filters.FilterDict
         Active video filters for this participant.
+    chat_filters: list of chat_filters.ChatFilterDict
+        Active chat filters for this participant.
     audio_group_filters : list of filters.FilterDict
         Active audio group filters for this participant.
     video_group_filters : list of filters.FilterDict
@@ -43,6 +46,10 @@ class ParticipantDict(TypedDict):
         Chat log between experimenter and participant.
     banned : bool
         Whether this participant is banned from the experiment.
+    lastMessageSentTime: int
+        Last message sent time.
+    lastMessageReadTime: int
+        Last message read time by experimenter.
     view : list of custom_types.canvas_element.CanvasElementDict
         Asymmetric view of the participant
     canvas_id: str
@@ -63,11 +70,14 @@ class ParticipantDict(TypedDict):
     muted_audio: bool
     audio_filters: list[FilterDict]
     video_filters: list[FilterDict]
+    chat_filters: list[ChatFilterDict]
     audio_group_filters: list[FilterDict]
     video_group_filters: list[FilterDict]
     position: PositionDict
     size: SizeDict
     chat: list[ChatMessageDict]
     banned: bool
+    lastMessageSentTime: int
+    lastMessageReadTime: int
     view: list[CanvasElementDict]
     canvas_id: str
