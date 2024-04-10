@@ -88,7 +88,7 @@ class ConnectionRunner:
         self._running = True
         filter_api = FilterSubprocessAPI(
             self._send_command,
-            self._send_command_wait_for_response    
+            self._send_command_wait_for_response
         )
         answer, self._connection = await connection_factory(
             offer,

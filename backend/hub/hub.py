@@ -298,7 +298,7 @@ class Hub:
         await self._add_current_connection(connection_id, participant)
 
         return answer, participant_data.as_summary_dict()
-    
+
     async def handle_add_ice_candidate(
         self,
         candiate: AddIceCandidateDict

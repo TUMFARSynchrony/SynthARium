@@ -134,7 +134,7 @@ class Connection(ConnectionInterface):
         self._raw_video_record_handler = RecordHandler(
             self._incoming_video, record, record_to
         )
-        
+
         self._dc = None
         self._tasks = []
 
@@ -365,7 +365,7 @@ class Connection(ConnectionInterface):
 
     async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
         return await self._incoming_audio.get_filters_data(id, name)
-    
+
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
         self._logger.debug(f"Remove sub connection {subconnection_id}")
