@@ -42,6 +42,11 @@ const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: Chat
   return filter;
 });
 
+// Loading filters data before the component renders, because the Select component needs value.
+const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
+  return filter;
+});
+
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
 const defaultFilter = {
   id: "",
@@ -477,9 +482,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={individualFilter.id}
                           value={individualFilter.name}
-                          onClick={() =>
-                            handleFilterSelect(individualFilter, individualFilter.groupFilter)
-                          }
+                          onClick={() => handleFilterSelect(individualFilter)}
                         >
                           {individualFilter.name}
                         </MenuItem>
@@ -493,7 +496,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={groupFilter.id}
                           value={groupFilter.name}
-                          onClick={() => handleFilterSelect(groupFilter, groupFilter.groupFilter)}
+                          onClick={() => handleFilterSelect(groupFilter)}
                         >
                           {groupFilter.name}
                         </MenuItem>
@@ -563,11 +566,7 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteAudioFilter(
-                              audioFilter,
-                              audioFilterIndex,
-                              audioFilter.groupFilter
-                            );
+                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
                           }}
                         />
                       </Box>
@@ -596,11 +595,7 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteAudioFilter(
-                                audioFilter,
-                                audioFilterIndex,
-                                audioFilter.groupFilter
-                              );
+                              handleDeleteAudioFilter(audioFilter, audioFilterIndex);
                             }}
                           />
                         </Box>
@@ -719,11 +714,7 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteVideoFilter(
-                                videoFilter,
-                                videoFilterIndex,
-                                videoFilter.groupFilter
-                              );
+                              handleDeleteVideoFilter(videoFilter, videoFilterIndex);
                             }}
                           />
                         </Box>
@@ -843,11 +834,7 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteAudioFilter(
-                              audioFilter,
-                              audioFilterIndex,
-                              audioFilter.groupFilter
-                            );
+                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
                           }}
                         />
                       </Box>
@@ -963,11 +950,7 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteVideoFilter(
-                              videoFilter,
-                              videoFilterIndex,
-                              videoFilter.groupFilter
-                            );
+                            handleDeleteVideoFilter(videoFilter, videoFilterIndex);
                           }}
                         />
                       </Box>
