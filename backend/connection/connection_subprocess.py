@@ -163,7 +163,7 @@ class ConnectionSubprocess(ConnectionInterface):
         # Send command and wait for response.
         answer = await self._send_command_wait_for_response("HANDLE_OFFER", offer)
         return answer
-    
+
     async def handle_subscriber_add_ice_candidate(
         self, candidate: AddIceCandidateDict
     ):
