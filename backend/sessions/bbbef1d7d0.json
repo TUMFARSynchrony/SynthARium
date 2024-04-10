@@ -26,10 +26,16 @@
                 "z": 0
             },
             "chat": [],
+            "chat_filters": [],
             "audio_filters": [],
             "video_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "12345"
         },
         {
             "id": "b",
@@ -49,8 +55,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "67890"
         },
         {
             "id": "c",
@@ -70,8 +82,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "23456"
         },
         {
             "id": "d",
@@ -91,8 +109,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "34567"
         },
         {
             "id": "e",
@@ -112,8 +136,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "45678"
         },
         {
             "id": "f",
@@ -133,8 +163,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "56789"
         },
         {
             "id": "g",
@@ -154,8 +190,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "78901"
         },
         {
             "id": "h",
@@ -175,8 +217,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "89012"
         },
         {
             "id": "i",
@@ -196,8 +244,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "90123"
         },
         {
             "id": "j",
@@ -217,8 +271,14 @@
             "chat": [],
             "audio_filters": [],
             "video_filters": [],
+            "chat_filters": [],
             "audio_group_filters": [],
-            "video_group_filters": []
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "video_group_filters": [],
+            "view": [],
+            "canvas_id": "01234"
         }
     ],
     "log": []
