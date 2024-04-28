@@ -980,4 +980,3 @@ class Experimenter(User):
         await experiment.set_message_read_time(
             data["participant_id"], data["lastMessageReadTime"]
         )
-

@@ -67,9 +67,9 @@ class FilterAPIInterface(ABC):
 
         Parameters
         ----------
-        period : int, optional
+        period : int
             The period at which to send ping messages, in milliseconds.
-        buffer_length : int, optional
+        buffer_length : int
             The length of the ping buffer, in seconds.
         """
         pass

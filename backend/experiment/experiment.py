@@ -1,7 +1,6 @@
 """Provide the `Experiment` class."""
 from __future__ import annotations
 
-import copy
 import logging
 from typing import Any, TYPE_CHECKING
 from pyee.asyncio import AsyncIOEventEmitter
@@ -18,7 +17,6 @@ from group_filters.group_filter_aggregator import GroupFilterAggregator
 from filters.filter_dict import FilterDict
 from group_filters import group_filter_aggregator_factory
 import asyncio
-from transformers import pipeline
 from chat_filters.sentiment_analysis import SentimentAnalysisFilter
 
 if TYPE_CHECKING:
@@ -257,7 +255,7 @@ class Experiment(AsyncIOEventEmitter):
                     self._logger.info(f"{filter_name} filter_namesss")
                     # Creating conditions based on the "name" field
                     if filter_name == "SENTIMENT ANALYSIS":
-                        self._logger.info(f"Performing sentiment analysis")
+                        self._logger.info("Performing sentiment analysis")
                         sentiment_score = Experiment.sentiment_classifier.apply_filter(
                             chat_message["message"]
                         )

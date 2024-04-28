@@ -59,7 +59,7 @@ class RecordHandler:
             self._recorder = MediaRecorder(self._record_to)
         else:
             self._recorder = MediaBlackhole()
-            
+
     async def start(self) -> None:
         """Start recorder."""
         if self._record_to != "":
@@ -90,7 +90,7 @@ class RecordHandler:
             self._logger.debug(f"Stop recording {self._record_to}")
 
             if self._track.kind == 'video':
-                while(True):
+                while (True):
                     if (os.path.isfile(self._record_to)):
                         # Trim black frames
                         self.trim(duration)
@@ -119,5 +119,5 @@ class RecordHandler:
             os.remove(self._record_to)
             os.rename(output, self._record_to)
         except Exception as error:
-            self._logger.error("Error running ffmpeg." + 
+            self._logger.error("Error running ffmpeg." +
                                f"Exception: {error}.")
