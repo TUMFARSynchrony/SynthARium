@@ -86,6 +86,26 @@ const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: R
 
   const participant_name = shapeProps.participant_name ? shapeProps.participant_name : "";
 
+  // Calculate brightness of canvas color
+  const calculateBrightness = (color: string) => {
+    const hexToRgb = (hex: string) => {
+      const bigint = parseInt(hex.slice(1), 16);
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255
+      };
+    };
+
+    const rgb = hexToRgb(color);
+    // Calculate brightness using luminance formula
+    return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+  };
+
+  const canvasColor = shapeProps.fill;
+
+  const textColor = calculateBrightness(canvasColor) > 0.5 ? "#000000" : "#FFFFFF";
+
   return (
     <>
       <Group
@@ -102,7 +122,7 @@ const Rectangle = ({ shapeProps, groupProps, isSelected, onSelect, onChange }: R
           x={shapeProps.x + 5}
           y={shapeProps.y + 5}
           fontSize={20}
-          fill="white"
+          fill={textColor}
           stroke="#F5F5F5"
           strokeWidth={0.25}
         />
