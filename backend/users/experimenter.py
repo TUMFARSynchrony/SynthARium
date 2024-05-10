@@ -320,6 +320,9 @@ class Experimenter(User):
 
         self._experiment = await self._hub.create_experiment(data["session_id"])
         self._experiment.add_experimenter(self)
+        self._logger.info(f"sending ws message. {str(self)}")
+
+        await self._hub.notify_participants_experimenter_joined({"type": "EXPERIMENTER_JOINED"})
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
@@ -386,6 +389,9 @@ class Experimenter(User):
 
         self._experiment = experiment
         self._experiment.add_experimenter(self)
+        self._logger.info(f"sending ws message. {str(self)}")
+
+        await self._hub.notify_participants_experimenter_joined({"type": "EXPERIMENTER_JOINED"})
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
