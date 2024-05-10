@@ -4,7 +4,7 @@ import logging
 import aiohttp_cors
 import json
 from typing import Any, Callable, Coroutine, Literal
-from aiohttp import web
+from aiohttp import web, WSMsgType
 from datetime import datetime
 from aiortc import RTCSessionDescription
 from ssl import SSLContext
@@ -64,12 +64,14 @@ class Server:
         self._hub_handle_add_ice_candidate = hub_handle_add_ice_candidate
         self._config = config
 
+        self.websockets = set()
         self._app = web.Application()
         self._app.on_shutdown.append(self._shutdown)
         routes = [
             self._app.router.add_get("/hello-world", self.get_hello_world),
             self._app.router.add_post("/offer", self.handle_offer),
             self._app.router.add_post("/addIceCandidate", self.handle_add_ice_candidate),
+            self._app.router.add_get('/ws', self.websocket_handler)
         ]
 
         # Serve frontend build
@@ -142,6 +144,28 @@ class Server:
             ssl_context=ssl_context,
         )
         await site.start()
+
+    async def websocket_handler(self, request):
+        """Handle incoming WebSocket connections."""
+        ws = web.WebSocketResponse()
+        await ws.prepare(request)
+        self.websockets.add(ws)
+
+        async for msg in ws:
+            if msg.type == WSMsgType.TEXT:
+                # Handle incoming WebSocket messages if needed
+                pass
+            elif msg.type == WSMsgType.ERROR:
+                print('WebSocket connection closed with exception %s' % ws.exception())
+
+        # Cleanup on disconnect
+        self.websockets.remove(ws)
+        return ws
+
+    async def broadcast_message(self, message):
+        """Send a message to all connected clients."""
+        for ws in self.websockets:
+            await ws.send_str(message)
 
     async def _shutdown(self, app: web.Application):
         """TODO document"""
