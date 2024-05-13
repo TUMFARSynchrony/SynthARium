@@ -72,22 +72,23 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     <>
       {/* Grid takes up screen space left from the AppToolbar */}
       <div className="flex h-[calc(100vh-84px)]">
-        <div className="px-6 py-4 w-3/4 flex flex-col"></div>
-        {participantStream ? (
-          <video
-            ref={videoElement}
-            autoPlay
-            playsInline
-            width="50%"
-            height="auto"
-            className="mx-auto" // Center the video horizontally
-          ></video>
-        ) : (
-          <Typography>
-            Unable to access your video. Please check that you have allowed access to your camera
-            and microphone.
-          </Typography>
-        )}
+        <div className="px-6 py-4 w-3/4 flex flex-col">
+          {participantStream ? (
+            <video
+              ref={videoElement}
+              autoPlay
+              playsInline
+              width="50%"
+              height="auto"
+              className="mx-auto" // Center the video horizontally
+            ></video>
+          ) : (
+            <Typography>
+              Unable to access your video. Please check that you have allowed access to your camera
+              and microphone.
+            </Typography>
+          )}
+        </div>
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
           {connectionState === ConnectionState.CONNECTED && isChatModalActive && (
