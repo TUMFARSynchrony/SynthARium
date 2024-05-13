@@ -5,14 +5,15 @@ import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
 import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
-import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
+import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./MeetingRoom.css";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
   const [connectionState, setConnectionState] = useState(null);
+  const [glassDetected, setGlassDetected] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
   const [participantStream, setParticipantStream] = useState(null);
@@ -21,28 +22,42 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
+  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false); // State to track checkbox status
+
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
       onGetSession(sessionIdParam);
     }
   }, [connection, connectionState, onGetSession, sessionIdParam]);
+
   const connectedPeersChangeHandler = async (peers) => {
     console.groupCollapsed("%cConnection peer streams change Handler", "color:blue");
     console.groupEnd();
     setConnectedParticipants(peers);
   };
 
+  const handleGetFiltersData = (data) => {
+    const glassFilter = data[participantIdParam].video.find(
+      (obj) => obj.id === "simple-glasses-detection"
+    );
+    setGlassDetected(glassFilter.data["Glasses Detected"]);
+    connection.sendMessage("GET_FILTERS_DATA", data);
+  };
+
   useEffect(() => {
     connection.on("remoteStreamChange", streamChangeHandler);
     connection.on("connectionStateChange", stateChangeHandler);
     connection.on("connectedPeersChange", connectedPeersChangeHandler);
+    connection.api.on("GET_FILTERS_DATA", handleGetFiltersData);
     return () => {
       // Remove event handlers when component is deconstructed
       connection.off("remoteStreamChange", streamChangeHandler);
       connection.off("connectionStateChange", stateChangeHandler);
       connection.off("connectedPeersChange", connectedPeersChangeHandler);
+      connection.api.off("GET_FILTERS_DATA", handleGetFiltersData);
     };
   }, [connection]);
+
   useEffect(() => {
     setParticipantStream(localStream);
   }, [localStream]);
@@ -60,6 +75,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const stateChangeHandler = async (state) => {
     setConnectionState(state);
   };
+
   return (
     <>
       {/* Grid takes up screen space left from the AppToolbar */}
@@ -70,14 +86,11 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
-                localStream={connection.remoteStream}
+                localStream={localStream}
                 ownParticipantId={participantIdParam}
               />
             ) : (
-              <div className="loader">
-                You are being directed to the meeting room... /n If it takes longer than a few
-                minutes, please refresh the page and fill out the consent form again.{" "}
-              </div>
+              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
             )
           ) : (
             <Typography>
@@ -89,7 +102,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
           {connectionState === ConnectionState.CONNECTED && isChatModalActive && (
-            <ChatTab
+            <ParticipantChatTab
               onChat={onChat}
               onGetSession={onGetSession}
               currentUser="participant"
@@ -98,7 +111,10 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab />
+            <InstructionsTab
+              onInstructionsCheckChange={setAreInstructionsChecked}
+              glassDetected={glassDetected}
+            />
           )}
         </div>
       </div>

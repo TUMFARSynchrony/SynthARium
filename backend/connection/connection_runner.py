@@ -13,6 +13,7 @@ from connection.connection import Connection, connection_factory
 from connection.connection_state import ConnectionState
 from connection.messages import ConnectionAnswerDict, ConnectionProposalDict
 from custom_types.message import MessageDict
+from custom_types.error import ErrorDict
 from filters import FilterDict
 from hub.exceptions import ErrorDictException
 from filter_api import FilterSubprocessAPI
@@ -37,6 +38,8 @@ class ConnectionRunner:
     _stopped_event: asyncio.Event
     _tasks: list[asyncio.Task]
     _logger: logging.Logger
+    _command_nr: int
+    _responses: dict[int, asyncio.Queue[dict]]
 
     def __init__(self) -> None:
         """Instantiate new ConnectionRunner."""
@@ -60,6 +63,9 @@ class ConnectionRunner:
 
         self._logger = logging.getLogger("ConnectionRunner")
 
+        self._command_nr = 0
+        self._responses = {}
+
     async def run(
         self,
         offer: RTCSessionDescription,
@@ -80,7 +86,10 @@ class ConnectionRunner:
             Suffix for logger used in Connection.
         """
         self._running = True
-        filter_api = FilterSubprocessAPI(self._send_command)
+        filter_api = FilterSubprocessAPI(
+            self._send_command,
+            self._send_command_wait_for_response
+        )
         answer, self._connection = await connection_factory(
             offer,
             self._relay_api_message,
@@ -162,6 +171,10 @@ class ConnectionRunner:
                     self._send_command("CONNECTION_ANSWER", e.error_message, command_nr)
                     return
                 self._send_command("CONNECTION_ANSWER", answer, command_nr)
+            case "ADD_ICE_CANDIDATE":
+                await self._connection.handle_add_ice_candidate(data)
+            case "ADD_SUBSCRIBER_ICE_CANDIDATE":
+                await self._connection.handle_subscriber_add_ice_candidate(data)
             case "STOP_SUBCONNECTION":
                 await self._connection.stop_subconnection(data)
             case "SET_MUTED":
@@ -189,6 +202,8 @@ class ConnectionRunner:
                 await self._connection.start_recording()
             case "STOP_RECORDING":
                 await self._connection.stop_recording()
+            case "FILTER_API_ANSWER":
+                await self._set_answer(command_nr, data)
             case _:
                 self._logger.error(f"Unrecognized command from main process: {command}")
 
@@ -233,3 +248,79 @@ class ConnectionRunner:
         """
         data = json.dumps({"command": command, "data": data, "command_nr": command_nr})
         print(data, flush=True)
+
+    async def _send_command_wait_for_response(
+        self,
+        command: str,
+        data: str
+        | int
+        | float
+        | dict
+        | MessageDict
+        | ConnectionProposalDict
+        | ConnectionAnswerDict,
+        timeout: int | None = None,
+        retries: int = 1,
+    ) -> dict | None:
+        """Send a command including unique command_nr and wait for response.
+
+        Parameters
+        ----------
+        command : str
+            Command / operator for message.
+        data : ...
+            Data for command / operator.
+        timeout : int or None, default None
+            timeout for waiting for response
+        retries : int = 1
+            If > 0, the command will be send again after `timeout` expired.
+
+        Returns
+        -------
+        None or dict
+            None if no response was received, otherwise response
+
+        Raises
+        ------
+        ErrorDictException
+            If the main process returned an error custom_types.message.Message.
+        """
+        for attempt in range(retries + 1):
+            if attempt > 0:
+                self._logger.debug(
+                    f"Retry sending {command}. Attempt: {attempt + 1}/{retries + 1}"
+                )
+            command_nr = self._command_nr
+            self._command_nr += 1
+            responseQueue = asyncio.Queue(maxsize=2)
+            self._responses[command_nr] = responseQueue
+
+            # Send command and wait for response.  Response should be added to Queue
+            # in self._responses[command_num] using _set_answer
+            self._send_command(command, data, command_nr)
+            try:
+                answer = await asyncio.wait_for(responseQueue.get(), timeout)
+            except asyncio.TimeoutError:
+                continue
+            finally:
+                # Remove queue from _responses
+                self._responses.pop(command_nr)
+
+            if "type" in answer and answer["type"] == "ERROR":
+                err: ErrorDict = answer["data"]
+                raise ErrorDictException(
+                    code=err["code"], type=err["type"], description=err["description"]
+                )
+
+            return answer
+
+    async def _set_answer(self, command_nr: int, data: dict):
+        """Save a answer in `_responses`"""
+        queue = self._responses.get(command_nr)
+        if queue is None:
+            self._logger.error(
+                f"Did not find queue for response with command_nr: {command_nr}"
+            )
+            self._logger.error(f"{command_nr} data: {data}")
+            return
+        await queue.put(data)

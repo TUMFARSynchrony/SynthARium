@@ -6,7 +6,7 @@ interface InstructionsTabProps {
   onInstructionsCheckChange: (consent: boolean) => void;
 }
 
-const InstructionsTab = ({ onInstructionsCheckChange }: InstructionsTabProps) => {
+export const InstructionsTab = ({ onInstructionsCheckChange }: InstructionsTabProps) => {
   const [checkedInstructions, setCheckedInstructions] = useState(
     instructionsList.map(() => false) // Initialize all checkboxes as unchecked
   );
@@ -43,5 +43,3 @@ const InstructionsTab = ({ onInstructionsCheckChange }: InstructionsTabProps) =>
     </div>
   );
 };
-
-export default InstructionsTab;

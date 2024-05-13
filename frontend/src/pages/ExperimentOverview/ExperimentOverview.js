@@ -4,18 +4,22 @@ import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
 import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../utils/utils";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import { ExperimenterChatTab } from "../../components/molecules/ChatTab/ExperimenterChatTab";
 import {
+  selectChatGptTab,
   selectChatTab,
   selectInstructionsTab,
-  selectParticipantsTab
+  selectParticipantsTab,
+  selectFilterInformationTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
+import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./ExperimentOverview.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
 import { useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
+import { FilterInformationTab } from "../../components/molecules/FilterInformationTab/FilterInformationTab";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
 function ExperimentOverview({
   connectedParticipants,
@@ -25,7 +29,9 @@ function ExperimentOverview({
   onLeaveExperiment,
   onMuteParticipant,
   onStartExperiment,
-  onEndExperiment
+  onEndExperiment,
+  onGetFiltersData,
+  onUpdateMessageReadTime
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
@@ -35,6 +41,9 @@ function ExperimentOverview({
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
+  const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
+
   return (
     <div className="h-[calc(100vh-84px)] w-full">
       {sessionData ? (
@@ -99,11 +108,12 @@ function ExperimentOverview({
           </div>
           <div className="w-1/4">
             {isChatModalActive && (
-              <ChatTab
+              <ExperimenterChatTab
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
                 currentUser={"experimenter"}
+                onUpdateMessageReadTime={onUpdateMessageReadTime}
               />
             )}
             {isParticipantsModalActive && (
@@ -113,7 +123,14 @@ function ExperimentOverview({
                 onMuteParticipant={onMuteParticipant}
               />
             )}
-            {isInstructionsModalActive && <InstructionsTab onInstructionsCheckChange={false} />}
+            {isInstructionsModalActive && <InstructionsTab />}
+            {isFilterInformationModalActive && (
+              <FilterInformationTab
+                onGetFiltersData={onGetFiltersData}
+                participants={sessionData["participants"]}
+              />
+            )}
+            {isChatGptModalActive && <ChatGptTab />}
           </div>
         </div>
       ) : (

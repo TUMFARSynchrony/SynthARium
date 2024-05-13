@@ -55,6 +55,7 @@ MESSAGE_TYPES = Literal[
     "SESSION_LIST",
     "SESSION",
     "CHAT",
+    "UPDATE_READ_MESSAGE_TIME",
     "CREATE_EXPERIMENT",
     "JOIN_EXPERIMENT",
     "LEAVE_EXPERIMENT",
@@ -82,6 +83,7 @@ MESSAGE_TYPES = Literal[
     "ACTIVE_AUDIO_FILTERS",
     "PING",
     "PONG",
+    "ADD_ICE_CANDIDATE",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

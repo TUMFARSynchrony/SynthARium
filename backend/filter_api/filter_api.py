@@ -45,5 +45,21 @@ class FilterAPI(FilterAPIInterface):
         experiment = self._user.get_experiment_or_raise()
         await experiment.send(to, data, exclude, True)
 
+    async def get_current_ping(self) -> int:
+        # For docstring see FilterAPIInterface or hover over function declaration
+        return await self._user.get_current_ping()
+
+    async def start_pinging(
+        self,
+        period: int,
+        buffer_length: int
+    ) -> None:
+        # For docstring see FilterAPIInterface or hover over function declaration
+        await self._user.start_pinging(period, buffer_length)
+
+    def stop_pinging(self) -> None:
+        # For docstring see FilterAPIInterface or hover over function declaration
+        self._user.stop_pinging()
+
 
 FilterAPIInterface.register(FilterAPI)

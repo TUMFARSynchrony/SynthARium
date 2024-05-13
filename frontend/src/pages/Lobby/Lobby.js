@@ -4,20 +4,28 @@ import { useSearchParams } from "react-router-dom";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
+import {
+  selectChatGptTab,
+  selectChatTab,
+  selectInstructionsTab
+} from "../../redux/slices/tabsSlice";
+import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
+import "./Lobby.css";
+import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
-import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
-import InstructionsTab from "../../components/molecules/InstructionsTab/InstructionsTab";
 import { ActionButton } from "../../components/atoms/Button";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
+  const [userConsent, setUserConsent] = useState(false);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
   const [participantStream, setParticipantStream] = useState(null);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -47,14 +55,16 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   }, [connection]);
 
   useEffect(() => {
-    setParticipantStream(localStream);
-  }, [localStream]);
+    if (userConsent) {
+      setParticipantStream(localStream);
+    }
+  }, [localStream, userConsent]);
 
   useEffect(() => {
-    if (participantStream && videoElement.current) {
+    if (participantStream && userConsent && videoElement.current) {
       videoElement.current.srcObject = localStream;
     }
-  }, [localStream, participantStream]);
+  }, [localStream, participantStream, userConsent]);
 
   const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -68,26 +78,39 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     <>
       <div className="flex h-[calc(100vh-84px)]">
         <div className="px-6 py-4 w-3/4 flex flex-col">
-          {participantStream ? (
-            <video
-              ref={videoElement}
-              autoPlay
-              playsInline
-              width="50%"
-              height="auto"
-              className="mx-auto" // Center the video horizontally
-            ></video>
+          {userConsent ? (
+            participantStream ? (
+              sessionData && connectedParticipants ? (
+                <VideoCanvas
+                  connectedParticipants={connectedParticipants}
+                  sessionData={sessionData}
+                  localStream={localStream}
+                  ownParticipantId={participantIdParam}
+                />
+              ) : (
+                <video
+                  ref={videoElement}
+                  autoPlay
+                  playsInline
+                  width="100%"
+                  height="100%"
+                  muted={true}
+                ></video>
+              )
+            ) : (
+              <Typography>
+                Unable to access your video. Please check that you have allowed access to your
+                camera and microphone.
+              </Typography>
+            )
           ) : (
-            <Typography>
-              Unable to access your video. Please check that you have allowed access to your camera
-              and microphone.
-            </Typography>
+            <Typography>Please check if you gave your consent!</Typography>
           )}
         </div>
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
           {connectionState === ConnectionState.CONNECTED && isChatModalActive && (
-            <ChatTab
+            <ParticipantChatTab
               onChat={onChat}
               onGetSession={onGetSession}
               currentUser="participant"
@@ -98,6 +121,8 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
             <InstructionsTab onInstructionsCheckChange={setAreInstructionsChecked} />
           )}
+
+          {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
         </div>
       </div>
       <div className="self-center h-fit">
