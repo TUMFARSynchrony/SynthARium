@@ -87,10 +87,13 @@ class Server:
                 "/",
                 "/postProcessingRoom",
                 "/lobby",
-                "/watchingRoom",
+                "/experimentOverview",
                 "/sessionForm",
                 "/connectionTest",
                 "/connectionLatencyTest",
+                "/consent",
+                "/end",
+                "/meetingRoom"
             ]
             for page in pages:
                 routes.append(self._app.router.add_get(page, self.get_index))

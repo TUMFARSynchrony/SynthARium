@@ -14,14 +14,14 @@ import {
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
-import "./WatchingRoom.css";
+import "./ExperimentOverview.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 import { FilterInformationTab } from "../../components/molecules/FilterInformationTab/FilterInformationTab";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
-function WatchingRoom({
+function ExperimentOverview({
   connectedParticipants,
   onKickBanParticipant,
   onChat,
@@ -143,4 +143,4 @@ function WatchingRoom({
   );
 }
 
-export default WatchingRoom;
+export default ExperimentOverview;
