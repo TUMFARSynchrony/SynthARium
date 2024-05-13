@@ -41,6 +41,9 @@ SUCCESS_TYPES = Literal[
     "BAN_PARTICIPANT",
     "MUTE",
     "SET_FILTERS",
+    "SET_GROUP_FILTERS",
+    "ADD_ICE_CANDIDATE",
+    "SEND_TO_PARTICIPANT",
 ]
 """Possible success types for custom_types.success.SuccessDict.
 

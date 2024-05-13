@@ -1,9 +1,10 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
-import { Participant, Session } from "../../types";
+import { Filter, Participant, Session } from "../../types";
 
 type OpenSessionState = {
   session: Session;
+  filtersData: { TEST: Filter[]; SESSION: Filter[] };
 };
 
 const initialState: OpenSessionState = {
@@ -20,7 +21,8 @@ const initialState: OpenSessionState = {
     creation_time: 0,
     notes: [],
     log: []
-  }
+  },
+  filtersData: { TEST: [], SESSION: [] }
 };
 
 export const openSessionSlice = createSlice({
@@ -29,6 +31,10 @@ export const openSessionSlice = createSlice({
   reducers: {
     initializeSession: (state, { payload }) => {
       state.session = payload;
+    },
+
+    initializeFiltersData: (state, { payload }) => {
+      state.filtersData = payload;
     },
 
     saveSession: (state, { payload }) => {
@@ -45,6 +51,24 @@ export const openSessionSlice = createSlice({
 
     addParticipant: (state, { payload }: PayloadAction<Participant>) => {
       state.session.participants.push(payload);
+
+      state.session.participants.map(({ view }) => {
+        if (view.length > 0) {
+          view.push({
+            id: payload.canvas_id,
+            participant_name: payload.participant_name,
+            size: {
+              width: payload.size.width,
+              height: payload.size.height
+            },
+            position: {
+              x: payload.position.x,
+              y: payload.position.y,
+              z: 0
+            }
+          });
+        }
+      });
     },
 
     changeParticipant: (
@@ -53,10 +77,33 @@ export const openSessionSlice = createSlice({
     ) => {
       const { index, participant } = payload;
       state.session.participants[index] = participant;
+
+      state.session.participants.map(({ view }) => {
+        if (view.length > 0) {
+          const changedParticipantAsymmetryIndex = view.findIndex(
+            (canvasElement) => canvasElement.id === participant.canvas_id
+          );
+
+          if (changedParticipantAsymmetryIndex !== -1) {
+            view[changedParticipantAsymmetryIndex].participant_name = participant.participant_name;
+          }
+        }
+      });
     },
 
     deleteParticipant: (state, { payload }: PayloadAction<number>) => {
       const participantIndex = payload;
+
+      const deletedParticipant = state.session.participants.find(
+        (_, index) => index === participantIndex
+      );
+
+      state.session.participants.map(({ view }, index) => {
+        state.session.participants[index].view = view.filter(
+          (canvasElement) => canvasElement.id !== deletedParticipant.canvas_id
+        );
+      });
+
       state.session.participants = state.session.participants.filter(
         (_, index) => index !== participantIndex
       );
@@ -73,9 +120,16 @@ export const openSessionSlice = createSlice({
         ...payload,
         id: "",
         creation_time: 0,
+        end_time: 0,
+        start_time: 0,
+        notes: [],
+        log: [],
         participants: payload.participants.map((p) => ({
           ...p,
-          id: ""
+          id: "",
+          chat: [],
+          lastMessageSentTime: 0,
+          lastMessageReadTime: 0
         }))
       };
     }
@@ -84,6 +138,7 @@ export const openSessionSlice = createSlice({
 
 export const {
   initializeSession,
+  initializeFiltersData,
   saveSession,
   changeValue,
   addParticipant,
@@ -96,6 +151,12 @@ export const {
 export default openSessionSlice.reducer;
 
 export const selectOpenSession = (state: RootState): Session => state.openSession.session;
+
+export const selectFiltersDataSession = (state: RootState): Filter[] =>
+  state.openSession.filtersData.SESSION;
+
+export const selectFiltersDataTest = (state: RootState): Filter[] =>
+  state.openSession.filtersData.TEST;
 
 export const selectNumberOfParticipants = (state: RootState): number =>
   state.openSession.session.participants.length;

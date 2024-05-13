@@ -9,6 +9,7 @@ from av import VideoFrame, AudioFrame
 
 from custom_types import util
 from .filter_dict import FilterDict
+from .filter_data_dict import FilterDataDict
 
 if TYPE_CHECKING:
     # Import TrackHandler only for type checking to avoid circular import error
@@ -38,7 +39,7 @@ class Filter(ABC):
     """Video hub.track_handler.TrackHandler for the stream this filter is part of.
 
     Use to communicate with video filters running on the same stream.  Depending on the
-    type of this filter, the filter is either managed by `video_track_handler` or
+    type of this filter, the filter is either managed by `audio_track_handler` or
     `video_track_handler`.
     """
 
@@ -50,6 +51,8 @@ class Filter(ABC):
     """
 
     _config: FilterDict
+
+    _id: str
 
     def __init__(
         self,
@@ -80,6 +83,7 @@ class Filter(ABC):
         self._config = config
         self.audio_track_handler = audio_track_handler
         self.video_track_handler = video_track_handler
+        self._id = self._config["id"]
 
     @property
     def config(self) -> FilterDict:
@@ -96,11 +100,26 @@ class Filter(ABC):
         """
         self._config = config
 
+    @property
+    def id(self) -> str:
+        """Get Filter id."""
+        return self._id
+
+    def set_id(self, id: str) -> None:
+        """Update filter id.
+
+        Notes
+        -----
+        Provide a custom implementation for this function in a subclass in case the
+        filter should react to id changes.
+        """
+        self._id = id
+
     async def complete_setup(self) -> None:
         """Complete setup, allowing for asynchronous setup and accessing other filters.
 
         If the initiation / setup of a filter requires anything asynchronous or other
-        filters must be accessed, it should be donne in `complete_setup`.
+        filters must be accessed, it should be done in `complete_setup`.
         `complete_setup` is called when all filters have been set up, therefore other
         filters will be available (may not be the case in __init__, depending on the
         position in the filter pipeline).
@@ -116,9 +135,13 @@ class Filter(ABC):
         """
         return
 
+    async def get_filter_data(self) -> None | FilterDataDict:
+        """Get the data of a filter"""
+        return
+
     @staticmethod
     @abstractmethod
-    def name(self) -> str:
+    def name() -> str:
         """Provide name of the filter.
 
         The given name must be unique among all filters.
@@ -126,23 +149,46 @@ class Filter(ABC):
         between frontend and backend.
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract name()"
+            f"{__name__} is missing it's implementation of the static abstract name()"
             " method."
         )
 
     @staticmethod
     @abstractmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         """Provide the type of the filter.
 
         It can be either "TEST" or "SESSION"
         "NONE" type is used for mute filters
-        This is used to build the filters_data.json file
+        This is used to build the filters_data JSON object
         """
         raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract name()"
+            f"{__name__} is missing it's implementation of the static abstract name()"
             " method."
         )
+
+    @staticmethod
+    @abstractmethod
+    def channel() -> str:
+        """Provide the channel of the filter.
+
+        It can be either "video", "audio" or "both"
+        This is used to build the filters_data JSON object
+        """
+        raise NotImplementedError(
+            f"{__name__} is missing it's implementation of the static abstract channel()"
+            " method."
+        )
+
+    @staticmethod
+    def default_config() -> dict:
+        """Provide the default config for the filter.
+
+        By default, the default config is an empty dictionary, overwrite this in the
+        filter class to provide a custom config in the filters_data JSON object.
+        This is used to build the filters_data JSON object
+        """
+        return {}
 
     @abstractmethod
     async def process(
@@ -176,81 +222,6 @@ class Filter(ABC):
     @staticmethod
     def validate_dict(data) -> TypeGuard[FilterDict]:
         return util.check_valid_typeddict_keys(data, FilterDict)
-
-    @staticmethod
-    @abstractmethod
-    def get_filter_json(self) -> object:
-        """Provide config of the filters.
-
-        It requires at name, id, channel, groupFilter and config
-        name and id are collected from the name() method
-        channel is either "audio" or "video"
-        groupFilter is a boolean
-        config is a dictionary of dictionaries which can be also empty
-        """
-        raise NotImplementedError(
-            f"{self} is missing it's implementation of the static abstract get_filter_json() method."
-        )
-
-    def validate_filter_json(self, filter_json) -> bool:
-        """Validate the get_filter_json."""
-        for config in filter_json["config"]:
-            if isinstance(filter_json["config"][config]["defaultValue"], list):
-                for defaultValue in filter_json["config"][config]["defaultValue"]:
-                    if not isinstance(defaultValue, str):
-                        raise ValueError(
-                            f"{self} has an incorrect type in config > {config}"
-                            + " > defaultValue > {defaultValue}. It has to be type "
-                            + "of string."
-                        )
-                if not isinstance(filter_json["config"][config]["value"], str):
-                    raise ValueError(
-                        f"{self} has an incorrect type in config > {config} > value. "
-                        + "It has to be type of string."
-                    )
-                if not isinstance(
-                    filter_json["config"][config]["requiresOtherFilter"], bool
-                ):
-                    raise ValueError(
-                        f"{self} has an incorrect type in config > {config} > "
-                        + "requiresOtherFilter. It has to be type of boolean."
-                    )
-                if filter_json["config"][config]["requiresOtherFilter"]:
-                    self.name_of_other_filter_exists(
-                        self, filter_json["config"][config]["defaultValue"][0]
-                    )
-
-            elif isinstance(filter_json["config"][config]["defaultValue"], int):
-                if not (
-                    isinstance(filter_json["config"][config]["min"], int)
-                    and isinstance(filter_json["config"][config]["max"], int)
-                    and isinstance(filter_json["config"][config]["step"], (float, int))
-                    and isinstance(filter_json["config"][config]["value"], int)
-                ):
-                    raise ValueError(
-                        f"{self} has an incorrect type in config > {config}. "
-                        + "All fields need to be of type int."
-                    )
-            else:
-                return False
-        return (
-            isinstance(filter_json["name"], str)
-            and isinstance(filter_json["id"], str)
-            and isinstance(filter_json["channel"], str)
-            and isinstance(filter_json["groupFilter"], bool)
-            and isinstance(filter_json["config"], dict)
-        )
-
-    def name_of_other_filter_exists(self, name):
-        for filter in Filter.__subclasses__():
-            if filter.name(filter) == name:
-                return True
-
-        raise ValueError(
-            f"{self}'s get_filter_json is incorrect. "
-            + "In config > {config} > defaultValue > {name} the name does not exist."
-            + "Check for misspellings."
-        )
 
     def __repr__(self) -> str:
         """Get string representation for this filter."""

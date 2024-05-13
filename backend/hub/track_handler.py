@@ -1,6 +1,7 @@
 """Provide TrackHandler for handing and distributing tracks."""
 
 from __future__ import annotations
+from hub.exceptions import ErrorDictException
 import numpy
 import asyncio
 import logging
@@ -14,7 +15,16 @@ from aiortc.mediastreams import (
 from av import VideoFrame, AudioFrame
 from aiortc.contrib.media import MediaRelay
 
-from filters import filter_factory, FilterDict, Filter, MuteAudioFilter, MuteVideoFilter
+from filters import (
+    filter_factory,
+    FilterDict,
+    Filter,
+    MuteAudioFilter,
+    MuteVideoFilter,
+    FilterDataDict,
+)
+from group_filters import GroupFilter, group_filter_factory, group_filter_utils
+from time import time_ns
 
 if TYPE_CHECKING:
     from connection.connection import Connection
@@ -33,7 +43,9 @@ class TrackHandler(MediaStreamTrack):
     _relay: MediaRelay
     _mute_filter: MuteAudioFilter | MuteVideoFilter
     _filters: dict[str, Filter]
+    _group_filters: dict[str, GroupFilter]
     _execute_filters: bool
+    _execute_group_filters: bool
     _logger: logging.Logger
     __lock: asyncio.Lock
 
@@ -92,26 +104,36 @@ class TrackHandler(MediaStreamTrack):
         self._relay = MediaRelay()
         self._execute_filters = True
         self._filters = {}
+        self._execute_group_filters = True
+        self._group_filters = {}
 
         # Forward the ended event to this handler.
         self._track.add_listener("ended", self.stop)
 
-    async def complete_setup(self, filters: list[FilterDict]) -> None:
+    async def complete_setup(
+        self, filters: list[FilterDict], group_filters: list[FilterDict]
+    ) -> None:
         """Complete setup of TrackHandler.
 
         Initializes filter used to mute track and sets filter pipeline according to
-        `filters`.
+        `filters and `group_filters`.
 
         Parameters
         ----------
         filters : list of filters.FilterDict
+        group_filters : list of filters.FilterDict
         """
 
         self._mute_filter = filter_factory.init_mute_filter(
             self.kind, self.connection.incoming_audio, self.connection.incoming_video
         )
 
+        group_filter_ports = []
+        for _ in group_filters:
+            group_filter_ports.append(group_filter_utils.find_an_available_port())
+
         await self.set_filters(filters)
+        await self.set_group_filters(group_filters, group_filter_ports)
 
     @property
     def track(self) -> MediaStreamTrack:
@@ -129,6 +151,11 @@ class TrackHandler(MediaStreamTrack):
         return self._filters
 
     @property
+    def group_filters(self) -> dict[str, GroupFilter]:
+        """Get group filters used by this TrackHandler."""
+        return self._group_filters
+
+    @property
     def muted(self) -> bool:
         """Get muted state of TrackHandler."""
         return self._muted
@@ -142,7 +169,10 @@ class TrackHandler(MediaStreamTrack):
     async def stop(self) -> None:
         """Stop TrackHandler and associated track."""
         super().stop()
-        coros = [f.cleanup() for f in self._filters.values()]
+        coros = [
+            f.cleanup()
+            for f in list(self._filters.values()) + list(self._group_filters.values())
+        ]
         await asyncio.gather(*coros)
 
     async def set_track(self, value: MediaStreamTrack):
@@ -250,6 +280,74 @@ class TrackHandler(MediaStreamTrack):
             not self._muted or any([f.run_if_muted for f in self._filters.values()])
         )
 
+    async def set_group_filters(
+        self, group_filter_configs: list[FilterDict], ports: list[int]
+    ) -> None:
+        async with self.__lock:
+            await self._set_group_filters(group_filter_configs, ports)
+
+    async def _set_group_filters(
+        self, group_filter_configs: list[FilterDict], ports: list[int]
+    ) -> None:
+        old_group_filters = self._group_filters
+
+        self._group_filters = {}
+        for config, port in zip(group_filter_configs, ports):
+            filter_id = config["id"]
+            # Reuse existing filter for matching id and type.
+            if (
+                filter_id in old_group_filters
+                and old_group_filters[filter_id].config["name"] == config["name"]
+            ):
+                self._group_filters[filter_id] = old_group_filters[filter_id]
+                self._group_filters[filter_id].set_config(config)
+                continue
+
+            # Create a new filter for configs with empty id.
+            self._group_filters[filter_id] = group_filter_factory.create_group_filter(
+                config, self.connection._log_name_suffix[2:]
+            )
+            self._group_filters[filter_id].connect_aggregator(port)
+
+        coroutines: list[Coroutine] = []
+        # Cleanup old filters
+        for filter_id, old_group_filter in old_group_filters.items():
+            if filter_id not in self._group_filters:
+                coroutines.append(old_group_filter.cleanup())
+
+        # Complete setup for new filters
+        for new_filter in self._group_filters.values():
+            coroutines.append(new_filter.complete_setup())
+
+        await asyncio.gather(*coroutines)
+        self.reset_execute_group_filters()
+
+    def reset_execute_group_filters(self):
+        self._execute_group_filters = len(self._group_filters) > 0
+
+    async def get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get data for filters."""
+        async with self.__lock:
+            return await self._get_filters_data(id, name)
+
+    async def _get_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Internal version of `get_filters_data`, without lock."""
+        filters_data: list[FilterDataDict] = []
+        for filter in self._filters.values():
+            if filter.name() == name:
+                if id == "all":
+                    filters_data.append(await filter.get_filter_data())
+                elif id == filter.id:
+                    filters_data.append(await filter.get_filter_data())
+                    break
+                else:
+                    raise ErrorDictException(
+                        code=404,
+                        type="UNKNOWN_FILTER_ID",
+                        description=f'Unknown filter ID: "{id}".',
+                    )
+        return filters_data
+
     async def recv(self) -> AudioFrame | VideoFrame:
         """Receive the next av.AudioFrame from this track and apply filter pipeline.
 
@@ -270,6 +368,12 @@ class TrackHandler(MediaStreamTrack):
             raise MediaStreamError
 
         frame = await self.track.recv()
+
+        if self._execute_group_filters:
+            if self.kind == "video":
+                await self._run_video_group_filters(frame)
+            else:
+                await self._run_audio_group_filters(frame)
 
         if self._execute_filters:
             if self.kind == "video":
@@ -321,3 +425,22 @@ class TrackHandler(MediaStreamTrack):
                     ndarray = await active_filter.process(original, ndarray)
 
         return ndarray
+
+    async def _run_video_group_filters(self, frame: VideoFrame) -> None:
+        ndarray = frame.to_ndarray(format="bgr24")
+        await self._run_group_filters(frame, ndarray)
+
+    async def _run_audio_group_filters(self, frame: AudioFrame) -> None:
+        ndarray = frame.to_ndarray()
+        await self._run_group_filters(frame, ndarray)
+
+    async def _run_group_filters(
+        self, original: VideoFrame | AudioFrame, ndarray: numpy.ndarray
+    ) -> None:
+        """Execute group filter individual frame processing pipeline."""
+        async with self.__lock:
+            ts = time_ns()
+            for active_group_filter in self._group_filters.values():
+                await active_group_filter.process_individual_frame_and_send_data_to_aggregator(
+                    original, ndarray, ts
+                )
