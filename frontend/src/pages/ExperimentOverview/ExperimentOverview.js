@@ -1,4 +1,4 @@
-import { ActionButton, LinkActionButton, LinkButton } from "../../components/atoms/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
@@ -61,7 +61,7 @@ function ExperimentOverview({
               Filters applied on all participants
             </div>
             <div className="flex flex-row justify-center gap-x-4 pt-5">
-              <LinkActionButton
+              <ActionButton
                 text="LEAVE EXPERIMENT"
                 variant="outlined"
                 path="/"
@@ -136,7 +136,7 @@ function ExperimentOverview({
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton text="Go to Session Overview" path="/" variant="contained" size="large" />
+          <ActionButton text="Go to Session Overview" path="/" variant="contained" size="large" />
         </div>
       )}
     </div>
