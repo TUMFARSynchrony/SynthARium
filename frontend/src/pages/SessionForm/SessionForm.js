@@ -5,6 +5,7 @@ import {
   checkValidSession,
   filterListByIndex,
   formatDate,
+  generateRandomColor,
   getParticipantDimensions,
   getRandomColor
 } from "../../utils/utils";
@@ -18,7 +19,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -32,8 +33,9 @@ import {
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
+import { v4 as uuid } from "uuid";
 
-function SessionForm({ onSendSessionToBackend }) {
+function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
   const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
@@ -96,6 +98,10 @@ function SessionForm({ onSendSessionToBackend }) {
     }
   }, [snackbarResponse]);
 
+  useEffect(() => {
+    onGetFiltersConfig();
+  }, []);
+
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
       setXAxis((participantCount / 20) * 250);
@@ -112,9 +118,11 @@ function SessionForm({ onSendSessionToBackend }) {
   };
 
   const onAddParticipant = () => {
+    const canvasId = uuid();
     dispatch(
       addParticipant({
         ...INITIAL_PARTICIPANT_DATA,
+        canvas_id: canvasId,
         position: { x: xAxis, y: yAxis, z: 0 }
       })
     );
@@ -122,18 +130,19 @@ function SessionForm({ onSendSessionToBackend }) {
       ...participantDimensions,
       {
         shapes: {
-          x: xAxis,
-          y: yAxis,
-          fill: getRandomColor(),
-          z: 0
-        },
-        groups: {
           x: 0,
           y: 0,
           z: 0,
+          fill: generateRandomColor(canvasId)
+        },
+        groups: {
+          x: xAxis,
+          y: yAxis,
+          z: 0,
           width: 250,
           height: 250
-        }
+        },
+        id: canvasId
       }
     ];
     setParticipantDimensions(newParticipantDimensions);
@@ -168,50 +177,6 @@ function SessionForm({ onSendSessionToBackend }) {
       return;
     }
     onSendSessionToBackend(sessionData);
-  };
-
-  const addRandomSessionData = () => {
-    const futureDate = new Date().setDate(new Date().getDate() + 7);
-
-    let newSessionData = {
-      id: "",
-      title: "Hello World",
-      description: "Randomly created session",
-      date: new Date(futureDate).getTime(),
-      time_limit: 3600000,
-      record: true,
-      participants: [
-        {
-          id: "",
-          participant_name: "Max Mustermann",
-          muted_audio: true,
-          muted_video: true,
-          banned: false,
-          audio_filters: [],
-          video_filters: [],
-          chat: [],
-          position: {
-            x: 10,
-            y: 10,
-            z: 0
-          },
-          size: {
-            width: 250,
-            height: 250
-          }
-        }
-      ],
-      start_time: 0,
-      end_time: 0,
-      creation_time: 0,
-      notes: [],
-      log: ""
-    };
-
-    setTimeLimit(newSessionData.time_limit / 60000);
-    dispatch(initializeSession(newSessionData));
-    let dimensions = getParticipantDimensions(newSessionData.participants);
-    setParticipantDimensions(dimensions);
   };
 
   return (
@@ -274,14 +239,13 @@ function SessionForm({ onSendSessionToBackend }) {
                       disabled
                     />
                   </Box>
-                  <Box sx={{ mt: 1, mb: 3 }}>
+                  <Box sx={{ mt: 1, mb: 1 }}>
                     <FormControlLabel
                       control={<Checkbox />}
                       label="Record Session"
                       checked={sessionData.record}
                       onChange={() => handleSessionDataChange("record", !sessionData.record)}
                     />
-                    {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
                   </Box>
                 </Box>
 
@@ -310,6 +274,7 @@ function SessionForm({ onSendSessionToBackend }) {
                         handleParticipantChange={handleParticipantChange}
                         setSnackbarResponse={setSnackbarResponse}
                         handleCanvasPlacement={handleCanvasPlacement}
+                        participantDimensions={participantDimensions}
                       />
                     );
                   })}
@@ -339,10 +304,11 @@ function SessionForm({ onSendSessionToBackend }) {
             icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
           />
         </div>
-        <div>
+        <div className="pr-8">
           <DragAndDrop
             participantDimensions={participantDimensions}
             setParticipantDimensions={setParticipantDimensions}
+            asymmetricView={false}
           />
         </div>
       </div>

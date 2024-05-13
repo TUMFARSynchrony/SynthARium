@@ -1,3 +1,7 @@
+.ConnectionTestPageWrapper {
+  text-align: center;
+}
+
 .ConnectionTestPageWrapper button {
   background-color: hsl(212, 86%, 64%);
   border: 3px solid hsl(212, 86%, 64%);
@@ -9,10 +13,7 @@
   text-transform: uppercase;
   margin: 0.3rem;
   cursor: pointer;
-  transition:
-    color 0.3s,
-    background-color 0.3s,
-    border-color 0.3s;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s;
 }
 
 .ConnectionTestPageWrapper button.secondary {

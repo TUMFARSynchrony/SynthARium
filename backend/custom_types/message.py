@@ -55,6 +55,7 @@ MESSAGE_TYPES = Literal[
     "SESSION_LIST",
     "SESSION",
     "CHAT",
+    "UPDATE_READ_MESSAGE_TIME",
     "CREATE_EXPERIMENT",
     "JOIN_EXPERIMENT",
     "LEAVE_EXPERIMENT",
@@ -71,8 +72,18 @@ MESSAGE_TYPES = Literal[
     "MUTE",
     "SET_FILTERS",
     "SET_GROUP_FILTERS",
+    "GET_FILTERS_CONFIG",
+    "FILTERS_CONFIG",
+    "GET_FILTERS_DATA",
+    "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+    "FILTERS_DATA",
+    "GET_VIDEO_FILTERS",
+    "GET_AUDIO_FILTERS",
+    "ACTIVE_VIDEO_FILTERS",
+    "ACTIVE_AUDIO_FILTERS",
     "PING",
     "PONG",
+    "ADD_ICE_CANDIDATE",
 ]
 """Possible message types for custom_types.message.MessageDict.
 

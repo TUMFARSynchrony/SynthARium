@@ -5,10 +5,15 @@ import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
-import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
+import {
+  selectChatGptTab,
+  selectChatTab,
+  selectInstructionsTab
+} from "../../redux/slices/tabsSlice";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./Lobby.css";
+import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -18,6 +23,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const [participantStream, setParticipantStream] = useState(null);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -50,6 +56,7 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   useEffect(() => {
     if (participantStream && videoElement.current) {
       videoElement.current.srcObject = localStream;
+      videoElement.current.muted = true;
     }
   }, [localStream, participantStream]);
 
@@ -65,29 +72,26 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     <>
       {/* Grid takes up screen space left from the AppToolbar */}
       <div className="flex h-[calc(100vh-84px)]">
-        <div className="px-6 py-4 w-3/4 flex flex-col">
-          {participantStream ? (
-            sessionData && connectedParticipants ? (
-              <VideoCanvas
-                connectedParticipants={connectedParticipants}
-                sessionData={sessionData}
-                localStream={localStream}
-                ownParticipantId={participantIdParam}
-              />
-            ) : (
-              <video ref={videoElement} autoPlay playsInline width="100%" height="100%"></video>
-            )
-          ) : (
-            <Typography>
-              Unable to access your video. Please check that you have allowed access to your camera
-              and microphone.
-            </Typography>
-          )}
-        </div>
+        <div className="px-6 py-4 w-3/4 flex flex-col"></div>
+        {participantStream ? (
+          <video
+            ref={videoElement}
+            autoPlay
+            playsInline
+            width="50%"
+            height="auto"
+            className="mx-auto" // Center the video horizontally
+          ></video>
+        ) : (
+          <Typography>
+            Unable to access your video. Please check that you have allowed access to your camera
+            and microphone.
+          </Typography>
+        )}
         <div className="w-1/4">
           {connectionState !== ConnectionState.CONNECTED && <div>Trying to connect...</div>}
           {connectionState === ConnectionState.CONNECTED && isChatModalActive && (
-            <ChatTab
+            <ParticipantChatTab
               onChat={onChat}
               onGetSession={onGetSession}
               currentUser="participant"
@@ -98,6 +102,8 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
             <InstructionsTab />
           )}
+
+          {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
         </div>
       </div>
     </>

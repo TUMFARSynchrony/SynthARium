@@ -163,26 +163,21 @@ function SessionPreview({
                           }}
                         >
                           <Typography variant="overline">Audio Filters : </Typography>
-                          {participant.audio_filters.length === 0 &&
-                            participant.video_filters.length === 0 && (
-                              <Typography>No audio filters applied!</Typography>
-                            )}
+                          {participant.audio_filters.length === 0 && (
+                            <Typography>No audio filters applied!</Typography>
+                          )}
                           <Box>
-                            {
-                              // Displays audio filters first and then video filters -> order b/w audio and video filters dosen't matter.
-                              // But each of their own internal order should be maintained.
-                              participant.audio_filters.map((audioFilter, audioFilterIndex) => {
-                                return (
-                                  <Chip
-                                    key={audioFilterIndex}
-                                    variant="outlined"
-                                    label={audioFilter.name}
-                                    size="small"
-                                    color="secondary"
-                                  />
-                                );
-                              })
-                            }
+                            {participant.audio_filters.map((filter, filterIndex) => {
+                              return (
+                                <Chip
+                                  key={filterIndex}
+                                  variant="outlined"
+                                  label={filter.name}
+                                  size="small"
+                                  color="secondary"
+                                />
+                              );
+                            })}
                           </Box>
                         </ListItem>
                         <ListItem
@@ -193,17 +188,53 @@ function SessionPreview({
                           }}
                         >
                           <Typography variant="overline">Video Filters : </Typography>
-                          {participant.audio_filters.length === 0 &&
-                            participant.video_filters.length === 0 && (
-                              <Typography>No video filters applied!</Typography>
-                            )}
+                          {participant.video_filters.length === 0 && (
+                            <Typography>No video filters applied!</Typography>
+                          )}
                           <Box>
-                            {participant.video_filters.map((videoFilter, videoFilterindex) => {
+                            {participant.video_filters.map((flter, filterIndex) => {
                               return (
                                 <Chip
-                                  key={videoFilterindex}
+                                  key={filterIndex}
                                   variant="outlined"
-                                  label={videoFilter.name}
+                                  label={flter.name}
+                                  size="small"
+                                  color="secondary"
+                                />
+                              );
+                            })}
+                          </Box>
+                        </ListItem>
+                        <ListItem
+                          sx={{
+                            pl: 4,
+                            display: "flex",
+                            justifyContent: "space-between"
+                          }}
+                        >
+                          <Typography variant="overline">Group Filters : </Typography>
+                          {participant.audio_group_filters.length === 0 &&
+                            participant.video_group_filters.length === 0 && (
+                              <Typography>No group filters applied!</Typography>
+                            )}
+                          <Box>
+                            {participant.video_group_filters.map((filter, filterIndex) => {
+                              return (
+                                <Chip
+                                  key={filterIndex}
+                                  variant="outlined"
+                                  label={filter.name}
+                                  size="small"
+                                  color="secondary"
+                                />
+                              );
+                            })}
+                            {participant.audio_group_filters.map((filter, filterIndex) => {
+                              return (
+                                <Chip
+                                  key={filterIndex}
+                                  variant="outlined"
+                                  label={filter.name}
                                   size="small"
                                   color="secondary"
                                 />

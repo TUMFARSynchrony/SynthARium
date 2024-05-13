@@ -38,7 +38,7 @@ class GroupFilter(ABC):
         Parameters
         ----------
         config : custom_types.filter.FilterDict
-            Configuration for filter.  `config["type"]` must match the filter
+            Configuration for filter.  `config["name"]` must match the filter
             implementation.
 
         Notes
@@ -49,7 +49,7 @@ class GroupFilter(ABC):
         filters after __init__ (if they are designed to be).
         """
         self._logger = logging.getLogger(
-            f"{config['type']}-GroupFilter-P-{participant_id}"
+            f"{config['name']}-GroupFilter-P-{participant_id}"
         )
         self._config = config
         self.participant_id = participant_id
@@ -135,7 +135,7 @@ class GroupFilter(ABC):
     @staticmethod
     @abstractmethod
     def name() -> str:
-        """Provide name of the filter.
+        """Provide name of the group filter.
 
         The given name must be unique among all filters.
         The given name is used as the unique ID for communicating the active filters
@@ -145,6 +145,43 @@ class GroupFilter(ABC):
             f"{__name__} is missing it's implementation of the static abstract name()"
             " method."
         )
+
+    @staticmethod
+    @abstractmethod
+    def type() -> str:
+        """Provide the type of the group filter.
+
+        It can be either "TEST" or "SESSION"
+        "NONE" type is used for mute filters
+        This is used to build the filters_data JSON object
+        """
+        raise NotImplementedError(
+            f"{__name__} is missing it's implementation of the static abstract filter_type()"
+            " method."
+        )
+
+    @staticmethod
+    @abstractmethod
+    def channel() -> str:
+        """Provide the channel of the filter.
+
+        It can be either "video", "audio" or "both"
+        This is used to build the filters_data JSON object
+        """
+        raise NotImplementedError(
+            f"{__name__} is missing it's implementation of the static abstract channel()"
+            " method."
+        )
+
+    @staticmethod
+    def default_config() -> dict:
+        """Provide the default config for the group filter.
+
+        By default, the default config is an empty dictionary, overwrite this in the
+        group filter class to provide a custom config in the filters_data JSON object.
+        This is used to build the filters_data JSON object
+        """
+        return {}
 
     @abstractmethod
     async def process_individual_frame(

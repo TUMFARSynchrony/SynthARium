@@ -3,15 +3,18 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pyee.asyncio import AsyncIOEventEmitter
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
 
 from connection.connection_state import ConnectionState
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     ConnectionProposalDict,
+    AddIceCandidateDict,
 )
 
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
@@ -88,6 +91,20 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        """Handle an new ice candidate which was send by the client.
+
+        This is used to handle the establishment of new main connections.
+        For subconnections, use `handle_subscriber_add_ice_candidate`.
+
+        Parameters
+        ----------
+        candidate : connection.messages.rtc_ice_candidate_dict.RTCIceCandidateDict
+            New ice candidate send by the client.
+        """
+        pass
+
+    @abstractmethod
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
@@ -114,6 +131,22 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         Connection Protocol Wiki :
             Details about the connection protocol this function is part of.
             https://github.com/TUMFARSynchorny/experimental-hub/wiki/Connection-Protocol
+        """
+        pass
+
+    @abstractmethod
+    async def handle_subscriber_add_ice_candidate(
+        self, candidate: AddIceCandidateDict
+    ):
+        """Handle an new ice candidate which was send by the client.
+
+        This is used to handle the establishment of new sub connections.
+        For main connections, use `handle_add_ice_candidate`.
+
+        Parameters
+        ----------
+        candidate : connection.messages.add_ice_candidate_dict.AddIceCandidateDict
+            New ice candidate send by the client, including subconnection ID.
         """
         pass
 
@@ -214,5 +247,33 @@ class ConnectionInterface(AsyncIOEventEmitter, metaclass=ABCMeta):
         """Stop recording tracks for this connection.
 
         Both audio and video recorder will stop.
+        """
+        pass
+
+    @abstractmethod
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get Data from a specific video filter
+
+        Parameters
+        ----------
+        name: name of the filter
+            This is the unique name with which the filter can be identified
+        id : id of the filter
+            Can be either 'all' for all filters with the name
+            or specific id for just one filter
+        """
+        pass
+
+    @abstractmethod
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
+        """Get Data from a specific audio filter
+
+        Parameters
+        ----------
+        name: name of the filter
+            This is the unique name with which the filter can be identified
+        id : id of the filter
+            Can be either 'all' for all filters with the name
+            or specific id for just one filter
         """
         pass

@@ -8,7 +8,10 @@ from aiortc import (
     RTCSessionDescription,
     MediaStreamTrack,
     RTCRtpSender,
+    RTCIceCandidate,
 )
+from aiortc.sdp import candidate_from_sdp
+
 import shortuuid
 import asyncio
 import logging
@@ -18,6 +21,7 @@ from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     ConnectionProposalDict,
+    AddIceCandidateDict,
 )
 from connection.sub_connection import SubConnection
 from hub.track_handler import TrackHandler
@@ -28,9 +32,12 @@ from hub.record_handler import RecordHandler
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
+
+from aiortc.contrib.media import MediaRelay
 
 
 class Connection(ConnectionInterface):
@@ -70,6 +77,7 @@ class Connection(ConnectionInterface):
     _tasks: list[asyncio.Task]
     _audio_record_handler: RecordHandler
     _video_record_handler: RecordHandler
+    _raw_video_record_handler: RecordHandler
 
     def __init__(
         self,
@@ -119,6 +127,13 @@ class Connection(ConnectionInterface):
             self._incoming_audio, record, record_to
         )
         self._video_record_handler = RecordHandler(
+            self._incoming_video, record, record_to
+        )
+        # Since experimenter's path recording is empty, so we try to avoid adding raw so experimenter will not be recorded
+        if (record_to != ""):
+            record_to += "_raw"
+
+        self._raw_video_record_handler = RecordHandler(
             self._incoming_video, record, record_to
         )
 
@@ -232,6 +247,23 @@ class Connection(ConnectionInterface):
         self._sub_connections[subconnection_id] = sc
         return sc.proposal
 
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidate):
+        # For docstring see ConnectionInterface or hover over function declaration
+
+        # Create ice candidate object
+        if candidate["candidate"] == '':
+            return
+
+        rtc_candidate = candidate_from_sdp(
+            candidate["candidate"].split(":", 1)[1]
+        )
+        rtc_candidate.sdpMid = candidate["sdpMid"]
+        rtc_candidate.sdpMLineIndex = candidate["sdpMLineIndex"]
+        rtc_candidate.usernameFragment = \
+            candidate["usernameFragment"]
+
+        await self._main_pc.addIceCandidate(rtc_candidate)
+
     async def handle_subscriber_offer(
         self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
@@ -250,6 +282,32 @@ class Connection(ConnectionInterface):
             offer["offer"]["sdp"], offer["offer"]["type"]
         )
         return await sc.handle_offer(offer_description)
+
+    async def handle_subscriber_add_ice_candidate(
+        self, candidate: AddIceCandidateDict
+    ):
+        # For docstring see ConnectionInterface or hover over function declaration
+        subconnection_id = candidate["id"]
+        sc = self._sub_connections.get(subconnection_id)
+        if sc is None:
+            raise ErrorDictException(
+                code=0,
+                type="UNKNOWN_SUBCONNECTION_ID",
+                description=f"Unknown subconnection ID {subconnection_id}",
+            )
+
+        if candidate["candidate"]["candidate"] == '':
+            return
+
+        rtc_candidate = candidate_from_sdp(
+            candidate["candidate"]["candidate"].split(":", 1)[1]
+        )
+        rtc_candidate.sdpMid = candidate["candidate"]["sdpMid"]
+        rtc_candidate.sdpMLineIndex = candidate["candidate"]["sdpMLineIndex"]
+        rtc_candidate.usernameFragment = \
+            candidate["candidate"]["usernameFragment"]
+
+        await sc.handle_add_ice_candidate(rtc_candidate)
 
     async def stop_subconnection(self, subconnection_id: str) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
@@ -274,13 +332,13 @@ class Connection(ConnectionInterface):
     async def start_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await asyncio.gather(
-            self._video_record_handler.start(), self._audio_record_handler.start()
+            self._video_record_handler.start(), self._raw_video_record_handler.start(), self._audio_record_handler.start()
         )
 
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await asyncio.gather(
-            self._video_record_handler.stop(), self._audio_record_handler.stop()
+            self._video_record_handler.stop(), self._raw_video_record_handler.stop(), self._audio_record_handler.stop()
         )
 
     async def set_video_filters(self, filters: list[FilterDict]) -> None:
@@ -302,6 +360,13 @@ class Connection(ConnectionInterface):
     ) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._incoming_audio.set_group_filters(group_filters, ports)
+
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
+        # For docstring see ConnectionInterface or hover over function declaration
+        return await self._incoming_video.get_filters_data(id, name)
+
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
+        return await self._incoming_audio.get_filters_data(id, name)
 
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
@@ -429,9 +494,12 @@ class Connection(ConnectionInterface):
             self._audio_record_handler.add_track(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
-            task = asyncio.create_task(self._incoming_video.set_track(track))
+            # Use relay to be able to access track multiple times
+            relay = MediaRelay()
+            task = asyncio.create_task(self._incoming_video.set_track(relay.subscribe(track, False)))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._video_record_handler.add_track(self._incoming_video.subscribe())
+            self._raw_video_record_handler.add_track(relay.subscribe(track, False))
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")
