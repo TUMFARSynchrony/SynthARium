@@ -18,7 +18,6 @@ import { ActionButton } from "../../components/atoms/Button";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
-  const [userConsent, setUserConsent] = useState(false);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
   const sessionData = useAppSelector(selectCurrentSession);
@@ -55,16 +54,14 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   }, [connection]);
 
   useEffect(() => {
-    if (userConsent) {
-      setParticipantStream(localStream);
-    }
-  }, [localStream, userConsent]);
+    setParticipantStream(localStream);
+  }, [localStream]);
 
   useEffect(() => {
-    if (participantStream && userConsent && videoElement.current) {
+    if (participantStream && videoElement.current) {
       videoElement.current.srcObject = localStream;
     }
-  }, [localStream, participantStream, userConsent]);
+  }, [localStream, participantStream]);
 
   const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
@@ -78,33 +75,20 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
     <>
       <div className="flex h-[calc(100vh-84px)]">
         <div className="px-6 py-4 w-3/4 flex flex-col">
-          {userConsent ? (
-            participantStream ? (
-              sessionData && connectedParticipants ? (
-                <VideoCanvas
-                  connectedParticipants={connectedParticipants}
-                  sessionData={sessionData}
-                  localStream={localStream}
-                  ownParticipantId={participantIdParam}
-                />
-              ) : (
-                <video
-                  ref={videoElement}
-                  autoPlay
-                  playsInline
-                  width="100%"
-                  height="100%"
-                  muted={true}
-                ></video>
-              )
-            ) : (
-              <Typography>
-                Unable to access your video. Please check that you have allowed access to your
-                camera and microphone.
-              </Typography>
-            )
+          {participantStream ? (
+            <video
+              ref={videoElement}
+              autoPlay
+              playsInline
+              width="50%"
+              height="auto"
+              className="mx-auto" // Center the video horizontally
+            ></video>
           ) : (
-            <Typography>Please check if you gave your consent!</Typography>
+            <Typography>
+              Unable to access your video. Please check that you have allowed access to your camera
+              and microphone.
+            </Typography>
           )}
         </div>
         <div className="w-1/4">
