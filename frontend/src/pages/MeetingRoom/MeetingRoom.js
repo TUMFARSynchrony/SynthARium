@@ -6,9 +6,14 @@ import ConnectionState from "../../networking/ConnectionState";
 import { useAppSelector } from "../../redux/hooks";
 import { selectCurrentSession } from "../../redux/slices/sessionsListSlice";
 import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
-import { selectChatTab, selectInstructionsTab } from "../../redux/slices/tabsSlice";
+import {
+  selectChatGptTab,
+  selectChatTab,
+  selectInstructionsTab
+} from "../../redux/slices/tabsSlice";
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./MeetingRoom.css";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -19,6 +24,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const [participantStream, setParticipantStream] = useState(null);
   const isChatModalActive = useAppSelector(selectChatTab);
   const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -116,6 +122,8 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
               glassDetected={glassDetected}
             />
           )}
+
+          {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
         </div>
       </div>
     </>
