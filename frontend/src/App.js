@@ -545,6 +545,10 @@ function App() {
                         {
                           onClick: () => toggleModal(Tabs.INSTRUCTIONS),
                           icon: faClipboardCheck
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.CHATGPT),
+                          externalIcon: true
                         }
                       ]}
                     />
