@@ -13,6 +13,7 @@ import { InstructionsTab } from "../../components/molecules/InstructionsTab/Inst
 import "./Lobby.css";
 import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
+import { BACKEND } from "../../utils/constants";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { ActionButton } from "../../components/atoms/Button";
 
@@ -62,6 +63,47 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
       videoElement.current.srcObject = localStream;
     }
   }, [localStream, participantStream]);
+
+  useEffect(() => {
+    const wsUrl = `${BACKEND.replace(/^http/, "ws")}/ws`;
+    console.log(`Connecting to WebSocket at ${wsUrl}`);
+
+    console.log(`Attempting to connect to WebSocket at ${wsUrl}`);
+
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === "EXPERIMENTER_JOINED") {
+        // Handle the experimenter joined message appropriately
+        console.log("Experimenter connected");
+        window.location.reload();
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error observed:", error);
+    };
+
+    ws.onclose = (event) => {
+      console.log("WebSocket connection closed:", event.reason);
+    };
+
+    const handleUnload = () => {
+      ws.close();
+    };
+
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+      ws.close();
+    };
+  }, []);
 
   const streamChangeHandler = async () => {
     console.log("%cRemote Stream Change Handler", "color:blue");
