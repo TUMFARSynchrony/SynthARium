@@ -1,7 +1,6 @@
 """Provide the `Experiment` class."""
 from __future__ import annotations
 
-import copy
 import logging
 from typing import Any, TYPE_CHECKING
 from pyee.asyncio import AsyncIOEventEmitter
@@ -18,7 +17,6 @@ from group_filters.group_filter_aggregator import GroupFilterAggregator
 from filters.filter_dict import FilterDict
 from group_filters import group_filter_aggregator_factory
 import asyncio
-from transformers import pipeline
 from chat_filters.sentiment_analysis import SentimentAnalysisFilter
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-import logging
+
 
 from hub.exceptions import ErrorDictException
 from session.data.participant import participant_data_factory
