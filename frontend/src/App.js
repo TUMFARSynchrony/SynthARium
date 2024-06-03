@@ -629,10 +629,10 @@ function App() {
                         onClick: () => toggleModal(Tabs.CHAT),
                         icon: faComment
                       },
-                      {
-                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                        icon: faClipboardCheck
-                      },
+                      // {
+                      //   onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                      //   icon: faClipboardCheck
+                      // },
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
                         icon: faUsers

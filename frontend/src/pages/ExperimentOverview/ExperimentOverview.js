@@ -8,12 +8,10 @@ import { ExperimenterChatTab } from "../../components/molecules/ChatTab/Experime
 import {
   selectChatGptTab,
   selectChatTab,
-  selectInstructionsTab,
   selectParticipantsTab,
   selectFilterInformationTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./ExperimentOverview.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
 import { useState } from "react";
@@ -39,7 +37,7 @@ function ExperimentOverview({
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
   const isChatModalActive = useAppSelector(selectChatTab);
-  const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
+  // const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
   const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
   const isChatGptModalActive = useAppSelector(selectChatGptTab);
@@ -123,7 +121,7 @@ function ExperimentOverview({
                 onMuteParticipant={onMuteParticipant}
               />
             )}
-            {isInstructionsModalActive && <InstructionsTab />}
+            {/*{isInstructionsModalActive && <InstructionsTab />}*/}
             {isFilterInformationModalActive && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
