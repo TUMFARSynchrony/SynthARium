@@ -7,6 +7,7 @@ import useAutosizeTextArea from "../../../hooks/useAutosizeTextArea";
 import { ChatGptSpeechBubble } from "../../atoms/ChatMessage/ChatGptSpeechBubble";
 import { ChatGptMessage } from "../../../types";
 import { ChatGptModal } from "./ChatGptModal";
+import Label from "../../atoms/Label/Label";
 const initialMessage: ChatGptMessage = {
   content: "Hello, I'm ChatGPT! Ask me anything!",
   role: "assistant"
@@ -26,6 +27,18 @@ export const ChatGptTab = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   useAutosizeTextArea(textAreaRef.current, message);
 
+  async function validKey() {
+    try {
+      await openai.models.list();
+      console.log("true in validKey()");
+      return true;
+    } catch (error) {
+      console.log("false in validKey()");
+      return false;
+    }
+  }
+
+  const isGptKeyValid = validKey().then((res) => res);
   const scrollToBottom = (ref: RefObject<any>) => {
     ref.current.scrollIntoView({ behavior: "smooth" });
   };
@@ -59,6 +72,7 @@ export const ChatGptTab = () => {
 
   return (
     <div className="flex flex-col border-l-gray-200 border-l-2 h-full w-full items-center">
+      {isGptKeyValid && <Label title={"Key is invalid."} />}
       {isModalOpen && (
         <ChatGptModal
           sendMsgToChatGpt={sendMsgToChatGpt}
@@ -75,7 +89,6 @@ export const ChatGptTab = () => {
           <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} />
         </Button>
       </div>
-
       <div className="w-full flex flex-col justify-between overflow-y-auto h-full">
         <div className="p-4 overflow-y-auto">
           {messageHistory.map((message, index) => (
