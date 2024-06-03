@@ -501,15 +501,18 @@ function App() {
                       buttons={[
                         {
                           onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
+                          icon: faComment,
+                          tooltip: "Chat with participants"
                         },
                         {
                           onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
+                          icon: faClipboardCheck,
+                          tooltip: "View instructions"
                         },
                         {
                           onClick: () => toggleModal(Tabs.CHATGPT),
-                          externalIcon: true
+                          externalIcon: true,
+                          tooltip: "Chat with GPT"
                         }
                       ]}
                     />
@@ -540,15 +543,18 @@ function App() {
                       buttons={[
                         {
                           onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
+                          icon: faComment,
+                          tooltip: "Chat with participants"
                         },
                         {
                           onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
+                          icon: faClipboardCheck,
+                          tooltip: "View instructions"
                         },
                         {
                           onClick: () => toggleModal(Tabs.CHATGPT),
-                          externalIcon: true
+                          externalIcon: true,
+                          tooltip: "Chat with GPT"
                         }
                       ]}
                     />
@@ -627,23 +633,27 @@ function App() {
                     buttons={[
                       {
                         onClick: () => toggleModal(Tabs.CHAT),
-                        icon: faComment
+                        icon: faComment,
+                        tooltip: "Chat with participants"
                       },
-                      {
-                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                        icon: faClipboardCheck
-                      },
+                      // {
+                      //   onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                      //   icon: faClipboardCheck,
+                      // },
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                        icon: faUsers
+                        icon: faUsers,
+                        tooltip: "View participants"
                       },
                       {
                         onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                        icon: faClipboardList
+                        icon: faClipboardList,
+                        tooltip: "View filter information"
                       },
                       {
                         onClick: () => toggleModal(Tabs.CHATGPT),
-                        externalIcon: true
+                        externalIcon: true,
+                        tooltip: "Chat with GPT"
                       }
                     ]}
                   />
