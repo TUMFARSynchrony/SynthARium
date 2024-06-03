@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 from custom_types.chat_message import ChatMessageDict
 from custom_types.canvas_element import CanvasElementDict
+from custom_types.asymmetric_filter import AsymmetricFilterDict
 from filters import FilterDict
 from session.data.base_data import BaseData
 
@@ -38,6 +39,7 @@ class ParticipantData(BaseData):
     filters : list or filters.FilterDict
     view : list or custom_types.chat_message.CanvasElementDict
     canvas_id : str
+    asymmetric_filters : list or custom_types.asymmetric_filter.AsymmetricFilterDict
 
     Methods
     -------
@@ -122,6 +124,9 @@ class ParticipantData(BaseData):
     canvas_id: str = field(repr=False)
     """Unique id for the placement of the participant stream"""
 
+    asymmetric_filters: list[AsymmetricFilterDict] = field(repr=False)
+    """Active asymmetric filters for participant."""
+
     def __post_init__(self) -> None:
         """Add event listener to size and position."""
         super(ParticipantData, self).__post_init__()
@@ -154,6 +159,7 @@ class ParticipantData(BaseData):
             "lastMessageReadTime": self.lastMessageReadTime,
             "view": self.view,
             "canvas_id": self.canvas_id,
+            "asymmetric_filters": self.asymmetric_filters,
         }
 
     def as_summary_dict(self) -> ParticipantSummaryDict:
