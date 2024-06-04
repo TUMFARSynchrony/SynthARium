@@ -41,7 +41,6 @@ import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
-  const chatGptApiKey = process.env.REACT_APP_CHAT_GPT_API_KEY;
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
@@ -477,22 +476,13 @@ function App() {
                 <PageTemplate
                   title={"Lobby"}
                   buttonListComponent={
-                    chatGptApiKey ? (
-                      <HeaderActionArea
-                        buttons={[
-                          { onClick: () => toggleModal(Tabs.CHAT), icon: faComment },
-                          { onClick: () => toggleModal(Tabs.INSTRUCTIONS), icon: faClipboardCheck },
-                          { onClick: () => toggleModal(Tabs.CHATGPT), externalIcon: true }
-                        ]}
-                      />
-                    ) : (
-                      <HeaderActionArea
-                        buttons={[
-                          { onClick: () => toggleModal(Tabs.CHAT), icon: faComment },
-                          { onClick: () => toggleModal(Tabs.INSTRUCTIONS), icon: faClipboardCheck }
-                        ]}
-                      />
-                    )
+                    <HeaderActionArea
+                      buttons={[
+                        { onClick: () => toggleModal(Tabs.CHAT), icon: faComment },
+                        { onClick: () => toggleModal(Tabs.INSTRUCTIONS), icon: faClipboardCheck },
+                        { onClick: () => toggleModal(Tabs.CHATGPT), externalIcon: true }
+                      ]}
+                    />
                   }
                   customComponent={
                     <Lobby
@@ -516,53 +506,30 @@ function App() {
               <PageTemplate
                 title={"Experimental Hub Template"}
                 buttonListComponent={
-                  chatGptApiKey ? (
-                    <HeaderActionArea
-                      buttons={[
-                        {
-                          onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                          icon: faUsers
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                          icon: faClipboardList
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.CHATGPT),
-                          externalIcon: true
-                        }
-                      ]}
-                    />
-                  ) : (
-                    <HeaderActionArea
-                      buttons={[
-                        {
-                          onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                          icon: faUsers
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                          icon: faClipboardList
-                        }
-                      ]}
-                    />
-                  )
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => toggleModal(Tabs.CHAT),
+                        icon: faComment
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                        icon: faClipboardCheck
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.PARTICIPANTS),
+                        icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.CHATGPT),
+                        externalIcon: true
+                      }
+                    ]}
+                  />
                 }
                 customComponent={
                   <WatchingRoom
@@ -588,53 +555,30 @@ function App() {
               <PageTemplate
                 title={"Watching Room"}
                 buttonListComponent={
-                  chatGptApiKey ? (
-                    <HeaderActionArea
-                      buttons={[
-                        {
-                          onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                          icon: faUsers
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                          icon: faClipboardList
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.CHATGPT),
-                          externalIcon: true
-                        }
-                      ]}
-                    />
-                  ) : (
-                    <HeaderActionArea
-                      buttons={[
-                        {
-                          onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                          icon: faUsers
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                          icon: faClipboardList
-                        }
-                      ]}
-                    />
-                  )
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => toggleModal(Tabs.CHAT),
+                        icon: faComment
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                        icon: faClipboardCheck
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.PARTICIPANTS),
+                        icon: faUsers
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
+                        icon: faClipboardList
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.CHATGPT),
+                        externalIcon: true
+                      }
+                    ]}
+                  />
                 }
                 customComponent={
                   <WatchingRoom
