@@ -76,9 +76,9 @@ export const ChatGptTab = () => {
       {!openai.apiKey && (
         <>
           <div className="flex flex-row items-center justify-between border-b-2 border-b-gray-200 w-full py-4 px-6 gap-y-2">
-            <h3 className="text-3x1">No ChatGPT API Key detected.</h3>
+            <h3 className="text-3xl">No ChatGPT API Key detected.</h3>
           </div>
-          <div>Service disabled.</div>
+          <div className="py-4 px-6">Service disabled.</div>
         </>
       )}
       {openai.apiKey && isModalOpen && (
