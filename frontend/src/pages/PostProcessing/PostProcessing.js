@@ -9,7 +9,7 @@ import Select from "@mui/material/Select";
 import Alert from "@mui/material/Alert";
 import { useEffect, useState } from "react";
 import ConnectionState from "../../networking/ConnectionState";
-import { LinkActionButton } from "../../components/atoms/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import HeroText from "../../components/atoms/HeroText/HeroText";
 
 function PostProcessing({
@@ -104,7 +104,7 @@ function PostProcessing({
               }
             </FormControl>
           </Box>
-          <LinkActionButton
+          <ActionButton
             text="EXTRACT"
             path="/postProcessingRoom"
             variant="contained"
