@@ -255,7 +255,7 @@ class Experiment(AsyncIOEventEmitter):
                     self._logger.info(f"{filter_name} filter_namesss")
                     # Creating conditions based on the "name" field
                     if filter_name == "SENTIMENT ANALYSIS":
-                        self._logger.info(f"Performing sentiment analysis")
+                        self._logger.info("Performing sentiment analysis")
                         sentiment_score = Experiment.sentiment_classifier.apply_filter(
                             chat_message["message"]
                         )

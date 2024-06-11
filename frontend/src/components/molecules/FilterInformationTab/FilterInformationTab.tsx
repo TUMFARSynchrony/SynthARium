@@ -16,9 +16,9 @@ export const FilterInformationTab = (props: Props) => {
 
   useEffect(() => {
     for (const participant in participants) {
-      const audio_filters = participants[participant]["audio_filters"];
-      for (const audio_filter in audio_filters) {
-        if (audio_filters[audio_filter]["name"] === "SPEAKING_TIME") {
+      const video_filters = participants[participant]["video_filters"];
+      for (const video_filter in video_filters) {
+        if (video_filters[video_filter]["name"] === "PING") {
           setShowInformationTab(true);
           return;
         }
@@ -29,8 +29,8 @@ export const FilterInformationTab = (props: Props) => {
   useEffect(() => {
     function getFiltersData() {
       const filter_id = "all";
-      const filter_name = "SPEAKING_TIME";
-      const filter_channel = "audio";
+      const filter_name = "PING";
+      const filter_channel = "video";
 
       const data = {
         filter_id: filter_id,
@@ -73,14 +73,14 @@ export const FilterInformationTab = (props: Props) => {
                   Participant
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Speaking Time
+                  Ping (ms)
                 </th>
               </tr>
             </thead>
             {filtersData !== null &&
               Object.keys(filtersData).map((id) => {
                 const name = getNameById(id);
-                return filtersData[id].audio.map((filter_data) => {
+                return filtersData[id].video.map((filter_data) => {
                   return Object.keys(filter_data.data).map((key) => {
                     return (
                       <tbody className="text-base text-gray-700 text-center" key={key}>
@@ -97,7 +97,7 @@ export const FilterInformationTab = (props: Props) => {
               })}
           </table>
         ) : (
-          "Speaking time filter was not selected for this experiment."
+          "Ping filter was not selected for this experiment."
         )}
       </div>
     </div>

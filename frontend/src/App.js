@@ -7,10 +7,13 @@ import ConnectionState from "./networking/ConnectionState";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import Lobby from "./pages/Lobby/Lobby";
+import MeetingRoom from "./pages/MeetingRoom/MeetingRoom";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
-import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import ExperimentOverview from "./pages/ExperimentOverview/ExperimentOverview";
+import Consent from "./pages/Consent/Consent";
+import End from "./pages/End/End";
 import PageTemplate from "./components/templates/PageTemplate";
 import HeaderActionArea from "./components/atoms/Button/HeaderActionArea";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
@@ -50,6 +53,9 @@ function App() {
   const [errorPostProc, setPostProcessingError] = useState(null);
   const [successPostProc, setPostProcessingSuccess] = useState(null);
   let [searchParams, setSearchParams] = useSearchParams();
+  const sessionIdParam = searchParams.get("sessionId");
+  const participantIdParam = searchParams.get("participantId");
+  const experimenterPasswordParam = searchParams.get("experimenterPassword");
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsListRef = useRef();
@@ -130,11 +136,6 @@ function App() {
     const closeConnection = () => {
       connection?.stop();
     };
-
-    const sessionIdParam = searchParams.get("sessionId");
-    const participantIdParam = searchParams.get("participantId");
-    const experimenterPasswordParam = searchParams.get("experimenterPassword");
-
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
     let experimenterPassword = experimenterPasswordParam ?? "";
@@ -143,6 +144,7 @@ function App() {
     const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage =
       pathname === "/connectiontest" || pathname === "/connectionlatencytest";
+    const isConsentOrEndPage = pathname === "/consent" || pathname === "/end";
 
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
@@ -170,8 +172,12 @@ function App() {
       true
     );
 
-    setConnection(newConnection);
-    if (userType === "participant" && pathname !== "/connectionlatencytest") {
+    !isConsentOrEndPage && setConnection(newConnection);
+    if (
+      userType === "participant" &&
+      pathname !== "/connectionlatencytest" &&
+      !isConsentOrEndPage
+    ) {
       asyncStreamHelper(newConnection);
       return;
     }
@@ -301,6 +307,12 @@ function App() {
   };
 
   const handleExperimentStarted = (data) => {
+    if (window.location.pathname === "/lobby") {
+      navigate({
+        pathname: "/meetingRoom",
+        search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`
+      });
+    }
     dispatch(
       setExperimentTimes({
         action: ExperimentTimes.START_TIME,
@@ -311,6 +323,12 @@ function App() {
   };
 
   const handleExperimentEnded = (data) => {
+    if (window.location.pathname === "/meetingRoom") {
+      navigate({
+        pathname: "/end",
+        search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`
+      });
+    }
     dispatch(
       setExperimentTimes({
         action: ExperimentTimes.END_TIME,
@@ -519,6 +537,9 @@ function App() {
               />
             }
           />
+          <Route exact path="/consent" element={<Consent />} />
+          <Route exact path="/end" element={<End />} />
+          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
             path="/lobby"
@@ -546,7 +567,45 @@ function App() {
                   }
                   customComponent={
                     <Lobby
-                      connectedParticipants={connectedParticipants}
+                      localStream={localStream}
+                      connection={connection}
+                      onGetSession={onGetSession}
+                      onChat={onChat}
+                    />
+                  }
+                />
+              ) : (
+                "Loading..."
+              )
+            }
+          />
+          <Route
+            exact
+            path="/meetingRoom"
+            element={
+              connection ? (
+                <PageTemplate
+                  title={"Meeting Room"}
+                  buttonListComponent={
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => toggleModal(Tabs.CHAT),
+                          icon: faComment
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                          icon: faClipboardCheck
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.CHATGPT),
+                          externalIcon: true
+                        }
+                      ]}
+                    />
+                  }
+                  customComponent={
+                    <MeetingRoom
                       localStream={localStream}
                       connection={connection}
                       onGetSession={onGetSession}
@@ -592,7 +651,7 @@ function App() {
                   />
                 }
                 customComponent={
-                  <WatchingRoom
+                  <ExperimentOverview
                     connectedParticipants={connectedParticipants}
                     onKickBanParticipant={onKickBanParticipant}
                     onAddNote={onAddNote}
@@ -610,10 +669,10 @@ function App() {
           />
           <Route
             exact
-            path="/watchingRoom"
+            path="/experimentOverview"
             element={
               <PageTemplate
-                title={"Watching Room"}
+                title={"Experiment Overview"}
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
@@ -641,7 +700,7 @@ function App() {
                   />
                 }
                 customComponent={
-                  <WatchingRoom
+                  <ExperimentOverview
                     connectedParticipants={connectedParticipants}
                     onKickBanParticipant={onKickBanParticipant}
                     onAddNote={onAddNote}

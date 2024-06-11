@@ -76,7 +76,7 @@ class FilterSubprocessAPI(FilterAPIInterface):
             "period": period,
             "bufferLength": buffer_length
         })
-    
+
     def stop_pinging(self) -> None:
         # For docstring see FilterAPIInterface or hover over function declaration
         self._send_command("STOP_PINGING", {})

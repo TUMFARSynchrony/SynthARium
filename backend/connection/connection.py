@@ -37,6 +37,8 @@ from filter_api import FilterAPIInterface
 from custom_types.message import MessageDict, is_valid_messagedict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
+from aiortc.contrib.media import MediaRelay
+
 
 class Connection(ConnectionInterface):
     """Connection with a single client using multiple sub-connections.
@@ -134,7 +136,7 @@ class Connection(ConnectionInterface):
         self._raw_video_record_handler = RecordHandler(
             self._incoming_video, record, record_to
         )
-        
+
         self._dc = None
         self._tasks = []
 
@@ -365,7 +367,7 @@ class Connection(ConnectionInterface):
 
     async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
         return await self._incoming_audio.get_filters_data(id, name)
-    
+
     async def _handle_closed_subconnection(self, subconnection_id: str) -> None:
         """Remove a closed SubConnection from Connection."""
         self._logger.debug(f"Remove sub connection {subconnection_id}")
@@ -492,10 +494,12 @@ class Connection(ConnectionInterface):
             self._audio_record_handler.add_track(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
         elif track.kind == "video":
-            task = asyncio.create_task(self._incoming_video.set_track(track))
+            # Use relay to be able to access track multiple times
+            relay = MediaRelay()
+            task = asyncio.create_task(self._incoming_video.set_track(relay.subscribe(track, False)))
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._video_record_handler.add_track(self._incoming_video.subscribe())
-            self._raw_video_record_handler.add_track(track)
+            self._raw_video_record_handler.add_track(relay.subscribe(track, False))
             self._listen_to_track_close(self._incoming_video, sender)
         else:
             self._logger.error(f"Unknown track kind {track.kind}. Ignoring track")

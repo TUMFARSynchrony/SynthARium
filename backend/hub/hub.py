@@ -5,6 +5,8 @@ from aiortc import RTCSessionDescription
 import asyncio
 import logging
 
+from jsonpickle import json
+
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
@@ -121,6 +123,13 @@ class Hub:
             If the given `experimenter` is not part of this experiment.
         """
         self.experimenters.remove(experimenter)
+
+    async def notify_participants_experimenter_joined(self, message):
+        """Handle the event and broadcast a WebSocket message."""
+        self._logger.info("Notifying participants experimenter joined")
+        await self.server.broadcast_message(json.dumps(message))
+        self._logger.info("Notified participants")
+
 
     async def handle_offer(
         self,
@@ -298,7 +307,7 @@ class Hub:
         await self._add_current_connection(connection_id, participant)
 
         return answer, participant_data.as_summary_dict()
-    
+
     async def handle_add_ice_candidate(
         self,
         candiate: AddIceCandidateDict

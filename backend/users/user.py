@@ -423,7 +423,7 @@ or connection is not fully connected"
                 return
             self.emit("CONNECTION_OFFER", message["data"])
             return
-        
+
         if endpoint == "ADD_ICE_CANDIDATE":
             if not is_valid_add_ice_candidate_dict(message["data"]):
                 self._logger.warning("Received invalid ADD_ICE_CANDIDATE")
@@ -671,9 +671,9 @@ or connection is not fully connected"
 
         Parameters
         ----------
-        period : int, optional
+        period : int
             The period at which to send ping messages, in milliseconds.
-        buffer_length : int, optional
+        buffer_length : int
             The length of the ping buffer, in seconds.
         """
         if self._pinging:
