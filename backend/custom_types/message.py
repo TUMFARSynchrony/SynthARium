@@ -85,9 +85,8 @@ MESSAGE_TYPES = Literal[
     "PONG",
     "POST_PROCESSING_VIDEO",
     "GET_RECORDING_LIST",
-    "CHECK_POST_PROCESSING"
-    "ADD_ICE_CANDIDATE",
-
+    "CHECK_POST_PROCESSING",
+    "ADD_ICE_CANDIDATE"
 ]
 """Possible message types for custom_types.message.MessageDict.
 
