@@ -14,8 +14,6 @@ import "./Lobby.css";
 import { ParticipantChatTab } from "../../components/molecules/ChatTab/ParticipantChatTab";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 import { BACKEND } from "../../utils/constants";
-import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
-import { ActionButton } from "../../components/atoms/Button";
 
 function Lobby({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -29,7 +27,6 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false);
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
@@ -145,19 +142,11 @@ function Lobby({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab onInstructionsCheckChange={setAreInstructionsChecked} />
+            <InstructionsTab />
           )}
 
           {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
         </div>
-      </div>
-      <div className="self-center h-fit">
-        <a
-          href={`${window.location.origin}/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`}
-          className={!areInstructionsChecked ? "pointer-events-none" : ""}
-        >
-          <ActionButton text="Continue" variant="contained" disabled={!areInstructionsChecked} />
-        </a>
       </div>
     </>
   );
