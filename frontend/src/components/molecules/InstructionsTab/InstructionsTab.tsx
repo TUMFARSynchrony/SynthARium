@@ -4,7 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ActionButton } from "../../atoms/Button";
 
-export const InstructionsTab = () => {
+interface InstructionsTabProps {
+  displayMode?: boolean;
+}
+
+export const InstructionsTab = ({ displayMode = false }: InstructionsTabProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -30,30 +34,38 @@ export const InstructionsTab = () => {
     <div className="flex flex-col p-4 border-l-gray-100 border-l-2 h-full w-full items-center gap-y-5">
       <div className="text-3xl">Instructions</div>
       <div className="w-full flex flex-col h-full items-start space-y-6">
-        {instructionsList.map((instruction, index) => (
-          <FormControlLabel
-            key={index}
-            control={
-              <Checkbox
-                checked={checkedInstructions[index]}
-                onChange={() => handleCheckboxChange(index)}
-              />
-            }
-            label={instruction}
+        {instructionsList.map((instruction, index) =>
+          displayMode ? (
+            <li className="text-l" key={index}>
+              {instruction}
+            </li>
+          ) : (
+            <FormControlLabel
+              key={index}
+              control={
+                <Checkbox
+                  checked={checkedInstructions[index]}
+                  onChange={() => handleCheckboxChange(index)}
+                />
+              }
+              label={instruction}
+            />
+          )
+        )}
+      </div>
+      {!displayMode && (
+        <div className="self-center h-fit">
+          <ActionButton
+            className={!areInstructionsChecked ? "pointer-events-none" : ""}
+            text="Continue"
+            variant="contained"
+            disabled={!areInstructionsChecked}
+            onClick={() => {
+              window.location.href = `${window.location.origin}/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`;
+            }}
           />
-        ))}
-      </div>
-      <div className="self-center h-fit">
-        <ActionButton
-          className={!areInstructionsChecked ? "pointer-events-none" : ""}
-          text="Continue"
-          variant="contained"
-          disabled={!areInstructionsChecked}
-          onClick={() => {
-            window.location.href = `${window.location.origin}/meetingRoom?participantId=${participantIdParam}&sessionId=${sessionIdParam}`;
-          }}
-        />
-      </div>
+        </div>
+      )}
     </div>
   );
 };
