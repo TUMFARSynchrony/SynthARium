@@ -79,7 +79,18 @@ export const ChatGptTab = () => {
           <div className="flex flex-row items-center justify-between border-b-2 border-b-gray-200 w-full py-4 px-6 gap-y-2">
             <h3 className="text-3xl">No ChatGPT API Key detected.</h3>
           </div>
-          <div className="py-4 px-6">Service disabled.</div>
+          <div className="py-4 px-6">
+            Service disabled. For more information on how to add your ChatGPT key and the ChatGPT
+            features, please read{" "}
+            <a
+              className="text-blue-600"
+              href="https://github.com/TUMFARSynchrony/experimental-hub/wiki/ChatGPT"
+              target="blank"
+            >
+              this entry on our Wiki
+            </a>
+            .
+          </div>
         </>
       )}
       {openai.apiKey && openai.apiKey != "ADD_YOUR_API_KEY_HERE" && isModalOpen && (
