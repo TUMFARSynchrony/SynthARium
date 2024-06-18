@@ -1,4 +1,4 @@
-import { RefObject, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import OpenAI from "openai";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons";
@@ -33,6 +33,7 @@ export const ChatGptTab = () => {
   const scrollToBottom = (ref: RefObject<any>) => {
     ref.current.scrollIntoView({ behavior: "smooth" });
   };
+
   const sendMsgToChatGpt = async (message: string, refElement?: RefObject<any>) => {
     setMessageHistory((prevHistory) => [...prevHistory, { role: "user", content: message }]);
     setMessage("");
@@ -73,7 +74,7 @@ export const ChatGptTab = () => {
 
   return (
     <div className="flex flex-col border-l-gray-200 border-l-2 h-full w-full items-center">
-      {!openai.apiKey && (
+      {(!openai.apiKey || openai.apiKey === "ADD_YOUR_API_KEY_HERE") && (
         <>
           <div className="flex flex-row items-center justify-between border-b-2 border-b-gray-200 w-full py-4 px-6 gap-y-2">
             <h3 className="text-3xl">No ChatGPT API Key detected.</h3>
@@ -81,7 +82,7 @@ export const ChatGptTab = () => {
           <div className="py-4 px-6">Service disabled.</div>
         </>
       )}
-      {openai.apiKey && isModalOpen && (
+      {openai.apiKey && openai.apiKey != "ADD_YOUR_API_KEY_HERE" && isModalOpen && (
         <ChatGptModal
           sendMsgToChatGpt={sendMsgToChatGpt}
           messageHistory={messageHistory}
@@ -91,7 +92,7 @@ export const ChatGptTab = () => {
           onOpenChange={handleModal}
         />
       )}
-      {openai.apiKey && (
+      {openai.apiKey && openai.apiKey != "ADD_YOUR_API_KEY_HERE" && (
         <>
           <div className="flex flex-row items-center justify-between border-b-2 border-b-gray-200 w-full py-4 px-6 gap-y-2">
             <h3 className="text-3xl">ChatGPT</h3>
