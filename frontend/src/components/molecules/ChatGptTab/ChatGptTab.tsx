@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useRef, useState } from "react";
 import OpenAI from "openai";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons";

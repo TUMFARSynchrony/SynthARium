@@ -39,6 +39,7 @@ import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
+import OpenAI from "openai";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -71,6 +72,32 @@ function App() {
 
     setConnectionState(state);
   };
+
+  // ChatGPT validity check
+  const gptKeyValid = useRef();
+  useEffect(() => {
+    const openai = new OpenAI({
+      apiKey: process.env.REACT_APP_CHAT_GPT_API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+
+    async function validKey() {
+      try {
+        await openai.models.list();
+        console.log("true in validKey()");
+        return true;
+      } catch (error) {
+        console.log("false in validKey()");
+        return false;
+      }
+    }
+
+    validKey().then((res) => {
+      gptKeyValid.current = res;
+      console.log(gptKeyValid);
+    });
+    console.log(gptKeyValid);
+  }, []);
 
   // Register Connection event handlers
   useEffect(() => {
@@ -476,13 +503,22 @@ function App() {
                 <PageTemplate
                   title={"Lobby"}
                   buttonListComponent={
-                    <HeaderActionArea
-                      buttons={[
-                        { onClick: () => toggleModal(Tabs.CHAT), icon: faComment },
-                        { onClick: () => toggleModal(Tabs.INSTRUCTIONS), icon: faClipboardCheck },
-                        { onClick: () => toggleModal(Tabs.CHATGPT), externalIcon: true }
-                      ]}
-                    />
+                    gptKeyValid.current ? (
+                      <HeaderActionArea
+                        buttons={[
+                          { onClick: () => toggleModal(Tabs.CHAT), icon: faComment },
+                          { onClick: () => toggleModal(Tabs.INSTRUCTIONS), icon: faClipboardCheck },
+                          { onClick: () => toggleModal(Tabs.CHATGPT), externalIcon: true }
+                        ]}
+                      />
+                    ) : (
+                      <HeaderActionArea
+                        buttons={[
+                          { onClick: () => toggleModal(Tabs.CHAT), icon: faComment },
+                          { onClick: () => toggleModal(Tabs.INSTRUCTIONS), icon: faClipboardCheck }
+                        ]}
+                      />
+                    )
                   }
                   customComponent={
                     <Lobby
