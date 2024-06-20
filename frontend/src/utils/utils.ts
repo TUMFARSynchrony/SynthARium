@@ -1,5 +1,5 @@
-import * as moment from "moment";
 import { Box, Group, Participant, Session, Shape, CanvasElement } from "../types";
+import moment from "moment";
 
 export const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
