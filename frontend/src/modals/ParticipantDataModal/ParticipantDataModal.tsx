@@ -42,6 +42,11 @@ const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: Chat
   return filter;
 });
 
+// Loading filters data before the component renders, because the Select component needs value.
+const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
+  return filter;
+});
+
 // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
 const defaultFilter = {
   id: "",
@@ -224,8 +229,7 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = async (filter: Filter, isGroupFilter: boolean) => {
-    console.log(filter, isGroupFilter);
+  const handleFilterSelect = async (filter: Filter) => {
     setSelectedFilter(filter);
     const newParticipantData = structuredClone(participantCopy);
     const newFilter = structuredClone(filter);
@@ -236,39 +240,40 @@ function ParticipantDataModal({
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
         if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
           const otherFilter = structuredClone(
-            filtersData.find(
-              (filteredFilter) =>
-                filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
-            )
+            testData
+              .filter(
+                (filteredFilter) =>
+                  filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
+              )
+              .pop()
           );
           const id = uuid();
           otherFilter.id = id;
           newFilter["config"][key]["value"] = id;
-          // add bidirectional mapping of ids to required filters map; important for deleting filters
-          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id).set(newFilter.id, id)));
+          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
-            otherFilter.groupFilter
-              ? newParticipantData.video_group_filters.push(otherFilter)
-              : newParticipantData.video_filters.push(otherFilter);
+            newParticipantData.video_filters.push(otherFilter);
           }
           if (otherFilter.channel === "audio" || otherFilter.channel === "both") {
-            otherFilter.groupFilter
-              ? newParticipantData.audio_group_filters.push(otherFilter)
-              : newParticipantData.audio_filters.push(otherFilter);
+            newParticipantData.audio_filters.push(otherFilter);
           }
         }
       }
     }
 
-    if (newFilter.channel === "video" || newFilter.channel === "both") {
-      isGroupFilter
-        ? newParticipantData.video_group_filters.push(newFilter)
-        : newParticipantData.video_filters.push(newFilter);
+    if (
+      testData
+        .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
+        .includes(filter.id)
+    ) {
+      newParticipantData.video_filters.push(newFilter);
     }
-    if (newFilter.channel === "audio" || newFilter.channel === "both") {
-      isGroupFilter
-        ? newParticipantData.audio_group_filters.push(newFilter)
-        : newParticipantData.audio_filters.push(newFilter);
+    if (
+      testData
+        .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
+        .includes(filter.id)
+    ) {
+      newParticipantData.audio_filters.push(newFilter);
     }
     setParticipantCopy(newParticipantData);
   };
@@ -307,64 +312,45 @@ function ParticipantDataModal({
         filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
     );
 
-    newParticipantData.video_group_filters = newParticipantData.video_group_filters.filter(
-      (filteredFilter: Filter) =>
-        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
-    );
-
-    newParticipantData.audio_group_filters = newParticipantData.audio_group_filters.filter(
-      (filteredFilter: Filter) =>
-        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
-    );
-
     return newParticipantData;
   };
 
-  /**
-   * This function deletes all required filters.
-   * @param filter - The filter to be deleted.
-   * @param newParticipantData - The participant data to be updated.
-   * @param isGroupFilter - A boolean value to check if the filter is a group filter.
-   * @returns The updated participant data.
-   * @remarks
-   * This function is called when a filter is deleted.
-   * If a filter is required for another filter, then both the filters are deleted.
-   * If a filter requires another filter, then both the filters are deleted.
-   * */
   const deleteAllRequiredFilters = (filter: Filter, newParticipantData: Participant) => {
-    // if filter is required for another filter or requires another filter, removes current filter and other filter
+    // if filter is required for another filter, removes current filter and other filter
     if (requiredFilters.has(filter.id)) {
       const otherFilterId = requiredFilters.get(filter.id);
       requiredFilters.delete(filter.id);
-      requiredFilters.delete(otherFilterId);
       deleteRequiredFiltersInEachFilterArray(filter.id, otherFilterId, newParticipantData);
+    }
+
+    // if filter requires another filter, removes current filter and other filter
+    for (const key in filter["config"]) {
+      if (Array.isArray(filter["config"][key]["defaultValue"])) {
+        if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
+          const otherFilterId = (filter["config"][key] as FilterConfigArray)["value"];
+
+          if (requiredFilters.has(otherFilterId)) {
+            requiredFilters.delete(otherFilterId);
+          }
+
+          deleteRequiredFiltersInEachFilterArray(filter.id, otherFilterId, newParticipantData);
+        }
+      }
     }
 
     return newParticipantData;
   };
 
-  const handleDeleteVideoFilter = (
-    videoFilter: Filter,
-    filterCopyIndex: number,
-    isGroupFilter: boolean
-  ) => {
+  const handleDeleteVideoFilter = (videoFilter: Filter, filterCopyIndex: number) => {
     const newParticipantData = structuredClone(participantCopy);
-    isGroupFilter
-      ? newParticipantData.video_group_filters.splice(filterCopyIndex, 1)
-      : newParticipantData.video_filters.splice(filterCopyIndex, 1);
+    newParticipantData.video_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(videoFilter, newParticipantData));
   };
 
-  const handleDeleteAudioFilter = (
-    audioFilter: Filter,
-    filterCopyIndex: number,
-    isGroupFilter: boolean
-  ) => {
+  const handleDeleteAudioFilter = (audioFilter: Filter, filterCopyIndex: number) => {
     const newParticipantData = structuredClone(participantCopy);
-    isGroupFilter
-      ? newParticipantData.audio_group_filters.splice(filterCopyIndex, 1)
-      : newParticipantData.audio_filters.splice(filterCopyIndex, 1);
+    newParticipantData.audio_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(audioFilter, newParticipantData));
   };
@@ -496,9 +482,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={individualFilter.id}
                           value={individualFilter.name}
-                          onClick={() =>
-                            handleFilterSelect(individualFilter, individualFilter.groupFilter)
-                          }
+                          onClick={() => handleFilterSelect(individualFilter)}
                         >
                           {individualFilter.name}
                         </MenuItem>
@@ -512,7 +496,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={groupFilter.id}
                           value={groupFilter.name}
-                          onClick={() => handleFilterSelect(groupFilter, groupFilter.groupFilter)}
+                          onClick={() => handleFilterSelect(groupFilter)}
                         >
                           {groupFilter.name}
                         </MenuItem>
@@ -582,11 +566,7 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteAudioFilter(
-                              audioFilter,
-                              audioFilterIndex,
-                              audioFilter.groupFilter
-                            );
+                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
                           }}
                         />
                       </Box>
@@ -615,11 +595,7 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteAudioFilter(
-                                audioFilter,
-                                audioFilterIndex,
-                                audioFilter.groupFilter
-                              );
+                              handleDeleteAudioFilter(audioFilter, audioFilterIndex);
                             }}
                           />
                         </Box>
@@ -738,11 +714,7 @@ function ParticipantDataModal({
                             size="medium"
                             color="secondary"
                             onDelete={() => {
-                              handleDeleteVideoFilter(
-                                videoFilter,
-                                videoFilterIndex,
-                                videoFilter.groupFilter
-                              );
+                              handleDeleteVideoFilter(videoFilter, videoFilterIndex);
                             }}
                           />
                         </Box>
@@ -862,11 +834,7 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteAudioFilter(
-                              audioFilter,
-                              audioFilterIndex,
-                              audioFilter.groupFilter
-                            );
+                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
                           }}
                         />
                       </Box>
@@ -982,11 +950,7 @@ function ParticipantDataModal({
                           size="medium"
                           color="secondary"
                           onDelete={() => {
-                            handleDeleteVideoFilter(
-                              videoFilter,
-                              videoFilterIndex,
-                              videoFilter.groupFilter
-                            );
+                            handleDeleteVideoFilter(videoFilter, videoFilterIndex);
                           }}
                         />
                       </Box>
