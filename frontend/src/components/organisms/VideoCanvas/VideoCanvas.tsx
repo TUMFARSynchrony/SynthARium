@@ -36,7 +36,7 @@ function VideoCanvas({ connectedParticipants, sessionData, ownParticipantId, loc
         {/* Render the video for the participant themselves */}
         {ownParticipantId ? (
           <Video
-            key="0"
+            key={ownParticipantId}
             src={localStream}
             participantData={getParticipantById(ownParticipantId, sessionData)}
             title="You"
@@ -49,10 +49,10 @@ function VideoCanvas({ connectedParticipants, sessionData, ownParticipantId, loc
             typeof peer.summary === "string"
               ? getParticipantById(peer.summary, sessionData)
               : peer.summary;
-
+          const uniqueKey = peer.stream.id;
           return (
             <Video
-              key={i}
+              key={uniqueKey}
               src={peer.stream}
               participantData={participantData}
               title={getVideoTitle(peer, i, ownParticipantId, sessionData)}
