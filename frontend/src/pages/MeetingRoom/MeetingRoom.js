@@ -124,7 +124,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab />
+            <InstructionsTab displayMode />
           )}
 
           {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
