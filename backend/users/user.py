@@ -89,6 +89,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
+    _local_stream: bool
     _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     _ping_buffer: deque  # buffer of n last ping times
@@ -99,7 +100,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     __lock: asyncio.Lock
 
     def __init__(
-        self, user_id: str, muted_video: bool = False, muted_audio: bool = False
+        self, user_id: str, muted_video: bool = False, muted_audio: bool = False, local_stream: bool = False
     ) -> None:
         """Instantiate new User base class.
 
@@ -120,6 +121,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._experiment = None
         self._muted_video = muted_video
         self._muted_audio = muted_audio
+        self._local_stream = local_stream
         self._handlers = {}
         self._ping_buffer = deque(maxlen=100)
         self._pinging = False
@@ -139,6 +141,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     def muted_audio(self) -> bool:
         """bool indicating if the users audio is muted."""
         return self._muted_audio
+
+    @property
+    def local_stream(self) -> bool:
+        """bool indicating if the users video is using local stream."""
+        return self._local_stream
 
     @property
     def recorded(self) -> bool:

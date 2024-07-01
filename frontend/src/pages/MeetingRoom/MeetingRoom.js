@@ -14,6 +14,7 @@ import {
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./MeetingRoom.css";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
+import { getParticipantById } from "../../utils/utils";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -65,8 +66,15 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   }, [connection]);
 
   useEffect(() => {
-    setParticipantStream(localStream);
-  }, [localStream]);
+    if (sessionData) {
+      const participant = getParticipantById(participantIdParam, sessionData);
+      if (participant.local_stream) {
+        setParticipantStream(localStream);
+      } else {
+        setParticipantStream(connection.remoteStream);
+      }
+    }
+  }, [localStream, sessionData]);
 
   useEffect(() => {
     if (participantStream && videoElement.current) {
@@ -92,7 +100,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
-                localStream={localStream}
+                localStream={participantStream}
                 ownParticipantId={participantIdParam}
               />
             ) : (
