@@ -29,7 +29,6 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false); // State to track checkbox status
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
@@ -125,10 +124,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab
-              onInstructionsCheckChange={setAreInstructionsChecked}
-              glassDetected={glassDetected}
-            />
+            <InstructionsTab />
           )}
 
           {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}
