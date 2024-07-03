@@ -589,7 +589,7 @@ or connection is not fully connected"
                 await self._connection.set_audio_filters(filters)
 
     async def set_video_group_filters(
-        self, group_filters: list[FilterDict], ports: list[int]
+        self, group_filters: list[FilterDict], ports: list[tuple[int, int]]
     ) -> None:
         if self._connection is not None:
             await self._connection.set_video_group_filters(group_filters, ports)
@@ -606,7 +606,7 @@ or connection is not fully connected"
                 await self._connection.set_video_group_filters(group_filters, ports)
 
     async def set_audio_group_filters(
-        self, group_filters: list[FilterDict], ports: list[int]
+        self, group_filters: list[FilterDict], ports: list[tuple[int, int]]
     ) -> None:
         if self._connection is not None:
             await self._connection.set_audio_group_filters(group_filters, ports)
@@ -713,7 +713,7 @@ or connection is not fully connected"
             Ping period in milliseconds.
         """
         while True:
-            await asyncio.sleep(period/1000)
+            await asyncio.sleep(period / 1000)
             ping = PingDict(sent=timestamp(), data="")
             await self.send(MessageDict(type="PING", data=ping))
 
