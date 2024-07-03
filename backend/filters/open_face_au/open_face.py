@@ -38,7 +38,6 @@ class OpenFace:
                 stderr=subprocess.PIPE,
                 env=env,
             )
-            
         except Exception as e:
             print(f"OpenFace Error: {e}")
 

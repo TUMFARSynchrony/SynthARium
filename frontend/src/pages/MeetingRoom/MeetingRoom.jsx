@@ -14,6 +14,7 @@ import {
 import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
 import "./MeetingRoom.css";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
+import { getParticipantById } from "../../utils/utils";
 
 function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const videoElement = useRef(null);
@@ -28,7 +29,6 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
-  const [areInstructionsChecked, setAreInstructionsChecked] = useState(false); // State to track checkbox status
 
   useEffect(() => {
     if (connection && connectionState === ConnectionState.CONNECTED) {
@@ -65,8 +65,15 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
   }, [connection]);
 
   useEffect(() => {
-    setParticipantStream(localStream);
-  }, [localStream]);
+    if (sessionData) {
+      const participant = getParticipantById(participantIdParam, sessionData);
+      if (participant.local_stream) {
+        setParticipantStream(localStream);
+      } else {
+        setParticipantStream(connection.remoteStream);
+      }
+    }
+  }, [localStream, sessionData]);
 
   useEffect(() => {
     if (participantStream && videoElement.current) {
@@ -92,7 +99,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
                 sessionData={sessionData}
-                localStream={localStream}
+                localStream={participantStream}
                 ownParticipantId={participantIdParam}
               />
             ) : (
@@ -117,10 +124,7 @@ function MeetingRoom({ localStream, connection, onGetSession, onChat }) {
           )}
 
           {connectionState === ConnectionState.CONNECTED && isInstructionsModalActive && (
-            <InstructionsTab
-              onInstructionsCheckChange={setAreInstructionsChecked}
-              glassDetected={glassDetected}
-            />
+            <InstructionsTab displayMode />
           )}
 
           {connectionState === ConnectionState.CONNECTED && isChatGptModalActive && <ChatGptTab />}

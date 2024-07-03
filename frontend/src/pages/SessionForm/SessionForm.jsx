@@ -39,6 +39,8 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
   const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
+  const [title, setTitle] = useState(sessionData.title);
+  const [description, setDescription] = useState(sessionData.description);
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
   const [xAxis, setXAxis] = useState(0);
   const [yAxis, setYAxis] = useState(0);
@@ -163,6 +165,16 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     dispatch(changeValue({ objKey: objKey, objValue: newObj }));
   };
 
+  const handleSessionTitleChange = (payload) => {
+    setTitle(payload);
+    dispatch(changeValue({ objKey: "title", objValue: payload }));
+  };
+
+  const handleSessionDescriptionChange = (payload) => {
+    setDescription(payload);
+    dispatch(changeValue({ objKey: "description", objValue: payload }));
+  };
+
   const onShowSessionFormModal = () => {
     setShowSessionDataForm(!showSessionDataForm);
   };
@@ -208,19 +220,17 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
                     <TextField
                       label="Title"
-                      value={sessionData.title}
+                      value={title}
                       size="small"
                       required
-                      onChange={(event) => handleSessionDataChange("title", event.target.value)}
+                      onChange={(event) => handleSessionTitleChange(event.target.value)}
                     />
                     <TextField
                       label="Description"
-                      value={sessionData.description}
+                      value={description}
                       size="small"
                       required
-                      onChange={(event) =>
-                        handleSessionDataChange("description", event.target.value)
-                      }
+                      onChange={(event) => handleSessionDescriptionChange(event.target.value)}
                     />
                   </Box>
                   <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>

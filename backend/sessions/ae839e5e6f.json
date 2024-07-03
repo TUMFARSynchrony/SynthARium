@@ -26,6 +26,7 @@
       },
       "muted_video": false,
       "muted_audio": false,
+      "local_stream": false,
       "position": {
         "x": 0,
         "y": 10,
@@ -87,6 +88,7 @@
       },
       "muted_video": false,
       "muted_audio": true,
+      "local_stream": false,
       "position": {
         "x": 0,
         "y": 150,
