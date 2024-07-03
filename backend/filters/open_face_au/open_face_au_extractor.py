@@ -51,8 +51,8 @@ class OpenFaceAUExtractor:
         # If ROI is sent from the OpenFace, only send that region
         if roi is not None and roi["width"] > 2:
             ndarray = ndarray[
-                roi["y"] : (roi["y"] + roi["height"]),
-                roi["x"] : (roi["x"] + roi["width"]),
+                roi["y"]: (roi["y"] + roi["height"]),
+                roi["x"]: (roi["x"] + roi["width"]),
             ]
         port_msg = f"Port: {self.__openface_port}"
 
