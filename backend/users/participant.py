@@ -79,7 +79,7 @@ class Participant(User):
             WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
         super(Participant, self).__init__(
-            participant_id, participant_data.muted_video, participant_data.muted_audio
+            participant_id, participant_data.muted_video, participant_data.muted_audio, participant_data.local_stream
         )
         self._logger = logging.getLogger(f"Participant-{participant_id}")
         self._participant_data = participant_data
@@ -263,13 +263,6 @@ class Participant(User):
                 code=400,
                 type="INVALID_DATATYPE",
                 description="Message data is not a valid ChatMessage.",
-            )
-
-        if data["target"] != "experimenter":
-            raise ErrorDictException(
-                code=403,
-                type="INVALID_REQUEST",
-                description='Participants can only chat with "experimenter".',
             )
 
         if data["author"] != self.id:

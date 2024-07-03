@@ -88,7 +88,7 @@ class ConnectionRunner:
         self._running = True
         filter_api = FilterSubprocessAPI(
             self._send_command,
-            self._send_command_wait_for_response    
+            self._send_command_wait_for_response
         )
         answer, self._connection = await connection_factory(
             offer,
@@ -171,6 +171,10 @@ class ConnectionRunner:
                     self._send_command("CONNECTION_ANSWER", e.error_message, command_nr)
                     return
                 self._send_command("CONNECTION_ANSWER", answer, command_nr)
+            case "ADD_ICE_CANDIDATE":
+                await self._connection.handle_add_ice_candidate(data)
+            case "ADD_SUBSCRIBER_ICE_CANDIDATE":
+                await self._connection.handle_subscriber_add_ice_candidate(data)
             case "STOP_SUBCONNECTION":
                 await self._connection.stop_subconnection(data)
             case "SET_MUTED":

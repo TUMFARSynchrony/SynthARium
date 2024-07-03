@@ -1,25 +1,25 @@
-import { ActionButton, LinkActionButton, LinkButton } from "../../components/atoms/Button";
+import { ActionButton } from "../../components/atoms/Button";
 import VideoCanvas from "../../components/organisms/VideoCanvas/VideoCanvas";
 import { useAppSelector } from "../../redux/hooks";
 import { selectOngoingExperiment } from "../../redux/slices/ongoingExperimentSlice";
 import { selectSessions } from "../../redux/slices/sessionsListSlice";
 import { getSessionById } from "../../utils/utils";
-import { ChatTab } from "../../components/molecules/ChatTab/ChatTab";
+import { ExperimenterChatTab } from "../../components/molecules/ChatTab/ExperimenterChatTab";
 import {
+  selectChatGptTab,
   selectChatTab,
-  selectInstructionsTab,
   selectParticipantsTab,
   selectFilterInformationTab
 } from "../../redux/slices/tabsSlice";
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
-import { InstructionsTab } from "../../components/molecules/InstructionsTab/InstructionsTab";
-import "./WatchingRoom.css";
+import "./ExperimentOverview.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 import { FilterInformationTab } from "../../components/molecules/FilterInformationTab/FilterInformationTab";
+import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
 
-function WatchingRoom({
+function ExperimentOverview({
   connectedParticipants,
   onKickBanParticipant,
   onChat,
@@ -28,7 +28,8 @@ function WatchingRoom({
   onMuteParticipant,
   onStartExperiment,
   onEndExperiment,
-  onGetFiltersData
+  onGetFiltersData,
+  onUpdateMessageReadTime
 }) {
   const [startVerificationModal, setStartVerificationModal] = useState(false);
   const [endVerificationModal, setEndVerificationModal] = useState(false);
@@ -36,9 +37,10 @@ function WatchingRoom({
   const sessionsList = useAppSelector(selectSessions);
   const sessionData = getSessionById(ongoingExperiment.sessionId, sessionsList);
   const isChatModalActive = useAppSelector(selectChatTab);
-  const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
+  // const isInstructionsModalActive = useAppSelector(selectInstructionsTab);
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
   const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
+  const isChatGptModalActive = useAppSelector(selectChatGptTab);
 
   return (
     <div className="h-[calc(100vh-84px)] w-full">
@@ -57,7 +59,7 @@ function WatchingRoom({
               Filters applied on all participants
             </div>
             <div className="flex flex-row justify-center gap-x-4 pt-5">
-              <LinkActionButton
+              <ActionButton
                 text="LEAVE EXPERIMENT"
                 variant="outlined"
                 path="/"
@@ -104,11 +106,12 @@ function WatchingRoom({
           </div>
           <div className="w-1/4">
             {isChatModalActive && (
-              <ChatTab
+              <ExperimenterChatTab
                 onChat={onChat}
                 onLeaveExperiment={onLeaveExperiment}
                 onGetSession={onGetSession}
                 currentUser={"experimenter"}
+                onUpdateMessageReadTime={onUpdateMessageReadTime}
               />
             )}
             {isParticipantsModalActive && (
@@ -118,23 +121,24 @@ function WatchingRoom({
                 onMuteParticipant={onMuteParticipant}
               />
             )}
-            {isInstructionsModalActive && <InstructionsTab />}
+            {/*{isInstructionsModalActive && <InstructionsTab />}*/}
             {isFilterInformationModalActive && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
                 participants={sessionData["participants"]}
               />
             )}
+            {isChatGptModalActive && <ChatGptTab />}
           </div>
         </div>
       ) : (
         <div className="noExperimentOngoing">
           <h2>You need to start/join an experiment first.</h2>
-          <LinkButton text="Go to Session Overview" path="/" variant="contained" size="large" />
+          <ActionButton text="Go to Session Overview" path="/" variant="contained" size="large" />
         </div>
       )}
     </div>
   );
 }
 
-export default WatchingRoom;
+export default ExperimentOverview;

@@ -14,11 +14,15 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from typing import Callable, Any, Coroutine
 from pyee.asyncio import AsyncIOEventEmitter
-from collections import deque
-
-from connection.messages import ConnectionOfferDict, is_valid_connection_offer_dict
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
+from custom_types.success import SuccessDict
 from custom_types.ping import PongDict, PingDict
 from custom_types.error import ErrorDict
+from connection.messages import (
+    ConnectionOfferDict, is_valid_connection_offer_dict,
+    AddIceCandidateDict, is_valid_add_ice_candidate_dict
+)
+from collections import deque
 from filters import FilterDict
 from filters.filters_data_dict import FiltersDataDict
 from custom_types.message import MessageDict
@@ -85,6 +89,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     _logger: logging.Logger
     _muted_video: bool
     _muted_audio: bool
+    _local_stream: bool
     _connection: ConnectionInterface | None
     _handlers: dict[str, list[Callable[[Any], Coroutine[Any, Any, MessageDict | None]]]]
     _ping_buffer: deque  # buffer of n last ping times
@@ -95,7 +100,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     __lock: asyncio.Lock
 
     def __init__(
-        self, user_id: str, muted_video: bool = False, muted_audio: bool = False
+        self, user_id: str, muted_video: bool = False, muted_audio: bool = False, local_stream: bool = False
     ) -> None:
         """Instantiate new User base class.
 
@@ -116,6 +121,7 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
         self._experiment = None
         self._muted_video = muted_video
         self._muted_audio = muted_audio
+        self._local_stream = local_stream
         self._handlers = {}
         self._ping_buffer = deque(maxlen=100)
         self._pinging = False
@@ -135,6 +141,11 @@ class User(AsyncIOEventEmitter, metaclass=ABCMeta):
     def muted_audio(self) -> bool:
         """bool indicating if the users audio is muted."""
         return self._muted_audio
+
+    @property
+    def local_stream(self) -> bool:
+        """bool indicating if the users video is using local stream."""
+        return self._local_stream
 
     @property
     def recorded(self) -> bool:
@@ -309,10 +320,33 @@ or connection is not fully connected"
                 msg = MessageDict(type="CONNECTION_ANSWER", data=answer)
                 await user.send(msg)
 
+        @user.on("ADD_ICE_CANDIDATE")
+        async def _handle_add_ice_candidate(candidate: AddIceCandidateDict):
+            if self._connection is None:
+                self._logger.error("Called _handle_add_ice_candidate with connection == None")
+                return
+
+            if candidate["id"] == proposal["id"]:
+                try:
+                    await self._connection.handle_subscriber_add_ice_candidate(candidate)
+                except ErrorDictException as err:
+                    await user.send(err.error_message)
+                    return
+                success = SuccessDict(
+                    type="ADD_ICE_CANDIDATE",
+                    description="Successfully added ice candidate"
+                )
+                msg = MessageDict(type="SUCCESS", data=success)
+                await user.send(msg)
+
         @self.on("disconnected")
         def _remove_listener(_):
             try:
                 user.remove_listener("CONNECTION_OFFER", _handle_offer)
+                user.remove_listener(
+                    "ADD_ICE_CANDIDATE",
+                    _handle_add_ice_candidate
+                )
             except KeyError:
                 return
 
@@ -397,6 +431,19 @@ or connection is not fully connected"
             self.emit("CONNECTION_OFFER", message["data"])
             return
 
+        if endpoint == "ADD_ICE_CANDIDATE":
+            if not is_valid_add_ice_candidate_dict(message["data"]):
+                self._logger.warning("Received invalid ADD_ICE_CANDIDATE")
+                err = ErrorDict(
+                    code=400,
+                    type="INVALID_DATATYPE",
+                    description="Invalid add ice candidate dict",
+                )
+                await self.send(MessageDict(type="ERROR", data=err))
+                return
+            self.emit("ADD_ICE_CANDIDATE", message["data"])
+            return
+
         handler_functions = self._handlers.get(endpoint, None)
 
         if handler_functions is None:
@@ -426,6 +473,17 @@ or connection is not fully connected"
 
             if response is not None:
                 await self.send(response)
+
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        """Handle an new ice candidate which was send by the client
+        while establishing the main connection.
+
+        Parameters
+        ----------
+        candidate : connection.messages.rtc_ice_candidate_dict.RTCIceCandidateDict
+            New ice candidate send by the client.
+        """
+        await self._connection.handle_add_ice_candidate(candidate)
 
     def get_experiment_or_raise(self, action_prefix: str = "") -> _exp.Experiment:
         """Get `self._experiment` or raise ErrorDictException if it is None.
@@ -620,9 +678,9 @@ or connection is not fully connected"
 
         Parameters
         ----------
-        period : int, optional
+        period : int
             The period at which to send ping messages, in milliseconds.
-        buffer_length : int, optional
+        buffer_length : int
             The length of the ping buffer, in seconds.
         """
         if self._pinging:

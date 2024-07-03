@@ -4,7 +4,7 @@ import logging
 import aiohttp_cors
 import json
 from typing import Any, Callable, Coroutine, Literal
-from aiohttp import web
+from aiohttp import web, WSMsgType
 from datetime import datetime
 from aiortc import RTCSessionDescription
 from ssl import SSLContext
@@ -12,7 +12,9 @@ from os.path import join
 
 from session.data.participant.participant_summary import ParticipantSummaryDict
 from custom_types.message import MessageDict
+from custom_types.success import SuccessDict
 from custom_types.error import ErrorDict
+from connection.messages.add_ice_candidate_dict import AddIceCandidateDict, is_valid_add_ice_candidate_dict
 
 from hub.exceptions import ErrorDictException
 from hub import FRONTEND_BUILD_DIR
@@ -37,11 +39,17 @@ class Server:
     _index: str
     _logger: logging.Logger
     _hub_handle_offer: _HANDLER
+    _hub_handle_add_ice_candidate: _HANDLER
     _app: web.Application
     _runner: web.AppRunner
     _config: Config
 
-    def __init__(self, hub_handle_offer: _HANDLER, config: Config):
+    def __init__(
+        self,
+        hub_handle_offer: _HANDLER,
+        hub_handle_add_ice_candidate: _HANDLER,
+        config: Config
+    ):
         """Instantiate new Server instance.
 
         Parameters
@@ -53,13 +61,17 @@ class Server:
         """
         self._logger = logging.getLogger("Server")
         self._hub_handle_offer = hub_handle_offer
+        self._hub_handle_add_ice_candidate = hub_handle_add_ice_candidate
         self._config = config
 
+        self.websockets = set()
         self._app = web.Application()
         self._app.on_shutdown.append(self._shutdown)
         routes = [
             self._app.router.add_get("/hello-world", self.get_hello_world),
             self._app.router.add_post("/offer", self.handle_offer),
+            self._app.router.add_post("/addIceCandidate", self.handle_add_ice_candidate),
+            self._app.router.add_get('/ws', self.websocket_handler)
         ]
 
         # Serve frontend build
@@ -77,10 +89,13 @@ class Server:
                 "/",
                 "/postProcessingRoom",
                 "/lobby",
-                "/watchingRoom",
+                "/experimentOverview",
                 "/sessionForm",
                 "/connectionTest",
                 "/connectionLatencyTest",
+                "/consent",
+                "/end",
+                "/meetingRoom"
             ]
             for page in pages:
                 routes.append(self._app.router.add_get(page, self.get_index))
@@ -132,6 +147,28 @@ class Server:
             ssl_context=ssl_context,
         )
         await site.start()
+
+    async def websocket_handler(self, request):
+        """Handle incoming WebSocket connections."""
+        ws = web.WebSocketResponse()
+        await ws.prepare(request)
+        self.websockets.add(ws)
+
+        async for msg in ws:
+            if msg.type == WSMsgType.TEXT:
+                # Handle incoming WebSocket messages if needed
+                pass
+            elif msg.type == WSMsgType.ERROR:
+                print('WebSocket connection closed with exception %s' % ws.exception())
+
+        # Cleanup on disconnect
+        self.websockets.remove(ws)
+        return ws
+
+    async def broadcast_message(self, message):
+        """Send a message to all connected clients."""
+        for ws in self.websockets:
+            await ws.send_str(message)
 
     async def _shutdown(self, app: web.Application):
         """TODO document"""
@@ -210,7 +247,7 @@ class Server:
             )
 
         # Check if all required keys exist in params
-        required_keys = ["sdp", "type", "user_type"]
+        required_keys = ["sdp", "type", "user_type", "connection_id"]
         if params.get("user_type") == "participant":
             required_keys.extend(["session_id", "participant_id"])
         elif params.get("user_type") == "experimenter":
@@ -229,6 +266,55 @@ class Server:
         if params["user_type"] not in ["participant", "experimenter"]:
             raise ErrorDictException(
                 code=400, type="INVALID_REQUEST", description="Invalid user type."
+            )
+
+        # Successfully parsed parameters
+        return params
+
+    async def _parse_ice_candidate_request(self, request: web.Request) -> AddIceCandidateDict:
+        """Parse a request made to the `/addIceCandidate` endpoint.
+
+        Checks the parameters in the request and check if the types are correct.
+
+        Parameters
+        ----------
+        request : aiohttp.web.Request
+            Incoming request to the `/addIceCandidate` endpoint.
+
+        Returns
+        -------
+        RTCIceCandidateDict
+            Parsed ice candidate.
+
+        Raises
+        ------
+        ErrorDictException
+            If any error occurres while parsing.  E.g. incorrect request parameters or
+            missing keys.
+        """
+        if request.content_type != "application/json":
+            raise ErrorDictException(
+                code=415,
+                type="INVALID_REQUEST",
+                description="Content type must be 'application/json'.",
+            )
+
+        # Parse request
+        try:
+            params: dict = (await request.json())["request"]
+        except json.JSONDecodeError:
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Failed to parse request.",
+            )
+
+        # Check if candidate is valid
+        if not is_valid_add_ice_candidate_dict(params):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_REQUEST",
+                description="Invalid candidate.",
             )
 
         # Successfully parsed parameters
@@ -285,6 +371,7 @@ class Server:
                 params.get("participant_id"),
                 params.get("session_id"),
                 params.get("experimenter_password"),
+                params.get("connection_id"),
             )
         except ErrorDictException as error:
             self._logger.warning(f"Failed to handle offer. {error.description}")
@@ -302,6 +389,42 @@ class Server:
         # Create response
         answer = MessageDict(type="SESSION_DESCRIPTION", data=data)
         return web.Response(content_type="application/json", text=json.dumps(answer))
+
+    async def handle_add_ice_candidate(self, request: web.Request) -> web.StreamResponse:
+        self._logger.debug(f"Received ice candidate from {request.remote}")
+
+        try:
+            candidate = await self._parse_ice_candidate_request(request)
+        except ErrorDictException as error:
+            self._logger.warning(f"Failed to parse ice candidate. {error.description}")
+            return web.Response(
+                content_type="application/json",
+                status=error.code,
+                reason=error.description,
+                text=error.error_message_str,
+            )
+
+        try:
+            await self._hub_handle_add_ice_candidate(candidate)
+        except ErrorDictException as error:
+            self._logger.warning(f"Failed to handle add ice candidate. {error.description}")
+            return web.Response(
+                content_type="application/json",
+                status=error.code,
+                reason=error.description,
+                text=error.error_message_str,
+            )
+
+        sucess = SuccessDict(
+            type="ADD_ICE_CANDIDATE",
+            description="Ice candidate was succesfully received."
+        )
+        answer = MessageDict(type="SUCCESS", data=sucess)
+
+        return web.Response(
+            content_type="application/json",
+            text=json.dumps(answer)
+        )
 
     async def get_index(self, request: web.Request):
         """Respond with index.html to a request."""

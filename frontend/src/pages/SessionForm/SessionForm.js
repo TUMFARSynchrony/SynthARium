@@ -5,6 +5,7 @@ import {
   checkValidSession,
   filterListByIndex,
   formatDate,
+  generateRandomColor,
   getParticipantDimensions,
   getRandomColor
 } from "../../utils/utils";
@@ -18,8 +19,8 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
-import { ActionButton, ActionIconButton, LinkButton } from "../../components/atoms/Button";
+import { useEffect, useRef, useState } from "react";
+import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
@@ -32,11 +33,14 @@ import {
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
+import { v4 as uuid } from "uuid";
 
 function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
   const openSession = useAppSelector(selectOpenSession);
   const [sessionData, setSessionData] = useState(openSession);
+  const [title, setTitle] = useState(sessionData.title);
+  const [description, setDescription] = useState(sessionData.description);
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
   const [xAxis, setXAxis] = useState(0);
   const [yAxis, setYAxis] = useState(0);
@@ -116,9 +120,11 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   };
 
   const onAddParticipant = () => {
+    const canvasId = uuid();
     dispatch(
       addParticipant({
         ...INITIAL_PARTICIPANT_DATA,
+        canvas_id: canvasId,
         position: { x: xAxis, y: yAxis, z: 0 }
       })
     );
@@ -126,18 +132,19 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
       ...participantDimensions,
       {
         shapes: {
-          x: xAxis,
-          y: yAxis,
-          fill: getRandomColor(),
-          z: 0
-        },
-        groups: {
           x: 0,
           y: 0,
           z: 0,
+          fill: generateRandomColor(canvasId)
+        },
+        groups: {
+          x: xAxis,
+          y: yAxis,
+          z: 0,
           width: 250,
           height: 250
-        }
+        },
+        id: canvasId
       }
     ];
     setParticipantDimensions(newParticipantDimensions);
@@ -158,6 +165,16 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     dispatch(changeValue({ objKey: objKey, objValue: newObj }));
   };
 
+  const handleSessionTitleChange = (payload) => {
+    setTitle(payload);
+    dispatch(changeValue({ objKey: "title", objValue: payload }));
+  };
+
+  const handleSessionDescriptionChange = (payload) => {
+    setDescription(payload);
+    dispatch(changeValue({ objKey: "description", objValue: payload }));
+  };
+
   const onShowSessionFormModal = () => {
     setShowSessionDataForm(!showSessionDataForm);
   };
@@ -174,52 +191,6 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     onSendSessionToBackend(sessionData);
   };
 
-  const addRandomSessionData = () => {
-    const futureDate = new Date().setDate(new Date().getDate() + 7);
-
-    let newSessionData = {
-      id: "",
-      title: "Hello World",
-      description: "Randomly created session",
-      date: new Date(futureDate).getTime(),
-      time_limit: 3600000,
-      record: true,
-      participants: [
-        {
-          id: "",
-          participant_name: "Max Mustermann",
-          muted_audio: true,
-          muted_video: true,
-          banned: false,
-          audio_filters: [],
-          video_filters: [],
-          audio_group_filters: [],
-          video_group_filters: [],
-          chat: [],
-          position: {
-            x: 10,
-            y: 10,
-            z: 0
-          },
-          size: {
-            width: 250,
-            height: 250
-          }
-        }
-      ],
-      start_time: 0,
-      end_time: 0,
-      creation_time: 0,
-      notes: [],
-      log: ""
-    };
-
-    setTimeLimit(newSessionData.time_limit / 60000);
-    dispatch(initializeSession(newSessionData));
-    let dimensions = getParticipantDimensions(newSessionData.participants);
-    setParticipantDimensions(dimensions);
-  };
-
   return (
     <>
       <div className="flex h-[calc(100vh-84px)] flex-row px-4 py-8 items-start">
@@ -228,7 +199,12 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
             <div className="px-4 flex flex-col h-full">
               <div className="flex justify-start items-center">
                 <ChevronLeft sx={{ color: "gray" }} />
-                <LinkButton text="Back to Session Overview" variant="text" size="small" path="/" />
+                <ActionButton
+                  text="Back to Session Overview"
+                  variant="text"
+                  size="small"
+                  path="/"
+                />
               </div>
               <CardContent>
                 {/* Override text fields' margin and width using MUI classnames */}
@@ -244,19 +220,17 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
                     <TextField
                       label="Title"
-                      value={sessionData.title}
+                      value={title}
                       size="small"
                       required
-                      onChange={(event) => handleSessionDataChange("title", event.target.value)}
+                      onChange={(event) => handleSessionTitleChange(event.target.value)}
                     />
                     <TextField
                       label="Description"
-                      value={sessionData.description}
+                      value={description}
                       size="small"
                       required
-                      onChange={(event) =>
-                        handleSessionDataChange("description", event.target.value)
-                      }
+                      onChange={(event) => handleSessionDescriptionChange(event.target.value)}
                     />
                   </Box>
                   <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
@@ -280,14 +254,13 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                       disabled
                     />
                   </Box>
-                  <Box sx={{ mt: 1, mb: 3 }}>
+                  <Box sx={{ mt: 1, mb: 1 }}>
                     <FormControlLabel
                       control={<Checkbox />}
                       label="Record Session"
                       checked={sessionData.record}
                       onChange={() => handleSessionDataChange("record", !sessionData.record)}
                     />
-                    {/* <ActionIconButton text="Create participants" variant="contained" color="primary" size="small" onClick={() => handleCreateParticipants()} icon={<PeopleOutline />} /> */}
                   </Box>
                 </Box>
 
@@ -316,6 +289,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                         handleParticipantChange={handleParticipantChange}
                         setSnackbarResponse={setSnackbarResponse}
                         handleCanvasPlacement={handleCanvasPlacement}
+                        participantDimensions={participantDimensions}
                       />
                     );
                   })}
@@ -345,10 +319,11 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
             icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
           />
         </div>
-        <div>
+        <div className="pr-8">
           <DragAndDrop
             participantDimensions={participantDimensions}
             setParticipantDimensions={setParticipantDimensions}
+            asymmetricView={false}
           />
         </div>
       </div>

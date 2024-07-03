@@ -27,9 +27,9 @@ class OpenFaceAUExtractor:
         self.__openface_port = find_an_available_port()
 
         self.open_face = OpenFace(self.__openface_port)
-
         self.context = zmq.Context.instance()
         self.socket = self.context.socket(zmq.PAIR)
+
         try:
             self.socket.bind(f"tcp://127.0.0.1:{self.__openface_port}")
             self.is_connected = True
@@ -54,7 +54,6 @@ class OpenFaceAUExtractor:
                 roi["y"] : (roi["y"] + roi["height"]),
                 roi["x"] : (roi["x"] + roi["width"]),
             ]
-
         port_msg = f"Port: {self.__openface_port}"
 
         if not self.is_connected:

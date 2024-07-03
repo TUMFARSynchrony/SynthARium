@@ -7,10 +7,13 @@ import ConnectionState from "./networking/ConnectionState";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
 import Lobby from "./pages/Lobby/Lobby";
+import MeetingRoom from "./pages/MeetingRoom/MeetingRoom";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
 import SessionForm from "./pages/SessionForm/SessionForm";
 import SessionOverview from "./pages/SessionOverview/SessionOverview";
-import WatchingRoom from "./pages/WatchingRoom/WatchingRoom";
+import ExperimentOverview from "./pages/ExperimentOverview/ExperimentOverview";
+import Consent from "./pages/Consent/Consent";
+import End from "./pages/End/End";
 import PageTemplate from "./components/templates/PageTemplate";
 import HeaderActionArea from "./components/atoms/Button/HeaderActionArea";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
@@ -39,13 +42,21 @@ import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
+import OpenAI from "openai";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
+  const [recordings, setRecordings] = useState([]);
+  const [status, setPostProcessingStatus] = useState(null);
+  const [errorPostProc, setPostProcessingError] = useState(null);
+  const [successPostProc, setPostProcessingSuccess] = useState(null);
   let [searchParams, setSearchParams] = useSearchParams();
+  const sessionIdParam = searchParams.get("sessionId");
+  const participantIdParam = searchParams.get("participantId");
+  const experimenterPasswordParam = searchParams.get("experimenterPassword");
   const sessionsList = useAppSelector(selectSessions);
   const ongoingExperiment = useAppSelector(selectOngoingExperiment);
   const sessionsListRef = useRef();
@@ -72,6 +83,32 @@ function App() {
     setConnectionState(state);
   };
 
+  // ChatGPT validity check
+  const gptKeyValid = useRef();
+  useEffect(() => {
+    const openai = new OpenAI({
+      apiKey: process.env.REACT_APP_CHAT_GPT_API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+
+    async function validKey() {
+      try {
+        await openai.models.list();
+        console.log("true in validKey()");
+        return true;
+      } catch (error) {
+        console.log("false in validKey()");
+        return false;
+      }
+    }
+
+    validKey().then((res) => {
+      gptKeyValid.current = res;
+      console.log(gptKeyValid);
+    });
+    console.log(gptKeyValid);
+  }, []);
+
   // Register Connection event handlers
   useEffect(() => {
     if (!connection) {
@@ -93,6 +130,8 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("RECORDING_LIST", handleRecordingList);
+    connection.api.on("CHECK_POST_PROCESSING", handleCheckPostProcessing);
     connection.api.on("PING", handlePing);
     connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
     connection.api.on("FILTERS_DATA", handleFiltersData);
@@ -112,6 +151,8 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("RECORDING_LIST", handleRecordingList);
+      connection.api.off("CHECK_POST_PROCESSING", handleCheckPostProcessing);
       connection.api.off("PING", handlePing);
       connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
       connection.api.off("FILTERS_DATA", handleFiltersData);
@@ -122,11 +163,6 @@ function App() {
     const closeConnection = () => {
       connection?.stop();
     };
-
-    const sessionIdParam = searchParams.get("sessionId");
-    const participantIdParam = searchParams.get("participantId");
-    const experimenterPasswordParam = searchParams.get("experimenterPassword");
-
     const sessionId = sessionIdParam ? sessionIdParam : "";
     const participantId = participantIdParam ? participantIdParam : "";
     let experimenterPassword = experimenterPasswordParam ?? "";
@@ -135,6 +171,7 @@ function App() {
     const pathname = window.location.pathname.toLowerCase();
     const isConnectionTestPage =
       pathname === "/connectiontest" || pathname === "/connectionlatencytest";
+    const isConsentOrEndPage = pathname === "/consent" || pathname === "/end";
 
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
@@ -162,8 +199,12 @@ function App() {
       true
     );
 
-    setConnection(newConnection);
-    if (userType === "participant" && pathname !== "/connectionlatencytest") {
+    !isConsentOrEndPage && setConnection(newConnection);
+    if (
+      userType === "participant" &&
+      pathname !== "/connectionlatencytest" &&
+      !isConsentOrEndPage
+    ) {
       asyncStreamHelper(newConnection);
       return;
     }
@@ -198,11 +239,9 @@ function App() {
   };
 
   const handleChatMessages = (data) => {
-    // this is logged on participant's view
     dispatch(
       addMessageToCurrentSession({
         message: data,
-        sessionId: data.session,
         author: data.author,
         target: data.target
       })
@@ -214,6 +253,11 @@ function App() {
         severity: "info",
         autoHideDuration: 10000,
         anchorOrigin: { vertical: "top", horizontal: "center" }
+      });
+    }
+    if (data.target === "experimenter") {
+      connection.sendMessage("GET_SESSION", {
+        session_id: ongoingExperimentRef.current.sessionId
       });
     }
   };
@@ -250,15 +294,25 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    setSnackbar({
-      open: true,
-      text: `SUCCESS: ${data.description}`,
-      severity: "success"
-    });
+    if (data.type == "POST_PROCESSING_VIDEO") {
+      setPostProcessingSuccess(data.description);
+      setPostProcessingError(null);
+    } else {
+      setSnackbar({
+        open: true,
+        text: `SUCCESS: ${data.description}`,
+        severity: "success"
+      });
+    }
   };
 
   const handleError = (data) => {
-    setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
+    if (data.type == "POST_PROCESSING_FAILED") {
+      setPostProcessingError(data.description);
+      setPostProcessingSuccess(null);
+    } else {
+      setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
+    }
   };
 
   const handleSessionChange = (data) => {
@@ -280,6 +334,12 @@ function App() {
   };
 
   const handleExperimentStarted = (data) => {
+    if (window.location.pathname === "/lobby") {
+      navigate({
+        pathname: "/meetingRoom",
+        search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`
+      });
+    }
     dispatch(
       setExperimentTimes({
         action: ExperimentTimes.START_TIME,
@@ -290,6 +350,12 @@ function App() {
   };
 
   const handleExperimentEnded = (data) => {
+    if (window.location.pathname === "/meetingRoom") {
+      navigate({
+        pathname: "/end",
+        search: `?participantId=${participantIdParam}&sessionId=${sessionIdParam}`
+      });
+    }
     dispatch(
       setExperimentTimes({
         action: ExperimentTimes.END_TIME,
@@ -305,6 +371,14 @@ function App() {
         sessionId: ongoingExperimentRef.current.sessionId
       })
     );
+  };
+
+  const handleRecordingList = (data) => {
+    setRecordings(data);
+  };
+
+  const handleCheckPostProcessing = (data) => {
+    setPostProcessingStatus(data);
   };
 
   const handlePing = (data) => {
@@ -400,6 +474,25 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
+  const onGetRecordingList = () => {
+    connection.sendMessage("GET_RECORDING_LIST", {});
+  };
+
+  const onPostProcessingVideo = (sessionId) => {
+    connection.sendMessage("POST_PROCESSING_VIDEO", { session_id: sessionId });
+  };
+
+  const onCheckPostProcessing = () => {
+    connection.sendMessage("CHECK_POST_PROCESSING", {});
+  };
+
+  const onUpdateMessageReadTime = (participantId, lastMessageReadTime) => {
+    connection.sendMessage("UPDATE_READ_MESSAGE_TIME", {
+      participant_id: participantId,
+      lastMessageReadTime: lastMessageReadTime
+    });
+  };
+
   const toggleModal = (modal) => {
     dispatch(toggleSingleTab(modal));
   };
@@ -444,7 +537,20 @@ function App() {
             element={
               <PageTemplate
                 title={"Post-Processing Room"}
-                customComponent={<PostProcessing />}
+                customComponent={
+                  <PostProcessing
+                    status={status}
+                    recordings={recordings}
+                    connection={connection}
+                    connectionState={connectionState}
+                    errorMessage={errorPostProc}
+                    successMessage={successPostProc}
+                    onPostProcessingVideo={onPostProcessingVideo}
+                    onCheckPostProcessing={onCheckPostProcessing}
+                    onGetRecordingList={onGetRecordingList}
+                  />
+                }
+                centerContentOnYAxis={true}
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
@@ -458,6 +564,9 @@ function App() {
               />
             }
           />
+          <Route exact path="/consent" element={<Consent />} />
+          <Route exact path="/end" element={<End />} />
+          <Route exact path="/postProcessingRoom" element={<PostProcessing />} />
           <Route
             exact
             path="/lobby"
@@ -466,22 +575,87 @@ function App() {
                 <PageTemplate
                   title={"Lobby"}
                   buttonListComponent={
+                    gptKeyValid.current ? (
+                      <HeaderActionArea
+                        buttons={[
+                          {
+                            onClick: () => toggleModal(Tabs.CHAT),
+                            icon: faComment,
+                            tooltip: "Chat with participants"
+                          },
+                          {
+                            onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                            icon: faClipboardCheck,
+                            tooltip: "View instructions"
+                          },
+                          {
+                            onClick: () => toggleModal(Tabs.CHATGPT),
+                            externalIcon: true,
+                            tooltip: "Chat with GPT"
+                          }
+                        ]}
+                      />
+                    ) : (
+                      <HeaderActionArea
+                        buttons={[
+                          {
+                            onClick: () => toggleModal(Tabs.CHAT),
+                            icon: faComment,
+                            tooltip: "Chat with participants"
+                          },
+                          {
+                            onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                            icon: faClipboardCheck,
+                            tooltip: "View instructions"
+                          }
+                        ]}
+                      />
+                    )
+                  }
+                  customComponent={
+                    <Lobby
+                      localStream={localStream}
+                      connection={connection}
+                      onGetSession={onGetSession}
+                      onChat={onChat}
+                    />
+                  }
+                />
+              ) : (
+                "Loading..."
+              )
+            }
+          />
+          <Route
+            exact
+            path="/meetingRoom"
+            element={
+              connection ? (
+                <PageTemplate
+                  title={"Meeting Room"}
+                  buttonListComponent={
                     <HeaderActionArea
                       buttons={[
                         {
                           onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
+                          icon: faComment,
+                          tooltip: "Chat with participants"
                         },
                         {
                           onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
+                          icon: faClipboardCheck,
+                          tooltip: "View instructions"
+                        },
+                        {
+                          onClick: () => toggleModal(Tabs.CHATGPT),
+                          externalIcon: true,
+                          tooltip: "Chat with GPT"
                         }
                       ]}
                     />
                   }
                   customComponent={
-                    <Lobby
-                      connectedParticipants={connectedParticipants}
+                    <MeetingRoom
                       localStream={localStream}
                       connection={connection}
                       onGetSession={onGetSession}
@@ -518,12 +692,16 @@ function App() {
                       {
                         onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
                         icon: faClipboardList
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.CHATGPT),
+                        externalIcon: true
                       }
                     ]}
                   />
                 }
                 customComponent={
-                  <WatchingRoom
+                  <ExperimentOverview
                     connectedParticipants={connectedParticipants}
                     onKickBanParticipant={onKickBanParticipant}
                     onAddNote={onAddNote}
@@ -541,34 +719,42 @@ function App() {
           />
           <Route
             exact
-            path="/watchingRoom"
+            path="/experimentOverview"
             element={
               <PageTemplate
-                title={"Watching Room"}
+                title={"Experiment Overview"}
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
                       {
                         onClick: () => toggleModal(Tabs.CHAT),
-                        icon: faComment
+                        icon: faComment,
+                        tooltip: "Chat with participants"
                       },
-                      {
-                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                        icon: faClipboardCheck
-                      },
+                      // {
+                      //   onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                      //   icon: faClipboardCheck,
+                      // },
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                        icon: faUsers
+                        icon: faUsers,
+                        tooltip: "View participants"
                       },
                       {
                         onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                        icon: faClipboardList
+                        icon: faClipboardList,
+                        tooltip: "View filter information"
+                      },
+                      {
+                        onClick: () => toggleModal(Tabs.CHATGPT),
+                        externalIcon: true,
+                        tooltip: "Chat with GPT"
                       }
                     ]}
                   />
                 }
                 customComponent={
-                  <WatchingRoom
+                  <ExperimentOverview
                     connectedParticipants={connectedParticipants}
                     onKickBanParticipant={onKickBanParticipant}
                     onAddNote={onAddNote}
@@ -579,6 +765,7 @@ function App() {
                     onStartExperiment={onStartExperiment}
                     onEndExperiment={onEndExperiment}
                     onGetFiltersData={onGetFiltersData}
+                    onUpdateMessageReadTime={onUpdateMessageReadTime}
                   />
                 }
                 centerContentOnYAxis={true}

@@ -31,12 +31,16 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   participant_name: "",
   muted_audio: true,
   muted_video: true,
+  local_stream: false,
   banned: false,
   video_filters: [],
   audio_filters: [],
+  chat_filters: [],
   audio_group_filters: [],
   video_group_filters: [],
   chat: [],
+  lastMessageSentTime: 0,
+  lastMessageReadTime: 0,
   position: {
     x: 10,
     y: 10,
@@ -45,7 +49,9 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   size: {
     width: 250,
     height: 250
-  }
+  },
+  view: [],
+  canvas_id: ""
 };
 
 export const INITIAL_NOTE_DATA: Note = {
@@ -97,7 +103,7 @@ function parseIceServers() {
 
 export const PARTICIPANT_HOST = "http://localhost:3000/lobby/";
 
-// Displays the same set of instructions in both the /lobby and in the /watchingRoom.
+// Displays the same set of instructions in both the /lobby and in the /experimentOverview.
 export const instructionsList = [
   "Please remove any glasses, caps or other such articles if you are wearing any.",
   "Ensure that your surrounding lighting is good.",
