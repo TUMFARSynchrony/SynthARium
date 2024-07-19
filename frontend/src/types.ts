@@ -43,6 +43,7 @@ export type Participant = {
   size: { width: number; height: number };
   muted_video: boolean;
   muted_audio: boolean;
+  local_stream: boolean;
   position: { x: number; y: number; z: number };
   chat: ChatMessage[];
   audio_filters: Filter[];

@@ -31,6 +31,7 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
   participant_name: "",
   muted_audio: true,
   muted_video: true,
+  local_stream: false,
   banned: false,
   video_filters: [],
   audio_filters: [],

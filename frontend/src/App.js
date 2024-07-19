@@ -42,12 +42,17 @@ import { getLocalStream, getSessionById } from "./utils/utils";
 import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
+import OpenAI from "openai";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
   const [connection, setConnection] = useState(null);
   const [connectionState, setConnectionState] = useState(null);
   const [connectedParticipants, setConnectedParticipants] = useState([]);
+  const [recordings, setRecordings] = useState([]);
+  const [status, setPostProcessingStatus] = useState(null);
+  const [errorPostProc, setPostProcessingError] = useState(null);
+  const [successPostProc, setPostProcessingSuccess] = useState(null);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -78,6 +83,32 @@ function App() {
     setConnectionState(state);
   };
 
+  // ChatGPT validity check
+  const gptKeyValid = useRef();
+  useEffect(() => {
+    const openai = new OpenAI({
+      apiKey: process.env.REACT_APP_CHAT_GPT_API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+
+    async function validKey() {
+      try {
+        await openai.models.list();
+        console.log("true in validKey()");
+        return true;
+      } catch (error) {
+        console.log("false in validKey()");
+        return false;
+      }
+    }
+
+    validKey().then((res) => {
+      gptKeyValid.current = res;
+      console.log(gptKeyValid);
+    });
+    console.log(gptKeyValid);
+  }, []);
+
   // Register Connection event handlers
   useEffect(() => {
     if (!connection) {
@@ -99,6 +130,8 @@ function App() {
     connection.api.on("EXPERIMENT_STARTED", handleExperimentStarted);
     connection.api.on("EXPERIMENT_ENDED", handleExperimentEnded);
     connection.api.on("CHAT", handleChatMessages);
+    connection.api.on("RECORDING_LIST", handleRecordingList);
+    connection.api.on("CHECK_POST_PROCESSING", handleCheckPostProcessing);
     connection.api.on("PING", handlePing);
     connection.api.on("FILTERS_CONFIG", handleFiltersConfig);
     connection.api.on("FILTERS_DATA", handleFiltersData);
@@ -118,6 +151,8 @@ function App() {
       connection.api.off("EXPERIMENT_STARTED", handleExperimentStarted);
       connection.api.off("EXPERIMENT_ENDED", handleExperimentEnded);
       connection.api.off("CHAT", handleChatMessages);
+      connection.api.off("RECORDING_LIST", handleRecordingList);
+      connection.api.off("CHECK_POST_PROCESSING", handleCheckPostProcessing);
       connection.api.off("PING", handlePing);
       connection.api.off("FILTERS_CONFIG", handleFiltersConfig);
       connection.api.off("FILTERS_DATA", handleFiltersData);
@@ -259,15 +294,25 @@ function App() {
   };
 
   const handleSuccess = (data) => {
-    setSnackbar({
-      open: true,
-      text: `SUCCESS: ${data.description}`,
-      severity: "success"
-    });
+    if (data.type == "POST_PROCESSING_VIDEO") {
+      setPostProcessingSuccess(data.description);
+      setPostProcessingError(null);
+    } else {
+      setSnackbar({
+        open: true,
+        text: `SUCCESS: ${data.description}`,
+        severity: "success"
+      });
+    }
   };
 
   const handleError = (data) => {
-    setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
+    if (data.type == "POST_PROCESSING_FAILED") {
+      setPostProcessingError(data.description);
+      setPostProcessingSuccess(null);
+    } else {
+      setSnackbar({ open: true, text: `${data.description}`, severity: "error" });
+    }
   };
 
   const handleSessionChange = (data) => {
@@ -326,6 +371,14 @@ function App() {
         sessionId: ongoingExperimentRef.current.sessionId
       })
     );
+  };
+
+  const handleRecordingList = (data) => {
+    setRecordings(data);
+  };
+
+  const handleCheckPostProcessing = (data) => {
+    setPostProcessingStatus(data);
   };
 
   const handlePing = (data) => {
@@ -421,6 +474,18 @@ function App() {
     connection.sendMessage("STOP_EXPERIMENT", {});
   };
 
+  const onGetRecordingList = () => {
+    connection.sendMessage("GET_RECORDING_LIST", {});
+  };
+
+  const onPostProcessingVideo = (sessionId) => {
+    connection.sendMessage("POST_PROCESSING_VIDEO", { session_id: sessionId });
+  };
+
+  const onCheckPostProcessing = () => {
+    connection.sendMessage("CHECK_POST_PROCESSING", {});
+  };
+
   const onUpdateMessageReadTime = (participantId, lastMessageReadTime) => {
     connection.sendMessage("UPDATE_READ_MESSAGE_TIME", {
       participant_id: participantId,
@@ -472,7 +537,20 @@ function App() {
             element={
               <PageTemplate
                 title={"Post-Processing Room"}
-                customComponent={<PostProcessing />}
+                customComponent={
+                  <PostProcessing
+                    status={status}
+                    recordings={recordings}
+                    connection={connection}
+                    connectionState={connectionState}
+                    errorMessage={errorPostProc}
+                    successMessage={successPostProc}
+                    onPostProcessingVideo={onPostProcessingVideo}
+                    onCheckPostProcessing={onCheckPostProcessing}
+                    onGetRecordingList={onGetRecordingList}
+                  />
+                }
+                centerContentOnYAxis={true}
                 buttonListComponent={
                   <HeaderActionArea
                     buttons={[
@@ -497,22 +575,42 @@ function App() {
                 <PageTemplate
                   title={"Lobby"}
                   buttonListComponent={
-                    <HeaderActionArea
-                      buttons={[
-                        {
-                          onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
-                        },
-                        {
-                          onClick: () => toggleModal(Tabs.CHATGPT),
-                          externalIcon: true
-                        }
-                      ]}
-                    />
+                    gptKeyValid.current ? (
+                      <HeaderActionArea
+                        buttons={[
+                          {
+                            onClick: () => toggleModal(Tabs.CHAT),
+                            icon: faComment,
+                            tooltip: "Chat with participants"
+                          },
+                          {
+                            onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                            icon: faClipboardCheck,
+                            tooltip: "View instructions"
+                          },
+                          {
+                            onClick: () => toggleModal(Tabs.CHATGPT),
+                            externalIcon: true,
+                            tooltip: "Chat with GPT"
+                          }
+                        ]}
+                      />
+                    ) : (
+                      <HeaderActionArea
+                        buttons={[
+                          {
+                            onClick: () => toggleModal(Tabs.CHAT),
+                            icon: faComment,
+                            tooltip: "Chat with participants"
+                          },
+                          {
+                            onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                            icon: faClipboardCheck,
+                            tooltip: "View instructions"
+                          }
+                        ]}
+                      />
+                    )
                   }
                   customComponent={
                     <Lobby
@@ -540,15 +638,18 @@ function App() {
                       buttons={[
                         {
                           onClick: () => toggleModal(Tabs.CHAT),
-                          icon: faComment
+                          icon: faComment,
+                          tooltip: "Chat with participants"
                         },
                         {
                           onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                          icon: faClipboardCheck
+                          icon: faClipboardCheck,
+                          tooltip: "View instructions"
                         },
                         {
                           onClick: () => toggleModal(Tabs.CHATGPT),
-                          externalIcon: true
+                          externalIcon: true,
+                          tooltip: "Chat with GPT"
                         }
                       ]}
                     />
@@ -627,23 +728,27 @@ function App() {
                     buttons={[
                       {
                         onClick: () => toggleModal(Tabs.CHAT),
-                        icon: faComment
+                        icon: faComment,
+                        tooltip: "Chat with participants"
                       },
-                      {
-                        onClick: () => toggleModal(Tabs.INSTRUCTIONS),
-                        icon: faClipboardCheck
-                      },
+                      // {
+                      //   onClick: () => toggleModal(Tabs.INSTRUCTIONS),
+                      //   icon: faClipboardCheck,
+                      // },
                       {
                         onClick: () => toggleModal(Tabs.PARTICIPANTS),
-                        icon: faUsers
+                        icon: faUsers,
+                        tooltip: "View participants"
                       },
                       {
                         onClick: () => toggleModal(Tabs.FILTER_INFORMATION),
-                        icon: faClipboardList
+                        icon: faClipboardList,
+                        tooltip: "View filter information"
                       },
                       {
                         onClick: () => toggleModal(Tabs.CHATGPT),
-                        externalIcon: true
+                        externalIcon: true,
+                        tooltip: "Chat with GPT"
                       }
                     ]}
                   />

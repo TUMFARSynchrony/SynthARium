@@ -80,6 +80,7 @@ def is_valid_participant(data, recursive: bool = True) -> TypeGuard[ParticipantD
         and isinstance(data["lastMessageReadTime"], int)
         and isinstance(data["chat_filters"], list)
         and isinstance(data["muted_audio"], bool)
+        and isinstance(data["local_stream"], bool)
         and isinstance(data["banned"], bool)
         and isinstance(data["canvas_id"], str)
     )

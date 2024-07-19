@@ -30,6 +30,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         sizeData,
         participant_dict["muted_video"],
         participant_dict["muted_audio"],
+        participant_dict["local_stream"],
         positionData,
         participant_dict["chat"],
         participant_dict["audio_filters"],

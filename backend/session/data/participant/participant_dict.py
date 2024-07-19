@@ -29,6 +29,8 @@ class ParticipantDict(TypedDict):
         Whether the participants' video is forcefully muted by the experimenter.
     muted_audio : bool
         Whether the participants' audio is forcefully muted by the experimenter.
+    local_stream : bool
+        Whether the participants' view is using a local stream.
     audio_filters : list of filters.FilterDict
         Active audio filters for this participant.
     video_filters : list of filters.FilterDict
@@ -71,6 +73,7 @@ class ParticipantDict(TypedDict):
     participant_name: str
     muted_video: bool
     muted_audio: bool
+    local_stream: bool
     audio_filters: list[FilterDict]
     video_filters: list[FilterDict]
     chat_filters: list[ChatFilterDict]

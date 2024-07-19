@@ -44,7 +44,7 @@ export const ChatGptModal = ({
                 <div className="flex flex-col h-full w-full items-center">
                   <div className="flex flex-row items-center gap-x-4 border-b-2 border-b-gray-200 w-full py-2 px-6 gap-y-2">
                     <img className="w-12 h-12" src={openAiLogo} />
-                    <h3 className="text-3xl">ChatGPT(Beta)</h3>
+                    <h3 className="text-3xl">ChatGPT</h3>
                   </div>
 
                   <div className="w-full flex flex-col justify-between overflow-y-auto h-full">

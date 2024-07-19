@@ -454,6 +454,14 @@ function ParticipantDataModal({
                     handleChange("muted_video", !participantCopy.muted_video);
                   }}
                 />
+                <FormControlLabel
+                  control={<Checkbox />}
+                  label="Local Stream"
+                  checked={participantCopy.local_stream}
+                  onChange={() => {
+                    handleChange("local_stream", !participantCopy.local_stream);
+                  }}
+                />
               </Box>
             </Box>
             {/* Displays the list of filters available in the backend in a dropdown */}
