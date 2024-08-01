@@ -9,3 +9,4 @@
 exp-hub-venv
 
 backend/sessions/*.json
+backend/sessions/*/
