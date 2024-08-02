@@ -7,6 +7,3 @@
 
 # Python Virtual Environment
 exp-hub-venv
-
-backend/sessions/*.json
-backend/sessions/*/
