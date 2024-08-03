@@ -41,6 +41,7 @@ class ParticipantData(BaseData):
     view : list or custom_types.chat_message.CanvasElementDict
     canvas_id : str
     asymmetric_filters : list or custom_types.asymmetric_filter.AsymmetricFilterDict
+    asymmetric_filters_id : str
 
     Methods
     -------
@@ -131,6 +132,9 @@ class ParticipantData(BaseData):
     asymmetric_filters: list[AsymmetricFilterDict] = field(repr=False)
     """Active asymmetric filters for participant."""
 
+    asymmetric_filters_id: str = field(repr=False)
+    """Unique id for the asymmetric filters"""
+
     def __post_init__(self) -> None:
         """Add event listener to size and position."""
         super(ParticipantData, self).__post_init__()
@@ -165,6 +169,7 @@ class ParticipantData(BaseData):
             "view": self.view,
             "canvas_id": self.canvas_id,
             "asymmetric_filters": self.asymmetric_filters,
+            "asymmetric_filters_id": self.asymmetric_filters_id,
         }
 
     def as_summary_dict(self) -> ParticipantSummaryDict:

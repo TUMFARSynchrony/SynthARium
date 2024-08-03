@@ -12,13 +12,15 @@ import { selectFiltersDataSession } from "../../../redux/slices/openSessionSlice
 import chatFiltersData from "../../../chat_filters.json";
 
 interface FilterGroupDropdownProps {
+  asymmetricFiltersId?: string;
   selectedFilter: Filter;
   selectedChatFilter: ChatFilter;
-  handleFilterSelect: (filter: Filter) => void;
-  handleSelectChatFilter: (chatFilter: ChatFilter) => void;
+  handleFilterSelect: (filter: Filter, asymmetricFiltersId?: string) => void;
+  handleSelectChatFilter: (chatFilter: ChatFilter, asymmetricFiltersId?: string) => void;
 }
 
 export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
+  asymmetricFiltersId,
   selectedFilter,
   selectedChatFilter,
   handleFilterSelect,
@@ -58,7 +60,7 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
                   <MenuItem
                     key={individualFilter.id}
                     value={individualFilter.name}
-                    onClick={() => handleFilterSelect(individualFilter)}
+                    onClick={() => handleFilterSelect(individualFilter, asymmetricFiltersId)}
                   >
                     {individualFilter.name}
                   </MenuItem>
@@ -72,7 +74,7 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
                   <MenuItem
                     key={groupFilter.id}
                     value={groupFilter.name}
-                    onClick={() => handleFilterSelect(groupFilter)}
+                    onClick={() => handleFilterSelect(groupFilter, asymmetricFiltersId)}
                   >
                     {groupFilter.name}
                   </MenuItem>
@@ -109,7 +111,7 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
                   <MenuItem
                     key={chatFilter.id}
                     value={chatFilter.name}
-                    onClick={() => handleSelectChatFilter(chatFilter)}
+                    onClick={() => handleSelectChatFilter(chatFilter, asymmetricFiltersId)}
                   >
                     {chatFilter.name}
                   </MenuItem>

@@ -83,4 +83,5 @@ def is_valid_participant(data, recursive: bool = True) -> TypeGuard[ParticipantD
         and isinstance(data["local_stream"], bool)
         and isinstance(data["banned"], bool)
         and isinstance(data["canvas_id"], str)
+        and isinstance(data["asymmetric_filters_id"], str)
     )

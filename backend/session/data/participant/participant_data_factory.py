@@ -43,4 +43,5 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         participant_dict["view"],
         participant_dict["canvas_id"],
         participant_dict["asymmetric_filters"],
+        participant_dict["asymmetric_filters_id"],
     )

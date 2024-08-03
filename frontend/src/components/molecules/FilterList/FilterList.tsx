@@ -12,6 +12,7 @@ import {
 import { ChatFilter, Filter, FilterConfigArray, FilterConfigNumber } from "../../../types";
 
 interface FilterListProps {
+  asymmetricFilterId?: string | undefined;
   title: string;
   filters: Filter[] | ChatFilter[];
   filterType: string;
@@ -19,12 +20,14 @@ interface FilterListProps {
     index: number,
     configType: string,
     value: string | number,
-    filterType: string
+    filterType: string,
+    asymmetricFilterId?: string
   ) => void;
-  handleDelete: (filter: Filter | ChatFilter, index: number) => void;
+  handleDelete: (filter: Filter | ChatFilter, index: number, asymmetricFilterId?: string) => void;
 }
 
 export const FilterList: React.FC<FilterListProps> = ({
+  asymmetricFilterId,
   title,
   filterType,
   filters,
@@ -33,12 +36,12 @@ export const FilterList: React.FC<FilterListProps> = ({
 }) => {
   return (
     <>
-      {filters.length !== 0 && (
+      {filters && filters.length !== 0 && (
         <Typography variant="overline" display="block">
           {title}
         </Typography>
       )}
-      {filters.map((filter, filterIndex) => (
+      {filters?.map((filter, filterIndex) => (
         <Box key={filterIndex} sx={{ display: "flex", justifyContent: "flex-start" }}>
           <Box sx={{ minWidth: 140 }}>
             <Chip
@@ -47,7 +50,7 @@ export const FilterList: React.FC<FilterListProps> = ({
               variant="outlined"
               size="medium"
               color="secondary"
-              onDelete={() => handleDelete(filter, filterIndex)}
+              onDelete={() => handleDelete(filter, filterIndex, asymmetricFilterId)}
             />
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
@@ -71,7 +74,13 @@ export const FilterList: React.FC<FilterListProps> = ({
                       }
                       id="grouped-select"
                       onChange={(e) => {
-                        handleFilterChange(filterIndex, configType, e.target.value, filterType);
+                        handleFilterChange(
+                          filterIndex,
+                          configType,
+                          e.target.value,
+                          filterType,
+                          asymmetricFilterId
+                        );
                       }}
                     >
                       {config.defaultValue.map((value: string) => (
@@ -103,7 +112,8 @@ export const FilterList: React.FC<FilterListProps> = ({
                         filterIndex,
                         configType,
                         parseInt(e.target.value),
-                        filterType
+                        filterType,
+                        asymmetricFilterId
                       );
                     }}
                   />

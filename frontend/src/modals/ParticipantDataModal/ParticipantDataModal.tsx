@@ -11,13 +11,20 @@ import InputLabel from "@mui/material/InputLabel";
 import ListSubheader from "@mui/material/ListSubheader";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import React, { useEffect, useState } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
-import { getParticipantInviteLink } from "../../utils/utils";
+import {
+  getAsymmetricFiltersArray,
+  getAsymmetricParticipantIdentifiers,
+  getParticipantInviteLink
+} from "../../utils/utils";
 import { useAppSelector } from "../../redux/hooks";
 import {
   Filter,
@@ -26,7 +33,8 @@ import {
   FilterConfigNumber,
   Participant,
   Shape,
-  Group
+  Group,
+  AsymmetricFilter
 } from "../../types";
 import {
   selectFiltersDataSession,
@@ -37,6 +45,10 @@ import filtersData from "../../filters_data.json";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { getAsymmetricParticipantDimensions, getAsymmetricViewArray } from "../../utils/utils";
 import chatFiltersData from "../../chat_filters.json";
+import Grid from "@mui/material/Grid";
+import { FilterList } from "../../components/molecules/FilterList/FilterList";
+import { FilterGroupDropdown } from "../../components/molecules/FilterGroupDropdown/FilterGroupDropdown";
+import Divider from "@mui/material/Divider";
 
 const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
@@ -83,7 +95,18 @@ type Props = {
     shapes: Shape;
     groups: Group;
   }[];
+  participantIdentifiers: {
+    id: string;
+    name: string;
+    audio_filters: Filter[];
+    video_filters: Filter[];
+  }[];
 };
+
+enum ParticipantDataModalTab {
+  AsymmetricCanvas,
+  AsymmetricFilters
+}
 
 function ParticipantDataModal({
   originalParticipant,
@@ -95,11 +118,17 @@ function ParticipantDataModal({
   onDeleteParticipant,
   setSnackbarResponse,
   handleCanvasPlacement,
-  participantDimensions
+  participantDimensions,
+  participantIdentifiers
 }: Props) {
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
   const [selectedChatFilter, setSelectedChatFilter] = useState<ChatFilter>(defaultChatFilter);
+  const [selectedAsymmetricFilters, setSelectedAsymmetricFilters] = useState<
+    { id: string; filter: Filter }[]
+  >([]);
+  const [selectedAsymmetricChatFilter, setSelectedAsymmetricChatFilter] =
+    useState<ChatFilter>(defaultChatFilter);
   const filtersData = useAppSelector(selectFiltersDataSession);
   const individualFilters = filtersData.filter((filter) => filter.groupFilter !== true);
   const groupFilters = filtersData.filter((filter) => filter.groupFilter === true);
@@ -110,6 +139,13 @@ function ParticipantDataModal({
   const [asymmetricView, setAsymmetricView] = useState(
     originalParticipant.view ? getAsymmetricParticipantDimensions(originalParticipant.view) : []
   );
+  const originalIdentifiers = structuredClone(participantIdentifiers);
+  const originalAsymmetricFilters = structuredClone(originalParticipant.asymmetric_filters);
+  const [asymmetricFilters, setAsymmetricFilters] = useState(
+    originalParticipant.asymmetric_filters || []
+  );
+
+  const [activeTab, setActiveTab] = useState(ParticipantDataModalTab.AsymmetricCanvas);
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
 
   // Setting these snackbar response values to display the notification in Session Form Page.
@@ -137,15 +173,56 @@ function ParticipantDataModal({
     handleChange("view", getAsymmetricViewArray(asymmetricView));
   }, [asymmetricView]);
 
-  const handleFilterChange = <T extends keyof Participant>(
+  // useEffect(() => {
+  //   setAsymmetricFilters(
+  //     getAsymmetricParticipantIdentifiers(originalParticipant.asymmetric_filters)
+  //   );
+  // }, [originalParticipant.asymmetric_filters]);
+
+  useEffect(() => {
+    handleChange("asymmetric_filters", asymmetricFilters);
+  }, [asymmetricFilters]);
+
+  const handleFilterChange = <T extends keyof Participant | keyof AsymmetricFilter>(
     index: number,
     key: string,
     value: number | string,
-    keyParticipantData: T
+    filterTypeKey: T,
+    asymmetricFilterId?: string | undefined
   ) => {
-    const filtersCopy: any = structuredClone(participantCopy[keyParticipantData]);
-    filtersCopy[index]["config"][key]["value"] = value;
-    handleChange(keyParticipantData, filtersCopy);
+    if (asymmetricFilterId) {
+      handleAsymmetricFilterChange(
+        index,
+        key,
+        value,
+        filterTypeKey as keyof AsymmetricFilter,
+        asymmetricFilterId
+      );
+    } else {
+      const filtersCopy: any = structuredClone(participantCopy[filterTypeKey]);
+      filtersCopy[index]["config"][key]["value"] = value;
+      handleChange(filterTypeKey, filtersCopy);
+    }
+  };
+
+  const handleAsymmetricFilterChange = <T extends keyof AsymmetricFilter>(
+    index: number,
+    key: string,
+    value: number | string,
+    keyAsymmetricFilter: T,
+    asymmetricFilterId: string
+  ) => {
+    // change the filter value in asymmetric_filters object
+    const asymmetricFiltersCopy: AsymmetricFilter[] = structuredClone(
+      participantCopy.asymmetric_filters
+    );
+    const filters: any = asymmetricFiltersCopy.find((filter) => filter.id === asymmetricFilterId)[
+      keyAsymmetricFilter
+    ];
+    filters[index]["config"][key]["value"] = value;
+    const newParticipantData = { ...participantCopy };
+    newParticipantData.asymmetric_filters = asymmetricFiltersCopy;
+    setParticipantCopy(newParticipantData);
   };
 
   const handleChatChange = <T extends keyof Participant>(
@@ -163,6 +240,7 @@ function ParticipantDataModal({
   const onCloseModalWithoutData = () => {
     setShowParticipantInput(!showParticipantInput);
     setAsymmetricView(getAsymmetricParticipantDimensions(originalAsymmetricView));
+    setAsymmetricFilters(originalAsymmetricFilters);
 
     const newParticipantInputEmpty = participantCopy.participant_name === "";
     if (newParticipantInputEmpty) {
@@ -229,8 +307,23 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = async (filter: Filter) => {
-    setSelectedFilter(filter);
+  const handleFilterSelect = async (filter: Filter, asymmetricFilterId?: string | undefined) => {
+    asymmetricFilterId
+      ? setSelectedAsymmetricFilters((prevFilters) => {
+          const existingIndex = prevFilters.findIndex((f) => f.id === asymmetricFilterId);
+
+          if (existingIndex > -1) {
+            // Update existing filter
+            const updatedFilters = [...prevFilters];
+            updatedFilters[existingIndex] = { id: asymmetricFilterId, filter };
+            return updatedFilters;
+          } else {
+            // Add new filter
+            return [...prevFilters, { id: asymmetricFilterId, filter }];
+          }
+        })
+      : setSelectedFilter(filter);
+
     const newParticipantData = structuredClone(participantCopy);
     const newFilter = structuredClone(filter);
     newFilter.id = uuid();
@@ -252,10 +345,18 @@ function ParticipantDataModal({
           newFilter["config"][key]["value"] = id;
           setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
-            newParticipantData.video_filters.push(otherFilter);
+            asymmetricFilterId
+              ? newParticipantData.asymmetric_filters
+                  .find((item) => item.id === asymmetricFilterId)
+                  .video_filters.push(otherFilter)
+              : newParticipantData.video_filters.push(otherFilter);
           }
           if (otherFilter.channel === "audio" || otherFilter.channel === "both") {
-            newParticipantData.audio_filters.push(otherFilter);
+            asymmetricFilterId
+              ? newParticipantData.asymmetric_filters
+                  .find((item) => item.id === asymmetricFilterId)
+                  .audio_filters.push(otherFilter)
+              : newParticipantData.audio_filters.push(otherFilter);
           }
         }
       }
@@ -266,24 +367,39 @@ function ParticipantDataModal({
         .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
-      newParticipantData.video_filters.push(newFilter);
+      asymmetricFilterId
+        ? newParticipantData.asymmetric_filters
+            .find((item) => item.id === asymmetricFilterId)
+            .video_filters.push(newFilter)
+        : newParticipantData.video_filters.push(newFilter);
     }
     if (
       testData
         .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
         .includes(filter.id)
     ) {
-      newParticipantData.audio_filters.push(newFilter);
+      asymmetricFilterId
+        ? newParticipantData.asymmetric_filters
+            .find((item) => item.id === asymmetricFilterId)
+            .audio_filters.push(newFilter)
+        : newParticipantData.audio_filters.push(newFilter);
     }
     setParticipantCopy(newParticipantData);
   };
 
-  const handleSelectChatFilter = (chatFilter: ChatFilter) => {
-    setSelectedChatFilter(chatFilter);
+  const handleSelectChatFilter = (
+    chatFilter: ChatFilter,
+    asymmetricFilterId?: string | undefined
+  ) => {
+    asymmetricFilterId
+      ? setSelectedAsymmetricChatFilter(chatFilter)
+      : setSelectedChatFilter(chatFilter);
     const newParticipantData = structuredClone(participantCopy);
     const newFilter = structuredClone(chatFilter);
     newFilter.id = uuid();
-    newParticipantData.chat_filters.push(newFilter);
+    asymmetricFilterId
+      ? newParticipantData.chat_filters.push(null)
+      : newParticipantData.chat_filters.push(newFilter);
     setParticipantCopy(newParticipantData);
   };
 
@@ -341,16 +457,36 @@ function ParticipantDataModal({
     return newParticipantData;
   };
 
-  const handleDeleteVideoFilter = (videoFilter: Filter, filterCopyIndex: number) => {
+  const handleDeleteVideoFilter = (
+    videoFilter: Filter,
+    filterCopyIndex: number,
+    asymmetricFilterId?: string | undefined
+  ) => {
     const newParticipantData = structuredClone(participantCopy);
-    newParticipantData.video_filters.splice(filterCopyIndex, 1);
+
+    const video_filters = asymmetricFilterId
+      ? newParticipantData.asymmetric_filters.find((item) => item.id === asymmetricFilterId)
+          .video_filters
+      : newParticipantData.video_filters;
+
+    video_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(videoFilter, newParticipantData));
   };
 
-  const handleDeleteAudioFilter = (audioFilter: Filter, filterCopyIndex: number) => {
+  const handleDeleteAudioFilter = (
+    audioFilter: Filter,
+    filterCopyIndex: number,
+    asymmetricFilterId?: string | undefined
+  ) => {
     const newParticipantData = structuredClone(participantCopy);
-    newParticipantData.audio_filters.splice(filterCopyIndex, 1);
+
+    const audio_filters = asymmetricFilterId
+      ? newParticipantData.asymmetric_filters.find((item) => item.id === asymmetricFilterId)
+          .audio_filters
+      : newParticipantData.audio_filters;
+
+    audio_filters.splice(filterCopyIndex, 1);
 
     setParticipantCopy(deleteAllRequiredFilters(audioFilter, newParticipantData));
   };
@@ -375,8 +511,15 @@ function ParticipantDataModal({
           Participant Details
         </DialogTitle>
         <DialogContent>
-          <div className="flex">
-            <Box>
+          <Grid
+            maxWidth={1600}
+            minWidth={1600}
+            maxHeight={800}
+            minHeight={800}
+            container
+            spacing={{ xs: 3, md: 6 }}
+          >
+            <Grid item xs={4}>
               <Box
                 sx={{
                   display: "flex",
@@ -424,6 +567,15 @@ function ParticipantDataModal({
                   value={participantCopy.size.height}
                   disabled
                 />
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 4,
+                  my: 3
+                }}
+              >
                 <TextField
                   label="x coordinate"
                   size="small"
@@ -463,668 +615,162 @@ function ParticipantDataModal({
                   }}
                 />
               </Box>
-            </Box>
-            {/* Displays the list of filters available in the backend in a dropdown */}
-            <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-              <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
-                <InputLabel id="filters-select">Filters</InputLabel>
-                {
-                  <Select
-                    value={selectedFilter.name}
-                    id="filters-select"
-                    label="Filters"
-                    displayEmpty={true}
-                    renderValue={(selected) => {
-                      if (selected === "Placeholder") {
-                        return <em>Select a Filter</em>;
-                      }
-                      return selected;
-                    }}
-                  >
-                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
-                      Individual Filters
-                    </ListSubheader>
-                    {/* Uncomment the below block to use new filters. */}
-                    {individualFilters.map((individualFilter: Filter) => {
-                      return (
-                        <MenuItem
-                          key={individualFilter.id}
-                          value={individualFilter.name}
-                          onClick={() => handleFilterSelect(individualFilter)}
-                        >
-                          {individualFilter.name}
-                        </MenuItem>
-                      );
-                    })}
-                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
-                      Group Filters
-                    </ListSubheader>
-                    {groupFilters.map((groupFilter: Filter) => {
-                      return (
-                        <MenuItem
-                          key={groupFilter.id}
-                          value={groupFilter.name}
-                          onClick={() => handleFilterSelect(groupFilter)}
-                        >
-                          {groupFilter.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                }
-              </FormControl>
-              <Typography variant="caption" sx={{ mt: 4 }}>
-                (NOTE: You can select each filter multiple times)
-              </Typography>
-            </Box>
-
-            {chatFilters && (
-              <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-                <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
-                  <InputLabel id="filters-select">Chat Filters (BETA)</InputLabel>
-
-                  <Select
-                    value={selectedChatFilter.name}
-                    id="filters-select"
-                    label="Chat Filters (BETA)"
-                    displayEmpty={true}
-                    renderValue={(selected) => {
-                      if (selected === "Placeholder") {
-                        return <em>Select a Chat Filter</em>;
-                      }
-                      return selected;
-                    }}
-                  >
-                    <ListSubheader sx={{ fontWeight: "bold", color: "black" }}>
-                      Individual Filters
-                    </ListSubheader>
-                    {chatFilters.map((chatFilter: ChatFilter) => {
-                      return (
-                        <MenuItem
-                          key={chatFilter.id}
-                          value={chatFilter.name}
-                          onClick={() => handleSelectChatFilter(chatFilter)}
-                        >
-                          {chatFilter.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
-            )}
-
-            {/* Displays applied audio filters */}
-            <Box>
-              <Typography variant="overline" display="block">
-                Audio Filters
-              </Typography>
-              {participantCopy.audio_filters.map(
-                (audioFilter: Filter, audioFilterIndex: number) => {
-                  return (
-                    <Box
-                      key={audioFilterIndex}
-                      sx={{ display: "flex", justifyContent: "flex-start" }}
-                    >
-                      <Box sx={{ minWidth: 140 }}>
-                        <Chip
-                          key={audioFilterIndex}
-                          label={audioFilter.name}
-                          variant="outlined"
-                          size="medium"
-                          color="secondary"
-                          onDelete={() => {
-                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  );
-                }
-              )}
-
-              {/* Displays applied audio filters */}
-              <Box>
-                <Typography variant="overline" display="block">
-                  Audio Filters
-                </Typography>
-                {participantCopy.audio_filters.map(
-                  (audioFilter: Filter, audioFilterIndex: number) => {
-                    return (
-                      <Box
-                        key={audioFilterIndex}
-                        sx={{ display: "flex", justifyContent: "flex-start" }}
-                      >
-                        <Box sx={{ minWidth: 140 }}>
-                          <Chip
-                            key={audioFilterIndex}
-                            label={audioFilter.name}
-                            variant="outlined"
-                            size="medium"
-                            color="secondary"
-                            onDelete={() => {
-                              handleDeleteAudioFilter(audioFilter, audioFilterIndex);
-                            }}
-                          />
-                        </Box>
-
-                        {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            flexWrap: "wrap"
-                          }}
-                        >
-                          {Object.keys(audioFilter.config).map((configType, configIndex) => {
-                            if (Array.isArray(audioFilter["config"][configType]["defaultValue"])) {
-                              return (
-                                <FormControl
-                                  key={configIndex}
-                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                  size="small"
-                                >
-                                  <InputLabel htmlFor="grouped-select">
-                                    {configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                  </InputLabel>
-                                  <Select
-                                    key={configIndex}
-                                    value={
-                                      (audioFilter["config"][configType] as FilterConfigArray)[
-                                        "requiresOtherFilter"
-                                      ]
-                                        ? (
-                                            audioFilter["config"][configType][
-                                              "defaultValue"
-                                            ] as string[]
-                                          )[0]
-                                        : audioFilter["config"][configType]["value"]
-                                    }
-                                    id="grouped-select"
-                                    onChange={(e) => {
-                                      handleFilterChange(
-                                        audioFilterIndex,
-                                        configType,
-                                        e.target.value,
-                                        "audio_filters"
-                                      );
-                                    }}
-                                  >
-                                    {(
-                                      audioFilter["config"][configType]["defaultValue"] as string[]
-                                    ).map((value: string) => {
-                                      return (
-                                        <MenuItem key={value} value={value}>
-                                          {value}
-                                        </MenuItem>
-                                      );
-                                    })}
-                                  </Select>
-                                </FormControl>
-                              );
-                            } else if (
-                              typeof audioFilter["config"][configType]["defaultValue"] == "number"
-                            ) {
-                              return (
-                                <TextField
-                                  key={configIndex}
-                                  label={configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                  defaultValue={audioFilter["config"][configType]["value"]}
-                                  InputProps={{
-                                    inputProps: {
-                                      min: (
-                                        audioFilter["config"][configType] as FilterConfigNumber
-                                      )["min"],
-                                      max: (
-                                        audioFilter["config"][configType] as FilterConfigNumber
-                                      )["max"],
-                                      step: (
-                                        audioFilter["config"][configType] as FilterConfigNumber
-                                      )["step"]
-                                    }
-                                  }}
-                                  type="number"
-                                  size="small"
-                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                  onChange={(e) => {
-                                    handleFilterChange(
-                                      audioFilterIndex,
-                                      configType,
-                                      parseInt(e.target.value),
-                                      "audio_filters"
-                                    );
-                                  }}
-                                />
-                              );
-                            }
-                          })}
-                        </Box>
-                      </Box>
-                    );
-                  }
-                )}
-                {/* Displays applied video filters */}
-                <Typography variant="overline" display="block">
-                  Video Filters
-                </Typography>
-                {participantCopy.video_filters.map(
-                  (videoFilter: Filter, videoFilterIndex: number) => {
-                    return (
-                      <Box
-                        key={videoFilterIndex}
-                        sx={{ display: "flex", justifyContent: "flex-start" }}
-                      >
-                        <Box sx={{ minWidth: 140 }}>
-                          <Chip
-                            key={videoFilterIndex}
-                            label={videoFilter.name}
-                            variant="outlined"
-                            size="medium"
-                            color="secondary"
-                            onDelete={() => {
-                              handleDeleteVideoFilter(videoFilter, videoFilterIndex);
-                            }}
-                          />
-                        </Box>
-
-                        {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            flexWrap: "wrap"
-                          }}
-                        >
-                          {Object.keys(videoFilter.config).map((configType, configIndex) => {
-                            if (Array.isArray(videoFilter["config"][configType]["defaultValue"])) {
-                              return (
-                                <FormControl
-                                  key={configIndex}
-                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                  size="small"
-                                >
-                                  <InputLabel htmlFor="grouped-select">
-                                    {configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                  </InputLabel>
-                                  <Select
-                                    key={configIndex}
-                                    value={
-                                      (videoFilter["config"][configType] as FilterConfigArray)[
-                                        "requiresOtherFilter"
-                                      ]
-                                        ? (
-                                            videoFilter["config"][configType][
-                                              "defaultValue"
-                                            ] as string[]
-                                          )[0]
-                                        : videoFilter["config"][configType]["value"]
-                                    }
-                                    id="grouped-select"
-                                    onChange={(e) => {
-                                      handleFilterChange(
-                                        videoFilterIndex,
-                                        configType,
-                                        e.target.value,
-                                        "video_filters"
-                                      );
-                                    }}
-                                  >
-                                    {(
-                                      videoFilter["config"][configType]["defaultValue"] as string[]
-                                    ).map((value: string) => {
-                                      return (
-                                        <MenuItem key={value} value={value}>
-                                          {value}
-                                        </MenuItem>
-                                      );
-                                    })}
-                                  </Select>
-                                </FormControl>
-                              );
-                            } else if (
-                              typeof videoFilter["config"][configType]["defaultValue"] == "number"
-                            ) {
-                              return (
-                                <TextField
-                                  key={configIndex}
-                                  label={configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                  defaultValue={videoFilter["config"][configType]["value"]}
-                                  InputProps={{
-                                    inputProps: {
-                                      min: (
-                                        videoFilter["config"][configType] as FilterConfigNumber
-                                      )["min"],
-                                      max: (
-                                        videoFilter["config"][configType] as FilterConfigNumber
-                                      )["max"],
-                                      step: (
-                                        videoFilter["config"][configType] as FilterConfigNumber
-                                      )["step"]
-                                    }
-                                  }}
-                                  type="number"
-                                  size="small"
-                                  sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                  onChange={(e) => {
-                                    handleFilterChange(
-                                      videoFilterIndex,
-                                      configType,
-                                      parseInt(e.target.value),
-                                      "video_filters"
-                                    );
-                                  }}
-                                />
-                              );
-                            }
-                          })}
-                        </Box>
-                      </Box>
-                    );
-                  }
-                )}
-              </Box>
-              {/* Displays applied group filters */}
-              <Typography variant="overline" display="block">
-                Group Filters
-              </Typography>
-              {participantCopy.audio_group_filters.map(
-                (audioFilter: Filter, audioFilterIndex: number) => {
-                  return (
-                    <Box
-                      key={audioFilterIndex}
-                      sx={{ display: "flex", justifyContent: "flex-start" }}
-                    >
-                      <Box sx={{ minWidth: 140 }}>
-                        <Chip
-                          key={audioFilterIndex}
-                          label={audioFilter.name}
-                          variant="outlined"
-                          size="medium"
-                          color="secondary"
-                          onDelete={() => {
-                            handleDeleteAudioFilter(audioFilter, audioFilterIndex);
-                          }}
-                        />
-                      </Box>
-
-                      {/* If the config attribute is an array, renders a dropdown. If it is a number, renders an input for number */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-start",
-                          flexWrap: "wrap"
-                        }}
-                      >
-                        {Object.keys(audioFilter.config).map((configType, configIndex) => {
-                          if (Array.isArray(audioFilter["config"][configType]["defaultValue"])) {
-                            return (
-                              <FormControl
-                                key={configIndex}
-                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                size="small"
-                              >
-                                <InputLabel htmlFor="grouped-select">
-                                  {configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                </InputLabel>
-                                <Select
-                                  key={configIndex}
-                                  value={
-                                    (audioFilter["config"][configType] as FilterConfigArray)[
-                                      "requiresOtherFilter"
-                                    ]
-                                      ? (
-                                          audioFilter["config"][configType][
-                                            "defaultValue"
-                                          ] as string[]
-                                        )[0]
-                                      : audioFilter["config"][configType]["value"]
-                                  }
-                                  id="grouped-select"
-                                  onChange={(e) => {
-                                    handleFilterChange(
-                                      audioFilterIndex,
-                                      configType,
-                                      e.target.value,
-                                      "audio_filters"
-                                    );
-                                  }}
-                                >
-                                  {(
-                                    audioFilter["config"][configType]["defaultValue"] as string[]
-                                  ).map((value: string) => {
-                                    return (
-                                      <MenuItem key={value} value={value}>
-                                        {value}
-                                      </MenuItem>
-                                    );
-                                  })}
-                                </Select>
-                              </FormControl>
-                            );
-                          } else if (
-                            typeof audioFilter["config"][configType]["defaultValue"] == "number"
-                          ) {
-                            return (
-                              <TextField
-                                key={configIndex}
-                                label={configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                defaultValue={audioFilter["config"][configType]["value"]}
-                                InputProps={{
-                                  inputProps: {
-                                    min: (audioFilter["config"][configType] as FilterConfigNumber)[
-                                      "min"
-                                    ],
-                                    max: (audioFilter["config"][configType] as FilterConfigNumber)[
-                                      "max"
-                                    ],
-                                    step: (audioFilter["config"][configType] as FilterConfigNumber)[
-                                      "step"
-                                    ]
-                                  }
-                                }}
-                                type="number"
-                                size="small"
-                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                onChange={(e) => {
-                                  handleFilterChange(
-                                    audioFilterIndex,
-                                    configType,
-                                    parseInt(e.target.value),
-                                    "audio_filters"
-                                  );
-                                }}
-                              />
-                            );
-                          }
-                        })}
-                      </Box>
-                    </Box>
-                  );
-                }
-              )}
-              {participantCopy.video_group_filters.map(
-                (videoFilter: Filter, videoFilterIndex: number) => {
-                  console.log(videoFilter);
-                  return (
-                    <Box
-                      key={videoFilterIndex}
-                      sx={{ display: "flex", justifyContent: "flex-start" }}
-                    >
-                      <Box sx={{ minWidth: 140 }}>
-                        <Chip
-                          key={videoFilterIndex}
-                          label={videoFilter.name}
-                          variant="outlined"
-                          size="medium"
-                          color="secondary"
-                          onDelete={() => {
-                            handleDeleteVideoFilter(videoFilter, videoFilterIndex);
-                          }}
-                        />
-                      </Box>
-
-                      {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-start",
-                          flexWrap: "wrap"
-                        }}
-                      >
-                        {Object.keys(videoFilter.config).map((configType, configIndex) => {
-                          if (Array.isArray(videoFilter["config"][configType]["defaultValue"])) {
-                            return (
-                              <FormControl
-                                key={configIndex}
-                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                size="small"
-                              >
-                                <InputLabel htmlFor="grouped-select">
-                                  {configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                </InputLabel>
-                                <Select
-                                  key={configIndex}
-                                  value={
-                                    (videoFilter["config"][configType] as FilterConfigArray)[
-                                      "requiresOtherFilter"
-                                    ]
-                                      ? (
-                                          videoFilter["config"][configType][
-                                            "defaultValue"
-                                          ] as string[]
-                                        )[0]
-                                      : videoFilter["config"][configType]["value"]
-                                  }
-                                  id="grouped-select"
-                                  onChange={(e) => {
-                                    handleFilterChange(
-                                      videoFilterIndex,
-                                      configType,
-                                      e.target.value,
-                                      "video_filters"
-                                    );
-                                  }}
-                                >
-                                  {(
-                                    videoFilter["config"][configType]["defaultValue"] as string[]
-                                  ).map((value: string) => {
-                                    return (
-                                      <MenuItem key={value} value={value}>
-                                        {value}
-                                      </MenuItem>
-                                    );
-                                  })}
-                                </Select>
-                              </FormControl>
-                            );
-                          } else if (
-                            typeof videoFilter["config"][configType]["defaultValue"] == "number"
-                          ) {
-                            return (
-                              <TextField
-                                key={configIndex}
-                                label={configType.charAt(0).toUpperCase() + configType.slice(1)}
-                                defaultValue={videoFilter["config"][configType]["value"]}
-                                InputProps={{
-                                  inputProps: {
-                                    min: (videoFilter["config"][configType] as FilterConfigNumber)[
-                                      "min"
-                                    ],
-                                    max: (videoFilter["config"][configType] as FilterConfigNumber)[
-                                      "max"
-                                    ],
-                                    step: (videoFilter["config"][configType] as FilterConfigNumber)[
-                                      "step"
-                                    ]
-                                  }
-                                }}
-                                type="number"
-                                size="small"
-                                sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                                onChange={(e) => {
-                                  handleFilterChange(
-                                    videoFilterIndex,
-                                    configType,
-                                    parseInt(e.target.value),
-                                    "video_filters"
-                                  );
-                                }}
-                              />
-                            );
-                          }
-                        })}
-                      </Box>
-                    </Box>
-                  );
-                }
-              )}
-              <Typography variant="overline" display="block">
-                Chat Filters
-              </Typography>
-              {participantCopy.chat_filters.map((chatFilter: ChatFilter, index: number) => {
-                return (
-                  <Box key={index} sx={{ display: "flex", justifyContent: "flex-start" }}>
-                    <Box sx={{ minWidth: 140 }}>
-                      <Chip
-                        key={index}
-                        label={chatFilter.name}
-                        variant="outlined"
-                        size="medium"
-                        color="secondary"
-                        onDelete={() => {
-                          handleDeleteChatFilter(chatFilter, index);
-                        }}
-                      />
-                    </Box>
-
-                    {/* If the config attribute is an array, renders a dropdown. Incase of a number, renders an input for number */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        flexWrap: "wrap"
-                      }}
-                    >
-                      {Object.keys(chatFilter.config).map((configType, configIndex) => {
-                        if (chatFilter["config"][configType]["excludeExperimenter"]) {
-                          return (
-                            <FormControl
-                              key={configIndex}
-                              sx={{ m: 1, width: "10vw", minWidth: 130 }}
-                              size="small"
-                            >
-                              <InputLabel htmlFor="grouped-select">
-                                {configType.charAt(0).toUpperCase() + configType.slice(1)}
-                              </InputLabel>
-                            </FormControl>
-                          );
-                        }
-                      })}
-                    </Box>
-                  </Box>
-                );
-              })}
-              <FormControlLabel
-                control={<Checkbox />}
-                label="Asymmetric View"
-                checked={asymmetricView.length > 0}
-                onChange={(event) => {
-                  const isChecked = (event.target as HTMLInputElement).checked;
-
-                  isChecked ? setAsymmetricView(originalDimensions) : setAsymmetricView([]);
-                }}
+              {/* Displays the list of filters available in the backend in a dropdown */}
+              <FilterGroupDropdown
+                selectedFilter={selectedFilter}
+                selectedChatFilter={selectedChatFilter}
+                handleFilterSelect={handleFilterSelect}
+                handleSelectChatFilter={handleSelectChatFilter}
               />
-            </Box>
-            {asymmetricView.length > 0 && (
-              <div className="pl-5">
-                <DragAndDrop
-                  participantDimensions={asymmetricView}
-                  setParticipantDimensions={setAsymmetricView}
-                  asymmetricView={true}
+
+              <Box>
+                {/* Displays applied audio filters */}
+                <FilterList
+                  title="Audio Filters"
+                  filterType="audio_filters"
+                  filters={participantCopy.audio_filters}
+                  handleFilterChange={handleFilterChange}
+                  handleDelete={handleDeleteAudioFilter}
                 />
-              </div>
-            )}
-          </div>
+                {/* Displays applied video filters */}
+                <FilterList
+                  title="Video Filters"
+                  filterType="video_filters"
+                  filters={participantCopy.video_filters}
+                  handleFilterChange={handleFilterChange}
+                  handleDelete={handleDeleteVideoFilter}
+                />
+                {/* Displays applied group audio filters */}
+                <FilterList
+                  title="Group Audio Filters"
+                  filterType="audio_filters"
+                  filters={participantCopy.audio_group_filters}
+                  handleFilterChange={handleFilterChange}
+                  handleDelete={handleDeleteAudioFilter}
+                />
+                {/* Displays applied group video filters */}
+                <FilterList
+                  title="Group Video Filters"
+                  filterType="video_filters"
+                  filters={participantCopy.video_group_filters}
+                  handleFilterChange={handleFilterChange}
+                  handleDelete={handleDeleteVideoFilter}
+                />
+                {/* Displays applied chat filters */}
+                <FilterList
+                  title="Chat Filters"
+                  filterType="chat_filters"
+                  filters={participantCopy.chat_filters}
+                  handleFilterChange={handleFilterChange}
+                  handleDelete={handleDeleteChatFilter}
+                />
+              </Box>
+            </Grid>
+            {/*TODO: tabs for asymmetric view and filters*/}
+            <Grid item xs={8}>
+              <Tabs value={activeTab} onChange={(event, value) => setActiveTab(value)}>
+                <Tab label={"Asymmetric Canvas"} />
+                <Tab label={"Asymmetric Filters"} />
+              </Tabs>
+              {activeTab === ParticipantDataModalTab.AsymmetricCanvas && (
+                <Grid container direction="column" justifyContent="center">
+                  <FormControlLabel
+                    control={<Switch />}
+                    checked={asymmetricView.length > 0}
+                    onChange={(event) => {
+                      const isChecked = (event.target as HTMLInputElement).checked;
+
+                      isChecked ? setAsymmetricView(originalDimensions) : setAsymmetricView([]);
+                    }}
+                    label="Asymmetric View"
+                  />
+                  {asymmetricView.length > 0 && (
+                    <DragAndDrop
+                      participantDimensions={asymmetricView}
+                      setParticipantDimensions={setAsymmetricView}
+                      asymmetricView={true}
+                    />
+                  )}
+                </Grid>
+              )}
+              {activeTab === ParticipantDataModalTab.AsymmetricFilters && (
+                <Grid container direction="column" justifyContent="center">
+                  <FormControlLabel
+                    control={<Switch />}
+                    checked={asymmetricFilters.length > 0}
+                    onChange={(event) => {
+                      const isChecked = (event.target as HTMLInputElement).checked;
+
+                      if (isChecked) {
+                        setAsymmetricFilters(getAsymmetricFiltersArray(originalIdentifiers));
+                      } else {
+                        setAsymmetricFilters([]);
+                        setSelectedAsymmetricFilters([]);
+                      }
+                    }}
+                    label="Asymmetric Filters"
+                  />
+                  <Grid>
+                    {asymmetricFilters.length > 0 &&
+                      asymmetricFilters.map((a) => {
+                        return (
+                          <Box
+                            key={a.id}
+                            sx={{
+                              width: 800,
+                              marginBottom: 2,
+                              padding: 2,
+                              borderRadius: 1,
+                              bgcolor: "#f5f5f5"
+                            }}
+                          >
+                            <div>{a.participant_name}</div>
+                            <FilterGroupDropdown
+                              asymmetricFiltersId={a.id}
+                              selectedFilter={
+                                selectedAsymmetricFilters.find((f) => f.id === a.id)?.filter ||
+                                defaultFilter
+                              }
+                              selectedChatFilter={selectedAsymmetricChatFilter}
+                              handleFilterSelect={handleFilterSelect}
+                              handleSelectChatFilter={handleSelectChatFilter}
+                            />
+                            <Box>
+                              {/* Displays applied audio filters */}
+                              <FilterList
+                                asymmetricFilterId={a.id}
+                                title="Audio Filters"
+                                filterType="audio_filters"
+                                filters={
+                                  participantCopy.asymmetric_filters.find(
+                                    (item) => item.id === a.id
+                                  )?.audio_filters
+                                }
+                                handleFilterChange={handleFilterChange}
+                                handleDelete={handleDeleteAudioFilter}
+                              />
+                              {/* Displays applied video filters */}
+                              <FilterList
+                                asymmetricFilterId={a.id}
+                                title="Video Filters"
+                                filterType="video_filters"
+                                filters={
+                                  participantCopy.asymmetric_filters.find(
+                                    (item) => item.id === a.id
+                                  )?.video_filters
+                                }
+                                handleFilterChange={handleFilterChange}
+                                handleDelete={handleDeleteVideoFilter}
+                              />
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                  </Grid>
+                </Grid>
+              )}
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions sx={{ alignSelf: "center" }}>
           <ActionButton
