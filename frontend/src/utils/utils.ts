@@ -1,15 +1,14 @@
-import * as moment from "moment";
 import {
-  AsymmetricFilter,
   Box,
-  CanvasElement,
-  Filter,
   Group,
   Participant,
   Session,
-  Shape
+  Shape,
+  CanvasElement,
+  Filter,
+  AsymmetricFilter
 } from "../types";
-import { F } from "@storybook/react-webpack5/dist/types-6a41b796";
+import moment from "moment";
 
 export const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
