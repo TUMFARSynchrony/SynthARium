@@ -33,17 +33,11 @@ import {
   selectNumberOfParticipants
 } from "../../redux/slices/openSessionSlice";
 import { v4 as uuid } from "uuid";
-import filtersData from "../../filters_data.json";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { getAsymmetricParticipantDimensions, getAsymmetricViewArray } from "../../utils/utils";
 import chatFiltersData from "../../chat_filters.json";
 
 const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
-  return filter;
-});
-
-// Loading filters data before the component renders, because the Select component needs value.
-const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
   return filter;
 });
 
@@ -229,9 +223,11 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = async (filter: Filter) => {
+  const handleFilterSelect = async (filter: Filter, isGroupFilter: boolean) => {
+    console.log(filter, isGroupFilter);
     setSelectedFilter(filter);
     const newParticipantData = structuredClone(participantCopy);
+    console.log(newParticipantData);
     const newFilter = structuredClone(filter);
     newFilter.id = uuid();
 
@@ -240,40 +236,39 @@ function ParticipantDataModal({
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
         if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
           const otherFilter = structuredClone(
-            testData
-              .filter(
-                (filteredFilter) =>
-                  filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
-              )
-              .pop()
+            filtersData.find(
+              (filteredFilter) =>
+                filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
+            )
           );
           const id = uuid();
           otherFilter.id = id;
           newFilter["config"][key]["value"] = id;
-          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
+          // add bidirectional mapping of ids to required filters map; important for deleting filters
+          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id).set(newFilter.id, id)));
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
-            newParticipantData.video_filters.push(otherFilter);
+            otherFilter.groupFilter
+              ? newParticipantData.video_group_filters.push(otherFilter)
+              : newParticipantData.video_filters.push(otherFilter);
           }
           if (otherFilter.channel === "audio" || otherFilter.channel === "both") {
-            newParticipantData.audio_filters.push(otherFilter);
+            otherFilter.groupFilter
+              ? newParticipantData.audio_group_filters.push(otherFilter)
+              : newParticipantData.audio_filters.push(otherFilter);
           }
         }
       }
     }
 
-    if (
-      testData
-        .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
-        .includes(filter.id)
-    ) {
-      newParticipantData.video_filters.push(newFilter);
+    if (newFilter.channel === "video" || newFilter.channel === "both") {
+      isGroupFilter
+        ? newParticipantData.video_group_filters.push(newFilter)
+        : newParticipantData.video_filters.push(newFilter);
     }
-    if (
-      testData
-        .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
-        .includes(filter.id)
-    ) {
-      newParticipantData.audio_filters.push(newFilter);
+    if (newFilter.channel === "audio" || newFilter.channel === "both") {
+      isGroupFilter
+        ? newParticipantData.audio_group_filters.push(newFilter)
+        : newParticipantData.audio_filters.push(newFilter);
     }
     setParticipantCopy(newParticipantData);
   };
@@ -490,7 +485,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={individualFilter.id}
                           value={individualFilter.name}
-                          onClick={() => handleFilterSelect(individualFilter)}
+                          onClick={() => handleFilterSelect(individualFilter, false)}
                         >
                           {individualFilter.name}
                         </MenuItem>
@@ -504,7 +499,7 @@ function ParticipantDataModal({
                         <MenuItem
                           key={groupFilter.id}
                           value={groupFilter.name}
-                          onClick={() => handleFilterSelect(groupFilter)}
+                          onClick={() => handleFilterSelect(groupFilter, true)}
                         >
                           {groupFilter.name}
                         </MenuItem>
