@@ -15,7 +15,7 @@ class OpenFaceDockerized(OpenFace):
             self._logger.debug(f"Create openface container for port:{port} container-name:{self.container_name}")
             self._openface_process = subprocess.Popen(
                 [
-                    f"docker run -it -d --name {self.container_name} -p {port}:5555 test3 /bin/sh -c \
+                    f"docker run -it -d --name {self.container_name} -p {port}:5555 hhuseyinkacmaz/test2 /bin/sh -c \
                     \"./build/bin/AUExtractor 5555\""
                 ],
                 stdin=subprocess.PIPE,
