@@ -24,7 +24,7 @@ class Config:
     log_file: str | None
     log_dependencies: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
 
-    ping_subprocesses: float
+    ping_subprocesses: int
     experimenter_multiprocessing: bool
     participant_multiprocessing: bool
     post_processing: dict
@@ -54,7 +54,7 @@ class Config:
             "https": bool,
             "log": str,
             "log_dependencies": str,
-            "ping_subprocesses": float,
+            "ping_subprocesses": int,
             "experimenter_multiprocessing": bool,
             "participant_multiprocessing": bool,
             "post_processing": dict,
