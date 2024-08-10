@@ -176,8 +176,8 @@ function App() {
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
     if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
-      experimenterPassword = prompt("Please enter experimenter password", "no-password-given");
-      //experimenterPassword = "no-password-given";
+      //experimenterPassword = prompt("Please enter experimenter password", "no-password-given");
+      experimenterPassword = "no-password-given";
     }
 
     const asyncStreamHelper = async (connection) => {
