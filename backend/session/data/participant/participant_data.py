@@ -181,10 +181,12 @@ class ParticipantData(BaseData):
             ParticipantSummaryDict with some of the data in this ParticipantData.
         """
         return {
+            "id": self.id,
             "participant_name": self.participant_name,
             "size": self.size.asdict(),
             "position": self.position.asdict(),
             "chat": self.chat,
             "view": self.view,
             "canvas_id": self.canvas_id,
+            "asymmetric_filters_id": self.asymmetric_filters_id,
         }

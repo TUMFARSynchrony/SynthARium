@@ -290,7 +290,8 @@ or connection is not fully connected"
                 proposal = await self._connection.create_subscriber_proposal(self.id)
             else:
                 proposal = await self._connection.create_subscriber_proposal(
-                    self.get_summary()
+                    self.get_summary(),
+                    user
                 )
 
             msg = MessageDict(type="CONNECTION_PROPOSAL", data=proposal)

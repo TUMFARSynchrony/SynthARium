@@ -143,17 +143,20 @@ class ConnectionSubprocess(ConnectionInterface):
         return self._state
 
     async def create_subscriber_proposal(
-        self, participant_summary: ParticipantSummaryDict | str | None
+        self, participant_summary: ParticipantSummaryDict | str | None,
+        subscriber=None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
         # Send command and wait for response.
-        offer = await self._send_command_wait_for_response(
-            "CREATE_PROPOSAL", participant_summary
-        )
+        data = dict()
+        data['participant_summary'] = participant_summary
+        if subscriber is not None:
+            data['subscriber'] = subscriber.get_participant_data()
+        offer = await self._send_command_wait_for_response("CREATE_PROPOSAL", data)
         return offer
 
     async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
-        # For docstring see ConnectionInterface or hover over function declaration
+        # For docstring see ConnectionInterface or hover xover function declaration
         await self._send_command("ADD_ICE_CANDIDATE", candidate)
 
     async def handle_subscriber_offer(
