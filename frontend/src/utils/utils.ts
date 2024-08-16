@@ -199,17 +199,20 @@ export const getAsymmetricFiltersArray = (
     name: string;
     audio_filters: Filter[];
     video_filters: Filter[];
-  }>
+  }>,
+  asymmetric_filters_id: string | undefined
 ): AsymmetricFilter[] => {
   const filters: AsymmetricFilter[] = [];
 
   participantIdentifiers.forEach((p) => {
-    filters.push({
-      id: p.id,
-      participant_name: p.name,
-      audio_filters: [...p.audio_filters],
-      video_filters: [...p.video_filters]
-    });
+    if (asymmetric_filters_id !== p.id) {
+      filters.push({
+        id: p.id,
+        participant_name: p.name,
+        audio_filters: [...p.audio_filters],
+        video_filters: [...p.video_filters]
+      });
+    }
   });
 
   return filters;

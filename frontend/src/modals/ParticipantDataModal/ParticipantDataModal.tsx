@@ -702,7 +702,12 @@ function ParticipantDataModal({
                       const isChecked = (event.target as HTMLInputElement).checked;
 
                       if (isChecked) {
-                        setAsymmetricFilters(getAsymmetricFiltersArray(originalIdentifiers));
+                        setAsymmetricFilters(
+                          getAsymmetricFiltersArray(
+                            originalIdentifiers,
+                            originalParticipant?.asymmetric_filters_id
+                          )
+                        );
                       } else {
                         setAsymmetricFilters([]);
                         setSelectedAsymmetricFilters([]);
