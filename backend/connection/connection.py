@@ -92,8 +92,8 @@ class Connection(ConnectionInterface):
     _video_track: MediaStreamTrack
     _audio_track: MediaStreamTrack
     _relay: MediaRelay
-    _sub_connection_video_track_handlers: [TrackHandler]
-    _sub_connection_audio_track_handlers: [TrackHandler]
+    _sub_connection_video_track_handlers: dict[str, TrackHandler]
+    _sub_connection_audio_track_handlers: dict[str, TrackHandler]
 
     def __init__(
             self,
@@ -138,8 +138,8 @@ class Connection(ConnectionInterface):
         self._incoming_audio = TrackHandler("audio", self, filter_api)
         self._incoming_video = TrackHandler("video", self, filter_api)
         self._relay = MediaRelay()
-        self._sub_connection_audio_track_handlers = []
-        self._sub_connection_video_track_handlers = []
+        self._sub_connection_audio_track_handlers = dict()
+        self._sub_connection_video_track_handlers = dict()
 
         (record, record_to) = record_data
         self._audio_record_handler = RecordHandler(
@@ -256,7 +256,7 @@ class Connection(ConnectionInterface):
         return self._state
 
     async def create_sub_connection_video_track(
-            self, participant_summary: ParticipantSummaryDict | str | None,
+            self, sub_connection_id: str, participant_summary: ParticipantSummaryDict | str | None,
             subscriber=None
     ):
         if subscriber is not None:
@@ -268,13 +268,13 @@ class Connection(ConnectionInterface):
                                                        subscriber["video_group_filters"]),
                     video_track_handler.set_track(self._relay.subscribe(self._video_track, False))
                 )
-                self._sub_connection_video_track_handlers.append(video_track_handler)
+                self._sub_connection_video_track_handlers[sub_connection_id] = video_track_handler
                 return video_track_handler
 
         return self._incoming_video.subscribe()
 
     async def create_sub_connection_audio_track(
-            self, participant_summary: ParticipantSummaryDict | str | None,
+            self, sub_connection_id: str, participant_summary: ParticipantSummaryDict | str | None,
             subscriber=None
     ):
         if subscriber is not None:
@@ -286,7 +286,7 @@ class Connection(ConnectionInterface):
                                                        subscriber["video_group_filters"]),
                     audio_track_handler.set_track(self._relay.subscribe(self._audio_track, False))
                 )
-                self._sub_connection_audio_track_handlers.append(audio_track_handler)
+                self._sub_connection_audio_track_handlers[sub_connection_id] = audio_track_handler
                 return audio_track_handler
 
         return self._incoming_audio.subscribe()
@@ -298,8 +298,8 @@ class Connection(ConnectionInterface):
         sub_connection_id = shortuuid.uuid()
         sc = SubConnection(
             sub_connection_id,
-            await self.create_sub_connection_video_track(participant_summary, subscriber),
-            await self.create_sub_connection_audio_track(participant_summary, subscriber),
+            await self.create_sub_connection_video_track(sub_connection_id, participant_summary, subscriber),
+            await self.create_sub_connection_audio_track(sub_connection_id, participant_summary, subscriber),
             participant_summary,
             self._log_name_suffix,
         )
@@ -448,6 +448,10 @@ class Connection(ConnectionInterface):
         self._logger.debug(f"Remove sub connection {subconnection_id}")
         self._sub_connections.pop(subconnection_id)
         self._logger.debug(f"SubConnections after removing: {self._sub_connections}")
+        if subconnection_id in self._sub_connection_video_track_handlers:
+            self._sub_connection_video_track_handlers.pop(subconnection_id)
+        if subconnection_id in self._sub_connection_audio_track_handlers:
+            self._sub_connection_audio_track_handlers.pop(subconnection_id)
 
     def _on_datachannel(self, channel: RTCDataChannel) -> None:
         """Handle new incoming datachannel.
