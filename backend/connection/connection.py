@@ -28,6 +28,7 @@ from connection.messages import (
     AddIceCandidateDict,
 )
 from connection.sub_connection import SubConnection
+from connection.util import find_participant_asymmetric_filter
 from custom_types.error import ErrorDict
 from custom_types.message import MessageDict, is_valid_messagedict
 from filter_api import FilterAPIInterface
@@ -36,18 +37,8 @@ from filters.filter_data_dict import FilterDataDict
 from hub.exceptions import ErrorDictException
 from hub.record_handler import RecordHandler
 from hub.track_handler import TrackHandler
+from session.data.participant import ParticipantDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-
-
-def find_participant_asymmetric_filter(
-        participant_summary: ParticipantSummaryDict | str | None,
-        subscriber=None
-):
-    if subscriber is not None:
-        return next((f for f in subscriber["asymmetric_filters"] if
-                     f["id"] == participant_summary["asymmetric_filters_id"]), None)
-
-    return None
 
 
 class Connection(ConnectionInterface):
@@ -257,7 +248,7 @@ class Connection(ConnectionInterface):
 
     async def create_sub_connection_video_track(
             self, sub_connection_id: str, participant_summary: ParticipantSummaryDict | str | None,
-            subscriber=None
+            subscriber: ParticipantDict = None
     ):
         if subscriber is not None:
             asymmetric_filter = find_participant_asymmetric_filter(participant_summary, subscriber)
@@ -293,7 +284,7 @@ class Connection(ConnectionInterface):
 
     async def create_sub_connection(
             self, participant_summary: ParticipantSummaryDict | str | None,
-            subscriber=None
+            subscriber: ParticipantDict = None
     ) -> SubConnection:
         sub_connection_id = shortuuid.uuid()
         sc = SubConnection(
@@ -309,7 +300,7 @@ class Connection(ConnectionInterface):
 
     async def create_subscriber_proposal(
             self, participant_summary: ParticipantSummaryDict | str | None,
-            subscriber=None
+            subscriber: ParticipantDict = None
     ) -> ConnectionProposalDict:
         # from users import Participant§
         # For docstring see ConnectionInterface or hover over function declaration
