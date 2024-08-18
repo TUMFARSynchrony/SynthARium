@@ -178,7 +178,6 @@ class SessionData(BaseData):
             "end_survey_link": self.end_survey_link,
             "log": self.log,
         }
-        print("session dictionary as_dict call", session_dict)
         return session_dict
 
     def _set_variables(
