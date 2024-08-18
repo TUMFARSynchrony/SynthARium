@@ -12,6 +12,7 @@ const initialState: OpenSessionState = {
     id: "",
     title: "",
     description: "",
+    end_survey_link: "",
     date: 0,
     time_limit: 0,
     record: false,

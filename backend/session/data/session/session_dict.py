@@ -30,6 +30,8 @@ class SessionDict(TypedDict):
         Whether the experiment is to be recorded.
     participants : list of custom_types.participant.ParticipantDict
         List of invited participants.
+    end_survey_link : str
+        Link to the end survey which is displayed once the experiment is done to the participant.
     creation_time : int, default 0
         Time the experiment was created, if an experiment still exists.  A value grater
         than 0 indicates that there is a running experiment for this session.  Time in
@@ -59,6 +61,7 @@ class SessionDict(TypedDict):
     time_limit: int
     record: bool
     participants: list[ParticipantDict]
+    end_survey_link: str
     creation_time: int
     start_time: int
     end_time: int

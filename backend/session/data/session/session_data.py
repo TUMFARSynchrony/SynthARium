@@ -30,6 +30,7 @@ class SessionData(BaseData):
     description : str
     notes : list of custom_types.note.NoteDict
     participants : dict
+    end_survey_link : str
     log : Any or None
     creation_time : int or None
     end_time : int or None
@@ -74,7 +75,10 @@ class SessionData(BaseData):
     """Notes taken by a Experimenter during the experiment."""
 
     participants: dict[str, ParticipantData] = field(repr=False)
-    """Participants invited to this session.
+    """Participants invited to this session. """
+
+    end_survey_link: str = field(repr=False)
+    """Survey Link after completion of session
 
     Notes
     -----
@@ -171,9 +175,10 @@ class SessionData(BaseData):
             "start_time": self.start_time,
             "notes": self.notes,
             "participants": [p.asdict() for p in self.participants.values()],
+            "end_survey_link": self.end_survey_link,
             "log": self.log,
         }
-
+        print("session dictionary as_dict call", session_dict)
         return session_dict
 
     def _set_variables(
@@ -216,6 +221,7 @@ class SessionData(BaseData):
         self.creation_time = session_dict["creation_time"]
         self.end_time = session_dict["end_time"]
         self.start_time = session_dict["start_time"]
+        self.end_survey_link = session_dict["end_survey_link"]
 
         # Remove event listeners from current participants (before deleting them)
         for old_participant in self.participants.values():

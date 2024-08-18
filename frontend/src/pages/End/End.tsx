@@ -25,7 +25,11 @@ function End() {
         </p>
       </div>
       <div className="self-center h-fit">
-        <ActionButton text="Continue" variant="contained" />
+        <ActionButton
+          text="Continue"
+          variant="contained"
+          onClick={() => window.open(new URL(session.end_survey_link), "_blank")}
+        />
       </div>
     </div>
   );

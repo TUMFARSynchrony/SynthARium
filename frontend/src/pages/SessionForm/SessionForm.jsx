@@ -41,6 +41,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const [sessionData, setSessionData] = useState(openSession);
   const [title, setTitle] = useState(sessionData.title);
   const [description, setDescription] = useState(sessionData.description);
+  const [endSurveyLink, setEndSurveyLink] = useState(sessionData.end_survey_link);
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
   const [xAxis, setXAxis] = useState(0);
   const [yAxis, setYAxis] = useState(0);
@@ -175,6 +176,11 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     dispatch(changeValue({ objKey: "description", objValue: payload }));
   };
 
+  const handleSessionEndSurveyLinkChange = (payload) => {
+    setEndSurveyLink(payload);
+    dispatch(changeValue({ objKey: "end_survey_link", objValue: payload }));
+  };
+
   const onShowSessionFormModal = () => {
     setShowSessionDataForm(!showSessionDataForm);
   };
@@ -295,6 +301,16 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   })}
                 </div>
               </CardContent>
+              <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
+                End Survey Link
+              </Typography>
+              <TextField
+                label="End Survey Link"
+                value={endSurveyLink}
+                size="small"
+                required
+                onChange={(event) => handleSessionEndSurveyLinkChange(event.target.value)}
+              />
               <div className="flex justify-center h-full pb-2">
                 <div className="self-end">
                   <ActionButton
