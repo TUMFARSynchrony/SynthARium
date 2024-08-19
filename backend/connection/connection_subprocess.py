@@ -158,7 +158,7 @@ class ConnectionSubprocess(ConnectionInterface):
         return offer
 
     async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
-        # For docstring see ConnectionInterface or hover xover function declaration
+        # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("ADD_ICE_CANDIDATE", candidate)
 
     async def handle_subscriber_offer(

@@ -273,8 +273,8 @@ class Connection(ConnectionInterface):
             if asymmetric_filter is not None:
                 audio_track_handler = TrackHandler("audio", self, self._filter_api)
                 await asyncio.gather(
-                    audio_track_handler.complete_setup(asymmetric_filter["video_filters"],
-                                                       subscriber["video_group_filters"]),
+                    audio_track_handler.complete_setup(asymmetric_filter["audio_filters"],
+                                                       subscriber["audio_group_filters"]),
                     audio_track_handler.set_track(self._relay.subscribe(self._audio_track, False))
                 )
                 self._sub_connection_audio_track_handlers[sub_connection_id] = audio_track_handler
@@ -389,10 +389,10 @@ class Connection(ConnectionInterface):
             self._incoming_video.muted = video
         if self._incoming_audio is not None:
             self._incoming_audio.muted = audio
-        for video_track_handler in self._sub_connection_video_track_handlers:
-            video_track_handler.muted = video
-        for audio_track_handler in self._sub_connection_audio_track_handlers:
-            audio_track_handler.muted = audio
+        for sub_connection_id in self._sub_connection_video_track_handlers:
+            self._sub_connection_video_track_handlers[sub_connection_id].muted = video
+        for sub_connection_id in self._sub_connection_audio_track_handlers:
+            self._sub_connection_audio_track_handlers[sub_connection_id].muted = audio
 
     async def start_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
