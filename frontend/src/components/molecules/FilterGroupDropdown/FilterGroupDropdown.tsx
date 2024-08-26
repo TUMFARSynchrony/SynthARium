@@ -14,9 +14,9 @@ import chatFiltersData from "../../../chat_filters.json";
 interface FilterGroupDropdownProps {
   asymmetricFiltersId?: string;
   selectedFilter: Filter;
-  selectedChatFilter: ChatFilter;
+  selectedChatFilter?: ChatFilter;
   handleFilterSelect: (filter: Filter, asymmetricFiltersId?: string) => void;
-  handleSelectChatFilter: (chatFilter: ChatFilter, asymmetricFiltersId?: string) => void;
+  handleSelectChatFilter?: (chatFilter: ChatFilter, asymmetricFiltersId?: string) => void;
 }
 
 export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
@@ -86,7 +86,7 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
         <Typography variant="caption">(NOTE: You can select each filter multiple times)</Typography>
       </Box>
 
-      {chatFilters && (
+      {!asymmetricFiltersId && chatFilters && (
         <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
           <FormControl sx={{ m: 1, minWidth: 180 }} size="small">
             <InputLabel id="filters-select">Chat Filters (BETA)</InputLabel>

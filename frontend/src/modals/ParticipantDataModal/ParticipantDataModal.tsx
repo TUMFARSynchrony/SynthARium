@@ -1,36 +1,24 @@
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
-import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import InputLabel from "@mui/material/InputLabel";
-import ListSubheader from "@mui/material/ListSubheader";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 import React, { useEffect, useState } from "react";
 import { ActionButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { initialSnackbar } from "../../utils/constants";
-import {
-  getAsymmetricFiltersArray,
-  getAsymmetricParticipantIdentifiers,
-  getParticipantInviteLink
-} from "../../utils/utils";
+import { getAsymmetricFiltersArray, getParticipantInviteLink } from "../../utils/utils";
 import { useAppSelector } from "../../redux/hooks";
 import {
   Filter,
   ChatFilter,
   FilterConfigArray,
-  FilterConfigNumber,
   Participant,
   Shape,
   Group,
@@ -48,7 +36,8 @@ import chatFiltersData from "../../chat_filters.json";
 import Grid from "@mui/material/Grid";
 import { FilterList } from "../../components/molecules/FilterList/FilterList";
 import { FilterGroupDropdown } from "../../components/molecules/FilterGroupDropdown/FilterGroupDropdown";
-import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
@@ -127,8 +116,6 @@ function ParticipantDataModal({
   const [selectedAsymmetricFilters, setSelectedAsymmetricFilters] = useState<
     { id: string; filter: Filter }[]
   >([]);
-  const [selectedAsymmetricChatFilter, setSelectedAsymmetricChatFilter] =
-    useState<ChatFilter>(defaultChatFilter);
   const filtersData = useAppSelector(selectFiltersDataSession);
   const individualFilters = filtersData.filter((filter) => filter.groupFilter !== true);
   const groupFilters = filtersData.filter((filter) => filter.groupFilter === true);
@@ -143,6 +130,9 @@ function ParticipantDataModal({
   const originalAsymmetricFilters = structuredClone(originalParticipant.asymmetric_filters);
   const [asymmetricFilters, setAsymmetricFilters] = useState(
     originalParticipant.asymmetric_filters || []
+  );
+  const [isAsymmetricFiltersDisabled, setIsAsymmetricFiltersDisabled] = useState(
+    participantIdentifiers.length <= 1
   );
 
   const [activeTab, setActiveTab] = useState(ParticipantDataModalTab.AsymmetricCanvas);
@@ -182,6 +172,10 @@ function ParticipantDataModal({
   useEffect(() => {
     handleChange("asymmetric_filters", asymmetricFilters);
   }, [asymmetricFilters]);
+
+  useEffect(() => {
+    setIsAsymmetricFiltersDisabled(participantIdentifiers.length <= 1);
+  }, [participantIdentifiers]);
 
   const handleFilterChange = <T extends keyof Participant | keyof AsymmetricFilter>(
     index: number,
@@ -387,19 +381,12 @@ function ParticipantDataModal({
     setParticipantCopy(newParticipantData);
   };
 
-  const handleSelectChatFilter = (
-    chatFilter: ChatFilter,
-    asymmetricFilterId?: string | undefined
-  ) => {
-    asymmetricFilterId
-      ? setSelectedAsymmetricChatFilter(chatFilter)
-      : setSelectedChatFilter(chatFilter);
+  const handleSelectChatFilter = (chatFilter: ChatFilter) => {
+    setSelectedChatFilter(chatFilter);
     const newParticipantData = structuredClone(participantCopy);
     const newFilter = structuredClone(chatFilter);
     newFilter.id = uuid();
-    asymmetricFilterId
-      ? newParticipantData.chat_filters.push(null)
-      : newParticipantData.chat_filters.push(newFilter);
+    newParticipantData.chat_filters.push(newFilter);
     setParticipantCopy(newParticipantData);
   };
 
@@ -695,26 +682,39 @@ function ParticipantDataModal({
               )}
               {activeTab === ParticipantDataModalTab.AsymmetricFilters && (
                 <Grid container direction="column" justifyContent="center">
-                  <FormControlLabel
-                    control={<Switch />}
-                    checked={asymmetricFilters.length > 0}
-                    onChange={(event) => {
-                      const isChecked = (event.target as HTMLInputElement).checked;
+                  <Grid container alignItems="center">
+                    <FormControlLabel
+                      disabled={isAsymmetricFiltersDisabled}
+                      control={<Switch />}
+                      checked={asymmetricFilters.length > 0}
+                      onChange={(event) => {
+                        const isChecked = (event.target as HTMLInputElement).checked;
+                        console.log("test1");
+                        if (isChecked) {
+                          console.log("test");
+                          setAsymmetricFilters(
+                            getAsymmetricFiltersArray(
+                              originalIdentifiers,
+                              originalParticipant?.asymmetric_filters_id
+                            )
+                          );
+                        } else {
+                          setAsymmetricFilters([]);
+                          setSelectedAsymmetricFilters([]);
+                        }
+                      }}
+                      label="Asymmetric Filters"
+                    />
+                    {isAsymmetricFiltersDisabled && (
+                      <Tooltip
+                        arrow
+                        title="To enable asymmetric filters, please ensure that the experiment includes at least two participants."
+                      >
+                        <InfoOutlinedIcon color={"info"} />
+                      </Tooltip>
+                    )}
+                  </Grid>
 
-                      if (isChecked) {
-                        setAsymmetricFilters(
-                          getAsymmetricFiltersArray(
-                            originalIdentifiers,
-                            originalParticipant?.asymmetric_filters_id
-                          )
-                        );
-                      } else {
-                        setAsymmetricFilters([]);
-                        setSelectedAsymmetricFilters([]);
-                      }
-                    }}
-                    label="Asymmetric Filters"
-                  />
                   <Grid>
                     {asymmetricFilters.length > 0 &&
                       asymmetricFilters.map((a) => {
@@ -736,9 +736,7 @@ function ParticipantDataModal({
                                 selectedAsymmetricFilters.find((f) => f.id === a.id)?.filter ||
                                 defaultFilter
                               }
-                              selectedChatFilter={selectedAsymmetricChatFilter}
                               handleFilterSelect={handleFilterSelect}
-                              handleSelectChatFilter={handleSelectChatFilter}
                             />
                             <Box>
                               {/* Displays applied audio filters */}
