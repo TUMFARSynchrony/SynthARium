@@ -246,51 +246,47 @@ class Connection(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         return self._state
 
-    async def create_sub_connection_video_track(
-            self, sub_connection_id: str, participant_summary: ParticipantSummaryDict | str | None,
-            subscriber: ParticipantDict = None
-    ):
-        if subscriber is not None:
-            asymmetric_filter = find_participant_asymmetric_filter(participant_summary, subscriber)
-            if asymmetric_filter is not None:
-                video_track_handler = TrackHandler("video", self, self._filter_api)
-                await asyncio.gather(
-                    video_track_handler.complete_setup(asymmetric_filter["video_filters"],
-                                                       subscriber["video_group_filters"]),
-                    video_track_handler.set_track(self._relay.subscribe(self._video_track, False))
-                )
-                self._sub_connection_video_track_handlers[sub_connection_id] = video_track_handler
-                return video_track_handler
-
-        return self._incoming_video.subscribe()
-
-    async def create_sub_connection_audio_track(
-            self, sub_connection_id: str, participant_summary: ParticipantSummaryDict | str | None,
+    async def create_sub_connection_media_tracks(
+            self,
+            sub_connection_id: str,
+            participant_summary: ParticipantSummaryDict | str | None,
             subscriber=None
-    ):
+    ) -> Tuple[MediaStreamTrack, MediaStreamTrack]:
         if subscriber is not None:
             asymmetric_filter = find_participant_asymmetric_filter(participant_summary, subscriber)
             if asymmetric_filter is not None:
                 audio_track_handler = TrackHandler("audio", self, self._filter_api)
+                video_track_handler = TrackHandler("video", self, self._filter_api)
                 await asyncio.gather(
                     audio_track_handler.complete_setup(asymmetric_filter["audio_filters"],
                                                        subscriber["audio_group_filters"]),
-                    audio_track_handler.set_track(self._relay.subscribe(self._audio_track, False))
+                    audio_track_handler.set_track(self._relay.subscribe(self._audio_track, False)),
+                    video_track_handler.complete_setup(asymmetric_filter["video_filters"],
+                                                       subscriber["video_group_filters"]),
+                    video_track_handler.set_track(self._relay.subscribe(self._video_track, False))
+
                 )
                 self._sub_connection_audio_track_handlers[sub_connection_id] = audio_track_handler
-                return audio_track_handler
+                self._sub_connection_video_track_handlers[sub_connection_id] = video_track_handler
+                return audio_track_handler, video_track_handler
 
-        return self._incoming_audio.subscribe()
+        return self._incoming_audio.subscribe(), self._incoming_video.subscribe()
 
     async def create_sub_connection(
-            self, participant_summary: ParticipantSummaryDict | str | None,
+            self,
+            participant_summary: ParticipantSummaryDict | str | None,
             subscriber: ParticipantDict = None
     ) -> SubConnection:
         sub_connection_id = shortuuid.uuid()
+        audio_track, video_track = await self.create_sub_connection_media_tracks(
+            sub_connection_id,
+            participant_summary,
+            subscriber
+        )
         sc = SubConnection(
             sub_connection_id,
-            await self.create_sub_connection_video_track(sub_connection_id, participant_summary, subscriber),
-            await self.create_sub_connection_audio_track(sub_connection_id, participant_summary, subscriber),
+            video_track,
+            audio_track,
             participant_summary,
             self._log_name_suffix,
         )
