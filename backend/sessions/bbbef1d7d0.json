@@ -35,7 +35,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "12345"
+            "canvas_id": "12345",
+            "asymmetric_filters_id": "12345",
+            "asymmetric_filters": []
         },
         {
             "id": "b",
@@ -62,7 +64,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "67890"
+            "canvas_id": "67890",
+            "asymmetric_filters_id": "67890",
+            "asymmetric_filters": []
         },
         {
             "id": "c",
@@ -89,7 +93,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "23456"
+            "canvas_id": "23456",
+            "asymmetric_filters_id": "23456",
+            "asymmetric_filters": []
         },
         {
             "id": "d",
@@ -116,7 +122,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "34567"
+            "canvas_id": "34567",
+            "asymmetric_filters_id": "34567",
+            "asymmetric_filters": []
         },
         {
             "id": "e",
@@ -143,7 +151,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "45678"
+            "canvas_id": "45678",
+            "asymmetric_filters_id": "45678",
+            "asymmetric_filters": []
         },
         {
             "id": "f",
@@ -170,7 +180,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "56789"
+            "canvas_id": "56789",
+            "asymmetric_filters_id": "56789",
+            "asymmetric_filters": []
         },
         {
             "id": "g",
@@ -197,7 +209,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "78901"
+            "canvas_id": "78901",
+            "asymmetric_filters_id": "78901",
+            "asymmetric_filters": []
         },
         {
             "id": "h",
@@ -224,7 +238,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "89012"
+            "canvas_id": "89012",
+            "asymmetric_filters_id": "89012",
+            "asymmetric_filters": []
         },
         {
             "id": "i",
@@ -251,7 +267,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "90123"
+            "canvas_id": "90123",
+            "asymmetric_filters_id": "90123",
+            "asymmetric_filters": []
         },
         {
             "id": "j",
@@ -278,7 +296,9 @@
             "lastMessageSentTime": 0,
             "lastMessageReadTime": 0,
             "view": [],
-            "canvas_id": "01234"
+            "canvas_id": "01234",
+            "asymmetric_filters_id": "01234",
+            "asymmetric_filters": []
         }
     ],
     "log": []
