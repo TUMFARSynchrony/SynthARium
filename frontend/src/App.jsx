@@ -510,7 +510,7 @@ function App() {
             path="/"
             element={
               <PageTemplate
-                title={"Synchrony Experimental Hub"}
+                title={"SynthARium"}
                 customComponent={
                   <SessionOverview
                     onDeleteSession={onDeleteSession}
