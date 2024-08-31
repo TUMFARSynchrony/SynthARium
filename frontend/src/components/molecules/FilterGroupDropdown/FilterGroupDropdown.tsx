@@ -5,11 +5,11 @@ import Select from "@mui/material/Select";
 import ListSubheader from "@mui/material/ListSubheader";
 import { ChatFilter, Filter } from "../../../types";
 import MenuItem from "@mui/material/MenuItem";
-import Typography from "@mui/material/Typography";
 import React from "react";
 import { useAppSelector } from "../../../redux/hooks";
 import { selectFiltersDataSession } from "../../../redux/slices/openSessionSlice";
 import chatFiltersData from "../../../chat_filters.json";
+import Alert from "@mui/material/Alert";
 
 interface FilterGroupDropdownProps {
   asymmetricFiltersId?: string;
@@ -83,7 +83,9 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
             </Select>
           }
         </FormControl>
-        <Typography variant="caption">(NOTE: You can select each filter multiple times)</Typography>
+        <Alert severity="info" sx={{ padding: "2px 8px" }}>
+          You can select each filter multiple times
+        </Alert>
       </Box>
 
       {!asymmetricFiltersId && chatFilters && (

@@ -36,8 +36,9 @@ import chatFiltersData from "../../chat_filters.json";
 import Grid from "@mui/material/Grid";
 import { FilterList } from "../../components/molecules/FilterList/FilterList";
 import { FilterGroupDropdown } from "../../components/molecules/FilterGroupDropdown/FilterGroupDropdown";
-import Tooltip from "@mui/material/Tooltip";
+import { Tooltip } from "@nextui-org/react";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 
 const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
@@ -593,14 +594,26 @@ function ParticipantDataModal({
                     handleChange("muted_video", !participantCopy.muted_video);
                   }}
                 />
-                <FormControlLabel
-                  control={<Checkbox />}
-                  label="Local Stream"
-                  checked={participantCopy.local_stream}
-                  onChange={() => {
-                    handleChange("local_stream", !participantCopy.local_stream);
-                  }}
-                />
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <FormControlLabel
+                    control={<Checkbox />}
+                    label="Local Stream"
+                    checked={participantCopy.local_stream}
+                    onChange={() => {
+                      handleChange("local_stream", !participantCopy.local_stream);
+                    }}
+                  />
+                  <Tooltip
+                    showArrow
+                    style={{ width: 300 }}
+                    closeDelay={300}
+                    radius={"sm"}
+                    placement={"right"}
+                    content="Enable local stream option to display the participant's own video stream"
+                  >
+                    <HelpOutlineOutlinedIcon />
+                  </Tooltip>
+                </Box>
               </Box>
               {/* Displays the list of filters available in the backend in a dropdown */}
               <FilterGroupDropdown
@@ -653,7 +666,6 @@ function ParticipantDataModal({
                 />
               </Box>
             </Grid>
-            {/*TODO: tabs for asymmetric view and filters*/}
             <Grid item xs={8}>
               <Tabs value={activeTab} onChange={(event, value) => setActiveTab(value)}>
                 <Tab label={"Asymmetric Canvas"} />
@@ -689,9 +701,7 @@ function ParticipantDataModal({
                       checked={asymmetricFilters.length > 0}
                       onChange={(event) => {
                         const isChecked = (event.target as HTMLInputElement).checked;
-                        console.log("test1");
                         if (isChecked) {
-                          console.log("test");
                           setAsymmetricFilters(
                             getAsymmetricFiltersArray(
                               originalIdentifiers,
@@ -707,8 +717,12 @@ function ParticipantDataModal({
                     />
                     {isAsymmetricFiltersDisabled && (
                       <Tooltip
-                        arrow
-                        title="To enable asymmetric filters, please ensure that the experiment includes at least two participants."
+                        showArrow
+                        style={{ width: 300 }}
+                        closeDelay={300}
+                        radius={"sm"}
+                        placement={"bottom"}
+                        content="To enable asymmetric filters, please ensure that the experiment includes at least two participants."
                       >
                         <InfoOutlinedIcon color={"info"} />
                       </Tooltip>
@@ -726,7 +740,8 @@ function ParticipantDataModal({
                               marginBottom: 2,
                               padding: 2,
                               borderRadius: 1,
-                              bgcolor: "#f5f5f5"
+                              borderWidth: 1,
+                              bgcolor: "#fcfcfc"
                             }}
                           >
                             <div>{a.participant_name}</div>
