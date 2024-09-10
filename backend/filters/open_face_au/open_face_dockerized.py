@@ -1,5 +1,7 @@
 import logging
 import subprocess
+import shlex 
+import platform 
 
 from filters.open_face_au.open_face_subprocess import OpenFace
 
@@ -13,11 +15,14 @@ class OpenFaceDockerized(OpenFace):
             self._logger = logging.getLogger("OpenFaceDockerized")
             self.container_name = f'openface-container-{port}'
             self._logger.debug(f"Create openface container for port:{port} container-name:{self.container_name}")
+            
+            command = f"docker run -it -d --name {self.container_name} -p {port}:5555 hhuseyinkacmaz/test2 /bin/sh -c \"./build/bin/AUExtractor 5555\""
+            
+            if platform.system() == 'Windows':
+                command = shlex.split(command)
+            
             self._openface_process = subprocess.Popen(
-                [
-                    f"docker run -it -d --name {self.container_name} -p {port}:5555 hhuseyinkacmaz/test2 /bin/sh -c \
-                    \"./build/bin/AUExtractor 5555\""
-                ],
+                command,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
