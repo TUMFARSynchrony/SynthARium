@@ -503,7 +503,7 @@ function App() {
 
   return (
     <div className="App">
-      {sessionsList ? (
+      {connectionState == ConnectionState.CONNECTED ? (
         <Routes>
           <Route
             exact
