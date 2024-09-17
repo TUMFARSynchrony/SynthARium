@@ -41,6 +41,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const [sessionData, setSessionData] = useState(openSession);
   const [title, setTitle] = useState(sessionData.title);
   const [description, setDescription] = useState(sessionData.description);
+  const [date, setDate] = useState(sessionData.date);
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
   const [xAxis, setXAxis] = useState(0);
   const [yAxis, setYAxis] = useState(0);
@@ -175,6 +176,11 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     dispatch(changeValue({ objKey: "description", objValue: payload }));
   };
 
+  const handleSessionDateChange = (payload) => {
+    setDate(payload);
+    dispatch(changeValue({ objKey: "date", objValue: payload }));
+  };
+
   const onShowSessionFormModal = () => {
     setShowSessionDataForm(!showSessionDataForm);
   };
@@ -227,7 +233,13 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                     />
                     <TextField
                       label="Description"
-                      value={description}
+                      value={
+                        description
+                          ? description
+                          : handleSessionDescriptionChange(
+                              "This is a sample description for your experiment."
+                            )
+                      }
                       size="small"
                       required
                       onChange={(event) => handleSessionDescriptionChange(event.target.value)}
@@ -235,7 +247,11 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   </Box>
                   <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
                     <TextField
-                      value={sessionData.date ? formatDate(sessionData.date) : ""}
+                      value={
+                        sessionData.date
+                          ? formatDate(sessionData.date)
+                          : handleSessionDateChange(new Date("9999-12-31T00:00").getTime())
+                      }
                       type="datetime-local"
                       size="small"
                       required
