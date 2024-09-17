@@ -503,32 +503,36 @@ function App() {
 
   return (
     <div className="App">
-      {connectionState == ConnectionState.CONNECTED ? (
+      {sessionsList ? (
         <Routes>
           <Route
             exact
             path="/"
             element={
-              <PageTemplate
-                title={"SynthARium"}
-                customComponent={
-                  <SessionOverview
-                    onDeleteSession={onDeleteSession}
-                    onCreateExperiment={onCreateExperiment}
-                    onJoinExperiment={onJoinExperiment}
-                  />
-                }
-                buttonListComponent={
-                  <HeaderActionArea
-                    buttons={[
-                      {
-                        onClick: () => navigate("/postProcessingRoom"),
-                        label: "Post-Processing Room"
-                      }
-                    ]}
-                  />
-                }
-              />
+              connectionState == ConnectionState.CONNECTED ? (
+                <PageTemplate
+                  title={"SynthARium"}
+                  customComponent={
+                    <SessionOverview
+                      onDeleteSession={onDeleteSession}
+                      onCreateExperiment={onCreateExperiment}
+                      onJoinExperiment={onJoinExperiment}
+                    />
+                  }
+                  buttonListComponent={
+                    <HeaderActionArea
+                      buttons={[
+                        {
+                          onClick: () => navigate("/postProcessingRoom"),
+                          label: "Post-Processing Room"
+                        }
+                      ]}
+                    />
+                  }
+                />
+              ) : (
+                <h1>Loading...</h1>
+              )
             }
           />
           <Route
