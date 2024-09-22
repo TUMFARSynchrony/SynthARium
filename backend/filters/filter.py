@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy
-from typing import TYPE_CHECKING, TypeGuard
+from typing import TYPE_CHECKING, TypeGuard, Optional
 from abc import ABC, abstractmethod
 from av import VideoFrame, AudioFrame
 
@@ -57,8 +57,8 @@ class Filter(ABC):
     def __init__(
         self,
         config: FilterDict,
-        audio_track_handler: TrackHandler,
-        video_track_handler: TrackHandler,
+        audio_track_handler: Optional[TrackHandler] = None,
+        video_track_handler: Optional[TrackHandler] = None,
     ) -> None:
         """Initialize new Filter.
 
