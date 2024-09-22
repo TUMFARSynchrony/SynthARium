@@ -392,6 +392,7 @@ function App() {
 
   const handleFiltersConfig = (data) => {
     dispatch(initializeFiltersData(data));
+    console.log("Received filter config data:", data);
   };
 
   const handleFiltersData = (data) => {
@@ -486,6 +487,35 @@ function App() {
     connection.sendMessage("CHECK_POST_PROCESSING", {});
   };
 
+  const onApplyFiltersToVideos = (sessionId, filterRequests) => {
+    const formattedFilterRequests = filterRequests
+      .map(({ filter, videos }) => {
+        if (filter.groupFilter) {
+          return {
+            video_filenames: videos,
+            filter_configs: [filter]
+          };
+        } else {
+          // Handle individual filters
+          return videos.map((video) => ({
+            video_filenames: video,
+            filter_configs: [filter]
+          }));
+        }
+      })
+      .flat();
+
+    console.log("Sending request:", {
+      session_id: sessionId,
+      videos: formattedFilterRequests
+    });
+
+    connection.sendMessage("APPLY_FILTER_TO_VIDEO", {
+      session_id: sessionId,
+      videos: formattedFilterRequests
+    });
+  };
+
   const onUpdateMessageReadTime = (participantId, lastMessageReadTime) => {
     connection.sendMessage("UPDATE_READ_MESSAGE_TIME", {
       participant_id: participantId,
@@ -548,6 +578,8 @@ function App() {
                     onPostProcessingVideo={onPostProcessingVideo}
                     onCheckPostProcessing={onCheckPostProcessing}
                     onGetRecordingList={onGetRecordingList}
+                    onApplyFiltersToVideos={onApplyFiltersToVideos}
+                    onGetFiltersConfig={onGetFiltersConfig}
                   />
                 }
                 centerContentOnYAxis={true}
