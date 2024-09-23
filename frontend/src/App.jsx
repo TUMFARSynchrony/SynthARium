@@ -43,6 +43,7 @@ import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
+import { CircularProgress } from "@mui/material";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -531,7 +532,12 @@ function App() {
                   }
                 />
               ) : (
-                <h1>Loading...</h1>
+                <>
+                  <div className="flex flex-col items-center mt-10">
+                    <CircularProgress />
+                    <h1>Loading...</h1>
+                  </div>
+                </>
               )
             }
           />
