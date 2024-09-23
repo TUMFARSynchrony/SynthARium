@@ -1,7 +1,7 @@
 FILTER_CONFIG_MAPPING = {
-    "EDGE_OUTLINE": "manipulative",
-    "ROTATION": "manipulative",
-    "DELAY": "manipulative",
-    "OPENFACE_AU": "analysis",
-    "SYNC_SCORE_GF": "analysis",
+    "EDGE_OUTLINE": {"type": "manipulative", "externalProcess": False},
+    "ROTATION": {"type": "manipulative", "externalProcess": False},
+    "DELAY": {"type": "manipulative", "externalProcess": False},
+    "OPENFACE_AU": {"type": "analysis", "externalProcess": False},
+    "SYNC_SCORE_GF": {"type": "analysis", "externalProcess": True},
 }
