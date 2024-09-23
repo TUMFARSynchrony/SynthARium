@@ -87,7 +87,7 @@ function App() {
   const gptKeyValid = useRef();
   useEffect(() => {
     const openai = new OpenAI({
-      apiKey: process.env.REACT_APP_CHAT_GPT_API_KEY,
+      apiKey: import.meta.env.VITE_CHAT_GPT_API_KEY,
       dangerouslyAllowBrowser: true
     });
 
