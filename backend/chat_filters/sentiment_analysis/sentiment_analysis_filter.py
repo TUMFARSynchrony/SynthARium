@@ -9,7 +9,7 @@ class SentimentAnalysisFilter(ChatFilter):
 
     def __init__(self):
         self.sentiment_classifier = pipeline(
-           "text-classification", model="cardiffnlp/twitter-roberta-base-sentiment"
+            "text-classification", model="cardiffnlp/twitter-roberta-base-sentiment"
         )
 
     @staticmethod
@@ -23,9 +23,9 @@ class SentimentAnalysisFilter(ChatFilter):
     def apply_filter(self, chat_message: str):
         sentiment_score = self.sentiment_classifier(chat_message)[0]
         if sentiment_score["label"] == "LABEL_0":
-           sentiment_score["label"] = "negative"
+            sentiment_score["label"] = "negative"
         elif sentiment_score["label"] == "LABEL_2":
-           sentiment_score["label"] = "positive"
+            sentiment_score["label"] = "positive"
         else:
             sentiment_score["label"] = "neutral"
         return sentiment_score
