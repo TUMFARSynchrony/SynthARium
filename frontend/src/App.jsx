@@ -510,35 +510,33 @@ function App() {
             exact
             path="/"
             element={
-              connectionState == ConnectionState.CONNECTED ? (
-                <PageTemplate
-                  title={"SynthARium"}
-                  customComponent={
+              <PageTemplate
+                title={"SynthARium"}
+                customComponent={
+                  connectionState == ConnectionState.CONNECTED ? (
                     <SessionOverview
                       onDeleteSession={onDeleteSession}
                       onCreateExperiment={onCreateExperiment}
                       onJoinExperiment={onJoinExperiment}
                     />
-                  }
-                  buttonListComponent={
-                    <HeaderActionArea
-                      buttons={[
-                        {
-                          onClick: () => navigate("/postProcessingRoom"),
-                          label: "Post-Processing Room"
-                        }
-                      ]}
-                    />
-                  }
-                />
-              ) : (
-                <>
-                  <div className="flex flex-col items-center mt-10">
-                    <CircularProgress />
-                    <h1>Loading...</h1>
-                  </div>
-                </>
-              )
+                  ) : (
+                    <div className="flex flex-col items-center mt-10">
+                      <CircularProgress />
+                      <h1>Loading...</h1>
+                    </div>
+                  )
+                }
+                buttonListComponent={
+                  <HeaderActionArea
+                    buttons={[
+                      {
+                        onClick: () => navigate("/postProcessingRoom"),
+                        label: "Post-Processing Room"
+                      }
+                    ]}
+                  />
+                }
+              />
             }
           />
           <Route
