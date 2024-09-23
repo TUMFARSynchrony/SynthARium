@@ -164,11 +164,9 @@ function ParticipantDataModal({
     handleChange("view", getAsymmetricViewArray(asymmetricView));
   }, [asymmetricView]);
 
-  // useEffect(() => {
-  //   setAsymmetricFilters(
-  //     getAsymmetricParticipantIdentifiers(originalParticipant.asymmetric_filters)
-  //   );
-  // }, [originalParticipant.asymmetric_filters]);
+  useEffect(() => {
+    setAsymmetricFilters(originalParticipant?.asymmetric_filters);
+  }, [originalParticipant?.asymmetric_filters]);
 
   useEffect(() => {
     handleChange("asymmetric_filters", asymmetricFilters);
@@ -494,7 +492,11 @@ function ParticipantDataModal({
         severity={snackbar.severity}
         handleClose={() => setSnackbar(initialSnackbar)}
       />
-      <Dialog open={showParticipantInput} onClose={() => onCloseModalWithoutData()} maxWidth={"xl"}>
+      <Dialog
+        open={showParticipantInput}
+        onClose={() => onCloseModalWithoutData()}
+        sx={{ "& .MuiDialog-paper": { width: "1600px", maxWidth: "1600px" } }}
+      >
         <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
           Participant Details
         </DialogTitle>

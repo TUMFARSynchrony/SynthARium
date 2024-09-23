@@ -155,11 +155,11 @@ class Connection(ConnectionInterface):
         pc.add_listener("connectionstatechange", self._on_connection_state_change)
         pc.add_listener("track", self._on_track)
 
-    def set_video_track(self, value: MediaStreamTrack):
-        self._video_track = value
+    def _set_video_track(self, track: MediaStreamTrack):
+        self._video_track = track
 
-    def set_audio_track(self, value: MediaStreamTrack):
-        self._audio_track = value
+    def _set_audio_track(self, track: MediaStreamTrack):
+        self._audio_track = track
 
     async def complete_setup(
             self,
@@ -246,12 +246,12 @@ class Connection(ConnectionInterface):
         # For docstring see ConnectionInterface or hover over function declaration
         return self._state
 
-    async def create_sub_connection_media_tracks(
+    async def _create_sub_connection_media_tracks(
             self,
             sub_connection_id: str,
             participant_summary: ParticipantSummaryDict | str | None,
-            subscriber=None
-    ) -> Tuple[MediaStreamTrack, MediaStreamTrack]:
+            subscriber: ParticipantDict | None = None
+    ) -> tuple[TrackHandler, TrackHandler] | tuple[MediaStreamTrack, MediaStreamTrack]:
         if subscriber is not None:
             asymmetric_filter = find_participant_asymmetric_filter(participant_summary, subscriber)
             if asymmetric_filter is not None:
@@ -272,13 +272,13 @@ class Connection(ConnectionInterface):
 
         return self._incoming_audio.subscribe(), self._incoming_video.subscribe()
 
-    async def create_sub_connection(
+    async def _create_sub_connection(
             self,
             participant_summary: ParticipantSummaryDict | str | None,
-            subscriber: ParticipantDict = None
+            subscriber: ParticipantDict | None = None
     ) -> SubConnection:
         sub_connection_id = shortuuid.uuid()
-        audio_track, video_track = await self.create_sub_connection_media_tracks(
+        audio_track, video_track = await self._create_sub_connection_media_tracks(
             sub_connection_id,
             participant_summary,
             subscriber
@@ -296,12 +296,9 @@ class Connection(ConnectionInterface):
 
     async def create_subscriber_proposal(
             self, participant_summary: ParticipantSummaryDict | str | None,
-            subscriber: ParticipantDict = None
+            subscriber: ParticipantDict | None = None
     ) -> ConnectionProposalDict:
-        # from users import Participant§
-        # For docstring see ConnectionInterface or hover over function declaration
-
-        sc: SubConnection = await self.create_sub_connection(participant_summary, subscriber)
+        sc: SubConnection = await self._create_sub_connection(participant_summary, subscriber)
         return sc.proposal
 
     async def handle_add_ice_candidate(self, candidate: RTCIceCandidate):
@@ -437,8 +434,12 @@ class Connection(ConnectionInterface):
         self._logger.debug(f"SubConnections after removing: {self._sub_connections}")
         if subconnection_id in self._sub_connection_video_track_handlers:
             self._sub_connection_video_track_handlers.pop(subconnection_id)
+            self._logger.debug(
+                f"Sub-connection video track handler after removing: {self._sub_connection_video_track_handlers}")
         if subconnection_id in self._sub_connection_audio_track_handlers:
             self._sub_connection_audio_track_handlers.pop(subconnection_id)
+            self._logger.debug(
+                f"Sub-connection audio track handler after removing: {self._sub_connection_audio_track_handlers}")
 
     def _on_datachannel(self, channel: RTCDataChannel) -> None:
         """Handle new incoming datachannel.
@@ -556,7 +557,7 @@ class Connection(ConnectionInterface):
         self._logger.debug(f"{track.kind} track received")
         if track.kind == "audio":
             task = asyncio.create_task(self._incoming_audio.set_track(track))
-            self.set_audio_track(track)
+            self._set_audio_track(track)
             sender = self._main_pc.addTrack(self._incoming_audio.subscribe())
             self._audio_record_handler.add_track(self._incoming_audio.subscribe())
             self._listen_to_track_close(self._incoming_audio, sender)
@@ -564,7 +565,7 @@ class Connection(ConnectionInterface):
             # Use relay to be able to access track multiple times
             relay = MediaRelay()
             task = asyncio.create_task(self._incoming_video.set_track(relay.subscribe(track, False)))
-            self.set_video_track(relay.subscribe(track, False))
+            self._set_video_track(track)
             sender = self._main_pc.addTrack(self._incoming_video.subscribe())
             self._video_record_handler.add_track(self._incoming_video.subscribe())
             self._raw_video_record_handler.add_track(relay.subscribe(track, False))
