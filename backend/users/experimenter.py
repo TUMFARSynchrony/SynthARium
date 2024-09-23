@@ -1296,9 +1296,9 @@ class Experimenter(User):
                     description="Each video request must contain 'video_filenames' and 'filter_configs'."
                 )
 
-            processor_type = self._get_processor_type(filter_configs)
+            processor_type, external_process = self._get_processor_type(filter_configs)
             video_processor = self._create_video_processor(processor_type, filter_configs, session_id, video_filenames,
-                                                           sessions_path, output_dir)
+                                                           sessions_path, output_dir, external_process)
 
             video_post_processor.video_processors.append(video_processor)
 
@@ -1321,27 +1321,30 @@ class Experimenter(User):
 
     def _get_processor_type(self, filter_configs):
         """Determine the processor type (manipulative or analysis) based on the filter configs."""
-        processor_types = set(FILTER_CONFIG_MAPPING.get(cfg.get("name")) for cfg in filter_configs)
+        processor_types = set(FILTER_CONFIG_MAPPING[cfg.get("name")]["type"] for cfg in filter_configs)
         if len(processor_types) != 1:
             raise ErrorDictException(
                 code=400,
                 type="INVALID_FILTER",
                 description="All filters must be of the same processor type."
             )
-        return processor_types.pop()
+
+        external_process = any(FILTER_CONFIG_MAPPING[cfg.get("name")]["externalProcess"] for cfg in filter_configs)
+
+        return processor_types.pop(), external_process
 
     def _create_video_processor(self, processor_type, filter_configs, session_id, video_filenames, sessions_path,
-                                output_dir):
+                                output_dir, external_process):
         """Create a VideoProcessor based on the processor type."""
         filters = [filter_factory.create_filter(cfg) for cfg in filter_configs if not cfg.get('groupFilter')]
         group_filters = [create_group_filter(cfg, session_id) for cfg in filter_configs if cfg.get('groupFilter')]
 
         if processor_type == "manipulative":
             return ManipulativeVideoProcessor(session_id, video_filenames, sessions_path, output_dir, filters,
-                                              group_filters)
+                                              group_filters, external_process)
         elif processor_type == "analysis":
             return AnalyticsVideoProcessor(session_id, video_filenames, sessions_path, output_dir, filters,
-                                           group_filters, True)
+                                           group_filters, external_process)
         else:
             raise ErrorDictException(
                 code=400,
