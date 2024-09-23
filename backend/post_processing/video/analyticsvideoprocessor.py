@@ -12,27 +12,17 @@ from post_processing.video.video_processor import VideoProcessor
 
 
 class AnalyticsVideoProcessor(VideoProcessor):
-    def __init__(
-        self,
-        session_id: str,
-        video_filenames: Union[str, List[str]],
-        sessions_path: str,
-        output_dir: str,
-        filters: Optional[List] = None,
-        group_filters: Optional[List] = None,
-        external_tool: bool = False,
-    ):
-        super().__init__(session_id, video_filenames, sessions_path, output_dir, filters, group_filters)
-        self.external_tool = external_tool
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.participant_data = {}
-        self.post_processing = None
+        self.external_processing_tool = self.setup_external_processing_tool()
 
-        if external_tool:
-            self.post_processing = VideoPostProcessing()
+    def setup_external_processing_tool(self):
+        return VideoPostProcessing()
 
     async def process(self, batch_size: int = 5):
         """Process videos either with an external tool or in-memory."""
-        if self.external_tool:
+        if self.external_process:
             recording_list = self.prepare_recording_list()
             await self.process_with_external_tool(recording_list)
         else:
@@ -58,7 +48,7 @@ class AnalyticsVideoProcessor(VideoProcessor):
 
     async def finalize_output(self):
         """Finalize processing by generating CSV files."""
-        if not self.external_tool:
+        if not self.external_process:
             tasks = []
             for participant_id, data in self.participant_data.items():
                 output_csv = os.path.join(self.output_dir, f"{participant_id}_data.csv")
@@ -85,19 +75,19 @@ class AnalyticsVideoProcessor(VideoProcessor):
         return match.group(1) if match else "unknown"
 
     async def process_with_external_tool(self, recording_list: List["PostProcessingData"]):
-        existing_process = self.post_processing.check_existing_process()
+        existing_process = self.external_processing_tool.check_existing_process()
         if existing_process.get("is_processing"):
             self.logger.warning("Existing process detected. Waiting...")
             while existing_process.get("is_processing"):
                 await asyncio.sleep(5)
-                existing_process = self.post_processing.check_existing_process()
+                existing_process = self.external_processing_tool.check_existing_process()
 
-        self.post_processing.recording_list = recording_list
+        self.external_processing_tool.recording_list = recording_list
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self.post_processing.execute)
+        await loop.run_in_executor(None, self.external_processing_tool.execute)
 
         while True:
-            existing_process = self.post_processing.check_existing_process()
+            existing_process = self.external_processing_tool.check_existing_process()
             if not existing_process.get("is_processing"):
                 break
             await asyncio.sleep(1)

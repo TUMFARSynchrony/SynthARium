@@ -2,6 +2,7 @@ import asyncio
 import os
 from abc import ABC, abstractmethod
 from typing import Optional, Union, Dict, List
+from post_processing.video.post_processing import VideoPostProcessing
 import logging
 
 import cv2
@@ -26,6 +27,7 @@ class VideoProcessor(ABC):
         output_dir: str,
         filters: Optional[List] = None,
         group_filters: Optional[List] = None,
+        external_process: bool = False
     ):
         self.session_id = session_id
         if isinstance(video_filenames, str):
@@ -37,9 +39,14 @@ class VideoProcessor(ABC):
         self.filters = filters or []
         self.group_filters = group_filters or []
         self.logger = logging.getLogger(__name__)
+        self.external_process = external_process
 
     @abstractmethod
     async def process(self, batch_size: int = 5):
+        pass
+
+    @abstractmethod
+    def setup_external_processing_tool(self):
         pass
 
     async def process_videos(self, batch_size: int = 5):

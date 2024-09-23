@@ -18,6 +18,8 @@ class ManipulativeVideoProcessor(VideoProcessor):
         """Process the videos by applying manipulative filters."""
         await self.process_videos(batch_size)
 
+    def setup_external_processing_tool(self):
+        pass
     async def setup_output(self, filename: str, cap: cv2.VideoCapture):
         """Set up the video writer for output."""
         self.output_path = os.path.join(self.output_dir, filename)
