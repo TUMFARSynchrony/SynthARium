@@ -9,15 +9,6 @@ import cv2
 import numpy as np
 
 
-class VideoPostProcessor:
-    def __init__(self, video_processors: List["VideoProcessor"]):
-        self.video_processors = video_processors
-
-    async def execute(self):
-        """Execute processing for each VideoProcessor in the list concurrently."""
-        await asyncio.gather(*(vp.process() for vp in self.video_processors))
-
-
 class VideoProcessor(ABC):
     def __init__(
             self,
