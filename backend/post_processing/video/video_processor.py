@@ -20,14 +20,14 @@ class VideoPostProcessor:
 
 class VideoProcessor(ABC):
     def __init__(
-        self,
-        session_id: str,
-        video_filenames: Union[str, List[str]],
-        sessions_path: str,
-        output_dir: str,
-        filters: Optional[List] = None,
-        group_filters: Optional[List] = None,
-        external_process: bool = False
+            self,
+            session_id: str,
+            video_filenames: Union[str, List[str]],
+            sessions_path: str,
+            output_dir: str,
+            filters: Optional[List] = None,
+            group_filters: Optional[List] = None,
+            external_process: bool = False
     ):
         self.session_id = session_id
         if isinstance(video_filenames, str):
@@ -42,11 +42,31 @@ class VideoProcessor(ABC):
         self.external_process = external_process
 
     @abstractmethod
+    def setup_external_processing_tool(self):
+        pass
+
+    @abstractmethod
     async def process(self, batch_size: int = 5):
         pass
 
     @abstractmethod
-    def setup_external_processing_tool(self):
+    async def process_with_external_tool(self, **kwargs):
+        pass
+
+    @abstractmethod
+    async def setup_output(self, filename: str, cap: cv2.VideoCapture):
+        pass
+
+    @abstractmethod
+    async def handle_frame_output(self, frame: np.ndarray):
+        pass
+
+    @abstractmethod
+    def collect_participant_data(self, data):
+        pass
+
+    @abstractmethod
+    async def finalize_output(self):
         pass
 
     async def process_videos(self, batch_size: int = 5):
@@ -86,7 +106,6 @@ class VideoProcessor(ABC):
         await self.finalize_output()
 
     async def process_batch(self, batch_frames: List[np.ndarray], start_frame_index: int):
-        """Process a batch of frames sequentially."""
         for i, frame in enumerate(batch_frames):
             frame_index = start_frame_index + i
             try:
@@ -117,19 +136,3 @@ class VideoProcessor(ABC):
             return await asyncio.get_event_loop().run_in_executor(
                 None, group_filter.process_individual_frame, None, frame
             )
-
-    @abstractmethod
-    async def setup_output(self, filename: str, cap: cv2.VideoCapture):
-        pass
-
-    @abstractmethod
-    async def handle_frame_output(self, frame: np.ndarray):
-        pass
-
-    def collect_participant_data(self, data):
-        """Default implementation does nothing."""
-        pass
-
-    @abstractmethod
-    async def finalize_output(self):
-        pass

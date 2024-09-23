@@ -15,7 +15,6 @@ class ManipulativeVideoProcessor(VideoProcessor):
         self.out = None
 
     async def process(self, batch_size: int = 5):
-        """Process the videos by applying manipulative filters."""
         await self.process_videos(batch_size)
 
     def setup_external_processing_tool(self):
