@@ -32,7 +32,7 @@ import {
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
 import { v4 as uuid } from "uuid";
-import { useNavigate as navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
@@ -52,6 +52,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     getParticipantDimensions(sessionData.participants ? sessionData.participants : [])
   );
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const navigate = useNavigate();
 
   // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
   // It is displayed here instead of in the Participant Modal itself, since upon closing the modal it is no longer
@@ -210,19 +211,14 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     onSendSessionToBackend(sessionData);
   };
 
-  // const onLeavePage = () => {
-  //   if (isFormDirty) {
-  //     const handleBeforeUnload = (event) => {
-  //       event.preventDefault();
-  //       prompt();
-  //     };
-  //     return () => {
-  //       window.removeEventListener("beforeunload", handleBeforeUnload);
-  //     };
-  //   } else {
-  //     navigate("/");
-  //   }
-  // };
+  const handleLeavePage = () => {
+    const userConfirmed = window.confirm(
+      "Are you sure you want to leave this page? Unsaved changes may be lost."
+    );
+    if (userConfirmed) {
+      navigate("/");
+    }
+  };
 
   return (
     <>
@@ -236,7 +232,8 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   text="Back to Session Overview"
                   variant="text"
                   size="small"
-                  path="/"
+                  onClick={isFormDirty ? handleLeavePage : null}
+                  path={isFormDirty ? null : "/"}
                 />
               </div>
               <CardContent>
