@@ -30,6 +30,7 @@ import { getParticipantInviteLink, integerToDateTime, isFutureSession } from "..
 import { ActionIconButton } from "../../atoms/Button";
 import CustomSnackbar from "../../atoms/CustomSnackbar/CustomSnackbar";
 import { setCurrentSession } from "../../../redux/slices/sessionsListSlice";
+import { IconButton } from "@mui/material";
 
 function SessionPreview({
   selectedSession,
@@ -125,14 +126,35 @@ function SessionPreview({
               {selectedSession.participants.map((participant, participantIndex) => {
                 return (
                   <div key={participantIndex}>
-                    <ListItemButton
+                    <ListItem
                       sx={{ pl: 4 }}
-                      onClick={() => handleSingleParticipantClick(participantIndex)}
+                      disableGutters
+                      secondaryAction={
+                        <IconButton onClick={() => handleSingleParticipantClick(participantIndex)}>
+                          {expandedParticipant === participantIndex ? (
+                            <ExpandLess />
+                          ) : (
+                            <ExpandMore />
+                          )}
+                        </IconButton>
+                      }
                     >
                       <ListItemText primary={`${participant.participant_name}`} />
-                      {expandedParticipant === participantIndex ? <ExpandLess /> : <ExpandMore />}
-                    </ListItemButton>
-
+                      <ActionIconButton
+                        text="INVITE"
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        onClick={() =>
+                          handleCopyParticipantInviteLink(
+                            participant.id,
+                            participant.participant_name,
+                            selectedSession.id
+                          )
+                        }
+                        icon={<ContentCopyIcon />}
+                      />
+                    </ListItem>
                     {/* Displays a collapsible view of the filters and invite link of selected participant */}
                     <Collapse
                       in={expandedParticipant === participantIndex}
