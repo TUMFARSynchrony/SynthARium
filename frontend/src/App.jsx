@@ -43,6 +43,7 @@ import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
+import { ErrorBoundary } from "react-error-boundary";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -779,10 +780,12 @@ function App() {
               <PageTemplate
                 title={"Session Form"}
                 customComponent={
-                  <SessionForm
-                    onSendSessionToBackend={onSendSessionToBackend}
-                    onGetFiltersConfig={onGetFiltersConfig}
-                  />
+                  <ErrorBoundary fallback={<div>Something went wrong</div>}>
+                    <SessionForm
+                      onSendSessionToBackend={onSendSessionToBackend}
+                      onGetFiltersConfig={onGetFiltersConfig}
+                    />
+                  </ErrorBoundary>
                 }
                 centerContentOnYAxis={true}
               />
