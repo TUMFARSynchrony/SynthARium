@@ -126,19 +126,7 @@ function SessionPreview({
               {selectedSession.participants.map((participant, participantIndex) => {
                 return (
                   <div key={participantIndex}>
-                    <ListItem
-                      sx={{ pl: 4 }}
-                      disableGutters
-                      secondaryAction={
-                        <IconButton onClick={() => handleSingleParticipantClick(participantIndex)}>
-                          {expandedParticipant === participantIndex ? (
-                            <ExpandLess />
-                          ) : (
-                            <ExpandMore />
-                          )}
-                        </IconButton>
-                      }
-                    >
+                    <ListItem sx={{ pl: 4 }} disableGutters>
                       <ListItemText primary={`${participant.participant_name}`} />
                       <ActionIconButton
                         text="INVITE"
@@ -153,6 +141,15 @@ function SessionPreview({
                           )
                         }
                         icon={<ContentCopyIcon />}
+                      />
+                      <IconButton onClick={() => handleSingleParticipantClick(participantIndex)}>
+                        {expandedParticipant === participantIndex ? <ExpandLess /> : <ExpandMore />}
+                      </IconButton>
+                      <CustomSnackbar
+                        open={snackbar.open}
+                        text={snackbar.text}
+                        severity={snackbar.severity}
+                        handleClose={handleCloseParticipantInviteLinkFeedback}
                       />
                     </ListItem>
                     {/* Displays a collapsible view of the filters and invite link of selected participant */}
