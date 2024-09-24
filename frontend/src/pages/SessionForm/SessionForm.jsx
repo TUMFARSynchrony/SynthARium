@@ -32,6 +32,7 @@ import {
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
 import { v4 as uuid } from "uuid";
+import { useNavigate as navigate } from "react-router-dom";
 
 function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
@@ -50,6 +51,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const [participantDimensions, setParticipantDimensions] = useState(
     getParticipantDimensions(sessionData.participants ? sessionData.participants : [])
   );
+  const [isFormDirty, setIsFormDirty] = useState(false);
 
   // It is used as flags to display warning notifications upon entry of incorrect data/not saved in the Participant Modal.
   // It is displayed here instead of in the Participant Modal itself, since upon closing the modal it is no longer
@@ -102,7 +104,21 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     onGetFiltersConfig();
   }, []);
 
+  // useEffect(() => {
+  //   const handleBeforeUnload = (event) => {
+  //     event.preventDefault();
+  //     // Custom logic to handle the refresh
+  //     // Display a confirmation message or perform necessary actions
+  //     prompt("Hi");
+  //   };
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, []);
+
   const handleCanvasPlacement = (participantCount) => {
+    setIsFormDirty(true);
     if (participantCount !== 0 && participantCount % 20 === 0) {
       setXAxis((participantCount / 20) * 250);
       setYAxis(0);
@@ -118,6 +134,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   };
 
   const onAddParticipant = () => {
+    setIsFormDirty(true);
     const canvasId = uuid();
     dispatch(
       addParticipant({
@@ -149,6 +166,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   };
 
   const handleParticipantChange = (index, participant) => {
+    setIsFormDirty(true);
     dispatch(changeParticipant({ participant: participant, index: index }));
 
     let newParticipantDimensions = [...participantDimensions];
@@ -160,15 +178,18 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   };
 
   const handleSessionDataChange = (objKey, newObj) => {
+    setIsFormDirty(true);
     dispatch(changeValue({ objKey: objKey, objValue: newObj }));
   };
 
   const handleSessionTitleChange = (payload) => {
+    setIsFormDirty(true);
     setTitle(payload);
     dispatch(changeValue({ objKey: "title", objValue: payload }));
   };
 
   const handleSessionDescriptionChange = (payload) => {
+    setIsFormDirty(true);
     setDescription(payload);
     dispatch(changeValue({ objKey: "description", objValue: payload }));
   };
@@ -188,6 +209,20 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     }
     onSendSessionToBackend(sessionData);
   };
+
+  // const onLeavePage = () => {
+  //   if (isFormDirty) {
+  //     const handleBeforeUnload = (event) => {
+  //       event.preventDefault();
+  //       prompt();
+  //     };
+  //     return () => {
+  //       window.removeEventListener("beforeunload", handleBeforeUnload);
+  //     };
+  //   } else {
+  //     navigate("/");
+  //   }
+  // };
 
   return (
     <>
