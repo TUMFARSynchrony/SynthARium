@@ -1,5 +1,6 @@
 import asyncio
 import os
+from typing import List
 
 import cv2
 import numpy as np
@@ -7,7 +8,7 @@ import numpy as np
 from post_processing.video.video_processor import VideoProcessor
 
 
-class ManipulativeVideoProcessor(VideoProcessor):
+class ManipulationVideoProcessor(VideoProcessor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -19,6 +20,16 @@ class ManipulativeVideoProcessor(VideoProcessor):
 
     def setup_external_processing_tool(self):
         pass
+
+    def collect_participant_data(self, data):
+        pass
+
+    async def process_with_external_tool_group_filter(self, **kwargs):
+        pass
+
+    async def process_with_external_tool_individual_filter(self, **kwargs):
+        pass
+
     async def setup_output(self, filename: str, cap: cv2.VideoCapture):
         """Set up the video writer for output."""
         self.output_path = os.path.join(self.output_dir, filename)
@@ -31,7 +42,7 @@ class ManipulativeVideoProcessor(VideoProcessor):
 
         self.out = cv2.VideoWriter(self.output_path, fourcc, fps, (width, height))
 
-    async def handle_frame_output(self, frame: np.ndarray):
+    async def handle_frame_output(self, frame: np.ndarray, participant_id):
         """Write the processed frame to the output video."""
         if self.out is not None:
             await asyncio.get_event_loop().run_in_executor(None, self.out.write, frame)
