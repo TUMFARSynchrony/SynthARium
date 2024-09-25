@@ -14,7 +14,7 @@ import {
 import ParticipantsTab from "../../components/molecules/ParticipantsTab/ParticipantsTab";
 import "./ExperimentOverview.css";
 import StartVerificationModal from "../../modals/StartVerificationModal/StartVerificationModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EndVerificationModal from "../../modals/EndVerificationModal/EndVerificationModal";
 import { FilterInformationTab } from "../../components/molecules/FilterInformationTab/FilterInformationTab";
 import { ChatGptTab } from "../../components/molecules/ChatGptTab/ChatGptTab";
@@ -41,16 +41,33 @@ function ExperimentOverview({
   const isParticipantsModalActive = useAppSelector(selectParticipantsTab);
   const isFilterInformationModalActive = useAppSelector(selectFilterInformationTab);
   const isChatGptModalActive = useAppSelector(selectChatGptTab);
+  const [storedSessionData, setStoredSessionData] = useState(
+    JSON.parse(sessionStorage.getItem("currentSession"))
+  );
+
+  useEffect(() => {
+    if (sessionData) {
+      sessionStorage.setItem("currentSession", JSON.stringify(sessionData));
+      setStoredSessionData(sessionData);
+    } else {
+      const currentSession = JSON.parse(sessionStorage.getItem("currentSession"));
+      if (currentSession) {
+        setStoredSessionData(currentSession);
+      } else {
+        setStoredSessionData(null);
+      }
+    }
+  }, [sessionData]);
 
   return (
     <div className="h-[calc(100vh-84px)] w-full">
-      {sessionData ? (
+      {storedSessionData ? (
         <div className="flex justify-between w-full h-full">
           <div className="w-3/4 h-full flex flex-col justify-center items-center py-6 px-4">
             <div className="h-full w-full">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
-                sessionData={sessionData}
+                sessionData={storedSessionData}
                 localStream={null}
                 ownParticipantId={null}
               />
@@ -67,7 +84,7 @@ function ExperimentOverview({
                 color="primary"
                 onClick={() => onLeaveExperiment()}
               />
-              {sessionData.start_time === 0 ? (
+              {storedSessionData.start_time === 0 ? (
                 <ActionButton
                   text="START EXPERIMENT"
                   variant="contained"
@@ -125,7 +142,7 @@ function ExperimentOverview({
             {isFilterInformationModalActive && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
-                participants={sessionData["participants"]}
+                participants={storedSessionData["participants"]}
               />
             )}
             {isChatGptModalActive && <ChatGptTab />}
