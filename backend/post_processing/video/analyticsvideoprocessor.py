@@ -3,6 +3,8 @@ import csv
 import os
 from typing import *
 import re
+from typing import List, Any
+
 import cv2
 import numpy as np
 
@@ -21,16 +23,20 @@ class AnalyticsVideoProcessor(VideoProcessor):
         return VideoPostProcessing()
 
     async def process(self, batch_size: int = 5):
+        await asyncio.sleep(2)
         if self.external_process:
             recording_list = self.prepare_recording_list()
-            await self.process_with_external_tool(recording_list)
+            await self.process_with_external_tool_group_filter(recording_list)
         else:
             await self.process_videos(batch_size)
 
         if self.group_filters:
             self.aggregate_group_filter_data()
 
-    async def process_with_external_tool(self, recording_list: List["PostProcessingData"]):
+    async def process_with_external_tool_individual_filter(self, recording_list):
+        pass
+
+    async def process_with_external_tool_group_filter(self, recording_list: List["PostProcessingData"]):
         existing_process = self.external_processing_tool.check_existing_process()
         if existing_process.get("is_processing"):
             self.logger.warning("Existing process detected. Waiting...")
@@ -55,12 +61,30 @@ class AnalyticsVideoProcessor(VideoProcessor):
                 tasks.append(self.extract_and_collect_data(group_filter, output_csv, recording_data.participant_id))
         await asyncio.gather(*tasks)
 
-    async def setup_output(self, filename: str, cap: cv2.VideoCapture):
-        participant_id = self.extract_participant_id(filename)
-        self.participant_data[participant_id] = []
+    async def setup_output(self, filename: str, cap):
+        participant_id = self.participant_ids_map.get(filename)
 
-    async def handle_frame_output(self, frame: np.ndarray):
-        pass
+        if participant_id:
+            if isinstance(participant_id, list):
+                for pid in participant_id:
+                    self.participant_data[pid] = []
+            else:
+                self.participant_data[participant_id] = []
+
+    async def handle_frame_output(self, result, participant_id):
+        if isinstance(result, np.ndarray):
+            return
+
+        elif isinstance(result, list):
+            for res in result:
+                if participant_id not in self.participant_data:
+                    self.participant_data[participant_id] = []
+                self.participant_data[participant_id].append(res)
+
+        elif isinstance(result, dict):
+            if participant_id not in self.participant_data:
+                self.participant_data[participant_id] = []
+            self.participant_data[participant_id].append(result)
 
     def collect_participant_data(self, data):
         participant_id = data.get('participant_id', 'unknown')
@@ -70,14 +94,11 @@ class AnalyticsVideoProcessor(VideoProcessor):
 
     async def finalize_output(self):
         """Finalize processing by generating CSV files."""
-        if not self.external_process:
-            tasks = []
-            for participant_id, data in self.participant_data.items():
-                output_csv = os.path.join(self.output_dir, f"{participant_id}_data.csv")
-                tasks.append(self.generate_csv(data, output_csv))
-            await asyncio.gather(*tasks)
-        else:
-            pass
+        tasks = []
+        for participant_id, data in self.participant_data.items():
+            output_csv = os.path.join(self.output_dir, f"{participant_id}_data.csv")
+            tasks.append(self.generate_csv(data, output_csv))
+        await asyncio.gather(*tasks)
 
     def aggregate_group_filter_data(self):
         all_data = list(self.participant_data.values())
@@ -113,10 +134,10 @@ class AnalyticsVideoProcessor(VideoProcessor):
             for row in data:
                 csvwriter.writerow(row)
 
-    def extract_participant_id(self, filename: str) -> str:
+    def extract_participant_id(self, filename: str) -> list[Any] | list[str]:
         """Extract participant ID from filename using regex."""
-        match = re.match(r"(\w+)_.*", filename)
-        return match.group(1) if match else "unknown"
+        matches = re.findall(r"(\w+)_.*", filename)
+        return matches if matches else ["unknown"]
 
     async def extract_and_collect_data(self, group_filter, output_csv: str, participant_id: str):
         extracted_data = await group_filter.extract_post_process(output_csv)

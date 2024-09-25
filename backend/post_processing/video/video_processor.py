@@ -22,15 +22,20 @@ class VideoProcessor(ABC):
     ):
         self.session_id = session_id
         if isinstance(video_filenames, str):
-            self.video_filenames = [video_filenames]
-        else:
-            self.video_filenames = video_filenames
+            video_filenames = [video_filenames]
+        self.video_filenames = video_filenames
         self.sessions_path = sessions_path
         self.output_dir = output_dir
         self.filters = filters or []
         self.group_filters = group_filters or []
         self.logger = logging.getLogger(__name__)
         self.external_process = external_process
+        self.participant_ids_map = {
+            filename: self.extract_participant_id(filename) for filename in self.video_filenames
+        }
+
+    def extract_participant_id(self, filename: str) -> str:
+        return os.path.splitext(filename)[0]
 
     @abstractmethod
     def setup_external_processing_tool(self):
@@ -41,19 +46,23 @@ class VideoProcessor(ABC):
         pass
 
     @abstractmethod
-    async def process_with_external_tool(self, **kwargs):
+    async def process_with_external_tool_individual_filter(self, **kwargs):
         pass
 
     @abstractmethod
-    async def setup_output(self, filename: str, cap: cv2.VideoCapture):
+    async def process_with_external_tool_group_filter(self, **kwargs):
         pass
 
     @abstractmethod
-    async def handle_frame_output(self, frame: np.ndarray):
+    async def setup_output(self, **kwargs):
         pass
 
     @abstractmethod
-    def collect_participant_data(self, data):
+    async def handle_frame_output(self, results, participant_id: str):
+        pass
+
+    @abstractmethod
+    def collect_participant_data(self, data, participant_id: str):
         pass
 
     @abstractmethod
@@ -64,10 +73,11 @@ class VideoProcessor(ABC):
         tasks = []
         for filename in self.video_filenames:
             input_path = os.path.join(self.sessions_path, self.session_id, filename)
-            tasks.append(self._process_single_video(input_path, filename, batch_size))
+            participant_id = self.participant_ids_map[filename][0]
+            tasks.append(self._process_single_video(input_path, filename, batch_size, participant_id))
         await asyncio.gather(*tasks)
 
-    async def _process_single_video(self, input_path: str, filename: str, batch_size: int):
+    async def _process_single_video(self, input_path: str, filename: str, batch_size: int, participant_id: str):
         loop = asyncio.get_event_loop()
         cap = await loop.run_in_executor(None, cv2.VideoCapture, input_path)
         if not cap.isOpened():
@@ -75,7 +85,6 @@ class VideoProcessor(ABC):
             raise FileNotFoundError(f"Cannot open video file: {input_path}")
 
         await self.setup_output(filename, cap)
-
         batch_frames = []
         global_frame_index = 0
 
@@ -83,12 +92,12 @@ class VideoProcessor(ABC):
             ret, frame = await loop.run_in_executor(None, cap.read)
             if not ret:
                 if batch_frames:
-                    await self.process_batch(batch_frames, global_frame_index - len(batch_frames))
+                    await self.process_batch(batch_frames, global_frame_index - len(batch_frames), participant_id)
                 break
 
             batch_frames.append(frame)
             if len(batch_frames) == batch_size:
-                await self.process_batch(batch_frames, global_frame_index - len(batch_frames))
+                await self.process_batch(batch_frames, global_frame_index - len(batch_frames), participant_id)
                 batch_frames = []
 
             global_frame_index += 1
@@ -96,19 +105,24 @@ class VideoProcessor(ABC):
         cap.release()
         await self.finalize_output()
 
-    async def process_batch(self, batch_frames: List[np.ndarray], start_frame_index: int):
+    async def process_batch(self, batch_frames: List[np.ndarray], start_frame_index: int, participant_id: str):
         for i, frame in enumerate(batch_frames):
             frame_index = start_frame_index + i
             try:
+                results = []
                 for filter in self.filters:
-                    frame = await self.apply_filter(filter, frame, frame_index)
+                    result = await self.apply_filter(filter, frame, frame_index)
+                    if isinstance(result, list):
+                        results.extend(result)  # for cases like Manipulation
+                    else:
+                        results.append(result)  # for cases like Analytics
 
                 if self.group_filters:
                     for group_filter in self.group_filters:
                         result = await self.apply_group_filter(group_filter, frame)
-                        self.collect_participant_data(result)
+                        self.collect_participant_data(result, participant_id)
 
-                await self.handle_frame_output(frame)
+                await self.handle_frame_output(result, participant_id)
             except Exception as e:
                 self.logger.exception(f"Failed to process frame {frame_index}: {e}")
 
