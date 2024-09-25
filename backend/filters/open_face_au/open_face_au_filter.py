@@ -61,7 +61,6 @@ class OpenFaceAUFilter(Filter):
         if exit_code == 0:
             self.data = result
             # TODO: use correct frame
-            # if a frame is skipped, data corresponds to a frame before current frame, but self.frame does not
             self.file_writer.write(self.frame, self.data)
         else:
             self.file_writer.write(self.frame, {"intensity": "-1"})
@@ -70,13 +69,11 @@ class OpenFaceAUFilter(Filter):
         au06 = self.data["intensity"]["AU06"]
         au12 = self.data["intensity"]["AU12"]
         if original is not None:
-            # Real-time processing: write lines on video frame
             ndarray = self.line_writer.write_lines(
                 ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg]
             )
             return ndarray
         else:
-            # Post-processing: return results as a list of dicts
             return [{"frame": self.frame, "AU06": au06, "AU12": au12, "message": msg}]
 
     async def cleanup(self) -> None:
