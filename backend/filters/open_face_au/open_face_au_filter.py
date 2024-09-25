@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy
 from av import VideoFrame
 
@@ -48,7 +50,7 @@ class OpenFaceAUFilter(Filter):
         )
 
     async def process(
-        self, original: VideoFrame, ndarray: numpy.ndarray
+            self, original: Optional[VideoFrame] = None, ndarray: numpy.ndarray = None, **kwargs
     ) -> numpy.ndarray:
         self.frame = self.frame + 1
 
@@ -67,10 +69,15 @@ class OpenFaceAUFilter(Filter):
         # Put text on image
         au06 = self.data["intensity"]["AU06"]
         au12 = self.data["intensity"]["AU12"]
-        ndarray = self.line_writer.write_lines(
-            ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg]
-        )
-        return ndarray
+        if original is not None:
+            # Real-time processing: write lines on video frame
+            ndarray = self.line_writer.write_lines(
+                ndarray, [f"AU06: {au06}", f"AU12: {au12}", msg]
+            )
+            return ndarray
+        else:
+            # Post-processing: return results as a list of dicts
+            return [{"frame": self.frame, "AU06": au06, "AU12": au12, "message": msg}]
 
     async def cleanup(self) -> None:
         del self
