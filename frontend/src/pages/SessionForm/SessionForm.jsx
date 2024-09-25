@@ -32,7 +32,6 @@ import {
 } from "../../redux/slices/openSessionSlice";
 import { initialSnackbar } from "../../utils/constants";
 import { v4 as uuid } from "uuid";
-import { ErrorBoundary } from "react-error-boundary";
 
 function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const dispatch = useAppDispatch();
@@ -205,148 +204,146 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
 
   return (
     <>
-      <ErrorBoundary>
-        <div className="flex h-[calc(100vh-84px)] flex-row px-4 py-8 items-start">
-          {showSessionDataForm && (
-            <div className="shadow-lg rounded-md h-full">
-              <div className="px-4 flex flex-col h-full">
-                <div className="flex justify-start items-center">
-                  <ChevronLeft sx={{ color: "gray" }} />
-                  <ActionButton
-                    text="Back to Session Overview"
-                    variant="text"
+      <div className="flex h-[calc(100vh-84px)] flex-row px-4 py-8 items-start">
+        {showSessionDataForm && (
+          <div className="shadow-lg rounded-md h-full">
+            <div className="px-4 flex flex-col h-full">
+              <div className="flex justify-start items-center">
+                <ChevronLeft sx={{ color: "gray" }} />
+                <ActionButton
+                  text="Back to Session Overview"
+                  variant="text"
+                  size="small"
+                  path="/"
+                />
+              </div>
+              <CardContent>
+                {/* Override text fields' margin and width using MUI classnames */}
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Session Details
+                </Typography>
+                <Box
+                  component="form"
+                  sx={{ "& .MuiTextField-root": { m: 1 } }}
+                  noValidate
+                  autoComplete="off"
+                >
+                  <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
+                    <TextField
+                      label="Title"
+                      value={title}
+                      size="small"
+                      required
+                      onChange={(event) => handleSessionTitleChange(event.target.value)}
+                    />
+                    <TextField
+                      label="Description"
+                      value={description}
+                      size="small"
+                      required
+                      onChange={(event) => handleSessionDescriptionChange(event.target.value)}
+                    />
+                  </Box>
+                  <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
+                    <TextField
+                      value={sessionData.date ? formatDate(sessionData.date) : ""}
+                      type="datetime-local"
+                      size="small"
+                      required
+                      onChange={(event) =>
+                        handleSessionDataChange(
+                          "date",
+                          event.target.value ? new Date(event.target.value).getTime() : 0
+                        )
+                      }
+                    />
+                    <TextField
+                      label="Number of Participants"
+                      value={numberOfParticipants}
+                      type="number"
+                      size="small"
+                      disabled
+                    />
+                  </Box>
+                  <Box sx={{ mt: 1, mb: 1 }}>
+                    <FormControlLabel
+                      control={<Checkbox />}
+                      label="Record Session"
+                      checked={sessionData.record}
+                      onChange={() => handleSessionDataChange("record", !sessionData.record)}
+                    />
+                  </Box>
+                </Box>
+
+                <div className="flex">
+                  <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
+                    Participant List
+                  </Typography>
+                  <ActionIconButton
+                    text="ADD"
+                    variant="outlined"
+                    color="primary"
                     size="small"
-                    path="/"
+                    onClick={() => onAddParticipant()}
+                    icon={<AddIcon />}
                   />
                 </div>
-                <CardContent>
-                  {/* Override text fields' margin and width using MUI classnames */}
-                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                    Session Details
-                  </Typography>
-                  <Box
-                    component="form"
-                    sx={{ "& .MuiTextField-root": { m: 1 } }}
-                    noValidate
-                    autoComplete="off"
-                  >
-                    <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
-                      <TextField
-                        label="Title"
-                        value={title}
-                        size="small"
-                        required
-                        onChange={(event) => handleSessionTitleChange(event.target.value)}
+                <div className="overflow-y-auto h-[300px] shadow-lg bg-slate-50 pl-4 py-2">
+                  {openSession.participants.map((participant, index) => {
+                    return (
+                      <ParticipantData
+                        onDeleteParticipant={() => onDeleteParticipant(index)}
+                        key={index}
+                        index={index}
+                        participantData={participant}
+                        sessionId={sessionData.id}
+                        handleParticipantChange={handleParticipantChange}
+                        setSnackbarResponse={setSnackbarResponse}
+                        handleCanvasPlacement={handleCanvasPlacement}
+                        participantDimensions={participantDimensions}
                       />
-                      <TextField
-                        label="Description"
-                        value={description}
-                        size="small"
-                        required
-                        onChange={(event) => handleSessionDescriptionChange(event.target.value)}
-                      />
-                    </Box>
-                    <Box sx={{ "& .MuiTextField-root": { width: "18.5vw" } }}>
-                      <TextField
-                        value={sessionData.date ? formatDate(sessionData.date) : ""}
-                        type="datetime-local"
-                        size="small"
-                        required
-                        onChange={(event) =>
-                          handleSessionDataChange(
-                            "date",
-                            event.target.value ? new Date(event.target.value).getTime() : 0
-                          )
-                        }
-                      />
-                      <TextField
-                        label="Number of Participants"
-                        value={numberOfParticipants}
-                        type="number"
-                        size="small"
-                        disabled
-                      />
-                    </Box>
-                    <Box sx={{ mt: 1, mb: 1 }}>
-                      <FormControlLabel
-                        control={<Checkbox />}
-                        label="Record Session"
-                        checked={sessionData.record}
-                        onChange={() => handleSessionDataChange("record", !sessionData.record)}
-                      />
-                    </Box>
-                  </Box>
-
-                  <div className="flex">
-                    <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
-                      Participant List
-                    </Typography>
-                    <ActionIconButton
-                      text="ADD"
-                      variant="outlined"
-                      color="primary"
-                      size="small"
-                      onClick={() => onAddParticipant()}
-                      icon={<AddIcon />}
-                    />
-                  </div>
-                  <div className="overflow-y-auto h-[300px] shadow-lg bg-slate-50 pl-4 py-2">
-                    {openSession.participants.map((participant, index) => {
-                      return (
-                        <ParticipantData
-                          onDeleteParticipant={() => onDeleteParticipant(index)}
-                          key={index}
-                          index={index}
-                          participantData={participant}
-                          sessionId={sessionData.id}
-                          handleParticipantChange={handleParticipantChange}
-                          setSnackbarResponse={setSnackbarResponse}
-                          handleCanvasPlacement={handleCanvasPlacement}
-                          participantDimensions={participantDimensions}
-                        />
-                      );
-                    })}
-                  </div>
-                </CardContent>
-                <div className="flex justify-center h-full pb-2">
-                  <div className="self-end">
-                    <ActionButton
-                      text="SAVE SESSION"
-                      variant="contained"
-                      color="success"
-                      size="medium"
-                      onClick={() => onSaveSession()}
-                    />
-                  </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+              <div className="flex justify-center h-full pb-2">
+                <div className="self-end">
+                  <ActionButton
+                    text="SAVE SESSION"
+                    variant="contained"
+                    color="success"
+                    size="medium"
+                    onClick={() => onSaveSession()}
+                  />
                 </div>
               </div>
             </div>
-          )}
-          <div>
-            <ActionIconButton
-              text=""
-              variant="text"
-              color="primary"
-              size="large"
-              onClick={() => onShowSessionFormModal()}
-              icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
-            />
           </div>
-          <div className="pr-8">
-            <DragAndDrop
-              participantDimensions={participantDimensions}
-              setParticipantDimensions={setParticipantDimensions}
-              asymmetricView={false}
-            />
-          </div>
+        )}
+        <div>
+          <ActionIconButton
+            text=""
+            variant="text"
+            color="primary"
+            size="large"
+            onClick={() => onShowSessionFormModal()}
+            icon={showSessionDataForm ? <ChevronLeft /> : <ChevronRight />}
+          />
         </div>
-        <CustomSnackbar
-          open={snackbar.open}
-          text={snackbar.text}
-          severity={snackbar.severity}
-          handleClose={() => setSnackbar(initialSnackbar)}
-        />
-      </ErrorBoundary>
+        <div className="pr-8">
+          <DragAndDrop
+            participantDimensions={participantDimensions}
+            setParticipantDimensions={setParticipantDimensions}
+            asymmetricView={false}
+          />
+        </div>
+      </div>
+      <CustomSnackbar
+        open={snackbar.open}
+        text={snackbar.text}
+        severity={snackbar.severity}
+        handleClose={() => setSnackbar(initialSnackbar)}
+      />
     </>
   );
 }

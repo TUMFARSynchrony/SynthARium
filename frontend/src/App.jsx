@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import "./App.css";
+import { ActionButton } from "./components/atoms/Button";
 import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import Connection from "./networking/Connection";
 import ConnectionState from "./networking/ConnectionState";
@@ -780,7 +781,19 @@ function App() {
               <PageTemplate
                 title={"Session Form"}
                 customComponent={
-                  <ErrorBoundary fallback={<div>Something went wrong</div>}>
+                  <ErrorBoundary
+                    fallback={
+                      <div className="flex flex-col items-center">
+                        <h2>Something went wrong.</h2>
+                        <ActionButton
+                          text="Go to Session Overview"
+                          path="/"
+                          variant="contained"
+                          size="large"
+                        />
+                      </div>
+                    }
+                  >
                     <SessionForm
                       onSendSessionToBackend={onSendSessionToBackend}
                       onGetFiltersConfig={onGetFiltersConfig}
