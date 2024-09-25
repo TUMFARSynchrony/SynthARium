@@ -45,6 +45,7 @@ import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
 import { ErrorBoundary } from "react-error-boundary";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -781,24 +782,31 @@ function App() {
               <PageTemplate
                 title={"Session Form"}
                 customComponent={
-                  <ErrorBoundary
-                    fallback={
-                      <div className="flex flex-col items-center">
-                        <h2>Something went wrong.</h2>
-                        <ActionButton
-                          text="Go to Session Overview"
-                          path="/"
-                          variant="contained"
-                          size="large"
-                        />
-                      </div>
-                    }
-                  >
-                    <SessionForm
-                      onSendSessionToBackend={onSendSessionToBackend}
-                      onGetFiltersConfig={onGetFiltersConfig}
-                    />
-                  </ErrorBoundary>
+                  connectionState === ConnectionState.CONNECTED ? (
+                    <ErrorBoundary
+                      fallback={
+                        <div className="flex flex-col items-center">
+                          <h2>Something went wrong.</h2>
+                          <ActionButton
+                            text="Go to Session Overview"
+                            path="/"
+                            variant="contained"
+                            size="large"
+                          />
+                        </div>
+                      }
+                    >
+                      <SessionForm
+                        onSendSessionToBackend={onSendSessionToBackend}
+                        onGetFiltersConfig={onGetFiltersConfig}
+                      />
+                    </ErrorBoundary>
+                  ) : (
+                    <div className="flex flex-col items-center mt-10">
+                      <CircularProgress />
+                      <h1>Loading...</h1>
+                    </div>
+                  )
                 }
                 centerContentOnYAxis={true}
               />

@@ -102,19 +102,6 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     onGetFiltersConfig();
   }, []);
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event) => {
-  //     event.preventDefault();
-  //     // Custom logic to handle the refresh
-  //     // Display a confirmation message or perform necessary actions
-  //     prompt("Hi");
-  //   };
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, []);
-
   const handleCanvasPlacement = (participantCount) => {
     if (participantCount !== 0 && participantCount % 20 === 0) {
       setXAxis((participantCount / 20) * 250);
