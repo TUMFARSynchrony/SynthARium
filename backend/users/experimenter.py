@@ -18,9 +18,8 @@ from filters.filters_data_dict import FiltersDataDict
 from group_filters.group_filter_factory import create_group_filter
 from post_processing.filter_mapping import FILTER_CONFIG_MAPPING
 from post_processing.video.analyticsvideoprocessor import AnalyticsVideoProcessor
-from post_processing.video.manipulativevideoprocessor import ManipulativeVideoProcessor
+from post_processing.video.manipulationvideoprocessor import ManipulationVideoProcessor
 from post_processing.video.video_post_processor import VideoPostProcessor
-from post_processing.video.video_processor import VideoProcessor
 from session.data.session import is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
@@ -1308,7 +1307,7 @@ class Experimenter(User):
             results.append({
                  "video_filename": filename,
                  "output_path": os.path.join(output_dir,
-                                            filename) if processor_type == "manipulative" else os.path.join(
+                                            filename) if processor_type == "manipulation" else os.path.join(
                  output_dir, f"{filename}.csv"),
                  "status": "success"
                 })
@@ -1339,8 +1338,8 @@ class Experimenter(User):
         filters = [filter_factory.create_filter(cfg) for cfg in filter_configs if not cfg.get('groupFilter')]
         group_filters = [create_group_filter(cfg, session_id) for cfg in filter_configs if cfg.get('groupFilter')]
 
-        if processor_type == "manipulative":
-            return ManipulativeVideoProcessor(session_id, video_filenames, sessions_path, output_dir, filters,
+        if processor_type == "manipulation":
+            return ManipulationVideoProcessor(session_id, video_filenames, sessions_path, output_dir, filters,
                                               group_filters, external_process)
         elif processor_type == "analysis":
             return AnalyticsVideoProcessor(session_id, video_filenames, sessions_path, output_dir, filters,
