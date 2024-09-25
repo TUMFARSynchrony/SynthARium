@@ -104,6 +104,7 @@ function ParticipantDataModal({
     originalParticipant.view ? getAsymmetricParticipantDimensions(originalParticipant.view) : []
   );
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
+  const [isModalDirty, setIsModalDirty] = useState(false);
 
   // Setting these snackbar response values to display the notification in Session Form Page.
   // These notifications cannot be displayed in this file, since on closing the Participant Modal,
@@ -117,6 +118,7 @@ function ParticipantDataModal({
   };
 
   const handleChange = <T extends keyof Participant>(objKey: T, objValue: Participant[T]) => {
+    setIsModalDirty(true);
     const newParticipantData = { ...participantCopy };
     newParticipantData[objKey] = objValue;
     setParticipantCopy(newParticipantData);
@@ -153,7 +155,17 @@ function ParticipantDataModal({
 
   // On closing the edit participant dialog, the entered data is checked (if data is not saved,
   // if required data is missing) to display appropriate notification.
-  const onCloseModalWithoutData = () => {
+  const onCloseModalWithoutData = (cancel: boolean) => {
+    // if (isModalDirty && !cancel) {
+    //   const userConfirmed = window.confirm(
+    //     "Are you sure you want to leave this page? Unsaved changes may be lost."
+    //   );
+    //   if (userConfirmed) {
+    //     return;
+    //   } else {
+    //     return null;
+    //   }
+    // }
     setShowParticipantInput(!showParticipantInput);
     setAsymmetricView(getAsymmetricParticipantDimensions(originalAsymmetricView));
 
@@ -383,7 +395,11 @@ function ParticipantDataModal({
         severity={snackbar.severity}
         handleClose={() => setSnackbar(initialSnackbar)}
       />
-      <Dialog open={showParticipantInput} onClose={() => onCloseModalWithoutData()} maxWidth={"xl"}>
+      <Dialog
+        open={showParticipantInput}
+        onClose={() => onCloseModalWithoutData(false)}
+        maxWidth={"xl"}
+      >
         <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
           Participant Details
         </DialogTitle>
@@ -1136,7 +1152,7 @@ function ParticipantDataModal({
             variant="contained"
             color="error"
             size="medium"
-            onClick={() => onCloseModalWithoutData()}
+            onClick={() => onCloseModalWithoutData(true)}
           />
           <ActionButton
             text="SAVE"
