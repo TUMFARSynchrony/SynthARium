@@ -43,6 +43,7 @@ import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
+import { CircularProgress, Link } from "@mui/material";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -53,6 +54,8 @@ function App() {
   const [status, setPostProcessingStatus] = useState(null);
   const [errorPostProc, setPostProcessingError] = useState(null);
   const [successPostProc, setPostProcessingSuccess] = useState(null);
+  const [connectionLossTimeOut, setConnectionLossTimeOut] = useState(false);
+  const [refreshTimeOut, setRefreshTimeOut] = useState(false);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -82,6 +85,23 @@ function App() {
 
     setConnectionState(state);
   };
+
+  useEffect(() => {
+    //connectionLossTimer
+    const connectionLossTimer = setTimeout(() => {
+      setConnectionLossTimeOut(true);
+    }, 120000);
+
+    //refreshTimer
+    const refreshTimer = setTimeout(() => {
+      setRefreshTimeOut(true);
+    }, 90000);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      clearTimeout(connectionLossTimer);
+    };
+  }, []);
 
   // ChatGPT validity check
   const gptKeyValid = useRef();
@@ -176,7 +196,7 @@ function App() {
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
     if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
-      //experimenterPassword = prompt("Please insert experimenter password");
+      //experimenterPassword = prompt("Please enter experimenter password", "no-password-given");
       experimenterPassword = "no-password-given";
     }
 
@@ -512,11 +532,51 @@ function App() {
               <PageTemplate
                 title={"SynthARium"}
                 customComponent={
-                  <SessionOverview
-                    onDeleteSession={onDeleteSession}
-                    onCreateExperiment={onCreateExperiment}
-                    onJoinExperiment={onJoinExperiment}
-                  />
+                  connectionState == ConnectionState.CONNECTED ? (
+                    <SessionOverview
+                      onDeleteSession={onDeleteSession}
+                      onCreateExperiment={onCreateExperiment}
+                      onJoinExperiment={onJoinExperiment}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center mt-10">
+                      {refreshTimeOut ? (
+                        connectionLossTimeOut ? (
+                          <>
+                            <h1 className="pt-5">
+                              Hmm... This is taking a while, consider relaunching SynthARium.
+                            </h1>
+                            <h1>
+                              For more help, please see our{" "}
+                              <Link
+                                href="https://github.com/TUMFARSynchrony/SynthARium/wiki/FAQ"
+                                underline="hover"
+                              >
+                                FAQ
+                              </Link>
+                              .
+                            </h1>
+                          </>
+                        ) : (
+                          <>
+                            <CircularProgress />
+                            <div className="flex flex-col items-center pt-5">
+                              <h1>Loading...</h1>
+                              <h1>
+                                Please refresh the tab. If the delay continues, hang tight—your
+                                connection may be slow.
+                              </h1>
+                            </div>
+                          </>
+                        )
+                      ) : (
+                        <>
+                          <CircularProgress />
+                          <h1 className="pt-5">Loading...</h1>
+                        </>
+                      )}
+                    </div>
+                  )
                 }
                 buttonListComponent={
                   <HeaderActionArea
