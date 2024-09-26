@@ -43,7 +43,7 @@ import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Link } from "@mui/material";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -540,23 +540,40 @@ function App() {
                     />
                   ) : (
                     <div className="flex flex-col items-center mt-10">
-                      <CircularProgress />
                       {refreshTimeOut ? (
                         connectionLossTimeOut ? (
-                          <h1 className="pt-5">
-                            Hmm... This is taking a while, consider relaunching SynthARium.
-                          </h1>
-                        ) : (
-                          <div className="flex flex-col items-center pt-5">
-                            <h1>Loading...</h1>
-                            <h1>
-                              Please refresh the tab. If the delay continues, hang tight—your
-                              connection may be slow.
+                          <>
+                            <h1 className="pt-5">
+                              Hmm... This is taking a while, consider relaunching SynthARium.
                             </h1>
-                          </div>
+                            <h1>
+                              For more help, please see our{" "}
+                              <Link
+                                href="https://github.com/TUMFARSynchrony/SynthARium/wiki/FAQ"
+                                underline="hover"
+                              >
+                                FAQ
+                              </Link>
+                              .
+                            </h1>
+                          </>
+                        ) : (
+                          <>
+                            <CircularProgress />
+                            <div className="flex flex-col items-center pt-5">
+                              <h1>Loading...</h1>
+                              <h1>
+                                Please refresh the tab. If the delay continues, hang tight—your
+                                connection may be slow.
+                              </h1>
+                            </div>
+                          </>
                         )
                       ) : (
-                        <h1 className="pt-5">Loading...</h1>
+                        <>
+                          <CircularProgress />
+                          <h1 className="pt-5">Loading...</h1>
+                        </>
                       )}
                     </div>
                   )
