@@ -30,6 +30,10 @@ class SessionDict(TypedDict):
         Whether the experiment is to be recorded.
     participants : list of custom_types.participant.ParticipantDict
         List of invited participants.
+    end_survey_title : str
+        Title of the Ending/Conclusion Screen which is displayed to the participant once the experiment is done.
+    end_survey_description : str
+        Description of the Ending/Conclusion Screen which is displayed to the participant once the experiment is done
     end_survey_link : str
         Link to the end survey which is displayed once the experiment is done to the participant.
     creation_time : int, default 0
@@ -61,6 +65,8 @@ class SessionDict(TypedDict):
     time_limit: int
     record: bool
     participants: list[ParticipantDict]
+    end_survey_title: str
+    end_survey_description: str
     end_survey_link: str
     creation_time: int
     start_time: int

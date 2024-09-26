@@ -53,6 +53,8 @@ def session_data_factory(session_dict: SessionDict) -> SessionData:
         session_dict["description"],
         session_dict["notes"],
         participants,
+        session_dict["end_survey_title"],
+        session_dict["end_survey_description"],
         session_dict["end_survey_link"],
         session_dict["log"],
     )

@@ -9,6 +9,8 @@ export const INITIAL_SESSION_DATA: Session = {
   time_limit: 0,
   record: false,
   participants: [],
+  end_survey_title: "",
+  end_survey_description: "",
   end_survey_link: "",
   start_time: 0,
   end_time: 0,

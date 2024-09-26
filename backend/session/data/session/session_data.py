@@ -30,6 +30,8 @@ class SessionData(BaseData):
     description : str
     notes : list of custom_types.note.NoteDict
     participants : dict
+    end_survey_title : str
+    end_survey_description : str
     end_survey_link : str
     log : Any or None
     creation_time : int or None
@@ -77,8 +79,14 @@ class SessionData(BaseData):
     participants: dict[str, ParticipantData] = field(repr=False)
     """Participants invited to this session. """
 
+    end_survey_title: str = field(repr=False)
+    """Displayed Title of End Survey after completion of session."""
+    
+    end_survey_description: str = field(repr=False)
+    """Displayed Description of End Survey after completion of session."""
+    
     end_survey_link: str = field(repr=False)
-    """Survey Link after completion of session
+    """Link to Survey (Linked to button) after completion of session.
 
     Notes
     -----
@@ -175,6 +183,8 @@ class SessionData(BaseData):
             "start_time": self.start_time,
             "notes": self.notes,
             "participants": [p.asdict() for p in self.participants.values()],
+            "end_survey_title": self.end_survey_title,
+            "end_survey_description": self.end_survey_description,
             "end_survey_link": self.end_survey_link,
             "log": self.log,
         }
@@ -220,6 +230,8 @@ class SessionData(BaseData):
         self.creation_time = session_dict["creation_time"]
         self.end_time = session_dict["end_time"]
         self.start_time = session_dict["start_time"]
+        self.end_survey_title = session_dict["end_survey_title"]
+        self.end_survey_description = session_dict["end_survey_description"]
         self.end_survey_link = session_dict["end_survey_link"]
 
         # Remove event listeners from current participants (before deleting them)

@@ -53,5 +53,7 @@ def is_valid_session(data, recursive: bool = True) -> TypeGuard[SessionDict]:
         and isinstance(data["date"], int)
         and isinstance(data["time_limit"], int)
         and isinstance(data["record"], bool)
+        and isinstance(data["end_survey_title"], str)
+        and isinstance(data["end_survey_description"], str)
         and isinstance(data["end_survey_link"], str)
     )

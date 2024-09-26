@@ -41,6 +41,10 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
   const [sessionData, setSessionData] = useState(openSession);
   const [title, setTitle] = useState(sessionData.title);
   const [description, setDescription] = useState(sessionData.description);
+  const [endSurveyTitle, setEndSurveyTitle] = useState(sessionData.end_survey_title);
+  const [endSurveyDescription, setEndSurveyDescription] = useState(
+    sessionData.end_survey_description
+  );
   const [endSurveyLink, setEndSurveyLink] = useState(sessionData.end_survey_link);
   const numberOfParticipants = useAppSelector(selectNumberOfParticipants);
   const [xAxis, setXAxis] = useState(0);
@@ -181,6 +185,16 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     dispatch(changeValue({ objKey: "end_survey_link", objValue: payload }));
   };
 
+  const handleSessionEndSurveyTitleChange = (payload) => {
+    setEndSurveyTitle(payload);
+    dispatch(changeValue({ objKey: "end_survey_title", objValue: payload }));
+  };
+
+  const handleSessionEndSurveyDescriptionChange = (payload) => {
+    setEndSurveyDescription(payload);
+    dispatch(changeValue({ objKey: "end_survey_description", objValue: payload }));
+  };
+
   const onShowSessionFormModal = () => {
     setShowSessionDataForm(!showSessionDataForm);
   };
@@ -301,16 +315,39 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   })}
                 </div>
               </CardContent>
-              <Typography variant="h6" sx={{ my: 1, fontWeight: "bold" }}>
-                End Survey Link
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                Ending Page Details
               </Typography>
-              <TextField
-                label="End Survey Link"
-                value={endSurveyLink}
-                size="small"
-                required
-                onChange={(event) => handleSessionEndSurveyLinkChange(event.target.value)}
-              />
+              <Box
+                component="form"
+                sx={{ "& .MuiTextField-root": { m: 1 } }}
+                noValidate
+                autoComplete="off"
+              >
+                <Box sx={{ "& .MuiTextField-root": { width: "38vw" } }}>
+                  <TextField
+                    label="Title"
+                    value={endSurveyTitle}
+                    size="small"
+                    onChange={(event) => handleSessionEndSurveyTitleChange(event.target.value)}
+                  />
+                  <TextField
+                    label="Description"
+                    value={endSurveyDescription}
+                    size="small"
+                    onChange={(event) =>
+                      handleSessionEndSurveyDescriptionChange(event.target.value)
+                    }
+                  />
+                  <TextField
+                    label="End Survey Link"
+                    value={endSurveyLink}
+                    size="small"
+                    required
+                    onChange={(event) => handleSessionEndSurveyLinkChange(event.target.value)}
+                  />
+                </Box>
+              </Box>
               <div className="flex justify-center h-full pb-2">
                 <div className="self-end">
                   <ActionButton

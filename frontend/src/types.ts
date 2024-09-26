@@ -14,6 +14,8 @@ export type Session = {
   notes: Note[];
   participants: Participant[];
   log: [];
+  end_survey_title: string;
+  end_survey_description: string;
   end_survey_link: string;
 };
 
