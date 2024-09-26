@@ -19,6 +19,7 @@
     "eslint-config-react-app": "^7.0.1",
     "framer-motion": "^10.16.5",
     "jsqr": "^1.4.0",
+    "konva": "^8.3.14",
     "moment": "^2.29.4",
     "openai": "^4.19.0",
     "postcss-calc": "^8.2.4",
