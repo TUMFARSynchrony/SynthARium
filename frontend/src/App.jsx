@@ -54,6 +54,8 @@ function App() {
   const [status, setPostProcessingStatus] = useState(null);
   const [errorPostProc, setPostProcessingError] = useState(null);
   const [successPostProc, setPostProcessingSuccess] = useState(null);
+  const [connectionLossTimeOut, setConnectionLossTimeOut] = useState(false);
+  const [refreshTimeOut, setRefreshTimeOut] = useState(false);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -83,6 +85,23 @@ function App() {
 
     setConnectionState(state);
   };
+
+  useEffect(() => {
+    //connectionLossTimer
+    const connectionLossTimer = setTimeout(() => {
+      setConnectionLossTimeOut(true);
+    }, 120000);
+
+    //refreshTimer
+    const refreshTimer = setTimeout(() => {
+      setRefreshTimeOut(true);
+    }, 90000);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      clearTimeout(connectionLossTimer);
+    };
+  }, []);
 
   // ChatGPT validity check
   const gptKeyValid = useRef();
@@ -522,7 +541,23 @@ function App() {
                   ) : (
                     <div className="flex flex-col items-center mt-10">
                       <CircularProgress />
-                      <h1>Loading...</h1>
+                      {refreshTimeOut ? (
+                        connectionLossTimeOut ? (
+                          <h1 className="pt-5">
+                            Hmm... This is taking a while, consider relaunching SynthARium.
+                          </h1>
+                        ) : (
+                          <div className="flex flex-col items-center pt-5">
+                            <h1>Loading...</h1>
+                            <h1>
+                              Please refresh the tab. If the delay continues, hang tight—your
+                              connection may be slow.
+                            </h1>
+                          </div>
+                        )
+                      ) : (
+                        <h1 className="pt-5">Loading...</h1>
+                      )}
                     </div>
                   )
                 }
