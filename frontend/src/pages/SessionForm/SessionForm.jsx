@@ -105,18 +105,22 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     onGetFiltersConfig();
   }, []);
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event) => {
-  //     event.preventDefault();
-  //     // Custom logic to handle the refresh
-  //     // Display a confirmation message or perform necessary actions
-  //     prompt("Hi");
-  //   };
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, []);
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      // Custom logic to handle the refresh
+      // Display a confirmation message or perform necessary actions
+      prompt("Hi");
+    };
+    if (isFormDirty) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+      };
+    } else {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    }
+  }, [isFormDirty]);
 
   const handleCanvasPlacement = (participantCount) => {
     setIsFormDirty(true);
@@ -211,6 +215,16 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
     onSendSessionToBackend(sessionData);
   };
 
+  const checkIsFormEmpty = () => {
+    if (description.length === 0 && title.length === 0) {
+      //additional conditions i.e. date, participants
+      setIsFormDirty(false);
+    }
+    if (isFormDirty) {
+      handleLeavePage();
+    }
+  };
+
   const handleLeavePage = () => {
     const userConfirmed = window.confirm(
       "Are you sure you want to leave this page? Unsaved changes may be lost."
@@ -232,7 +246,7 @@ function SessionForm({ onSendSessionToBackend, onGetFiltersConfig }) {
                   text="Back to Session Overview"
                   variant="text"
                   size="small"
-                  onClick={isFormDirty ? handleLeavePage : null}
+                  onClick={isFormDirty ? checkIsFormEmpty : null}
                   path={isFormDirty ? null : "/"}
                 />
               </div>
