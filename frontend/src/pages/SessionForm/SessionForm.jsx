@@ -6,8 +6,7 @@ import {
   filterListByIndex,
   formatDate,
   generateRandomColor,
-  getParticipantDimensions,
-  getRandomColor
+  getParticipantDimensions
 } from "../../utils/utils";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -19,7 +18,7 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActionButton, ActionIconButton } from "../../components/atoms/Button";
 import CustomSnackbar from "../../components/atoms/CustomSnackbar/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -28,7 +27,6 @@ import {
   changeParticipant,
   changeValue,
   deleteParticipant,
-  initializeSession,
   selectNumberOfParticipants,
   selectOpenSession
 } from "../../redux/slices/openSessionSlice";
