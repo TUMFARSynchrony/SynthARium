@@ -45,29 +45,29 @@ function ExperimentOverview({
     JSON.parse(sessionStorage.getItem("currentSession"))
   );
 
-  useEffect(() => {
-    if (sessionData) {
-      sessionStorage.setItem("currentSession", JSON.stringify(sessionData));
-      setStoredSessionData(sessionData);
-    } else {
-      const currentSession = JSON.parse(sessionStorage.getItem("currentSession"));
-      if (currentSession) {
-        setStoredSessionData(currentSession);
-      } else {
-        setStoredSessionData(null);
-      }
-    }
-  }, [sessionData]);
+  // useEffect(() => {
+  //   if (sessionData) {
+  //     sessionStorage.setItem("currentSession", JSON.stringify(sessionData));
+  //     setStoredSessionData(sessionData);
+  //   } else {
+  //     const currentSession = JSON.parse(sessionStorage.getItem("currentSession"));
+  //     if (currentSession) {
+  //       setStoredSessionData(currentSession);
+  //     } else {
+  //       setStoredSessionData(null);
+  //     }
+  //   }
+  // }, [sessionData]);
 
   return (
     <div className="h-[calc(100vh-84px)] w-full">
-      {storedSessionData ? (
+      {sessionData ? (
         <div className="flex justify-between w-full h-full">
           <div className="w-3/4 h-full flex flex-col justify-center items-center py-6 px-4">
             <div className="h-full w-full">
               <VideoCanvas
                 connectedParticipants={connectedParticipants}
-                sessionData={storedSessionData}
+                sessionData={sessionData}
                 localStream={null}
                 ownParticipantId={null}
               />
@@ -84,7 +84,7 @@ function ExperimentOverview({
                 color="primary"
                 onClick={() => onLeaveExperiment()}
               />
-              {storedSessionData.start_time === 0 ? (
+              {sessionData.start_time === 0 ? (
                 <ActionButton
                   text="START EXPERIMENT"
                   variant="contained"
@@ -142,7 +142,7 @@ function ExperimentOverview({
             {isFilterInformationModalActive && (
               <FilterInformationTab
                 onGetFiltersData={onGetFiltersData}
-                participants={storedSessionData["participants"]}
+                participants={sessionData["participants"]}
               />
             )}
             {isChatGptModalActive && <ChatGptTab />}

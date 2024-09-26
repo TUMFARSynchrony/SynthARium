@@ -6,6 +6,9 @@ import Connection from "./networking/Connection";
 import ConnectionState from "./networking/ConnectionState";
 import ConnectionLatencyTest from "./pages/ConnectionLatencyTest/ConnectionLatencyTest";
 import ConnectionTest from "./pages/ConnectionTest/ConnectionTest";
+import CircularProgress from "@mui/material/CircularProgress";
+import { ErrorBoundary } from "react-error-boundary";
+import { ActionButton } from "./components/atoms/Button";
 import Lobby from "./pages/Lobby/Lobby";
 import MeetingRoom from "./pages/MeetingRoom/MeetingRoom";
 import PostProcessing from "./pages/PostProcessing/PostProcessing";
@@ -754,19 +757,40 @@ function App() {
                   />
                 }
                 customComponent={
-                  <ExperimentOverview
-                    connectedParticipants={connectedParticipants}
-                    onKickBanParticipant={onKickBanParticipant}
-                    onAddNote={onAddNote}
-                    onChat={onChat}
-                    onGetSession={onGetSession}
-                    onLeaveExperiment={onLeaveExperiment}
-                    onMuteParticipant={onMuteParticipant}
-                    onStartExperiment={onStartExperiment}
-                    onEndExperiment={onEndExperiment}
-                    onGetFiltersData={onGetFiltersData}
-                    onUpdateMessageReadTime={onUpdateMessageReadTime}
-                  />
+                  connectionState === ConnectionState.CONNECTED ? (
+                    <ErrorBoundary
+                      fallback={
+                        <div className="flex flex-col items-center">
+                          <h2>Something went wrong.</h2>
+                          <ActionButton
+                            text="Go to Session Overview"
+                            path="/"
+                            variant="contained"
+                            size="large"
+                          />
+                        </div>
+                      }
+                    >
+                      <ExperimentOverview
+                        connectedParticipants={connectedParticipants}
+                        onKickBanParticipant={onKickBanParticipant}
+                        onAddNote={onAddNote}
+                        onChat={onChat}
+                        onGetSession={onGetSession}
+                        onLeaveExperiment={onLeaveExperiment}
+                        onMuteParticipant={onMuteParticipant}
+                        onStartExperiment={onStartExperiment}
+                        onEndExperiment={onEndExperiment}
+                        onGetFiltersData={onGetFiltersData}
+                        onUpdateMessageReadTime={onUpdateMessageReadTime}
+                      />
+                    </ErrorBoundary>
+                  ) : (
+                    <div className="flex flex-col items-center mt-10">
+                      <CircularProgress />
+                      <h1>Loading...</h1>
+                    </div>
+                  )
                 }
                 centerContentOnYAxis={true}
               />
