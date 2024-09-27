@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import "./App.css";
+import { ActionButton } from "./components/atoms/Button";
 import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import Connection from "./networking/Connection";
 import ConnectionState from "./networking/ConnectionState";
@@ -43,7 +44,8 @@ import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
-import { CircularProgress, Link } from "@mui/material";
+import { ErrorBoundary } from "react-error-boundary";
+import LoadingScreen from "./components/organisms/LoadingScreen/LoadingScreen";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -539,42 +541,11 @@ function App() {
                       onJoinExperiment={onJoinExperiment}
                     />
                   ) : (
-                    <div className="flex flex-col items-center mt-10">
-                      {refreshTimeOut ? (
-                        connectionLossTimeOut ? (
-                          <>
-                            <h1 className="pt-5">
-                              Hmm... This is taking a while, consider relaunching SynthARium.
-                            </h1>
-                            <h1>
-                              For more help, please see our{" "}
-                              <Link
-                                href="https://github.com/TUMFARSynchrony/SynthARium/wiki/FAQ"
-                                underline="hover"
-                              >
-                                FAQ
-                              </Link>
-                              .
-                            </h1>
-                          </>
-                        ) : (
-                          <>
-                            <CircularProgress />
-                            <div className="flex flex-col items-center pt-5">
-                              <h1>Loading...</h1>
-                              <h1>
-                                Please refresh the tab. If the delay continues, hang tight—your
-                                connection may be slow.
-                              </h1>
-                            </div>
-                          </>
-                        )
-                      ) : (
-                        <>
-                          <CircularProgress />
-                          <h1 className="pt-5">Loading...</h1>
-                        </>
-                      )}
+                    <div className="flex flex-col overflow-y-auto justify-center h-[calc(100vh-84px)]">
+                      <LoadingScreen
+                        refreshTimeOut={refreshTimeOut}
+                        connectionTimeOut={connectionLossTimeOut}
+                      />
                     </div>
                   )
                 }
@@ -839,10 +810,33 @@ function App() {
               <PageTemplate
                 title={"Session Form"}
                 customComponent={
-                  <SessionForm
-                    onSendSessionToBackend={onSendSessionToBackend}
-                    onGetFiltersConfig={onGetFiltersConfig}
-                  />
+                  connectionState === ConnectionState.CONNECTED ? (
+                    <ErrorBoundary
+                      fallback={
+                        <div className="flex flex-col items-center">
+                          <h2>Something went wrong.</h2>
+                          <ActionButton
+                            text="Go to Session Overview"
+                            path="/"
+                            variant="contained"
+                            size="large"
+                          />
+                        </div>
+                      }
+                    >
+                      <SessionForm
+                        onSendSessionToBackend={onSendSessionToBackend}
+                        onGetFiltersConfig={onGetFiltersConfig}
+                      />
+                    </ErrorBoundary>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <LoadingScreen
+                        refreshTimeOut={refreshTimeOut}
+                        connectionTimeOut={connectionLossTimeOut}
+                      />
+                    </div>
+                  )
                 }
                 centerContentOnYAxis={true}
               />
