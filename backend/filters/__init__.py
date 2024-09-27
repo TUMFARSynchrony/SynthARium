@@ -21,6 +21,7 @@ from .open_face_au import OpenFaceAUFilter
 from .glasses_detection import SimpleGlassesDetection
 from .ping import PingFilter
 from .speaking_time import SpeakingTimeFilter
+from .yarppg import yarppgFilter
 
 # Do not import filters after here
 from . import filter_factory
