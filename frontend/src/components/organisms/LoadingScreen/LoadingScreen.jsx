@@ -28,8 +28,8 @@ function LoadingScreen({ refreshTimeOut, connectionTimeOut }) {
           <>
             <h1>Loading...</h1>
             <h1>
-              Please refresh the tab. If the delay continues, hang tight—your connection may be
-              slow.
+              Please refresh the tab. If the delay continues after refreshing, hang tight—your
+              connection may be slow.
             </h1>
           </>
         }
