@@ -541,7 +541,7 @@ function App() {
                       onJoinExperiment={onJoinExperiment}
                     />
                   ) : (
-                    <div className="flex flex-col items-center mt-10">
+                    <div className="flex flex-col overflow-y-auto justify-center h-[calc(100vh-84px)]">
                       <LoadingScreen
                         refreshTimeOut={refreshTimeOut}
                         connectionTimeOut={connectionLossTimeOut}
@@ -830,7 +830,7 @@ function App() {
                       />
                     </ErrorBoundary>
                   ) : (
-                    <div className="flex flex-col items-center mt-10">
+                    <div className="flex flex-col items-center">
                       <LoadingScreen
                         refreshTimeOut={refreshTimeOut}
                         connectionTimeOut={connectionLossTimeOut}
