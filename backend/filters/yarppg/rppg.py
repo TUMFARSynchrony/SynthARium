@@ -5,9 +5,13 @@ import pathlib
 from PIL import Image
 import cv2
 
+from .hr import HRCalculator
+from .filters import DigitalFilter
+from .filters import get_butterworth_filter
+
 import numpy as np
 import pandas as pd
-from PyQt5.QtCore import pyqtSignal, QObject, QThread
+# from PyQt5.QtCore import pyqtSignal, QObject, QThread
 
 # from yarppg.rppg.camera import Camera
 
@@ -33,25 +37,27 @@ RppgResults = namedtuple("RppgResults", ["dt",
                                          ])
 
 
-class RPPG(QObject):
-    rppg_updated = pyqtSignal(RppgResults)
-    _dummy_signal = pyqtSignal(float)
+class RPPG:
+    # rppg_updated = pyqtSignal(RppgResults)
+    # _dummy_signal = pyqtSignal(float)
 
     def __init__(self, roi_detector, parent=None, camera=None,
                  hr_calculator=None):
-        QObject.__init__(self, parent)
+        # QObject.__init__(self, parent)
         self.roi = None
         self._processors = []
         self._roi_detector = roi_detector
+        
+    def get_frame(self, frame):
         self._frame.frame_received.connect(self.on_frame_received)
 
         # connects camera - not needed
         # needs to emit PyQt5 signal?
             # from PyQt5.QtCore import QThread, pyqtSignal
         # initialized frames received as ndarray
-        self.frame_received = pyqtSignal(np.ndarray)
+        # self.frame_received = pyqtSignal(np.ndarray)
         # initalizes QThread
-        QThread.__init__(self, parent=parent)
+        # QThread.__init__(self, parent=parent)
          # set's the frames recieved and emits it
         # as an img... would need to convert 
 
@@ -61,7 +67,8 @@ class RPPG(QObject):
         self._dts = []
         self.last_update = time.perf_counter()
         
-        self.hr_calculator = hr_calculator
+        self.hr_calculator = HRCalculator( update_interval=30, winsize=300,
+                           filt_fun=lambda vs: [get_butterworth_filter(30, 1.5)(v) for v in vs])
         if self.hr_calculator is not None:
             self.new_hr = self.hr_calculator.new_hr
         else:
@@ -125,6 +132,8 @@ class RPPG(QObject):
 
     def get_fps(self, n=5):
         return 1/np.mean(self._dts[-n:])
+
+
 
     def save_signals(self):
         if self.output_filename is None:

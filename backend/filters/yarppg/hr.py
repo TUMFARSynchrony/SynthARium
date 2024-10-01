@@ -72,6 +72,7 @@ class HRCalculator:
                  filt_fun=None, hr_fun=None):
         # QObject.__init__(self, parent)
 
+        #maybe need to readd counter logic
         self._counter = 0
         self.update_interval = update_interval
         self.winsize = winsize
@@ -85,5 +86,4 @@ class HRCalculator:
         vs = next(self.get_vs(self.winsize))
         if self.filt_fun is not None and callable(self.filt_fun):
             vs = self.filt_fun(vs)
-        
         return  self.hr_fun(vs, ts)

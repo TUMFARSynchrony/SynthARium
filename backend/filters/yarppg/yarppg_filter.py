@@ -9,28 +9,24 @@ from PIL import Image
 from collections import namedtuple
 # did we want things to be based on time or frames?
 import time
+import scipy.signal
 
-
-# from PyQt5.QtWidgets import QApplication
-# from yarppg.rppg.camera import Camera
-# from yarppg.ui import MainWindow
-from .rppg import RPPG
+# from .rppg import RPPG
 from .processors.color_mean import ColorMeanProcessor
 from .processors.processor import FilteredProcessor
-from .hr import HRCalculator
+# from .hr import HRCalculator
 from .filters import get_butterworth_filter
 from .processors.li_cvpr import LiCvprProcessor
 from .roi.roi_detect import FaceMeshDetector
-# from yarppg.ui.cli import (get_detector, get_mainparser, get_processor,
-                        #    parse_frequencies, get_delay)
+import logging
 
-# from PyQt5.QtCore import QThread, pyqtSignal
 
 class yarppgFilter(Filter):
     """A simple example filter printing `Hello World` on a video Track.
     Can be used to as a template to copy when creating an own filter."""
 
     line_writer: SimpleLineWriter
+    _logger: logging.Logger
     # frame_received = pyqtSignal(numpy.ndarray)
 
     # RppgResults = namedtuple("RppgResults", ["dt",
@@ -46,7 +42,21 @@ class yarppgFilter(Filter):
         super().__init__(config, audio_track_handler, video_track_handler)
         self.line_writer = SimpleLineWriter()
 
+        # initialize processor list, time difference etc.
         self._processors = []
+        self._dts = []
+        self.last_update = time.perf_counter()
+        self.roi = None
+
+        # initalize hr variables
+        self._counter = 0
+        self.update_interval = 30
+        self.winsize = 300
+        self.hr_fun = self.from_peaks
+        self.filt_fun = None
+        if self.hr_fun is not None and callable(self.hr_fun):
+            self.hr_fun = self.hr_fun
+        # self.hr_fun = from_peaks
 
         # TODO: can be facemesh, caffe-dnn, haar, or full
         self.roi_detector = FaceMeshDetector()
@@ -65,14 +75,16 @@ class yarppgFilter(Filter):
             processor = FilteredProcessor(self.processor, digital_bandpass)
         
         # TODO: go into rppg and fix camera
+        # font need an rppg class?
         # self.rppg = RPPG(roi_detector=self.roi_detector, 
         #             hr_calculator=self.hr_calc,
         #             parent=None,
         #             )
+        
         # TODO: change for other processors, chrom, etc.
+        # adds a color mean processor to every color channel
         for c in "rgb":
             self._processors.append(ColorMeanProcessor(channel=c, winsize=1))
-            # self.add_processor(ColorMeanProcessor(channel=c, winsize=1)
 
     @staticmethod
     def name() -> str:
@@ -118,6 +130,9 @@ class yarppgFilter(Filter):
     # def add_processor(self, processor):
     #     self._processors.append(processor)
 
+
+
+
     def _update_time(self):
         dt = time.perf_counter()- self.last_update
         self.last_update = time.perf_counter()
@@ -143,6 +158,8 @@ class yarppgFilter(Filter):
     async def process(self, _, ndarray: numpy.ndarray) -> numpy.ndarray:
         # TODO: change this to implement filter
 
+        # on frame received:
+        # convert ndarray to img
         frame = Image.fromarray(ndarray)
         roi = self.roi_detector(frame)
         self.processor(self.roi)
@@ -166,3 +183,61 @@ class yarppgFilter(Filter):
 
         # Return modified frame
         return ndarray
+
+    def bpm_from_inds(inds, ts):
+        """Calculate heart rate (in beat/min) from indices and time vector
+
+        Args:
+            inds (`1d array-like`): indices of heart beats
+            ts (`1d array-like`): time vector corresponding to indices
+
+        Returns:
+            float: heart rate in beats per minute (bpm)
+        """
+        if len(inds) < 2:
+            return numpy.nan
+
+        return 60. / numpy.mean(numpy.diff(ts[inds]))
+
+
+    def get_sampling_rate(ts):
+        """Calculate sampling rate from time vector
+        """
+        return 1. / numpy.mean(numpy.diff(ts))
+
+
+    def from_peaks(self, vs, ts, mindist=0.35):
+        """Calculate heart rate by finding peaks in the given signal
+
+        Args:
+            vs (`1d array-like`): pulse wave signal
+            ts (`1d array-like`): time vector corresponding to pulse signal
+            mindist (float): minimum distance between peaks (in seconds)
+
+        Returns:
+            float: heart rate in beats per minute (bpm)
+        """
+
+        if len(ts) != len(vs) or len(ts) < 2:
+            return numpy.nan
+        f = self.get_sampling_rate(ts)
+        peaks, _ = scipy.signal.find_peaks(vs, distance=int(f*mindist))
+
+        return self.bpm_from_inds(peaks, ts)
+
+
+    def from_fft(self, vs, ts):
+        """Calculate heart rate as most dominant frequency in pulse signal
+
+        Args:
+            vs (`1d array-like`): pulse wave signal
+            ts (`1d array-like`): time vector corresponding to pulse signal
+
+        Returns:
+            float: heart rate in beats per minute (bpm)
+        """
+
+        f = self.get_sampling_rate(ts)
+        vf = numpy.fft.fft(vs)
+        xf = numpy.linspace(0.0, f/2., len(vs)//2)
+        return 60 * xf[numpy.argmax(numpy.abs(vf[:len(vf)//2]))]
