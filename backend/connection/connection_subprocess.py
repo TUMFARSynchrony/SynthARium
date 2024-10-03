@@ -31,7 +31,6 @@ from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
 from session.data.participant import ParticipantDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
-from users.user import User
 
 
 class ConnectionSubprocess(ConnectionInterface):
