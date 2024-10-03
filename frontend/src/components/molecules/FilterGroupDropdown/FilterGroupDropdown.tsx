@@ -15,8 +15,12 @@ interface FilterGroupDropdownProps {
   asymmetricFiltersId?: string;
   selectedFilter: Filter;
   selectedChatFilter?: ChatFilter;
-  handleFilterSelect: (filter: Filter, asymmetricFiltersId?: string) => void;
-  handleSelectChatFilter?: (chatFilter: ChatFilter, asymmetricFiltersId?: string) => void;
+  handleFilterSelect: (
+    filter: Filter,
+    isGroupFilter: boolean,
+    asymmetricFiltersId?: string
+  ) => void;
+  handleSelectChatFilter?: (chatFilter: ChatFilter) => void;
 }
 
 export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
@@ -60,7 +64,13 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
                   <MenuItem
                     key={individualFilter.id}
                     value={individualFilter.name}
-                    onClick={() => handleFilterSelect(individualFilter, asymmetricFiltersId)}
+                    onClick={() =>
+                      handleFilterSelect(
+                        individualFilter,
+                        individualFilter.groupFilter,
+                        asymmetricFiltersId
+                      )
+                    }
                   >
                     {individualFilter.name}
                   </MenuItem>
@@ -74,7 +84,9 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
                   <MenuItem
                     key={groupFilter.id}
                     value={groupFilter.name}
-                    onClick={() => handleFilterSelect(groupFilter, asymmetricFiltersId)}
+                    onClick={() =>
+                      handleFilterSelect(groupFilter, groupFilter.groupFilter, asymmetricFiltersId)
+                    }
                   >
                     {groupFilter.name}
                   </MenuItem>
@@ -113,7 +125,7 @@ export const FilterGroupDropdown: React.FC<FilterGroupDropdownProps> = ({
                   <MenuItem
                     key={chatFilter.id}
                     value={chatFilter.name}
-                    onClick={() => handleSelectChatFilter(chatFilter, asymmetricFiltersId)}
+                    onClick={() => handleSelectChatFilter(chatFilter)}
                   >
                     {chatFilter.name}
                   </MenuItem>

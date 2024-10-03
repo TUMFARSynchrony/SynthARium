@@ -12,7 +12,7 @@ import {
 import { ChatFilter, Filter, FilterConfigArray, FilterConfigNumber } from "../../../types";
 
 interface FilterListProps {
-  asymmetricFilterId?: string | undefined;
+  asymmetricFilterId?: string;
   title: string;
   filters: Filter[] | ChatFilter[];
   filterType: string;
@@ -23,7 +23,12 @@ interface FilterListProps {
     filterType: string,
     asymmetricFilterId?: string
   ) => void;
-  handleDelete: (filter: Filter | ChatFilter, index: number, asymmetricFilterId?: string) => void;
+  handleDelete: (
+    filter: Filter | ChatFilter,
+    index: number,
+    isGroupFilter: boolean,
+    asymmetricFilterId?: string
+  ) => void;
 }
 
 export const FilterList: React.FC<FilterListProps> = ({
@@ -50,7 +55,14 @@ export const FilterList: React.FC<FilterListProps> = ({
               variant="outlined"
               size="medium"
               color="secondary"
-              onDelete={() => handleDelete(filter, filterIndex, asymmetricFilterId)}
+              onDelete={() =>
+                handleDelete(
+                  filter,
+                  filterIndex,
+                  "groupFilter" in filter && filter.groupFilter,
+                  asymmetricFilterId
+                )
+              }
             />
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>

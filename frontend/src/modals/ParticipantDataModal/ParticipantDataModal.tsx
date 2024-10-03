@@ -174,7 +174,7 @@ function ParticipantDataModal({
     key: string,
     value: number | string,
     filterTypeKey: T,
-    asymmetricFilterId?: string | undefined
+    asymmetricFilterId?: string
   ) => {
     if (asymmetricFilterId) {
       handleAsymmetricFilterChange(
@@ -296,7 +296,7 @@ function ParticipantDataModal({
   const handleFilterSelect = async (
     filter: Filter,
     isGroupFilter: boolean,
-    asymmetricFilterId?: string | undefined
+    asymmetricFilterId?: string
   ) => {
     asymmetricFilterId
       ? setSelectedAsymmetricFilters((prevFilters) => {
@@ -459,7 +459,7 @@ function ParticipantDataModal({
     videoFilter: Filter,
     filterCopyIndex: number,
     isGroupFilter: boolean,
-    asymmetricFilterId?: string | undefined
+    asymmetricFilterId?: string
   ) => {
     const newParticipantData = structuredClone(participantCopy);
     if (asymmetricFilterId) {
@@ -479,7 +479,7 @@ function ParticipantDataModal({
     audioFilter: Filter,
     filterCopyIndex: number,
     isGroupFilter: boolean,
-    asymmetricFilterId?: string | undefined
+    asymmetricFilterId?: string
   ) => {
     const newParticipantData = structuredClone(participantCopy);
     if (asymmetricFilterId) {
