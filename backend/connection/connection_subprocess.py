@@ -306,7 +306,7 @@ class ConnectionSubprocess(ConnectionInterface):
         if self._config.ping_subprocesses > 0:
             self._tasks.append(
                 asyncio.create_task(
-                    self._ping(self._config.ping_subprocesses),
+                    self._ping(float(self._config.ping_subprocesses)),
                     name="ConnectionSubprocess.ping",
                 ),
             )

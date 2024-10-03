@@ -29,7 +29,6 @@ import {
   selectNumberOfParticipants
 } from "../../redux/slices/openSessionSlice";
 import { v4 as uuid } from "uuid";
-import filtersData from "../../filters_data.json";
 import DragAndDrop from "../../components/organisms/DragAndDrop/DragAndDrop";
 import { getAsymmetricParticipantDimensions, getAsymmetricViewArray } from "../../utils/utils";
 import chatFiltersData from "../../chat_filters.json";
@@ -43,20 +42,6 @@ import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 const chatFilters: ChatFilter[] = chatFiltersData.chat_filters.map((filter: ChatFilter) => {
   return filter;
 });
-
-// Loading filters data before the component renders, because the Select component needs value.
-const testData: Filter[] = filtersData.SESSION.map((filter: Filter) => {
-  return filter;
-});
-
-// We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
-const defaultFilter = {
-  id: "",
-  name: "Placeholder",
-  channel: "",
-  groupFilter: false,
-  config: {}
-};
 
 const defaultChatFilter = {
   id: "",
@@ -111,6 +96,14 @@ function ParticipantDataModal({
   participantDimensions,
   participantIdentifiers
 }: Props) {
+  // We set the 'selectedFilter' to a default filter type, because the MUI Select component requires a default value when the page loads.
+  const defaultFilter = {
+    id: "",
+    name: "Placeholder",
+    channel: "",
+    groupFilter: false,
+    config: {}
+  };
   const [participantCopy, setParticipantCopy] = useState(originalParticipant);
   const [selectedFilter, setSelectedFilter] = useState<Filter>(defaultFilter);
   const [selectedChatFilter, setSelectedChatFilter] = useState<ChatFilter>(defaultChatFilter);
@@ -300,7 +293,11 @@ function ParticipantDataModal({
     handleParticipantChange(index, participantCopy);
   };
 
-  const handleFilterSelect = async (filter: Filter, asymmetricFilterId?: string | undefined) => {
+  const handleFilterSelect = async (
+    filter: Filter,
+    isGroupFilter: boolean,
+    asymmetricFilterId?: string | undefined
+  ) => {
     asymmetricFilterId
       ? setSelectedAsymmetricFilters((prevFilters) => {
           const existingIndex = prevFilters.findIndex((f) => f.id === asymmetricFilterId);
@@ -318,6 +315,7 @@ function ParticipantDataModal({
       : setSelectedFilter(filter);
 
     const newParticipantData = structuredClone(participantCopy);
+    console.log(newParticipantData);
     const newFilter = structuredClone(filter);
     newFilter.id = uuid();
 
@@ -326,56 +324,63 @@ function ParticipantDataModal({
       if (Array.isArray(filter["config"][key]["defaultValue"])) {
         if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
           const otherFilter = structuredClone(
-            testData
-              .filter(
-                (filteredFilter) =>
-                  filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
-              )
-              .pop()
+            filtersData.find(
+              (filteredFilter) =>
+                filteredFilter.name === (filter.config[key]["defaultValue"] as string[])[0]
+            )
           );
           const id = uuid();
           otherFilter.id = id;
           newFilter["config"][key]["value"] = id;
-          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id))); // add to required filters map; important for deleting
+          // add bidirectional mapping of ids to required filters map; important for deleting filters
+          setRequiredFilters(new Map(requiredFilters.set(id, newFilter.id).set(newFilter.id, id)));
           if (otherFilter.channel === "video" || otherFilter.channel === "both") {
-            asymmetricFilterId
-              ? newParticipantData.asymmetric_filters
-                  .find((item) => item.id === asymmetricFilterId)
-                  .video_filters.push(otherFilter)
-              : newParticipantData.video_filters.push(otherFilter);
+            if (asymmetricFilterId) {
+              newParticipantData.asymmetric_filters
+                .find((item) => item.id === asymmetricFilterId)
+                .video_filters.push(otherFilter);
+            } else if (otherFilter.groupFilter) {
+              newParticipantData.video_group_filters.push(otherFilter);
+            } else {
+              newParticipantData.video_filters.push(otherFilter);
+            }
           }
           if (otherFilter.channel === "audio" || otherFilter.channel === "both") {
-            asymmetricFilterId
-              ? newParticipantData.asymmetric_filters
-                  .find((item) => item.id === asymmetricFilterId)
-                  .audio_filters.push(otherFilter)
-              : newParticipantData.audio_filters.push(otherFilter);
+            if (asymmetricFilterId) {
+              newParticipantData.asymmetric_filters
+                .find((item) => item.id === asymmetricFilterId)
+                .audio_filters.push(otherFilter);
+            } else if (otherFilter.groupFilter) {
+              newParticipantData.audio_group_filters.push(otherFilter);
+            } else {
+              newParticipantData.audio_filters.push(otherFilter);
+            }
           }
         }
       }
     }
 
-    if (
-      testData
-        .map((f) => (f.channel === "video" || f.channel === "both" ? f.id : ""))
-        .includes(filter.id)
-    ) {
-      asymmetricFilterId
-        ? newParticipantData.asymmetric_filters
-            .find((item) => item.id === asymmetricFilterId)
-            .video_filters.push(newFilter)
-        : newParticipantData.video_filters.push(newFilter);
+    if (newFilter.channel === "video" || newFilter.channel === "both") {
+      if (asymmetricFilterId) {
+        newParticipantData.asymmetric_filters
+          .find((item) => item.id === asymmetricFilterId)
+          .video_filters.push(newFilter);
+      } else if (isGroupFilter) {
+        newParticipantData.video_group_filters.push(newFilter);
+      } else {
+        newParticipantData.video_filters.push(newFilter);
+      }
     }
-    if (
-      testData
-        .map((f) => (f.channel === "audio" || f.channel === "both" ? f.id : ""))
-        .includes(filter.id)
-    ) {
-      asymmetricFilterId
-        ? newParticipantData.asymmetric_filters
-            .find((item) => item.id === asymmetricFilterId)
-            .audio_filters.push(newFilter)
-        : newParticipantData.audio_filters.push(newFilter);
+    if (newFilter.channel === "audio" || newFilter.channel === "both") {
+      if (asymmetricFilterId) {
+        newParticipantData.asymmetric_filters
+          .find((item) => item.id === asymmetricFilterId)
+          .audio_filters.push(newFilter);
+      } else if (isGroupFilter) {
+        newParticipantData.audio_group_filters.push(newFilter);
+      } else {
+        newParticipantData.audio_filters.push(newFilter);
+      }
     }
     setParticipantCopy(newParticipantData);
   };
@@ -414,30 +419,37 @@ function ParticipantDataModal({
         filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
     );
 
+    newParticipantData.video_group_filters = newParticipantData.video_group_filters.filter(
+      (filteredFilter: Filter) =>
+        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
+    );
+
+    newParticipantData.audio_group_filters = newParticipantData.audio_group_filters.filter(
+      (filteredFilter: Filter) =>
+        filteredFilter.id !== filterId && filteredFilter.id !== otherFilterId
+    );
+
     return newParticipantData;
   };
 
+  /**
+   * This function deletes all required filters.
+   * @param filter - The filter to be deleted.
+   * @param newParticipantData - The participant data to be updated.
+   * @param isGroupFilter - A boolean value to check if the filter is a group filter.
+   * @returns The updated participant data.
+   * @remarks
+   * This function is called when a filter is deleted.
+   * If a filter is required for another filter, then both the filters are deleted.
+   * If a filter requires another filter, then both the filters are deleted.
+   * */
   const deleteAllRequiredFilters = (filter: Filter, newParticipantData: Participant) => {
-    // if filter is required for another filter, removes current filter and other filter
+    // if filter is required for another filter or requires another filter, removes current filter and other filter
     if (requiredFilters.has(filter.id)) {
       const otherFilterId = requiredFilters.get(filter.id);
       requiredFilters.delete(filter.id);
+      requiredFilters.delete(otherFilterId);
       deleteRequiredFiltersInEachFilterArray(filter.id, otherFilterId, newParticipantData);
-    }
-
-    // if filter requires another filter, removes current filter and other filter
-    for (const key in filter["config"]) {
-      if (Array.isArray(filter["config"][key]["defaultValue"])) {
-        if ((filter["config"][key] as FilterConfigArray)["requiresOtherFilter"]) {
-          const otherFilterId = (filter["config"][key] as FilterConfigArray)["value"];
-
-          if (requiredFilters.has(otherFilterId)) {
-            requiredFilters.delete(otherFilterId);
-          }
-
-          deleteRequiredFiltersInEachFilterArray(filter.id, otherFilterId, newParticipantData);
-        }
-      }
     }
 
     return newParticipantData;
@@ -446,16 +458,19 @@ function ParticipantDataModal({
   const handleDeleteVideoFilter = (
     videoFilter: Filter,
     filterCopyIndex: number,
+    isGroupFilter: boolean,
     asymmetricFilterId?: string | undefined
   ) => {
     const newParticipantData = structuredClone(participantCopy);
-
-    const video_filters = asymmetricFilterId
-      ? newParticipantData.asymmetric_filters.find((item) => item.id === asymmetricFilterId)
-          .video_filters
-      : newParticipantData.video_filters;
-
-    video_filters.splice(filterCopyIndex, 1);
+    if (asymmetricFilterId) {
+      newParticipantData.asymmetric_filters
+        .find((item) => item.id === asymmetricFilterId)
+        .video_filters.splice(filterCopyIndex, 1);
+    } else if (isGroupFilter) {
+      newParticipantData.video_group_filters.splice(filterCopyIndex, 1);
+    } else {
+      newParticipantData.video_filters.splice(filterCopyIndex, 1);
+    }
 
     setParticipantCopy(deleteAllRequiredFilters(videoFilter, newParticipantData));
   };
@@ -463,16 +478,19 @@ function ParticipantDataModal({
   const handleDeleteAudioFilter = (
     audioFilter: Filter,
     filterCopyIndex: number,
+    isGroupFilter: boolean,
     asymmetricFilterId?: string | undefined
   ) => {
     const newParticipantData = structuredClone(participantCopy);
-
-    const audio_filters = asymmetricFilterId
-      ? newParticipantData.asymmetric_filters.find((item) => item.id === asymmetricFilterId)
-          .audio_filters
-      : newParticipantData.audio_filters;
-
-    audio_filters.splice(filterCopyIndex, 1);
+    if (asymmetricFilterId) {
+      newParticipantData.asymmetric_filters
+        .find((item) => item.id === asymmetricFilterId)
+        .audio_filters.splice(filterCopyIndex, 1);
+    } else if (isGroupFilter) {
+      newParticipantData.audio_group_filters.splice(filterCopyIndex, 1);
+    } else {
+      newParticipantData.audio_filters.splice(filterCopyIndex, 1);
+    }
 
     setParticipantCopy(deleteAllRequiredFilters(audioFilter, newParticipantData));
   };
@@ -624,7 +642,6 @@ function ParticipantDataModal({
                 handleFilterSelect={handleFilterSelect}
                 handleSelectChatFilter={handleSelectChatFilter}
               />
-
               <Box>
                 {/* Displays applied audio filters */}
                 <FilterList

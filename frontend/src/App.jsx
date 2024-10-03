@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import "./App.css";
+import { ActionButton } from "./components/atoms/Button";
 import CustomSnackbar from "./components/atoms/CustomSnackbar/CustomSnackbar";
 import Connection from "./networking/Connection";
 import ConnectionState from "./networking/ConnectionState";
@@ -43,6 +44,8 @@ import { toggleSingleTab } from "./redux/slices/tabsSlice";
 import { faComment } from "@fortawesome/free-solid-svg-icons/faComment";
 import { faClipboardCheck, faUsers, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import OpenAI from "openai";
+import { ErrorBoundary } from "react-error-boundary";
+import LoadingScreen from "./components/organisms/LoadingScreen/LoadingScreen";
 
 function App() {
   const [localStream, setLocalStream] = useState(null);
@@ -53,6 +56,8 @@ function App() {
   const [status, setPostProcessingStatus] = useState(null);
   const [errorPostProc, setPostProcessingError] = useState(null);
   const [successPostProc, setPostProcessingSuccess] = useState(null);
+  const [connectionLossTimeOut, setConnectionLossTimeOut] = useState(false);
+  const [refreshTimeOut, setRefreshTimeOut] = useState(false);
   let [searchParams, setSearchParams] = useSearchParams();
   const sessionIdParam = searchParams.get("sessionId");
   const participantIdParam = searchParams.get("participantId");
@@ -82,6 +87,23 @@ function App() {
 
     setConnectionState(state);
   };
+
+  useEffect(() => {
+    //connectionLossTimer
+    const connectionLossTimer = setTimeout(() => {
+      setConnectionLossTimeOut(true);
+    }, 120000);
+
+    //refreshTimer
+    const refreshTimer = setTimeout(() => {
+      setRefreshTimeOut(true);
+    }, 90000);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      clearTimeout(connectionLossTimer);
+    };
+  }, []);
 
   // ChatGPT validity check
   const gptKeyValid = useRef();
@@ -176,7 +198,7 @@ function App() {
     // TODO: get experimenter password before creating Connection, e.g. from "login" page
     // The following solution using `prompt` is only a placeholder.
     if (!isConnectionTestPage && userType === "experimenter" && !experimenterPassword) {
-      //experimenterPassword = prompt("Please insert experimenter password");
+      //experimenterPassword = prompt("Please enter experimenter password", "no-password-given");
       experimenterPassword = "no-password-given";
     }
 
@@ -512,11 +534,20 @@ function App() {
               <PageTemplate
                 title={"SynthARium"}
                 customComponent={
-                  <SessionOverview
-                    onDeleteSession={onDeleteSession}
-                    onCreateExperiment={onCreateExperiment}
-                    onJoinExperiment={onJoinExperiment}
-                  />
+                  connectionState == ConnectionState.CONNECTED ? (
+                    <SessionOverview
+                      onDeleteSession={onDeleteSession}
+                      onCreateExperiment={onCreateExperiment}
+                      onJoinExperiment={onJoinExperiment}
+                    />
+                  ) : (
+                    <div className="flex flex-col overflow-y-auto justify-center h-[calc(100vh-84px)]">
+                      <LoadingScreen
+                        refreshTimeOut={refreshTimeOut}
+                        connectionTimeOut={connectionLossTimeOut}
+                      />
+                    </div>
+                  )
                 }
                 buttonListComponent={
                   <HeaderActionArea
@@ -779,10 +810,33 @@ function App() {
               <PageTemplate
                 title={"Session Form"}
                 customComponent={
-                  <SessionForm
-                    onSendSessionToBackend={onSendSessionToBackend}
-                    onGetFiltersConfig={onGetFiltersConfig}
-                  />
+                  connectionState === ConnectionState.CONNECTED ? (
+                    <ErrorBoundary
+                      fallback={
+                        <div className="flex flex-col items-center">
+                          <h2>Something went wrong.</h2>
+                          <ActionButton
+                            text="Go to Session Overview"
+                            path="/"
+                            variant="contained"
+                            size="large"
+                          />
+                        </div>
+                      }
+                    >
+                      <SessionForm
+                        onSendSessionToBackend={onSendSessionToBackend}
+                        onGetFiltersConfig={onGetFiltersConfig}
+                      />
+                    </ErrorBoundary>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <LoadingScreen
+                        refreshTimeOut={refreshTimeOut}
+                        connectionTimeOut={connectionLossTimeOut}
+                      />
+                    </div>
+                  )
                 }
                 centerContentOnYAxis={true}
               />
