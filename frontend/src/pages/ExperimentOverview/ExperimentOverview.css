@@ -1,0 +1,18 @@
+.experimentOverviewHeader {
+  background-color: hsl(212, 86%, 64%);
+}
+
+.experimentOvervieweader > h2 {
+  font-weight: 400;
+  font-size: xx-large;
+  color: white;
+  margin: 0;
+  text-align: left;
+  margin-left: 1rem;
+}
+
+.noExperimentOngoing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

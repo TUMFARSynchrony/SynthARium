@@ -12,8 +12,9 @@ import logging
 import os
 from typing import Any, Coroutine
 
-
-from session.data.participant.participant_summary import ParticipantSummaryDict
+from filters import filter_utils
+from session.data.participant import ParticipantSummaryDict
+from session.data.participant import ParticipantDict
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import KickNotificationDict
 from custom_types.message import MessageDict
@@ -24,7 +25,7 @@ from experiment import ExperimentState
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
 from session.data.participant import ParticipantData
-from users.user import User
+from users.experimenter import User
 import hub.hub as _h
 
 
@@ -78,7 +79,7 @@ class Participant(User):
             WebRTC `offer`.  Use factory instead of instantiating Participant directly.
         """
         super(Participant, self).__init__(
-            participant_id, participant_data.muted_video, participant_data.muted_audio
+            participant_id, participant_data.muted_video, participant_data.muted_audio, participant_data.local_stream
         )
         self._logger = logging.getLogger(f"Participant-{participant_id}")
         self._participant_data = participant_data
@@ -90,6 +91,10 @@ class Participant(User):
         # Add API endpoints
         self.on_message("CHAT", self._handle_chat)
         self.on_message("GET_SESSION", self._handle_get_session)
+        # INFO: This is a solution to get filters data for one participant.
+        # However, it is currently not working.
+        # Please have a look at issue: https://github.com/TUMFARSynchrony/experimental-hub/issues/154
+        # self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
 
     def __str__(self) -> str:
         """Get string representation of this participant.
@@ -260,13 +265,6 @@ class Participant(User):
                 description="Message data is not a valid ChatMessage.",
             )
 
-        if data["target"] != "experimenter":
-            raise ErrorDictException(
-                code=403,
-                type="INVALID_REQUEST",
-                description='Participants can only chat with "experimenter".',
-            )
-
         if data["author"] != self.id:
             raise ErrorDictException(
                 code=400,
@@ -322,3 +320,55 @@ class Participant(User):
         if not os.path.isdir(record_directory_path):
             os.mkdir(record_directory_path)
         return record_directory_path + "/" + self.id
+
+    def get_participant_data(self) -> ParticipantDict:
+        """Get `self._experiment` or raise ErrorDictException if it is None.
+
+        Use to check if this Experimenter is connected to an
+        hub.experiment.Experiment.
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None
+        """
+        if self._participant_data is not None:
+            return self._participant_data.asdict()
+
+        raise ErrorDictException(
+            code=409, type="INVALID_REQUEST", description="Participant has no data"
+        )
+
+    async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA`.
+
+        Check if data is a valid GetFiltersDataRequestDict and return filter data for
+        specific participant.
+
+        Parameters
+        ----------
+        data : any or filters.GetFiltersDataRequestDict
+            Message data.  Checks if data is a valid GetFiltersDataRequestDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `FILTERS_DATA`, data: dict[str, FiltersDataDict]
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.GetFiltersDataRequestDict.
+            Or if values of data are incorrect.
+        """
+        if not filter_utils.is_valid_get_filters_data_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GetFiltersData.",
+            )
+
+        res = await self.get_filters_data_for_one_participant(data)
+
+        return MessageDict(type="FILTERS_DATA", data=res)

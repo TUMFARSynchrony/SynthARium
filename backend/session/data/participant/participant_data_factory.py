@@ -22,6 +22,7 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
 
     pos = participant_dict["position"]
     positionData = PositionData(pos["x"], pos["y"], pos["z"])
+
     return ParticipantData(
         participant_dict["id"],
         participant_dict["participant_name"],
@@ -29,10 +30,16 @@ def participant_data_factory(participant_dict: ParticipantDict) -> ParticipantDa
         sizeData,
         participant_dict["muted_video"],
         participant_dict["muted_audio"],
+        participant_dict["local_stream"],
         positionData,
         participant_dict["chat"],
         participant_dict["audio_filters"],
         participant_dict["video_filters"],
+        participant_dict["chat_filters"],
         participant_dict["audio_group_filters"],
         participant_dict["video_group_filters"],
+        participant_dict["lastMessageSentTime"],
+        participant_dict["lastMessageReadTime"],
+        participant_dict["view"],
+        participant_dict["canvas_id"],
     )

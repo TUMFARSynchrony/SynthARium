@@ -31,32 +31,26 @@ class DelayFilter(Filter):
         self.buffer = Queue(config["config"]["size"]["value"])
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "DELAY"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
+    def channel() -> str:
+        return "both"
+
+    @staticmethod
+    def default_config() -> dict:
         return {
-            "name": name,
-            "id": id,
-            "channel": "both",
-            "groupFilter": False,
-            "config": {
-                "size": {
-                    "min": 0,
-                    "max": 120,
-                    "step": 1,
-                    "value": 60,
-                    "defaultValue": 60,
-                },
+            "size": {
+                "min": 0,
+                "max": 120,
+                "step": 1,
+                "value": 60,
+                "defaultValue": 60,
             },
         }
 
