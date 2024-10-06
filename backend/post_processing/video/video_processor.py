@@ -123,6 +123,7 @@ class VideoProcessor(ABC):
                         self.collect_participant_data(result, participant_id)
 
                 await self.handle_frame_output(result, participant_id)
+                await asyncio.sleep(30 / 1000.0)  # Convert ms to seconds
             except Exception as e:
                 self.logger.exception(f"Failed to process frame {frame_index}: {e}")
 

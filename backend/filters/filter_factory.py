@@ -15,6 +15,7 @@ def create_filter(
     filter_config: FilterDict,
     audio_track_handler: Optional[TrackHandler] = None,
     video_track_handler: Optional[TrackHandler] = None,
+    participant_id: Optional[str] = None,
 ) -> Filter:
     """Create a filter based on `type` of `filter_config`.
 
@@ -43,8 +44,7 @@ def create_filter(
             description=f'Unknown filter type "{filter_name}".',
         )
 
-    return filters[filter_name](filter_config, audio_track_handler, video_track_handler)
-
+    return filters[filter_name](filter_config, audio_track_handler, video_track_handler, participant_id)
 
 def init_mute_filter(
     kind: Literal["audio", "video"],

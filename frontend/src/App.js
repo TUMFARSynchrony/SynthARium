@@ -513,7 +513,7 @@ function App() {
 
     connection.sendMessage("APPLY_FILTER_TO_VIDEO", {
       session_id: sessionId,
-      videos: formattedFilterRequests
+      videoFilterRequests: formattedFilterRequests
     });
   };
 

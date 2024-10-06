@@ -23,7 +23,7 @@ class AnalyticsVideoProcessor(VideoProcessor):
         return VideoPostProcessing()
 
     async def process(self, batch_size: int = 5):
-        await asyncio.sleep(2)
+        await asyncio.sleep(5)
         if self.external_process:
             recording_list = self.prepare_recording_list()
             await self.process_with_external_tool_group_filter(recording_list)

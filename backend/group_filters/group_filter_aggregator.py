@@ -3,6 +3,8 @@
 import asyncio
 from typing import Literal
 import logging
+
+from filters.open_face_au.open_face_data_parser import OpenFaceDataParser
 from group_filters import GroupFilter
 import zmq
 import zmq.asyncio
@@ -45,6 +47,8 @@ class GroupFilterAggregator(object):
         self._data = {}
 
         self._context = zmq.asyncio.Context.instance()
+        self.parser = OpenFaceDataParser(participant_id="aggregated_data")
+
 
         self._socket = self._context.socket(zmq.PULL)
         try:
@@ -157,7 +161,7 @@ class GroupFilterAggregator(object):
                                 continue
 
                             # Aggregate data
-                            aggregation_result = self._group_filter.aggregate(data)
+                            aggregation_result = self._group_filter.aggregate(data=data)
 
                             # Update aggregation history
                             aggregation_history[c] = c_data
@@ -175,6 +179,8 @@ class GroupFilterAggregator(object):
                                 + f"\n\tData: {data}"
                                 + f"\n\tResult: {aggregation_result}"
                             )
+
+                            self.parser.write_gf(c, time(), end_time - start_time, c_data, data, aggregation_result)
 
                         # Send the aggregation result to each participant
                         if self.is_result_socket_connected and aggregation_result_dict:

@@ -462,6 +462,7 @@ class Experimenter(User):
         experiment = self.get_experiment_or_raise("Cannot start experiment.")
         await experiment.start()
 
+
         success = SuccessDict(
             type="START_EXPERIMENT", description="Successfully started experiment."
         )
@@ -1266,7 +1267,7 @@ class Experimenter(User):
         """
         self._logger.info(data)
 
-        if "session_id" not in data or "videos" not in data:
+        if "session_id" not in data or "videoFilterRequests" not in data:
             raise ErrorDictException(
                 code=400,
                 type="INVALID_REQUEST",
@@ -1274,7 +1275,7 @@ class Experimenter(User):
             )
 
         session_id = data["session_id"]
-        video_requests = data["videos"]
+        video_requests = data["videoFilterRequests"]
 
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         sessions_path = os.path.join(base_dir, "sessions")
@@ -1335,7 +1336,7 @@ class Experimenter(User):
     def _create_video_processor(self, processor_type, filter_configs, session_id, video_filenames, sessions_path,
                                 output_dir, external_process):
         """Create a VideoProcessor based on the processor type."""
-        filters = [filter_factory.create_filter(cfg) for cfg in filter_configs if not cfg.get('groupFilter')]
+        filters = [filter_factory.create_filter(cfg,participant_id="t") for cfg in filter_configs if not cfg.get('groupFilter')]
         group_filters = [create_group_filter(cfg, session_id) for cfg in filter_configs if cfg.get('groupFilter')]
 
         if processor_type == "manipulation":
