@@ -8,6 +8,7 @@ from typing import List, Any
 import cv2
 import numpy as np
 
+from group_filters.sync_score.sync_score_group_filter import oasis_min_required_data
 from post_processing.post_processing_data import PostProcessingData
 from post_processing.video.post_processing import VideoPostProcessing
 from post_processing.video.video_processor import VideoProcessor
@@ -101,25 +102,40 @@ class AnalyticsVideoProcessor(VideoProcessor):
         await asyncio.gather(*tasks)
 
     def aggregate_group_filter_data(self):
-        all_data = list(self.participant_data.values())
-        for group_filter in self.group_filters:
-            results = group_filter.aggregate(all_data)
+        current_index = {key: 0 for key in self.participant_data}  # Initialize starting indices for each participant
+        while True:
+            chunk = {
+                key: values[current_index[key]:current_index[key] + oasis_min_required_data]
+                for key, values in self.participant_data.items()
+            }
 
-            output_csv_path = os.path.join(self.output_dir, f"{group_filter.name}_aggregated_results.csv")
+            if any(len(data) < oasis_min_required_data for data in chunk.values()):
+                break
 
-            with open(output_csv_path, 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile)
+            data_list = list(chunk.values())
 
-                if isinstance(results, Iterable) and not isinstance(results, (str, bytes)):
-                    headers = ['Participant ID', 'Aggregated Result']
-                    csvwriter.writerow(headers)
+            for group_filter in self.group_filters:
+                results = group_filter.aggregate(data_list)
 
-                    for participant_id, result in zip(self.participant_data.keys(), results):
-                        csvwriter.writerow([participant_id, result])
-                else:
-                    headers = ['Aggregated Result']
-                    csvwriter.writerow(headers)
-                    csvwriter.writerow([results])
+                output_csv_path = os.path.join(self.output_dir, f"{group_filter.name}_aggregated_results.csv")
+                with open(output_csv_path, 'a', newline='') as csvfile:  # Use 'a' to append results to the CSV
+                    csvwriter = csv.writer(csvfile)
+
+                    if isinstance(results, Iterable) and not isinstance(results, (str, bytes)):
+                        headers = ['Participant ID', 'Aggregated Result']
+                        if csvfile.tell() == 0:  # Write headers only if file is empty
+                            csvwriter.writerow(headers)
+                        for participant_id, result in zip(self.participant_data.keys(), results):
+                            csvwriter.writerow([participant_id, result])
+                    else:
+                        headers = ['Aggregated Result']
+                        if csvfile.tell() == 0:
+                            csvwriter.writerow(headers)
+                        csvwriter.writerow([results])
+
+            for key in current_index:
+                if current_index[key] < len(self.participant_data[key]) - 1:
+                    current_index[key] += 1
 
     ##### Helper Methods
     async def generate_csv(self, data: List[dict], output_path: str):
