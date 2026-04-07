@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import { Image, Group, Text } from "react-konva";
-import { useUserStream } from "./Streams";
 import { Participant } from "../../../types";
 import Konva from "konva";
 
@@ -12,12 +11,12 @@ type VideoProps = {
 };
 
 const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
-  const useVideo = (stream: MediaStream | null) => {
+  const useVideo = () => {
     const videoRef = useRef(document.createElement("video"));
 
     useEffect(() => {
       const video = videoRef.current;
-      if (!stream) {
+      if (!src) {
         return;
       }
 
@@ -29,13 +28,12 @@ const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
       video.onloadedmetadata = function () {
         video.play();
       };
-    }, [stream]);
+    }, [src]);
 
     return videoRef.current;
   };
 
-  const stream = useUserStream();
-  const video = useVideo(stream);
+  const video = useVideo();
   const shapeRef: React.MutableRefObject<Konva.Image> = useRef();
 
   useEffect(() => {
