@@ -51,7 +51,9 @@ export const INITIAL_PARTICIPANT_DATA: Participant = {
     height: 250
   },
   view: [],
-  canvas_id: ""
+  canvas_id: "",
+  asymmetric_filters: [],
+  asymmetric_filters_id: ""
 };
 
 export const INITIAL_NOTE_DATA: Note = {
