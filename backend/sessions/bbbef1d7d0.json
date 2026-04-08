@@ -1,0 +1,305 @@
+{
+    "id": "a87ba17956",
+    "title": "CONNECTION TEST SESSION",
+    "date": 1922956680000,
+    "record": false,
+    "time_limit": 0,
+    "description": "Test session with 10 participants!",
+    "creation_time": 0,
+    "end_time": 0,
+    "start_time": 0,
+    "notes": [],
+    "participants": [
+        {
+            "id": "f581b7c290",
+            "participant_name": "Anna Anderson",
+            "banned": false,
+            "size": {
+                "width": 196.53817825134342,
+                "height": 196.53817825134342
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "5bd788a2-f7e1-4037-ac11-0158e5d07f7b",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "346d5228-b635-41c8-b0a3-c361c8ac2004"
+        },
+        {
+            "id": "e389bc3c3e",
+            "participant_name": "Brandon Brown",
+            "banned": false,
+            "size": {
+                "width": 196.35263639111693,
+                "height": 196.35263639111693
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 208.0000000000002,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "65a9c888-087d-42e9-9634-655592645fda",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "81efb85d-61db-40d4-b6d7-c11f591aea8e"
+        },
+        {
+            "id": "904b73bebb",
+            "participant_name": "Christopher Cook",
+            "banned": false,
+            "size": {
+                "width": 196.15876550833553,
+                "height": 196.15876550833553
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 419.9771163192124,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "8917cd89-a2bd-47ff-8b4d-608037c2eb63",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "0cc121f3-6438-45e8-ada0-e57bc54fb315"
+        },
+        {
+            "id": "a7899d6f37",
+            "participant_name": "Daniel Dunn",
+            "banned": false,
+            "size": {
+                "width": 195.80294808128642,
+                "height": 195.80294808128647
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 636.9999999999998,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "7511cb49-bf13-427c-bcee-22f6b55834de",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "965b3c94-a75a-4b5c-890f-dc64c55bd5da"
+        },
+        {
+            "id": "9a5d21bab8",
+            "participant_name": "Emily Edwards",
+            "banned": false,
+            "size": {
+                "width": 196.0050890254905,
+                "height": 196.00508902549052
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 842.9949109745091,
+                "y": 0,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "fcb63371-a06b-469d-8f10-f0f081ea7149",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "47303fa1-9d0e-4e02-9ea1-a9aa562625ea"
+        },
+        {
+            "id": "aafe79b8b2",
+            "participant_name": "Felix Freeman",
+            "banned": false,
+            "size": {
+                "width": 191.9999999999999,
+                "height": 191.99999999999991
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 0,
+                "y": 245.00000000000023,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "0ab783a2-fb4f-4beb-9b94-bb0187af68fa",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "d3beb212-86d7-410e-9dba-c747ed45696d"
+        },
+        {
+            "id": "30f34a379f",
+            "participant_name": "George Gregory",
+            "banned": false,
+            "size": {
+                "width": 192.31484602078964,
+                "height": 192.31484602078964
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 208,
+                "y": 241.99999999999977,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "78952d06-856d-4505-bd72-44fecd532d6a",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "99a398d4-d26a-4f03-b13b-080f45ab0192"
+        },
+        {
+            "id": "c73aef48a8",
+            "participant_name": "Hubert Hilton",
+            "banned": false,
+            "size": {
+                "width": 192.06509313251075,
+                "height": 192.06509313251073
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 422,
+                "y": 239.9999999999998,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "fe9ad362-5668-49d6-8a67-01f834a7bc0c",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "1d99c5c3-03fb-42ab-9245-08899106c503"
+        },
+        {
+            "id": "105394e304",
+            "participant_name": "Irene Isac",
+            "banned": false,
+            "size": {
+                "width": 195.73962296888186,
+                "height": 195.7396229688819
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 634,
+                "y": 238,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "633a0700-08b1-430a-9814-1fbc9bff5591",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "1398f14b-1646-4efe-a2a9-c9c195ff6b38"
+        },
+        {
+            "id": "626abf148d",
+            "participant_name": "John Jacob",
+            "banned": false,
+            "size": {
+                "width": 197.50063291037847,
+                "height": 197.50063291037844
+            },
+            "muted_video": false,
+            "muted_audio": false,
+            "local_stream": false,
+            "position": {
+                "x": 842.4993670896215,
+                "y": 241.49936708962156,
+                "z": 0
+            },
+            "chat": [],
+            "audio_filters": [],
+            "video_filters": [],
+            "chat_filters": [],
+            "audio_group_filters": [],
+            "video_group_filters": [],
+            "lastMessageSentTime": 0,
+            "lastMessageReadTime": 0,
+            "view": [],
+            "canvas_id": "11cf8afc-02ea-4626-a92d-46d560ecb321",
+            "asymmetric_filters": [],
+            "asymmetric_filters_id": "d441a50a-febc-43b7-8c8b-1a810658a1bb"
+        }
+    ],
+    "log": []
+}
