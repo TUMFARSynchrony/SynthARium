@@ -27,12 +27,12 @@ const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
       ) || { size: { width: 0, height: 0 }, position: { x: 0, y: 0, z: 0 } }
     : participantData;
 
-  const useVideo = () => {
+  const useVideo = (srcProp: MediaProvider) => {
     const videoRef = useRef(document.createElement("video"));
 
     useEffect(() => {
       const video = videoRef.current;
-      if (!src) {
+      if (!srcProp) {
         return;
       }
 
@@ -40,16 +40,16 @@ const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
         video.muted = true;
       }
 
-      video.srcObject = src;
+      video.srcObject = srcProp;
       video.onloadedmetadata = function () {
         video.play();
       };
-    }, [src]);
+    }, [srcProp]);
 
     return videoRef.current;
   };
 
-  const video = useVideo();
+  const video = useVideo(src);
   const shapeRef: React.MutableRefObject<Konva.Image> = useRef();
 
   useEffect(() => {
