@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import { Image, Group, Text } from "react-konva";
-import { useUserStream } from "./Streams";
 import { CanvasElement, Participant } from "../../../types";
 import Konva from "konva";
 import { useAppSelector } from "../../../redux/hooks";
@@ -28,12 +27,12 @@ const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
       ) || { size: { width: 0, height: 0 }, position: { x: 0, y: 0, z: 0 } }
     : participantData;
 
-  const useVideo = (stream: MediaStream | null) => {
+  const useVideo = (srcProp: MediaProvider) => {
     const videoRef = useRef(document.createElement("video"));
 
     useEffect(() => {
       const video = videoRef.current;
-      if (!stream) {
+      if (!srcProp) {
         return;
       }
 
@@ -41,17 +40,16 @@ const Video = ({ src, participantData, title, shouldMute }: VideoProps) => {
         video.muted = true;
       }
 
-      video.srcObject = src;
+      video.srcObject = srcProp;
       video.onloadedmetadata = function () {
         video.play();
       };
-    }, [stream]);
+    }, [srcProp]);
 
     return videoRef.current;
   };
 
-  const stream = useUserStream();
-  const video = useVideo(stream);
+  const video = useVideo(src);
   const shapeRef: React.MutableRefObject<Konva.Image> = useRef();
 
   useEffect(() => {
