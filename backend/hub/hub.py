@@ -4,25 +4,26 @@ from typing import Literal, Optional
 from aiortc import RTCSessionDescription
 import asyncio
 import logging
-import json
-from os.path import join
-from hub import FRONTEND_DIR
+
+from jsonpickle import json
 
 from custom_types.message import MessageDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
+from connection.messages.add_ice_candidate_dict import AddIceCandidateDict
+from connection.connection_state import ConnectionState
 
 from experiment import Experiment
 from hub.util import generate_unique_id
 from hub.exceptions import ErrorDictException
 from hub.util import get_system_specs
 
-from filters.filter import Filter
-
 import experiment.experiment as _experiment
 import session.session_manager as _sm
 
 from server import Config, Server
 from users import Experimenter, experimenter_factory, participant_factory
+from users.user import User
 
 
 class Hub:
@@ -39,6 +40,8 @@ class Hub:
     server: Server
     config: Config
     _logger: logging.Logger
+    _current_connections: dict[str, User]
+    _ice_candidate_buffer: dict[str, list[RTCIceCandidateDict]]
 
     def __init__(self):
         """Parse config and instantiate new Hub instance.
@@ -72,13 +75,16 @@ class Hub:
 
         self._logger.debug(f"Successfully loaded config: {str(self.config)}")
 
-        self.get_filters_json()
-        self._logger.debug("Successfully created filters_data.json in frontend folder")
-
         self.experimenters = []
         self.experiments = {}
         self.session_manager = _sm.SessionManager("sessions")
-        self.server = Server(self.handle_offer, self.config)
+        self._current_connections = {}
+        self._ice_candidate_buffer = {}
+        self.server = Server(
+            self.handle_offer,
+            self.handle_add_ice_candidate,
+            self.config
+        )
 
     async def start(self):
         """Start the hub.  Starts the server."""
@@ -118,6 +124,13 @@ class Hub:
         """
         self.experimenters.remove(experimenter)
 
+    async def notify_participants_experimenter_joined(self, message):
+        """Handle the event and broadcast a WebSocket message."""
+        self._logger.info("Notifying participants experimenter joined")
+        await self.server.broadcast_message(json.dumps(message))
+        self._logger.info("Notified participants")
+
+
     async def handle_offer(
         self,
         offer: RTCSessionDescription,
@@ -125,6 +138,7 @@ class Hub:
         participant_id: str | None,
         session_id: str | None,
         experimenter_password: str | None,
+        connection_id: str,
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict | None]:
         """Handle incoming offer from a client.
 
@@ -144,6 +158,8 @@ class Hub:
             user_type is "participant").
         experimenter_password : str or None
             Experimenter password to authenticate experimenter.  Can be set in config.
+        connection_id : str
+            Unique ID for the connection. Used to assign ice candidates to connections.
 
         Returns
         -------
@@ -160,7 +176,7 @@ class Hub:
         """
         if user_type == "participant":
             return await self._handle_offer_participant(
-                offer, participant_id, session_id
+                offer, participant_id, session_id, connection_id
             )
 
         elif user_type == "experimenter":
@@ -183,6 +199,8 @@ class Hub:
             )
             self.experimenters.append(experimenter)
 
+            await self._add_current_connection(connection_id, experimenter)
+
             # Remove experimenter from hub when experimenter disconnects
             experimenter.add_listener("disconnected", self.remove_experimenter)
         else:
@@ -197,6 +215,7 @@ class Hub:
         offer: RTCSessionDescription,
         participant_id: Optional[str],
         session_id: Optional[str],
+        connection_id: str,
     ) -> tuple[RTCSessionDescription, ParticipantSummaryDict]:
         """Handle incoming offer for a participant.
 
@@ -209,6 +228,8 @@ class Hub:
         session_id : str, optional
             Session ID, defining what session a participant wants to connect to (if
             user_type is "participant").  Will raise an ErrorDictException if missing.
+        connection_id : str
+            Unique ID for the connection. Used to assign ice candidates to connections.
 
         Returns
         -------
@@ -279,11 +300,38 @@ class Hub:
                 ),
             )
 
-        answer, _ = await participant_factory(
+        answer, participant = await participant_factory(
             offer, participant_id, experiment, participant_data, self, self.config
         )
 
+        await self._add_current_connection(connection_id, participant)
+
         return answer, participant_data.as_summary_dict()
+
+    async def handle_add_ice_candidate(
+        self,
+        candiate: AddIceCandidateDict
+    ):
+        """Handle new incoming ice candidate from a connecting client.
+        The candidates are mapped to users/connections using
+        the username fragment.
+
+        Parameters
+        ----------
+        candidate : connection.messages.add_ice_candidate_dict.AddIceCandidateDict
+            New ice candidate send by the client.
+        """
+        id = candiate['id']
+
+        if id not in self._current_connections:
+            # Buffer candidate if connection is not yet established
+            if id not in self._ice_candidate_buffer:
+                self._ice_candidate_buffer[id] = []
+            self._ice_candidate_buffer[id].append(candiate["candidate"])
+            return
+
+        user = self._current_connections[id]
+        await user.handle_add_ice_candidate(candiate["candidate"])
 
     async def create_experiment(self, session_id: str) -> Experiment:
         """Create a new Experiment based on existing session data.
@@ -334,6 +382,60 @@ class Hub:
 
         return experiment
 
+    async def _add_current_connection(self, connection_id: str, user: User):
+        """Add a connection to the current connection list for access.
+
+        Parameters
+        ----------
+        connection_id : str
+            ID of the connection.
+        user : hub.users.user.User
+            User that is connecting.
+        """
+        self._current_connections[connection_id] = user
+
+        # check if there are candidates buffered for this connection and
+        # handle them
+        if connection_id in self._ice_candidate_buffer:
+            for candidate in self._ice_candidate_buffer[connection_id]:
+                await user.handle_add_ice_candidate(candidate)
+            del self._ice_candidate_buffer[connection_id]
+
+        # remove connection from pending connections
+        # if it is closed
+        def _handle_connection_state_change(
+            state: ConnectionState
+        ):
+            if state in [ConnectionState.CLOSED,
+                         ConnectionState.FAILED]:
+                self._remove_current_connection(connection_id)
+                user.connection.remove_listener(
+                    "state_change",
+                    _handle_connection_state_change
+                )
+
+        user.connection.add_listener(
+            "state_change",
+            _handle_connection_state_change
+        )
+
+    def _remove_current_connection(self, connection_id: str):
+        """Removes temporary stored references from `_current_connections`
+        and ice candidates from `_ice_candidadte_buffer` for a given connection
+
+        Parameters
+        ----------
+        connection_id : str
+            Connection id of the connection that should be removed.
+        """
+        if connection_id in self._current_connections:
+            del self._current_connections[connection_id]
+        if connection_id in self._ice_candidate_buffer:
+            self._logger.warning(
+                f"Ice candidate buffer for id: {connection_id} was not empty when connection was closed"
+            )
+            del self._ice_candidate_buffer[connection_id]
+
     async def send_to_experimenters(
         self, data: MessageDict, exclude: Experimenter | None = None
     ):
@@ -351,28 +453,3 @@ class Hub:
         for experimenter in self.experimenters:
             if experimenter is not exclude:
                 await experimenter.send(data)
-
-    def get_filters_json(self):
-        """Generate the filters_data.json file."""
-        filters_json = {"TEST": [], "SESSION": []}
-        for filter in Filter.__subclasses__():
-            filter_type = filter.filter_type(filter)
-            if filter_type == "NONE":
-                continue
-            elif filter_type == "TEST" or filter_type == "SESSION":
-                filter_json = filter.get_filter_json(filter)
-
-                if not filter.validate_filter_json(filter, filter_json):
-                    raise ValueError(
-                        f"{filter} has incorrect values in get_filter_json."
-                    )
-
-                filters_json[filter_type].append(filter_json)
-            else:
-                raise ValueError(
-                    f"{filter} has incorrect filter_type. Allowed types are: 'NONE', 'TEST', 'SESSION'"
-                )
-
-        path = join(FRONTEND_DIR, "src/filters_data.json")
-        with open(path, "w") as outfile:
-            json.dump(filters_json, outfile)

@@ -9,10 +9,12 @@ hub.connection.Connection.
 from __future__ import annotations
 import asyncio
 import logging
+import os
 from typing import Any, Coroutine
 
 from filters import filter_utils
 from group_filters import group_filter_utils
+from filters.filters_data_dict import FiltersDataDict
 from session.data.session import is_valid_session
 from custom_types.chat_message import is_valid_chatmessage
 from custom_types.kick import is_valid_kickrequest
@@ -21,10 +23,14 @@ from custom_types.success import SuccessDict
 from custom_types.note import is_valid_note
 from custom_types.mute import is_valid_mute_request
 from custom_types.session_id_request import is_valid_session_id_request
+from custom_types.post_processing import is_valid_postprocessingrequest
 
 from connection.connection_state import ConnectionState
 from hub.exceptions import ErrorDictException
+from post_processing.post_processing_data import PostProcessingData
+from post_processing.video.post_processing import VideoPostProcessing
 from users.user import User
+from users.participant import Participant
 import experiment.experiment as _exp
 import hub.hub as _h
 
@@ -79,8 +85,18 @@ class Experimenter(User):
         self.on_message("BAN_PARTICIPANT", self._handle_ban)
         self.on_message("MUTE", self._handle_mute)
         self.on_message("SET_FILTERS", self._handle_set_filters)
+        self.on_message("POST_PROCESSING_VIDEO", self._handle_post_processing_video)
+        self.on_message("GET_RECORDING_LIST", self._handle_get_recording_list)
+        self.on_message("CHECK_POST_PROCESSING", self._handle_check_post_processing)
         self.on_message("SET_GROUP_FILTERS", self._handle_set_group_filters)
+        self.on_message("GET_FILTERS_DATA", self._handle_get_filters_data)
+        self.on_message(
+            "GET_FILTERS_DATA_SEND_TO_PARTICIPANT",
+            self._handle_get_filters_data_send_to_participant,
+        )
         self.on_message("GET_SESSION", self._handle_get_session)
+        self.on_message("UPDATE_READ_MESSAGE_TIME", self._handle_message_read_time)
+        self.on_message("GET_FILTERS_CONFIG", self._handle_get_filters_config)
 
     def __str__(self) -> str:
         """Get string representation of this experimenter.
@@ -311,6 +327,9 @@ class Experimenter(User):
 
         self._experiment = await self._hub.create_experiment(data["session_id"])
         self._experiment.add_experimenter(self)
+        self._logger.info(f"sending ws message. {str(self)}")
+
+        await self._hub.notify_participants_experimenter_joined({"type": "EXPERIMENTER_JOINED"})
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
@@ -377,6 +396,9 @@ class Experimenter(User):
 
         self._experiment = experiment
         self._experiment.add_experimenter(self)
+        self._logger.info(f"sending ws message. {str(self)}")
+
+        await self._hub.notify_participants_experimenter_joined({"type": "EXPERIMENTER_JOINED"})
 
         # Subscribe to participants in experiment
         await self._subscribe_to_participants_streams()
@@ -745,6 +767,205 @@ class Experimenter(User):
             type="SET_FILTERS", description="Successfully changed filters."
         )
         return MessageDict(type="SUCCESS", data=success)
+    
+
+    async def _handle_post_processing_video(self, data: Any) -> MessageDict:
+        """Handle requests with type `POST_PROCESSING_VIDEO`.
+
+        Check if data is a valid custom_types.post_processing.PostProcessingDict.
+
+        Parameters
+        ----------
+        data : any or post_processing.PostProcessingDict
+            Message data.  Checks if data is a valid PostProcessingDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `SUCCESS`, data: custom_types.success.SuccessDict and
+            SuccessDict type: `POST_PROCESSING_VIDEO`.
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.post_processing.PostProcessingDict or if the
+            result directory of post-processing already exists or if current session folder is
+            not found.
+        """
+
+        if not is_valid_postprocessingrequest(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid PostProcessingDict.",
+            )
+        
+        video_post_processing = VideoPostProcessing()
+        status = video_post_processing.check_existing_process()
+
+        if status["is_processing"]:
+            raise ErrorDictException(
+                code=102,
+                type="STILL_PROCESSING",
+                description="There is a running FeatureExtraction subprocess. Please wait until it is complete."
+            )
+        
+        session_id = data["session_id"]
+        out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions", 
+                                    session_id,
+                                    "processed")
+        
+        if os.path.exists(out_dir):
+            raise ErrorDictException(
+                code=409,
+                type="FILE_ALREADY_EXISTS",
+                description=f'File already exists: {out_dir}. The post-processing of this session is done.'
+            )
+
+        video_list = []
+        recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
+        try:
+            recorded_list = os.listdir(os.path.join(recording_path, session_id))
+        except FileNotFoundError:
+            raise ErrorDictException(
+                code=404,
+                type="FILE_NOT_FOUND",
+                description=f'File not found: {os.path.join(recording_path, session_id)}.'
+            )
+        for i in range(len(recorded_list)):
+            filename = recorded_list[i]
+            _, file_extension = os.path.splitext(filename)
+            if file_extension == ".mp4":
+                participant_id = filename.split("_")[0]
+                video_list.append(PostProcessingData("video", filename, session_id, participant_id))
+            else:
+                continue
+        
+        if (len(video_list) == 0):
+            raise ErrorDictException(
+                code=404,
+                type="FILE_NOT_FOUND",
+                description=f'No video recordings available for session {session_id}.'
+            )
+        
+        video_post_processing.recording_list = video_list
+        video_post_processing.execute()
+
+        return MessageDict(type="POST_PROCESSING_VIDEO", data=f"Start video post-processing. Result directory: {out_dir}")
+    
+
+    async def _handle_get_recording_list(self, _) -> MessageDict:
+        """Handle requests with type `GET_RECORDING_LIST`.
+
+        Loads all video and audio from sessions folder.  Responds with type:
+        `RECORDING_LIST`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `RECORDING_LIST`.
+        """
+        recording_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sessions")
+        recordings = [ item for item in os.listdir(recording_path) 
+                      if os.path.isdir(os.path.join(recording_path, item)) ]
+        result = []
+        for session_id in recordings:
+            try:
+                session_response = await self._handle_get_session({"session_id": session_id})
+            except ErrorDictException:
+                # Skip unknown folder
+                continue
+            session_data = session_response.get("data")
+            past_experiment_path = os.path.join(recording_path, session_id)
+            recorded_list = os.listdir(past_experiment_path)
+            participants = []
+            videos = []
+            audios = []
+            prev_participant_id = ""
+            curr_participant_id = ""
+
+            for i in range(len(recorded_list)):
+                filename = recorded_list[i]
+                _, file_extension = os.path.splitext(filename)
+                if file_extension not in [".mp4", ".mp3"]:
+                    self._logger.debug("Not an audio or video file: " + filename)
+                    continue
+                elif file_extension == ".mp4":
+                    videos.append(filename)
+                elif file_extension == ".mp3":
+                    audios.append(filename)
+
+
+                curr_participant_id = filename.split("_")[0]
+                if (i == 0):
+                    prev_participant_id = curr_participant_id
+                
+                if prev_participant_id != curr_participant_id:
+                    participants.append({
+                        "participant_id": prev_participant_id,
+                        "video": videos,
+                        "audio": audios
+                    })
+                    prev_participant_id = curr_participant_id
+                    videos = []
+                    audios = []
+                
+            
+            if len(videos) > 0 or len(audios) > 0:
+                participants.append({
+                    "participant_id": prev_participant_id,
+                    "video": videos,
+                    "audio": audios
+                })
+                videos = []
+                audios = []
+
+            result.append({
+                "session_id": session_id,
+                "session_title": session_data.get("title"),
+                "session_description": session_data.get("description"),
+                "participants": participants
+            })
+                    
+        return MessageDict(type="RECORDING_LIST", data=result)
+    
+    async def _handle_check_post_processing(self, _) -> MessageDict:
+        """Handle requests with type `CHECK_POST_PROCESSING`.
+
+        Check whether there is FeatureExtraction process running in the background.
+        Responds with type: `CHECK_POST_PROCESSING`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `CHECK_POST_PROCESSING`.
+        """
+        video_post_processing = VideoPostProcessing()
+        status = video_post_processing.check_existing_process()
+
+        result = {
+            "description": status["message"],
+            "is_processing": status["is_processing"]
+        }
+        
+        if not result["is_processing"] and result["description"] != "":
+            success = SuccessDict(
+                type="POST_PROCESSING_VIDEO", description=result["description"]
+            )
+            return MessageDict(type="SUCCESS", data=success)
+
+        return MessageDict(type="CHECK_POST_PROCESSING", data=result)
 
     async def _handle_set_group_filters(self, data: Any) -> MessageDict:
         if not group_filter_utils.is_valid_set_group_filters_request(data):
@@ -757,12 +978,22 @@ class Experimenter(User):
         video_group_filters = data["video_group_filters"]
         video_group_filter_ports = []
         for _ in video_group_filters:
-            video_group_filter_ports.append(group_filter_utils.find_an_available_port())
+            video_group_filter_ports.append(
+                (
+                    group_filter_utils.find_an_available_port(),  # To send individual data to the aggragator
+                    group_filter_utils.find_an_available_port(),  # To send the aggregation result to each participant
+                )
+            )
 
         audio_group_filters = data["audio_group_filters"]
         audio_group_filter_ports = []
         for _ in audio_group_filters:
-            audio_group_filter_ports.append(group_filter_utils.find_an_available_port())
+            audio_group_filter_ports.append(
+                (
+                    group_filter_utils.find_an_available_port(),  # To send individual data to the aggragator
+                    group_filter_utils.find_an_available_port(),  # To send the aggregation result to each participant
+                )
+            )
 
         experiment = self.get_experiment_or_raise("Failed to set filters.")
         coroutines = []
@@ -809,6 +1040,119 @@ class Experimenter(User):
         )
         return MessageDict(type="SUCCESS", data=success)
 
+    async def _handle_get_filters_data(self, data: Any) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA`.
+
+        Check if data is a valid GetFiltersDataRequestDict and return filter data for
+        all participants.
+
+        Parameters
+        ----------
+        data : any or filters.GetFiltersDataRequestDict
+            Message data.  Checks if data is a valid GetFiltersDataRequestDict and raises
+            an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `FILTERS_DATA`, data: dict[str, FiltersDataDict]
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.GetFiltersDataRequestDict.
+            Or if values of data are incorrect.
+        """
+        if not filter_utils.is_valid_get_filters_data_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GetFiltersData.",
+            )
+
+        res = await self.get_filters_data_for_all_participants(data)
+        return MessageDict(type="FILTERS_DATA", data=res)
+
+    def get_participant_or_raise(self, participant_id: str) -> Participant:
+        """Get Participant with ID `participant_id` or raise ErrorDictException.
+
+        Use to check if a Participant with `participant_id` exists.
+
+        Parameters
+        ----------
+        participant_id : str
+            ID of the participant to get.
+
+        Raises
+        ------
+        ErrorDictException
+            If `self._experiment` is None or if `participant_id` is not in
+            `self._experiment.participants`.
+        """
+        experiment = self.get_experiment_or_raise("Failed to get filters data.")
+        if participant_id not in experiment.participants:
+            raise ErrorDictException(
+                code=404,
+                type="UNKNOWN_PARTICIPANT",
+                description=f'Participant with id "{participant_id}" not found.',
+            )
+        return experiment.participants[participant_id]
+
+    async def _handle_get_filters_data_send_to_participant(
+        self, data: Any
+    ) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_DATA_SEND_TO_PARTICIPANT`.
+
+        Check if data is a valid GetFiltersDataSendToParticipantRequestDict and return filter test
+        statuses for all participants or specific participant.
+
+        Parameters
+        ----------
+        data : any or filters.GetFiltersDataSendToParticipantRequestDict
+            Message data.  Checks if data is a valid GetFiltersDataSendToParticipantRequestDict and
+            raises an ErrorDictException if not.
+
+        Returns
+        -------
+        custom_types.message.MessageDict
+            MessageDict with type: `FILTERS_DATA`, data: dict[str, FiltersDataDict]
+
+        Raises
+        ------
+        ErrorDictException
+            If data is not a valid custom_types.filters.GetFiltersDataSendToParticipantRequestDict.
+            Or if values of data are incorrect.
+        """
+        if not filter_utils.is_valid_get_filters_data_send_to_participant_dict(data):
+            raise ErrorDictException(
+                code=400,
+                type="INVALID_DATATYPE",
+                description="Message data is not a valid GET_FILTERS_DATA_SEND_TO_PARTICIPANT.",
+            )
+
+        participant_id = data.pop("participant_id")
+
+        if participant_id == "all":
+            res = await self.get_filters_data_for_all_participants(data)
+            # send message to all participants
+            participant_id = "participants"
+        else:
+            participant = self.get_participant_or_raise(participant_id)
+            res: dict[str, FiltersDataDict] = {}
+
+            res[
+                participant_id
+            ] = await participant.get_filters_data_for_one_participant(data)
+
+        answer = MessageDict(type="FILTERS_DATA", data=res)
+        await self._experiment.send(participant_id, answer)
+
+        success = SuccessDict(
+            type="SEND_TO_PARTICIPANT",
+            description="Successfully sent GET_FILTERS_DATA to participant.",
+        )
+        return MessageDict(type="SUCCESS", data=success)
+
     async def _handle_get_session(self, data: Any) -> MessageDict:
         """Handle requests with type `GET_SESSION`.
 
@@ -829,7 +1173,32 @@ class Experimenter(User):
             raise ErrorDictException(
                 code=404,
                 type="UNKNOWN_SESSION",
-                description="No session with the given ID found to update.",
+                description=f"No session with the given ID found: {data['session_id']}.",
             )
         session_dict = session.asdict()
         return MessageDict(type="SESSION", data=session_dict)
+
+    async def _handle_get_filters_config(self, _) -> MessageDict:
+        """Handle requests with type `GET_FILTERS_CONFIG`.
+
+        Responds with type: `FILTERS_CONFIG`.
+
+        Parameters
+        ----------
+        _ : any
+            Message data.  Ignored / not required.
+
+        Returns
+        -------
+        custom_types.message.MessageDict with type: `FILTERS_CONFIG` and data:
+         custom_types.filter_config.FilterConfigDict.
+        """
+        return MessageDict(
+            type="FILTERS_CONFIG", data=filter_utils.get_filters_config()
+        )
+
+    async def _handle_message_read_time(self, data: Any) -> None:
+        experiment = self.get_experiment_or_raise("Failed to mute participant.")
+        await experiment.set_message_read_time(
+            data["participant_id"], data["lastMessageReadTime"]
+        )

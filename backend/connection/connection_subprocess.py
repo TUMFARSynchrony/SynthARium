@@ -9,11 +9,13 @@ from os.path import join
 from aiortc import RTCSessionDescription
 from typing import Any, Callable, Coroutine, Tuple
 from asyncio.subprocess import Process, PIPE, create_subprocess_exec
+from connection.messages.rtc_ice_candidate_dict import RTCIceCandidateDict
 
 from connection.messages import (
     ConnectionAnswerDict,
     ConnectionOfferDict,
     RTCSessionDescriptionDict,
+    AddIceCandidateDict,
 )
 from hub import BACKEND_DIR
 from server import Config
@@ -25,7 +27,9 @@ from filter_api import FilterAPI, FilterSubprocessReceiver
 
 from custom_types.error import ErrorDict
 from filters import FilterDict
+from filters.filter_data_dict import FilterDataDict
 from custom_types.message import MessageDict
+from session.data.participant import ParticipantDict
 from session.data.participant.participant_summary import ParticipantSummaryDict
 
 
@@ -65,17 +69,17 @@ class ConnectionSubprocess(ConnectionInterface):
     _local_description: RTCSessionDescription | None
 
     def __init__(
-        self,
-        offer: RTCSessionDescriptionDict,
-        message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
-        log_name_suffix: str,
-        config: Config,
-        audio_filters: list[FilterDict],
-        video_filters: list[FilterDict],
-        audio_group_filters: list[FilterDict],
-        video_group_filters: list[FilterDict],
-        filter_api: FilterAPI,
-        record_data: tuple,
+            self,
+            offer: RTCSessionDescriptionDict,
+            message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
+            log_name_suffix: str,
+            config: Config,
+            audio_filters: list[FilterDict],
+            video_filters: list[FilterDict],
+            audio_group_filters: list[FilterDict],
+            video_group_filters: list[FilterDict],
+            filter_api: FilterAPI,
+            record_data: tuple,
     ):
         """Create new ConnectionSubprocess.
 
@@ -119,7 +123,10 @@ class ConnectionSubprocess(ConnectionInterface):
         self._process = None
         self._state = ConnectionState.NEW
         self._logger = logging.getLogger("ConnectionSubprocess")
-        self._filter_receiver = FilterSubprocessReceiver(filter_api)
+        self._filter_receiver = FilterSubprocessReceiver(
+            filter_api,
+            self._send_command
+        )
 
         self._local_description_received = asyncio.Event()
         self._local_description = None
@@ -137,22 +144,35 @@ class ConnectionSubprocess(ConnectionInterface):
         return self._state
 
     async def create_subscriber_proposal(
-        self, participant_summary: ParticipantSummaryDict | str | None
+            self, participant_summary: ParticipantSummaryDict | str | None,
+            subscriber: ParticipantDict = None
     ) -> ConnectionOfferDict:
         # For docstring see ConnectionInterface or hover over function declaration
         # Send command and wait for response.
-        offer = await self._send_command_wait_for_response(
-            "CREATE_PROPOSAL", participant_summary
-        )
+        data = dict()
+        data['participant_summary'] = participant_summary
+        if subscriber is not None:
+            data['subscriber'] = subscriber
+        offer = await self._send_command_wait_for_response("CREATE_PROPOSAL", data)
         return offer
 
+    async def handle_add_ice_candidate(self, candidate: RTCIceCandidateDict):
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("ADD_ICE_CANDIDATE", candidate)
+
     async def handle_subscriber_offer(
-        self, offer: ConnectionOfferDict
+            self, offer: ConnectionOfferDict
     ) -> ConnectionAnswerDict:
         # For docstring see ConnectionInterface or hover over function declaration
         # Send command and wait for response.
         answer = await self._send_command_wait_for_response("HANDLE_OFFER", offer)
         return answer
+
+    async def handle_subscriber_add_ice_candidate(
+            self, candidate: AddIceCandidateDict
+    ):
+        # For docstring see ConnectionInterface or hover over function declaration
+        await self._send_command("ADD_SUBSCRIBER_ICE_CANDIDATE", candidate)
 
     async def get_local_description(self) -> RTCSessionDescription:
         """Get localdescription.  Blocks until subprocess sends localdescription."""
@@ -197,13 +217,13 @@ class ConnectionSubprocess(ConnectionInterface):
         await self._send_command("SET_AUDIO_FILTERS", filters)
 
     async def set_video_group_filters(
-        self, group_filters: list[FilterDict], ports: list[int]
+            self, group_filters: list[FilterDict], ports: list[tuple[int, int]]
     ) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("SET_VIDEO_GROUP_FILTERS", (group_filters, ports))
 
     async def set_audio_group_filters(
-        self, group_filters: list[FilterDict], ports: list[int]
+            self, group_filters: list[FilterDict], ports: list[tuple[int, int]]
     ) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("SET_AUDIO_GROUP_FILTERS", (group_filters, ports))
@@ -215,6 +235,18 @@ class ConnectionSubprocess(ConnectionInterface):
     async def stop_recording(self) -> None:
         # For docstring see ConnectionInterface or hover over function declaration
         await self._send_command("STOP_RECORDING", None)
+
+    async def get_video_filters_data(self, id, name) -> list[FilterDataDict]:
+        answer = await self._send_command_wait_for_response(
+            "GET_VIDEO_FILTERS", {"id": id, "name": name}
+        )
+        return answer
+
+    async def get_audio_filters_data(self, id, name) -> list[FilterDataDict]:
+        answer = await self._send_command_wait_for_response(
+            "GET_AUDIO_FILTERS", {"id": id, "name": name}
+        )
+        return answer
 
     def _set_state(self, state: ConnectionState) -> None:
         """Set connection state and emit `state_change` event."""
@@ -273,7 +305,7 @@ class ConnectionSubprocess(ConnectionInterface):
         if self._config.ping_subprocesses > 0:
             self._tasks.append(
                 asyncio.create_task(
-                    self._ping(self._config.ping_subprocesses),
+                    self._ping(float(self._config.ping_subprocesses)),
                     name="ConnectionSubprocess.ping",
                 ),
             )
@@ -350,13 +382,20 @@ class ConnectionSubprocess(ConnectionInterface):
         command_nr = msg["command_nr"]
 
         # self._logger.debug(
-        #     f"Received {command} command from subprocess, nr: {command_nr}"
+        #     f"Received {command} command from subprocess, nr: {command_nr}, data: {data}"
         # )
 
         match command:
             case "FILTER_API":
                 # Forward FILTER_API requests to FilterSubprocessReceiver
-                await self._filter_receiver.handle(data)
+                # and send possible answer back to FilterSubprocessAPI
+                answer = await self._filter_receiver.handle(data)
+                if answer is not None:
+                    await self._send_command(
+                        "FILTER_API_ANSWER",
+                        answer,
+                        command_nr
+                    )
             case "SET_LOCAL_DESCRIPTION":
                 self._local_description = RTCSessionDescription(
                     data["sdp"], data["type"]
@@ -375,7 +414,7 @@ class ConnectionSubprocess(ConnectionInterface):
                 self._set_state(ConnectionState(data))
             case "API":
                 await self._message_handler(data)
-            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER":
+            case "CONNECTION_PROPOSAL" | "CONNECTION_ANSWER" | "ACTIVE_VIDEO_FILTERS" | "ACTIVE_AUDIO_FILTERS":
                 await self._set_answer(command_nr, data)
             case "LOG":
                 handle_log_from_subprocess(data, self._logger)
@@ -413,19 +452,19 @@ class ConnectionSubprocess(ConnectionInterface):
         await queue.put(data)
 
     async def _send_command_wait_for_response(
-        self,
-        command: str,
-        data: str
-        | int
-        | float
-        | dict
-        | None
-        | tuple
-        | ParticipantSummaryDict
-        | ConnectionOfferDict
-        | MessageDict,
-        timeout: int | None = None,
-        retries: int = 1,
+            self,
+            command: str,
+            data: str
+                  | int
+                  | float
+                  | dict
+                  | None
+                  | tuple
+                  | ParticipantSummaryDict
+                  | ConnectionOfferDict
+                  | MessageDict,
+            timeout: int | None = None,
+            retries: int = 1,
     ) -> dict | None:
         """Send a command including unique command_nr and wait for response.
 
@@ -480,19 +519,19 @@ class ConnectionSubprocess(ConnectionInterface):
             return answer
 
     async def _send_command(
-        self,
-        command: str,
-        data: str
-        | int
-        | float
-        | dict
-        | None
-        | tuple
-        | ParticipantSummaryDict
-        | ConnectionOfferDict
-        | MessageDict
-        | list,
-        command_nr: int = -1,
+            self,
+            command: str,
+            data: str
+                  | int
+                  | float
+                  | dict
+                  | None
+                  | tuple
+                  | ParticipantSummaryDict
+                  | ConnectionOfferDict
+                  | MessageDict
+                  | list,
+            command_nr: int = -1,
     ) -> None:
         """Send command to subprocess via stdin.
 
@@ -529,16 +568,16 @@ ConnectionInterface.register(ConnectionSubprocess)
 
 
 async def connection_subprocess_factory(
-    offer: RTCSessionDescription,
-    message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
-    log_name_suffix: str,
-    config: Config,
-    audio_filters: list[FilterDict],
-    video_filters: list[FilterDict],
-    audio_group_filters: list[FilterDict],
-    video_group_filters: list[FilterDict],
-    filter_api: FilterAPI,
-    record_data: tuple,
+        offer: RTCSessionDescription,
+        message_handler: Callable[[MessageDict], Coroutine[Any, Any, None]],
+        log_name_suffix: str,
+        config: Config,
+        audio_filters: list[FilterDict],
+        video_filters: list[FilterDict],
+        audio_group_filters: list[FilterDict],
+        video_group_filters: list[FilterDict],
+        filter_api: FilterAPI,
+        record_data: tuple,
 ) -> Tuple[RTCSessionDescription, ConnectionSubprocess]:
     """Instantiate new ConnectionSubprocess.
 

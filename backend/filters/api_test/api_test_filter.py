@@ -12,25 +12,16 @@ class FilterAPITestFilter(Filter):
     """Filter testing filter API."""
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "FILTER_API_TEST"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "SESSION"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "both",
-            "groupFilter": False,
-            "config": {},
-        }
+    def channel() -> str:
+        return "both"
 
     counter = 0
 

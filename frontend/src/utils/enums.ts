@@ -20,5 +20,7 @@ export enum ChangeSessionAttribute {
 export enum Tabs {
   CHAT = "chat",
   INSTRUCTIONS = "instructions",
-  PARTICIPANTS = "participants"
+  PARTICIPANTS = "participants",
+  FILTER_INFORMATION = "filter_information",
+  CHATGPT = "chatgpt"
 }

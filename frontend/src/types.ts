@@ -22,6 +22,27 @@ export type Note = {
   content: string;
 };
 
+export type CanvasElement = {
+  id: string;
+  participant_name: string;
+  size: {
+    width: number;
+    height: number;
+  };
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+};
+
+export type AsymmetricFilter = {
+  id: string;
+  participant_name: string;
+  video_filters: Filter[];
+  audio_filters: Filter[];
+};
+
 export type Participant = {
   id: string;
   participant_name: string;
@@ -29,12 +50,20 @@ export type Participant = {
   size: { width: number; height: number };
   muted_video: boolean;
   muted_audio: boolean;
+  local_stream: boolean;
   position: { x: number; y: number; z: number };
   chat: ChatMessage[];
   audio_filters: Filter[];
   video_filters: Filter[];
+  view: CanvasElement[];
+  canvas_id: string;
   audio_group_filters: Filter[];
   video_group_filters: Filter[];
+  chat_filters: ChatFilter[];
+  asymmetric_filters: AsymmetricFilter[];
+  asymmetric_filters_id: string;
+  lastMessageSentTime: number;
+  lastMessageReadTime: number;
 };
 
 export type Box = {
@@ -63,6 +92,17 @@ export type ChatMessage = {
   time: number;
   author: string;
   target: string;
+  sentiment_score?: SentimentScore;
+};
+
+export type ChatGptMessage = {
+  content: string;
+  role: "user" | "assistant" | "system";
+};
+
+export type SentimentScore = {
+  label: string;
+  score: number;
 };
 
 export type Filter = {
@@ -71,6 +111,12 @@ export type Filter = {
   channel: string;
   groupFilter: boolean;
   config: FilterConfig;
+};
+
+export type ChatFilter = {
+  id: string;
+  name: string;
+  config: any;
 };
 
 export type FilterConfig = {
@@ -97,4 +143,18 @@ export type Snackbar = {
   severity: AlertColor;
   autoHideDuration?: number;
   anchorOrigin?: SnackbarOrigin;
+};
+
+export type FiltersData = {
+  [key: string]: {
+    video: FilterData[];
+    audio: FilterData[];
+  };
+};
+
+export type FilterData = {
+  id: string;
+  data: {
+    [key: string]: any;
+  };
 };

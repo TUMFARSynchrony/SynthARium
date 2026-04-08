@@ -44,26 +44,16 @@ class MuteVideoFilter(Filter):
         self._muted_ndarray = self._muted_frame.to_ndarray(format="bgr24")
 
     @staticmethod
-    def name(self) -> str:
+    def name() -> str:
         return "MUTE_VIDEO"
 
     @staticmethod
-    def filter_type(self) -> str:
+    def type() -> str:
         return "NONE"
 
     @staticmethod
-    def get_filter_json(self) -> object:
-        # For docstring see filters.filter.Filter or hover over function declaration
-        name = self.name(self)
-        id = name.lower()
-        id = id.replace("_", "-")
-        return {
-            "name": name,
-            "id": id,
-            "channel": "video",
-            "groupFilter": False,
-            "config": {},
-        }
+    def channel() -> str:
+        return "video"
 
     async def process(
         self, original: VideoFrame, ndarray: numpy.ndarray | None = None
